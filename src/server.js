@@ -1,7 +1,7 @@
 import express from "express";
 import "dotenv/config";
 import { etsyApiRequest } from "./etsy-api.js";
-import { saveShop } from "./shop-store.js";
+import { loadShop, saveShop } from "./shop-store.js";
 import {
   createAuthorizationRequest,
   exchangeAuthorizationCode
@@ -120,6 +120,73 @@ app.get("/etsy/status", async (_req, res) => {
     res.status(502).json({
       connected: false,
       error: "Unable to retrieve Etsy shop status."
+    });
+  }
+});
+
+
+app.get("/etsy/listings", async (req, res) => {
+  const state = req.query.state || "active";
+  const allowedStates = [
+    "active",
+    "inactive",
+    "sold_out",
+    "draft",
+    "expired"
+  ];
+
+  const limit = Number(req.query.limit ?? 25);
+  const offset = Number(req.query.offset ?? 0);
+
+  if (
+    !allowedStates.includes(state) ||
+    !Number.isInteger(limit) ||
+    limit < 1 ||
+    limit > 100 ||
+    !Number.isInteger(offset) ||
+    offset < 0
+  ) {
+    return res.status(400).json({
+      error: "Invalid state, limit, or offset."
+    });
+  }
+
+  try {
+    const shop = await loadShop();
+
+    if (!shop) {
+      return res.status(409).json({
+        error: "Shop information is not saved. Check Etsy connection first."
+      });
+    }
+
+    const params = new URLSearchParams({
+      state,
+      limit: String(limit),
+      offset: String(offset)
+    });
+
+    const data = await etsyApiRequest(
+      `/application/shops/${shop.shop_id}/listings?${params}`
+    );
+
+    res.json({
+      count: data.count,
+      results: (data.results || []).map((listing) => ({
+        listing_id: listing.listing_id,
+        title: listing.title,
+        state: listing.state,
+        url: listing.url,
+        quantity: listing.quantity,
+        is_personalizable: listing.is_personalizable,
+        is_customizable: listing.is_customizable
+      }))
+    });
+  } catch (error) {
+    console.error("Etsy listings retrieval failed:", error.message);
+
+    res.status(502).json({
+      error: "Unable to retrieve Etsy listings."
     });
   }
 });
