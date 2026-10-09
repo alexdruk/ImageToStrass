@@ -1,5 +1,7 @@
 import express from "express";
 import "dotenv/config";
+import { etsyApiRequest } from "./etsy-api.js";
+import { saveShop } from "./shop-store.js";
 import {
   createAuthorizationRequest,
   exchangeAuthorizationCode
@@ -95,6 +97,33 @@ app.get("/oauth/callback", async (req, res) => {
     );
   }
 });
+
+app.get("/etsy/status", async (_req, res) => {
+  try {
+    const user = await etsyApiRequest("/application/users/me");
+
+    const shop = await etsyApiRequest(
+      `/application/users/${user.user_id}/shops`
+    );
+
+	await saveShop(shop);
+
+    res.json({
+      connected: true,
+      user_id: user.user_id,
+      shop_id: shop.shop_id,
+      shop_name: shop.shop_name
+    });
+  } catch (error) {
+    console.error("Etsy status check failed:", error.message);
+
+    res.status(502).json({
+      connected: false,
+      error: "Unable to retrieve Etsy shop status."
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(
     `ImageToStrass running at http://localhost:${PORT}`
