@@ -1,3 +1,4 @@
+
 import express from "express";
 import "dotenv/config";
 import { etsyApiRequest } from "./etsy-api.js";
@@ -10,7 +11,6 @@ import { saveTokens } from "./token-store.js";
 
 const app = express();
 const PORT = Number(process.env.PORT || 3003);
-
 const pendingAuth = new Map();
 
 app.get("/", (_req, res) => {
@@ -55,18 +55,14 @@ app.get("/oauth/callback", async (req, res) => {
   }
 
   if (!code || !state) {
-    return res.status(400).send(
-      "Missing OAuth code or state."
-    );
+    return res.status(400).send("Missing OAuth code or state.");
   }
 
   const pending = pendingAuth.get(state);
   pendingAuth.delete(state);
 
   if (!pending) {
-    return res.status(400).send(
-      "Invalid or expired OAuth state."
-    );
+    return res.status(400).send("Invalid or expired OAuth state.");
   }
 
   try {
@@ -78,20 +74,21 @@ app.get("/oauth/callback", async (req, res) => {
       code,
       pending.verifier
     );
-	await saveTokens({
-	  ...tokens,
-	  expires_at: Math.floor(Date.now() / 1000) + tokens.expires_in
-	});
 
-	console.log("Etsy OAuth authorization successful.");
+    await saveTokens({
+      ...tokens,
+      expires_at: Math.floor(Date.now() / 1000) + tokens.expires_in
+    });
+
+    console.log("Etsy OAuth authorization successful.");
 
     return res.send(`
       <h1>Etsy connected</h1>
       <p>OAuth authorization completed successfully.</p>
-	  <p>Etsy connection established successfully.</p>    `);
+      <p>Etsy connection established successfully.</p>
+    `);
   } catch (error) {
     console.error(error.message);
-
     return res.status(502).send(
       "Etsy token exchange failed. Check the server log for details."
     );
@@ -106,7 +103,7 @@ app.get("/etsy/status", async (_req, res) => {
       `/application/users/${user.user_id}/shops`
     );
 
-	await saveShop(shop);
+    await saveShop(shop);
 
     res.json({
       connected: true,
@@ -123,7 +120,6 @@ app.get("/etsy/status", async (_req, res) => {
     });
   }
 });
-
 
 app.get("/etsy/listings", async (req, res) => {
   const state = req.query.state || "active";
@@ -191,8 +187,190 @@ app.get("/etsy/listings", async (req, res) => {
   }
 });
 
+app.get("/etsy/orders", async (req, res) => {
+  const limit = Number(req.query.limit ?? 25);
+  const offset = Number(req.query.offset ?? 0);
+
+  if (
+    !Number.isInteger(limit) ||
+    limit < 1 ||
+    limit > 100 ||
+    !Number.isInteger(offset) ||
+    offset < 0
+  ) {
+    return res.status(400).json({
+      error: "Invalid limit or offset."
+    });
+  }
+
+  try {
+    const shop = await loadShop();
+
+    if (!shop) {
+      return res.status(409).json({
+        error: "Shop information is not saved. Check Etsy connection first."
+      });
+    }
+
+    const params = new URLSearchParams({
+      limit: String(limit),
+      offset: String(offset)
+    });
+
+    const data = await etsyApiRequest(
+      `/application/shops/${shop.shop_id}/receipts?${params}`
+    );
+
+    res.json({
+      count: data.count,
+      results: (data.results || []).map((receipt) => ({
+        receipt_id: receipt.receipt_id,
+        status: receipt.status,
+        is_paid: receipt.is_paid,
+        is_shipped: receipt.is_shipped,
+        is_canceled: receipt.is_canceled,
+        create_timestamp: receipt.create_timestamp,
+        update_timestamp: receipt.update_timestamp
+      }))
+    });
+  } catch (error) {
+    console.error("Etsy orders retrieval failed:", error.message);
+
+    res.status(502).json({
+      error: "Unable to retrieve Etsy orders."
+    });
+  }
+});
+
+
+app.get("/etsy/orders/:receiptId/transactions", async (req, res) => {
+  const receiptId = Number(req.params.receiptId);
+
+  if (!Number.isSafeInteger(receiptId) || receiptId < 1) {
+    return res.status(400).json({
+      error: "Invalid receipt ID."
+    });
+  }
+
+  try {
+    const shop = await loadShop();
+
+    if (!shop) {
+      return res.status(409).json({
+        error: "Shop information is not saved. Check Etsy connection first."
+      });
+    }
+
+    const data = await etsyApiRequest(
+      `/application/shops/${shop.shop_id}/receipts/${receiptId}/transactions`
+    );
+
+    res.json({
+      receipt_id: receiptId,
+      count: data.count,
+      results: (data.results || []).map((transaction) => ({
+        transaction_id: transaction.transaction_id,
+        listing_id: transaction.listing_id,
+        title: transaction.title,
+        quantity: transaction.quantity,
+        personalization: (transaction.variations || [])
+          .filter((variation) => variation.property_id === 54)
+          .map((variation) => ({
+            name: variation.formatted_name,
+            value: variation.formatted_value
+          }))
+      }))
+    });
+  } catch (error) {
+    console.error(
+      "Etsy order transactions retrieval failed:",
+      error.message
+    );
+
+    res.status(502).json({
+      error: "Unable to retrieve order transactions."
+    });
+  }
+});
+
+app.get("/etsy/listings/:listingId/personalization", async (req, res) => {
+  const listingId = Number(req.params.listingId);
+
+  if (!Number.isSafeInteger(listingId) || listingId < 1) {
+    return res.status(400).json({
+      error: "Invalid listing ID."
+    });
+  }
+
+  try {
+    const data = await etsyApiRequest(
+      `/application/listings/${listingId}/personalization`
+    );
+
+    res.json({
+      listing_id: listingId,
+      personalization_questions: data.personalization_questions || []
+    });
+  } catch (error) {
+    console.error("Listing personalization retrieval failed:", error.message);
+
+    res.status(502).json({
+      error: "Unable to retrieve listing personalization."
+    });
+  }
+});
+
+
+app.post("/etsy/listings/:listingId/personalization", async (req, res) => {
+  const listingId = Number(req.params.listingId);
+  const testListingId = 4436491091;
+
+  if (listingId !== testListingId) {
+    return res.status(403).json({
+      error: "This route is restricted to the designated test listing."
+    });
+  }
+
+  try {
+    const shop = await loadShop();
+
+    if (!shop) {
+      return res.status(409).json({
+        error: "Shop information is not saved."
+      });
+    }
+
+    const result = await etsyApiRequest(
+      `/application/shops/${shop.shop_id}/listings/${listingId}/personalization`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          personalization_questions: [
+            {
+              question_text: "Design ID",
+              instructions: "Enter the Design ID shown after accepting your design.",
+              question_type: "text_input",
+              required: true,
+              max_allowed_characters: 50
+            }
+          ]
+        })
+      }
+    );
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("Personalization configuration failed:", error.message);
+
+    res.status(502).json({
+      error: "Unable to configure listing personalization."
+    });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(
-    `ImageToStrass running at http://localhost:${PORT}`
-  );
+  console.log(`ImageToStrass running at http://localhost:${PORT}`);
 });
