@@ -247,6 +247,7 @@ export function createPipeline({
       const check = acceptLayout(placed.layout);
       if (!check.ok) return rerunOrFail(code, n, settings, check, outputPx);
 
+      // Natural size with the SS16 cap (7.5); the cap only widens gaps, so a gap violation here is a bug.
       const natural = naturalLayout(placed.layout);
       if (!natural.gaps.ok) {
         log.error(`Gap check failed for ${id}: ${JSON.stringify(natural.gaps)}`);
@@ -259,7 +260,7 @@ export function createPipeline({
       stage("files");
       storeNew(dir, "stones.json", `${JSON.stringify(stoneLayout.toJSON())}\n`);
       const result = designResult(stoneLayout, { coverage: check.coverage, settings, outputPx });
-      finish(code, n, "done", { counts: 1, result }, { stones: result.stones });
+      finish(code, n, "done", { counts: 1, result }, { stones: result.stones, capped: natural.capped });
     } catch (error) {
       log.error(`Design ${id} failed: ${error.stack || error.message}`);
       fail(code, n, "error");

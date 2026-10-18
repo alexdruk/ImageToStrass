@@ -38,7 +38,7 @@ disclosure in generic words (section 11.1).
 | # | Decision |
 | --- | --- |
 | D1 | The buyer does not choose a size. Every design is delivered at its **natural size**, exactly as the strass service measures it (section 7.5), shown as width × height in mm and in. |
-| D2 | **SS6** is the main stone size, with occasional **SS4**, **SS10** and **SS16** allowed. No tier multiples in the UI, the result data or the ZIP. |
+| D2 | **SS6** is the main stone size, with occasional **SS4**, **SS10** and **SS16** allowed; nothing larger than SS16 (the layout service's SS20 and SS30 pupils are capped to SS16, section 7.5). No tier multiples in the UI, the result data or the ZIP. |
 | D3 | Black & white means **Jet + Crystal only**. |
 | D4 | The buyer sees only two views: **Original** and **Tinted** (section 8). No mask, AI image, overlay or 3D view. |
 | D5 | At most 3 designs per code. A design that fails for technical reasons, or is declined by the safety check, does not count. |
@@ -272,12 +272,21 @@ stones; otherwise the whole attempt is re-run once automatically and does not co
 ### 7.5 Size (D1, D2)
 
 Natural size only. The design is the layout service's answer as it is: stone positions and
-diameters exactly as measured (`targetPitchMm` 2.1, SS6 main stones), only moved so the stones'
-footprint box starts at the origin. No scaling, no snapping, no minimum or maximum size. IS-03
-measured natural longest sides of 130–168 mm on the 12 RS test layouts.
+diameters as measured (`targetPitchMm` 2.1, SS6 main stones), only moved so the stones' footprint
+box starts at the origin. No scaling, no minimum or maximum size. IS-03 measured natural longest
+sides of 130–168 mm on the 12 RS test layouts.
+
+Size cap (D2): after the layout, every stone larger than SS16 (the service's SS20 and SS30 pupil
+stones) is snapped down to SS16 at the same centre; the footprint box is that of the capped stones.
+Shrinking a stone only widens its gaps, so the cap never creates an overlap. The number of capped
+stones goes to the design's event log (server only). The 12 RS test layouts have 13 such stones,
+the 8 accepted IS-03b designs 11 (2 in each dog, cat and dachshund design, 1 in the giraffe, none in
+the mugs).
 
 The gap check (`findOverlappingStonePairs` from StoneLayout.js and a min-gap check of 0.1 mm) runs
-on the natural layout; a violation is a bug and fails the attempt.
+again on the capped layout; a violation is a bug and fails the attempt. Acceptance (7.4) still uses
+the service's own `violations`: the cap does not rescue a rejected layout. (The rejected IS-03b car
+had 148 violations, 145 after capping its 15 SS20 stones; 125 of them are SS4–SS4 pairs.)
 
 The stone-size tier code (`applyTier` in `src/pipeline/tiers.js`: scale positions and diameters by a
 tier factor, snap diameters down, stretch positions to an exact longest side) stays in
@@ -595,8 +604,6 @@ ETSY_POLL_SECONDS=180
 
 - Domain name (needed before launch; the quick tunnel is for OAuth and testing only).
 - Etsy listing photos and price.
-- The strass service sometimes picks SS20 or SS30 for pupils (outside D2); counts in
-  `docs/IS-03b-results.md`. The service is not changed for it in IS-03b.
 
 ## Appendix A — Black & white section 4 and final check of the prompt
 

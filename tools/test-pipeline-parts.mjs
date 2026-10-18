@@ -201,6 +201,19 @@ test("natural layout: as measured, footprint box at the origin, gap check", () =
   assert.equal(naturalLayout({ stones: [[0, 0, "ss6", "jet"], [1.9, 0, "ss6", "jet"]] }).gaps.ok, false);
 });
 
+test("natural layout: stones above SS16 become SS16 at the same centre, the box follows", () => {
+  const stones = [[10, 10, "ss30", "jet"], [16, 10, "ss20", "jet"], [21, 10, "ss16", "jet"], [25, 10, "ss6", "jet"]];
+  const { stoneLayout, gaps, capped } = naturalLayout({ stones });
+  assert.equal(capped, 2);
+  assert.deepEqual(stoneLayout.stones.map((s) => s.sizeMm), [4, 4, 4, 2]);
+  const r9 = (v) => Math.round(v * 1e9) / 1e9;
+  assert.deepEqual(stoneLayout.stones.map((s) => r9(s.xMm)), [2, 8, 13, 17], "centres kept, box from the capped stones");
+  assert.equal(r9(stoneLayout.heightMm), 4);
+  assert.ok(gaps.ok);
+  // Two SS30 stones 0.4 mm into each other are 2 mm apart as SS16: the cap only widens gaps.
+  assert.equal(naturalLayout({ stones: [[0, 0, "ss30", "jet"], [6, 0, "ss30", "jet"]] }).gaps.ok, true);
+});
+
 // A w x h RGBA PNG, transparent except an opaque rectangle.
 function cutout(w, h, rect) {
   const data = Buffer.alloc(w * h * 4);
