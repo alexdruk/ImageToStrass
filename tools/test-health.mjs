@@ -38,6 +38,7 @@ test("config reads IS_FAKE and the strass URL", () => {
   assert.equal(loadConfig({ IS_FAKE: "1" }).fake, true);
   assert.equal(loadConfig({ IS_FAKE: "0" }).fake, false);
   assert.equal(loadConfig({}).port, 3003);
+  assert.equal(loadConfig({}).host, "127.0.0.1");
   assert.equal(loadConfig({}).strassServiceUrl, "http://127.0.0.1:8000");
   assert.equal(loadConfig({ STRASS_SERVICE_URL: "http://127.0.0.1:9000/" }).strassServiceUrl, "http://127.0.0.1:9000");
 });
