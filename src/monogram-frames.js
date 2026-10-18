@@ -1,0 +1,22 @@
+export const MONOGRAM_FRAMES = [
+  { id: "F01", name: "Classic Oval", shape: "oval" },
+  { id: "F02", name: "Double Oval", shape: "double-oval" },
+  { id: "F03", name: "Round Crest", shape: "circle" },
+  { id: "F04", name: "Diamond", shape: "diamond" },
+  { id: "F05", name: "Square", shape: "square" },
+  { id: "F06", name: "Rounded Rectangle", shape: "rounded-rectangle" },
+  { id: "F07", name: "Arch", shape: "arch" },
+  { id: "F08", name: "Shield", shape: "shield" },
+  { id: "F09", name: "Heart", shape: "heart" },
+  { id: "F10", name: "Floral Oval", shape: "floral-oval" },
+  { id: "F11", name: "Laurel Wreath", shape: "laurel-wreath" },
+  { id: "F12", name: "Scalloped Circle", shape: "scalloped-circle" },
+  { id: "F13", name: "Vintage Cartouche", shape: "cartouche" },
+  { id: "F14", name: "Octagon", shape: "octagon" },
+  { id: "F15", name: "Ribbon Crest", shape: "ribbon-crest" },
+  { id: "F16", name: "Hexagon", shape: "hexagon" },
+  { id: "F17", name: "Crown", shape: "crown" },
+  { id: "F18", name: "Starburst", shape: "starburst" },
+  { id: "F19", name: "Cameo", shape: "cameo" },
+  { id: "F20", name: "Ornate Frame", shape: "ornate" }
+];
