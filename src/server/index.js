@@ -7,6 +7,10 @@ const config = loadConfig();
 const db = openDatabase(config.dbFile);
 const app = createApp({ db, config });
 
+if (!config.turnstileSecret) {
+  console.warn("TURNSTILE_SECRET_KEY is not set: uploads are not checked by Turnstile.");
+}
+
 // Loopback only: cloudflared reaches the server at http://127.0.0.1:3003 (spec section 15).
 app.listen(config.port, config.host, () => {
   console.log(
