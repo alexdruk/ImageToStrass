@@ -2,13 +2,14 @@
 // IMG-022: the prompt the redraw server sends with every image. The palette line is generated from
 // the stone catalogue, so a colour added there reaches the prompt with no edit here.
 // IS (spec section 7.2): the stones prompt only (the flat style is not copied). Section 6 uses the
-// whole image instead of a square one; for Black & white, section 4 and the final check are replaced
+// whole image instead of a square one, and rule 1 has no "about 60 stones across" sentence (prompt
+// version 3, IS-03b decision); for Black & white, section 4 and the final check are replaced
 // by the spec's Appendix A. There is no size line: every design has its natural size (7.5). The prompt is built
 // server-side only; it is never logged, stored under public/ or sent to the browser.
 import { STONE_COLORS } from '../stones/StoneColors.js';
 
 // IS: version of the IS prompt (v6 of RS plus the IS additions). A wording change bumps it.
-export const IS_PROMPT_VERSION = 2;
+export const IS_PROMPT_VERSION = 3;
 
 // IMG-026 (S10, S11, build H): version 6 is the placement-chart prompt of the spec's Appendix D, with
 // the generated palette line inside rule 4.
@@ -18,7 +19,7 @@ const V6_HEAD = [
   '1. STONES',
   '- Every stone is a perfect circle seen straight from above, filled with ONE flat colour.',
   '- No highlights, facets, sparkle, glints, gradients, rims, shadows, reflections or white dots on the stones.',
-  '- Use one main stone size for the whole design. Make the stones large: about 60 stones across the full width of the image.',
+  '- Use one main stone size for the whole design.',
   '- Only two exceptions:',
   '  a) a smaller stone, 3/4 of the main diameter, only for very fine details (eyes, eyelids, nostrils, thin lines);',
   '  b) one large stone, twice the main diameter, for each pupil.',

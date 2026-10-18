@@ -17,16 +17,22 @@ import { getStoneSize } from "../src/stones/StoneSizes.js";
 const RS_V6_SHA256 = "8d07f1ac1abad6bfa624d46a336581dee810476aff52953491ca0e0ef888e6a5";
 const sha = (text) => crypto.createHash("sha256").update(text).digest("hex");
 const RS_SQUARE_LINE = "- Square image at the highest resolution available.";
+const RS_MAIN_SIZE_LINE = "- Use one main stone size for the whole design. Make the stones large: about 60 stones across the full width of the image.";
+const MAIN_SIZE_LINE = "- Use one main stone size for the whole design.";
 const WHOLE_IMAGE_LINE = "- Use the whole image at the highest resolution available, in the same shape (width to height) as the uploaded image.";
 const quiet = { warn() {}, error() {}, log() {} };
 
-test("colour prompt is RS prompt v6 with the whole-image line in section 6", () => {
-  assert.equal(IS_PROMPT_VERSION, 2);
+test("colour prompt is RS prompt v6 with the whole-image line and without the 60-stones sentence", () => {
+  assert.equal(IS_PROMPT_VERSION, 3);
   const lines = buildPrompt({ mode: "colour" }).split("\n");
   const i = lines.indexOf(WHOLE_IMAGE_LINE);
   assert.equal(i, lines.indexOf("6. COMPOSITION") + 1, "first rule of section 6");
   assert.ok(!lines.some((l) => /longest side|\bmm\b|inches/.test(l)), "no size line");
+  assert.ok(!lines.some((l) => /stones across|Make the stones large/.test(l)), "no 60-stones sentence");
+  const m = lines.indexOf(MAIN_SIZE_LINE);
+  assert.equal(m, lines.indexOf("1. STONES") + 3, "the other rules of section 1 are kept");
   lines[i] = RS_SQUARE_LINE;
+  lines[m] = RS_MAIN_SIZE_LINE;
   assert.equal(sha(lines.join("\n")), RS_V6_SHA256);
 });
 

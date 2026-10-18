@@ -45,7 +45,7 @@ disclosure in generic words (section 11.1).
 | D6 | The buyer picks the delivered design ("Use this design"). If a paid code has no pick, the latest design is delivered. |
 | D7 | Uploads, prepared images, AI images, layouts and code records are kept **indefinitely** in `data/archive/`, managed by Alex by hand. Delivery ZIPs are kept **30 days** after payment, then deleted. |
 | D8 | One Etsy listing, one price. |
-| D9 | Production sheet as the RS exporter: A4 / Letter / A3, multi-page tiling for large designs. The page size used to follow the buyer's unit (A4 for mm, Letter for inches); with no unit choice it is open (section 19). |
+| D9 | Production sheet as the RS exporter, multi-page tiling for large designs. With no unit choice the ZIP carries **both** an A4 sheet (mm) and a Letter sheet (inches) (IS-03b decision). |
 | D10 | CDR is dropped. AI is a PDF-compatible file; EPS comes from Ghostscript. |
 | D11 | Background removal is **on by default** and can be switched off. |
 | D12 | Hosted on Alex's Mac behind a Cloudflare Tunnel. Etsy OAuth is done once through a temporary quick tunnel until the domain exists. |
@@ -235,13 +235,14 @@ minutes".
 ### 7.2 Prompt
 
 - Based on RS `server/redraw/prompt.mjs` prompt v6 (stones style only; the flat style is not
-  copied). Version constant `IS_PROMPT_VERSION = 2`.
+  copied). Version constant `IS_PROMPT_VERSION = 3`.
 - There is no size line: the design has its natural size (7.5).
 - Section 6's first rule `Square image at the highest resolution available.` becomes
   `Use the whole image at the highest resolution available, in the same shape (width to height) as
   the uploaded image.`
-- The tuned "about 60 stones across" rule is unchanged until Alex decides on the IS-03b report
-  (`docs/IS-03b-results.md`).
+- Rule 1's sentence `Make the stones large: about 60 stones across the full width of the image.` is
+  removed (IS-03b decision, from `docs/IS-03b-results.md`: with non-square images it does not set the
+  stone size). Every other stone rule of v6 is kept.
 - Colour mode: palette line and ramps as v6.
 - Black & white mode: section 4 and the final check sentence are replaced by Appendix A.
 - The prompt is built server-side only, never logged in a file the web server serves, never sent
@@ -329,13 +330,14 @@ upload.
 
 All exporters consume the final StoneLayout only (RS rule: exporters never generate geometry).
 
-The ZIP has one size, the natural size (7.5): all six formats below, the production sheet, the
-preview and README, all at that size.
+The ZIP has one size, the natural size (7.5): all six formats below, both production sheets (D9),
+the preview and README, all at that size.
 
 | File | How |
 | --- | --- |
 | `IS-XXXX-XXXX.svg` | RS `stoneLayoutToSvg`, true size, `width`/`height` in mm, colour groups as `<g>` with ids |
-| `IS-XXXX-XXXX-production-sheet.pdf` | RS `productionSheetToPdf`, D9 page size, multi-page tiling, mirror off, registration marks on |
+| `production-sheet-A4.pdf` | RS `productionSheetToPdf`, A4, mm, multi-page tiling, mirror off, registration marks on |
+| `production-sheet-Letter.pdf` | The same on Letter, inches (D9) |
 | `IS-XXXX-XXXX.ai` | New `aiExport.js`: one-page true-size vector PDF of the stones (page = design + 10 mm), built with RS `PdfDocument`, saved as `.ai` (PDF-compatible; Illustrator opens it) |
 | `IS-XXXX-XXXX.eps` | Ghostscript `gs -dNOPAUSE -dBATCH -sDEVICE=eps2write` from the `.ai` PDF |
 | `IS-XXXX-XXXX.dxf` | RS `stoneLayoutToDxf`, one layer per colour |
@@ -593,8 +595,6 @@ ETSY_POLL_SECONDS=180
 
 - Domain name (needed before launch; the quick tunnel is for OAuth and testing only).
 - Etsy listing photos and price.
-- Keep or drop the "about 60 stones across" rule (7.2), decided from `docs/IS-03b-results.md`.
-- Production sheet page size now that the buyer chooses no unit (D9): A4, Letter, or both.
 - The strass service sometimes picks SS20 or SS30 for pupils (outside D2); counts in
   `docs/IS-03b-results.md`. The service is not changed for it in IS-03b.
 
