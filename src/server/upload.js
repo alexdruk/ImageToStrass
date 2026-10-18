@@ -31,7 +31,8 @@ function refuse(req, res, status, error) {
     return;
   }
 
-  res.set("Connection", "close");
+  // No "Connection: close": with it Node closes the socket as soon as the answer is written,
+  // while the client is still sending, and the client can get a reset before it reads the answer.
   res.status(status).json({ error });
 
   // Drain a little of what the client is still sending, then cut it off.
