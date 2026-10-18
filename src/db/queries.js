@@ -63,6 +63,9 @@ export function createQueries(db) {
     getAttempt: db.prepare("SELECT * FROM attempts WHERE code = ? AND n = ?"),
     listAttempts: db.prepare("SELECT * FROM attempts WHERE code = ? ORDER BY n"),
     countedAttempts: db.prepare("SELECT COUNT(*) FROM attempts WHERE code = ? AND counts = 1").pluck(),
+    listActiveAttempts: db.prepare(
+      "SELECT * FROM attempts WHERE status IN ('queued', 'running') ORDER BY created_at, code, n"
+    ),
     // Re-polls update the row of the same (transaction_id, matched_code); see MIGRATIONS[0].
     upsertEtsyOrder: db.prepare(`
       INSERT INTO etsy_orders
@@ -129,6 +132,8 @@ export function createQueries(db) {
     listAttempts: (code) => statements.listAttempts.all(code).map(parseAttempt),
     // The 3-design limit (D5) counts only attempts with counts = 1.
     countedAttempts: (code) => statements.countedAttempts.get(code),
+    // Queued and running attempts of every code, oldest first (the queue after a restart).
+    listActiveAttempts: () => statements.listActiveAttempts.all().map(parseAttempt),
 
     updateAttempt(code, n, fields) {
       const values = { ...fields };

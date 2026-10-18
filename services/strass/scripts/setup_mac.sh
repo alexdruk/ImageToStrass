@@ -49,7 +49,8 @@ else
   echo "dlib model downloaded and verified."
 fi
 
-# IS: the background removal model (about 1 GB) into models/rembg (git-ignored).
-python -c "from strass_layout.background import load_session; load_session(); print('background model OK')"
+# IS: the background removal models (REMBG_MODEL, default birefnet-general, about 1 GB, and the
+# fallback isnet-general-use) into models/rembg (git-ignored).
+python -c "from strass_layout.background import FALLBACK_MODEL, load_session; load_session(); load_session(FALLBACK_MODEL); print('background models OK')"
 
 python -c "import tensorflow, stardist, dlib, cv2, skimage, sklearn, fastapi, uvicorn, multipart, rembg; print('environment OK')"

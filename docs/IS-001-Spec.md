@@ -189,7 +189,8 @@ folder is never overwritten.
 ### 6.2 Background removal (D11)
 
 - New endpoint on the Python service: `POST /remove-background` (PNG in, RGBA PNG out), using
-  `rembg` with the `birefnet-general` model (fallback `isnet-general-use` if memory is short).
+  `rembg` with the model set by `REMBG_MODEL`, default `birefnet-general` (fallback
+  `isnet-general-use` if memory is short; IS-03 compared both in `docs/IS-03-results.md`).
   It shares the service's one-at-a-time lock with `/layout`.
 - Runs right after upload, in the background, so the cut-out is ready when the buyer reaches the
   toggle. The browser receives a 1024 px preview of both versions.
@@ -252,7 +253,7 @@ stones; otherwise the whole attempt is re-run once automatically and does not co
 
 ### 7.5 Stone-size tiers (D1, D2)
 
-The layout's natural longest side `L0` is about 100–135 mm (SS6 main stones). RS S14 allows only
+The layout's natural longest side `L0` is about 100–170 mm (SS6 main stones). RS S14 allows only
 enlarging. Plain enlarging widens the gaps, so IS scales positions **and** diameters by a tier
 factor, then snaps every diameter **down** to the nearest standard size (`StoneSizes.js`: SS4 1.5,
 SS6 2.0, SS10 2.8, SS16 4.0, SS20 4.7, SS30 6.4 mm). Snapping down never creates an overlap.
@@ -272,6 +273,11 @@ Algorithm, for requested longest side `T`:
 3. scale positions only by `r = T / (L0 · k)` (r ≥ 1) so the longest side is exactly `T`;
 4. re-run the gap check (`findOverlappingStonePairs` from StoneLayout.js and a min-gap check of
    0.1 mm); a violation is a bug and fails the attempt.
+
+When `L0 > T` (IS-03 measured `L0` from 130 to 168 mm on the 12 RS test layouts, so this happens at
+the small end of the range), the design is not scaled at all (k = 1, r = 1) and is delivered at its
+natural size `L0`: shrinking would close the gaps. The result screen shows the real size, and
+`result_json` keeps the requested size as `requestedMm`.
 
 `r` can reach about 1.43 between tiers 1.4 and 2.0, which widens gaps by up to 43 %. IS-03 must
 measure this on the 12 RS test images at T = 140, 180, 250, 260, 300, 420 and 600 mm and report
@@ -554,6 +560,7 @@ OPENAI_IMAGE_MODEL=gpt-image-2.5-sunburst
 OPENAI_IMAGE_QUALITY=high
 PROVIDER_TIMEOUT_SECONDS=300
 STRASS_SERVICE_URL=http://127.0.0.1:8000
+REMBG_MODEL=birefnet-general
 LAYOUT_TIMEOUT_SECONDS=180
 BW_THRESHOLD=55
 IS_DAILY_DESIGN_CAP=100

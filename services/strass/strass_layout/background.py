@@ -1,8 +1,8 @@
 # IS: new file, not from Rhinestone-Studio.
 """IS: background removal for POST /remove-background (IS-001 spec section 6.2).
 
-rembg with the birefnet-general model; isnet-general-use when birefnet runs out of memory, or
-when STRASS_BG_MODEL names it. Models are read from U2NET_HOME, which defaults to models/rembg
+rembg with the model REMBG_MODEL names (default below); a model other than the fallback that runs
+out of memory is retried with the fallback. Models are read from U2NET_HOME, which defaults to models/rembg
 (git-ignored; scripts/setup_mac.sh downloads the model there). A PNG goes in, the same-size RGBA PNG with the background made transparent
 comes out. The caller holds the service lock.
 """
@@ -34,7 +34,7 @@ class BackgroundFailed(LayoutError):
 
 
 def model_name():
-    return os.environ.get("STRASS_BG_MODEL") or MODEL
+    return os.environ.get("REMBG_MODEL") or MODEL
 
 
 def load_session(name=None):

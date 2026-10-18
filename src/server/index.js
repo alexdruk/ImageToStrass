@@ -7,6 +7,9 @@ const config = loadConfig();
 const db = openDatabase(config.dbFile);
 const app = createApp({ db, config });
 
+// Designs that were queued when the server stopped are queued again (spec section 7).
+app.locals.pipeline.recover();
+
 if (!config.turnstileSecret) {
   console.warn("TURNSTILE_SECRET_KEY is not set: uploads are not checked by Turnstile.");
 }

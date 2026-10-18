@@ -9,9 +9,11 @@ import {
 } from "../etsy/etsy-oauth.js";
 import { loadTokens, saveTokens } from "../etsy/token-store.js";
 import { createQueries } from "../db/queries.js";
+import { createPipeline } from "../pipeline/design.js";
 import { createBackgroundRemover } from "../prep/background.js";
 import { fileIpHasher } from "./client.js";
 import { checkHealth } from "./health.js";
+import { designRoutes } from "./designs.js";
 import { createTurnstile } from "./turnstile.js";
 import { uploadRoutes } from "./upload.js";
 
@@ -24,19 +26,24 @@ const q = new Proxy({}, { get: (_target, name) => (queries ??= createQueries(db)
 const background = deps.background ||
   createBackgroundRemover({ config, fetch: deps.fetch || fetch });
 
+const pipeline = deps.pipeline || createPipeline({ q, config, fetch: deps.fetch || fetch });
+const verifyTurnstile = deps.verifyTurnstile ||
+  createTurnstile({ secret: config.turnstileSecret, fetch: deps.fetch || fetch });
+
 app.disable("x-powered-by");
 app.locals.background = background;
+app.locals.pipeline = pipeline;
 
 app.use(uploadRoutes({
   q,
   config,
   background,
-  verifyTurnstile: deps.verifyTurnstile ||
-    createTurnstile({ secret: config.turnstileSecret, fetch: deps.fetch || fetch }),
+  verifyTurnstile,
   hashIp: deps.hashIp || fileIpHasher(config.ipKeyFile)
 }));
 
 app.use(express.json({ limit: "16kb" }));
+app.use(designRoutes({ pipeline, verifyTurnstile }));
 app.use(express.static("public"));
 
 app.get("/health", async (_req, res) => {
