@@ -138,7 +138,10 @@ Etsy orders:
 ```
 data/archive/<code>/                         kept forever (D7)
   code.json                                  copy of the code row at each change
-  attempt-<n>/original.<ext>                 upload as received
+  uploads/<k>/original.<ext>                 upload as received (k = 1, 2, 3, ... never reused)
+  uploads/<k>/work.png                       decoded image (section 6.1)
+  uploads/<k>/cutout.png                     work.png with the background removed, if removal worked
+  attempt-<n>/original.<ext>                 copy of the upload the attempt was made from
   attempt-<n>/prepared.png                   after background removal and adjustments
   attempt-<n>/settings.json
   attempt-<n>/ai.png                         provider output
@@ -150,6 +153,12 @@ data/delivery/<code>/IS-XXXX-XXXX.zip        deleted 30 days after payment
 
 All of `data/` is git-ignored (already the case). The archive is written before anything is shown
 to the buyer, so a crash never loses an upload.
+
+An upload is written to `uploads/<k>/` the moment it arrives; no attempt row exists yet. A buyer
+may upload several times, and "Try again" may reuse an upload. When "Create design" makes attempt
+`n`, `attempt-<n>/` gets a copy of that upload's `original.<ext>`, plus `prepared.png` and
+`settings.json` (which names the upload as `uploadId: k`). Like `attempt-<n>/`, an `uploads/<k>/`
+folder is never overwritten.
 
 ## 5. Codes
 
@@ -175,7 +184,7 @@ to the buyer, so a crash never loses an upload.
   images: first frame.
 - SVG: rejected if it contains `<script`, `foreignObject`, event attributes or any non-`data:`
   external `href`; rasterised by sharp (librsvg) at 2048 px on the long side.
-- Result: `work.png`, sRGB, long side 2048 px max, alpha kept.
+- Result: `work.png`, sRGB, long side 2048 px max, alpha kept, stored in `uploads/<k>/` (4.2).
 
 ### 6.2 Background removal (D11)
 
