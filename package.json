@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "src/server/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "test": "node --test tools/test-*.mjs",
+    "start": "node src/server/index.js",
+    "dev": "node --watch src/server/index.js"
   },
   "dependencies": {
+    "better-sqlite3": "^12.11.1",
     "dotenv": "^17.2.2",
     "express": "^5.1.0"
   },
@@ -23,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/alexdruk/ImageToStrass/issues"
   },
-  "homepage": "https://github.com/alexdruk/ImageToStrass#readme"
+  "homepage": "https://github.com/alexdruk/ImageToStrass#readme",
+  "engines": {
+    "node": ">=20"
+  }
 }
