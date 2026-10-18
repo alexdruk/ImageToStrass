@@ -113,9 +113,18 @@ test("adjust.js gives identical output in Node and in the browser", { skip: !exi
     assert.equal(new Set(expected).size, CASES.length, "every case gives a different image");
     assert.deepEqual(got.hashes, expected);
   } finally {
+    // Only the headless instance started above; it may still write to its profile while exiting.
+    const exited = chrome.exitCode !== null ? null : new Promise((resolve) => chrome.once("exit", resolve));
     chrome.kill();
     server.close();
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    rmSync(profile, { recursive: true, force: true });
+    await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 5_000))]);
+    // Chrome's helper processes can outlive it and keep writing; a profile left in the OS temp
+    // folder is not a test failure.
+    try {
+      rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 3_000));
+      try { rmSync(profile, { recursive: true, force: true }); } catch { /* left to the OS */ }
+    }
   }
 });
