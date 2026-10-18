@@ -3,3 +3,8 @@ node_modules/
 data/*
 !data/.gitkeep
 .DS_Store
+# strass service: virtual environment and downloaded models (over 50 MB)
+services/strass/.venv/
+services/strass/models/shape_predictor_68_face_landmarks.dat
+services/strass/models/rembg/
+__pycache__/

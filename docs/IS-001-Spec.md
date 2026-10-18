@@ -103,7 +103,7 @@ codes(
   downloads INTEGER DEFAULT 0, delivery_expires_at NULL
 )
 attempts(
-  code, n INTEGER,                -- 1..3
+  code, n INTEGER,                -- 1, 2, 3, ... per code, never reused
   status TEXT,                    -- queued | running | done | failed | declined
   stage TEXT, settings_json,      -- size, unit, mode, bg removal, adjustments, crop, rotate
   result_json NULL,               -- stone count, sizes, colours, tier, final w/h, coverage
@@ -111,16 +111,37 @@ attempts(
   counts INTEGER                  -- 1 if it uses one of the 3 designs (D5)
 )
 etsy_orders(receipt_id, transaction_id, listing_id, personalization, matched_code NULL,
-            paid_at, status, seen_at)
+            paid_at, status, seen_at,
+            UNIQUE(transaction_id, matched_code))
 events(at, code NULL, kind, detail)   -- audit log, local only
 ```
+
+Attempts:
+
+- `n` counts up per code: 1, 2, 3, ... Failed, declined and re-run attempts get their own `n`, so
+  `n` can pass 3. A number is never reused, and an `attempt-<n>/` archive folder is never
+  overwritten.
+- The 3-design limit (D5) counts only the code's rows with `counts = 1`.
+
+Etsy orders:
+
+- One row per (`transaction_id`, `matched_code`): a transaction whose personalization holds two
+  codes gets two rows. A transaction with no code (or no known code) gets one row with
+  `matched_code` NULL.
+- Re-polls upsert on that key and never add a duplicate row. Because SQLite treats NULLs as
+  distinct, the key is enforced by a unique index on `(transaction_id, IFNULL(matched_code, ''))`.
+- Schema changes are migrations keyed on `PRAGMA user_version`; migration 1 de-duplicates
+  existing `etsy_orders` rows on that key (keeping the newest) and adds the index.
 
 ### 4.2 Files
 
 ```
 data/archive/<code>/                         kept forever (D7)
   code.json                                  copy of the code row at each change
-  attempt-<n>/original.<ext>                 upload as received
+  uploads/<k>/original.<ext>                 upload as received (k = 1, 2, 3, ... never reused)
+  uploads/<k>/work.png                       decoded image (section 6.1)
+  uploads/<k>/cutout.png                     work.png with the background removed, if removal worked
+  attempt-<n>/original.<ext>                 copy of the upload the attempt was made from
   attempt-<n>/prepared.png                   after background removal and adjustments
   attempt-<n>/settings.json
   attempt-<n>/ai.png                         provider output
@@ -132,6 +153,12 @@ data/delivery/<code>/IS-XXXX-XXXX.zip        deleted 30 days after payment
 
 All of `data/` is git-ignored (already the case). The archive is written before anything is shown
 to the buyer, so a crash never loses an upload.
+
+An upload is written to `uploads/<k>/` the moment it arrives; no attempt row exists yet. A buyer
+may upload several times, and "Try again" may reuse an upload. When "Create design" makes attempt
+`n`, `attempt-<n>/` gets a copy of that upload's `original.<ext>`, plus `prepared.png` and
+`settings.json` (which names the upload as `uploadId: k`). Like `attempt-<n>/`, an `uploads/<k>/`
+folder is never overwritten.
 
 ## 5. Codes
 
@@ -157,7 +184,7 @@ to the buyer, so a crash never loses an upload.
   images: first frame.
 - SVG: rejected if it contains `<script`, `foreignObject`, event attributes or any non-`data:`
   external `href`; rasterised by sharp (librsvg) at 2048 px on the long side.
-- Result: `work.png`, sRGB, long side 2048 px max, alpha kept.
+- Result: `work.png`, sRGB, long side 2048 px max, alpha kept, stored in `uploads/<k>/` (4.2).
 
 ### 6.2 Background removal (D11)
 
@@ -369,7 +396,7 @@ No view shows a mask, AI image, overlay, 3D view, model name, prompt, stage timi
 - `src/etsy-oauth.js`, `token-store.js`, `etsy-api.js` stay. Scopes stay (`transactions_r` is the
   one the poller needs).
 - `.env.example` gains `TOKEN_ENCRYPTION_KEY` (32 bytes base64; it is read but not listed today).
-- Until the domain exists: `cloudflared tunnel --url http://localhost:3003`, register
+- Until the domain exists: `cloudflared tunnel --url http://127.0.0.1:3003`, register
   `https://<random>.trycloudflare.com/oauth/callback` as the Etsy callback, set
   `ETSY_REDIRECT_URI` to the same string, connect once. Refreshes need no redirect. After the domain
   exists, register `https://<domain>/oauth/callback` and reconnect once.
@@ -432,10 +459,14 @@ orders with a "match to code" action, manual unlock, poller status, disk use of 
 
 ## 15. Hosting on the Mac
 
+- The server binds to `127.0.0.1:3003` only. cloudflared's origin is `http://127.0.0.1:3003`
+  (quick tunnel and named tunnel alike), never `localhost`, which can resolve to `::1` where
+  nothing listens.
 - `launchd` agents in `ops/launchd/`:
   - `com.is.strass` — `caffeinate -i services/strass/scripts/start.sh` (127.0.0.1:8000);
-  - `com.is.server` — `node src/server/index.js` (127.0.0.1:3003), starts after strass is healthy;
-  - `com.is.tunnel` — `cloudflared tunnel run is` (named tunnel, after the domain exists).
+  - `com.is.server` — `node src/server/index.js` (binds 127.0.0.1:3003), starts after strass is healthy;
+  - `com.is.tunnel` — `cloudflared tunnel run is` (named tunnel, after the domain exists; ingress
+    service `http://127.0.0.1:3003`).
 - `pmset` advice in the runbook: no sleep on power adapter; lid-closed operation needs external
   power.
 - `GET /health` (server) checks the database, the strass service and the Etsy token age.

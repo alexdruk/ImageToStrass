@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS codes (
 
 CREATE TABLE IF NOT EXISTS attempts (
   code          TEXT NOT NULL REFERENCES codes(code),
-  n             INTEGER NOT NULL CHECK (n >= 1),
+  n             INTEGER NOT NULL CHECK (n >= 1),     -- 1, 2, 3, ... never reused
   status        TEXT NOT NULL DEFAULT 'queued'
                 CHECK (status IN ('queued', 'running', 'done', 'failed', 'declined')),
   stage         TEXT,
@@ -53,3 +53,12 @@ CREATE TABLE IF NOT EXISTS events (                   -- audit log, local only
 );
 CREATE INDEX IF NOT EXISTS events_code ON events(code, at);
 `;
+
+// Migrations, applied in order on top of SCHEMA; PRAGMA user_version holds how many have run.
+export const MIGRATIONS = [
+  // 1: one etsy_orders row per (transaction_id, matched_code); NULL counts as one value.
+  `DELETE FROM etsy_orders WHERE rowid NOT IN (
+     SELECT MAX(rowid) FROM etsy_orders GROUP BY transaction_id, IFNULL(matched_code, ''));
+   CREATE UNIQUE INDEX etsy_orders_transaction_code
+     ON etsy_orders(transaction_id, IFNULL(matched_code, ''));`
+];

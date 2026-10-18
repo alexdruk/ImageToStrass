@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { normalizeCode } from "../src/db/codes.js";
+import Database from "better-sqlite3";
 import { openDatabase } from "../src/db/index.js";
 import { createQueries } from "../src/db/queries.js";
 
@@ -22,6 +23,7 @@ test("the database file is created in WAL mode with all tables", () => {
 
     const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").pluck().all();
     assert.deepEqual(tables, ["attempts", "codes", "etsy_orders", "events"]);
+    assert.equal(db.pragma("user_version", { simple: true }), 1);
     db.close();
 
     // Opening again keeps the data and does not fail on the existing schema.
@@ -105,8 +107,8 @@ test("etsy orders: unmatched orders are listed", () => {
   const { q } = fresh();
   const { code } = q.createCode();
 
-  q.insertEtsyOrder({ receipt_id: 1, transaction_id: 11, listing_id: 5, personalization: code, matched_code: code });
-  q.insertEtsyOrder({ receipt_id: 2, transaction_id: 21, listing_id: 5, personalization: "hello" });
+  q.upsertEtsyOrder({ receipt_id: 1, transaction_id: 11, listing_id: 5, personalization: code, matched_code: code });
+  q.upsertEtsyOrder({ receipt_id: 2, transaction_id: 21, listing_id: 5, personalization: "hello" });
 
   const unmatched = q.listUnmatchedOrders();
   assert.equal(unmatched.length, 1);
@@ -115,7 +117,7 @@ test("etsy orders: unmatched orders are listed", () => {
   assert.ok(unmatched[0].seen_at);
 
   assert.throws(
-    () => q.insertEtsyOrder({ receipt_id: 3, transaction_id: 31, matched_code: "IS-0000-0000" }),
+    () => q.upsertEtsyOrder({ receipt_id: 3, transaction_id: 31, matched_code: "IS-0000-0000" }),
     /FOREIGN KEY/
   );
 });
@@ -131,4 +133,85 @@ test("events are logged per code", () => {
   const events = q.listEvents(code);
   assert.deepEqual(events.map((e) => e.kind), ["code-created", "attempt-queued"]);
   assert.equal(events[1].detail, '{"n":1}');
+});
+
+test("attempt numbers are never reused and only counted attempts use the limit", () => {
+  const { q } = fresh();
+  const { code } = q.createCode();
+
+  for (const counts of [1, 0, 0, 1]) {
+    const { n } = q.createAttempt(code, null);
+    q.updateAttempt(code, n, { status: counts ? "done" : "failed", counts });
+  }
+
+  assert.deepEqual(q.listAttempts(code).map((a) => a.n), [1, 2, 3, 4]);
+  assert.equal(q.countedAttempts(code), 2);
+  assert.equal(q.createAttempt(code, null).n, 5);
+  assert.equal(q.countedAttempts("IS-0000-0000"), 0);
+});
+
+test("etsy orders: one row per (transaction, code); re-polls upsert", () => {
+  const { db, q } = fresh();
+  const a = q.createCode().code;
+  const b = q.createCode().code;
+  const count = () => db.prepare("SELECT COUNT(*) FROM etsy_orders").pluck().get();
+
+  // Two codes in one personalization, then a re-poll of the same transaction.
+  for (const status of ["paid", "refunded"]) {
+    q.upsertEtsyOrder({ receipt_id: 1, transaction_id: 11, personalization: `${a} ${b}`, matched_code: a, status });
+    q.upsertEtsyOrder({ receipt_id: 1, transaction_id: 11, personalization: `${a} ${b}`, matched_code: b, status });
+  }
+  assert.equal(count(), 2);
+  assert.deepEqual(
+    db.prepare("SELECT matched_code, status FROM etsy_orders ORDER BY rowid").all(),
+    [{ matched_code: a, status: "refunded" }, { matched_code: b, status: "refunded" }]
+  );
+
+  // No code: one NULL row, also upserted.
+  const first = q.upsertEtsyOrder({ receipt_id: 2, transaction_id: 21, personalization: "hello" });
+  const again = q.upsertEtsyOrder({ receipt_id: 2, transaction_id: 21, personalization: "hello again" });
+  assert.equal(first.id, again.id);
+  assert.equal(again.personalization, "hello again");
+  assert.equal(again.matched_code, null);
+  assert.equal(count(), 3);
+});
+
+test("migration 1 de-duplicates an IS-01 etsy_orders table and adds the unique key", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "is-db-"));
+  const file = path.join(dir, "is.sqlite");
+
+  try {
+    // An IS-01 database: no unique key, user_version 0, duplicate rows from re-polls.
+    const old = new Database(file);
+    old.exec(`CREATE TABLE etsy_orders (
+      receipt_id INTEGER NOT NULL, transaction_id INTEGER NOT NULL, listing_id INTEGER,
+      personalization TEXT, matched_code TEXT, paid_at TEXT, status TEXT, seen_at TEXT NOT NULL)`);
+    const insert = old.prepare(
+      "INSERT INTO etsy_orders (receipt_id, transaction_id, matched_code, status, seen_at) VALUES (?, ?, ?, ?, ?)"
+    );
+    insert.run(1, 11, null, "old", "t1");
+    insert.run(1, 11, null, "new", "t2");
+    insert.run(2, 21, "IS-AAAA-AAAA", "old", "t1");
+    insert.run(2, 21, "IS-AAAA-AAAA", "new", "t2");
+    insert.run(2, 21, "IS-BBBB-BBBB", "only", "t1");
+    old.close();
+
+    const db = openDatabase(file);
+    assert.equal(db.pragma("user_version", { simple: true }), 1);
+    assert.deepEqual(
+      db.prepare("SELECT transaction_id, matched_code, status FROM etsy_orders ORDER BY rowid").all(),
+      [
+        { transaction_id: 11, matched_code: null, status: "new" },
+        { transaction_id: 21, matched_code: "IS-AAAA-AAAA", status: "new" },
+        { transaction_id: 21, matched_code: "IS-BBBB-BBBB", status: "only" }
+      ]
+    );
+    assert.throws(
+      () => db.prepare("INSERT INTO etsy_orders (receipt_id, transaction_id, seen_at) VALUES (1, 11, 't3')").run(),
+      /UNIQUE/
+    );
+    db.close();
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

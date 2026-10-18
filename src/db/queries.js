@@ -62,11 +62,23 @@ export function createQueries(db) {
       VALUES (@code, @n, 'queued', @settings_json, @created_at)`),
     getAttempt: db.prepare("SELECT * FROM attempts WHERE code = ? AND n = ?"),
     listAttempts: db.prepare("SELECT * FROM attempts WHERE code = ? ORDER BY n"),
-    insertEtsyOrder: db.prepare(`
+    countedAttempts: db.prepare("SELECT COUNT(*) FROM attempts WHERE code = ? AND counts = 1").pluck(),
+    // Re-polls update the row of the same (transaction_id, matched_code); see MIGRATIONS[0].
+    upsertEtsyOrder: db.prepare(`
       INSERT INTO etsy_orders
         (receipt_id, transaction_id, listing_id, personalization, matched_code, paid_at, status, seen_at)
       VALUES
-        (@receipt_id, @transaction_id, @listing_id, @personalization, @matched_code, @paid_at, @status, @seen_at)`),
+        (@receipt_id, @transaction_id, @listing_id, @personalization, @matched_code, @paid_at, @status, @seen_at)
+      ON CONFLICT (transaction_id, IFNULL(matched_code, '')) DO UPDATE SET
+        receipt_id = excluded.receipt_id,
+        listing_id = excluded.listing_id,
+        personalization = excluded.personalization,
+        paid_at = excluded.paid_at,
+        status = excluded.status,
+        seen_at = excluded.seen_at`),
+    getEtsyOrder: db.prepare(`
+      SELECT rowid AS id, * FROM etsy_orders
+      WHERE transaction_id = ? AND IFNULL(matched_code, '') = IFNULL(?, '')`),
     listUnmatchedOrders: db.prepare(
       "SELECT rowid AS id, * FROM etsy_orders WHERE matched_code IS NULL ORDER BY seen_at DESC"
     ),
@@ -115,6 +127,8 @@ export function createQueries(db) {
     createAttempt,
     getAttempt: (code, n) => parseAttempt(statements.getAttempt.get(code, n)),
     listAttempts: (code) => statements.listAttempts.all(code).map(parseAttempt),
+    // The 3-design limit (D5) counts only attempts with counts = 1.
+    countedAttempts: (code) => statements.countedAttempts.get(code),
 
     updateAttempt(code, n, fields) {
       const values = { ...fields };
@@ -133,8 +147,9 @@ export function createQueries(db) {
       return db.prepare(sql).run({ ...values, code, n }).changes === 1;
     },
 
-    insertEtsyOrder(order) {
-      return statements.insertEtsyOrder.run({
+    // One row per (transaction_id, matched_code); a re-poll updates it. Returns the row.
+    upsertEtsyOrder(order) {
+      const values = {
         listing_id: null,
         personalization: null,
         matched_code: null,
@@ -142,7 +157,10 @@ export function createQueries(db) {
         status: null,
         seen_at: now(),
         ...order
-      }).lastInsertRowid;
+      };
+
+      statements.upsertEtsyOrder.run(values);
+      return statements.getEtsyOrder.get(values.transaction_id, values.matched_code);
     },
 
     listUnmatchedOrders: () => statements.listUnmatchedOrders.all(),
