@@ -40,8 +40,11 @@ copies of the same path under `services/strass-layout/`:
 
 Changes made for IS:
 
-- `scripts/start_layout.sh` renamed to `scripts/start.sh`.
-- `app.py`: `POST /remove-background`, sharing the `/layout` lock.
-- `strass_layout/background.py`, `tests/test_background.py`: new.
-- `requirements.txt`, `scripts/setup_mac.sh`, `scripts/start.sh`, `README.md`: rembg and its
-  model.
+- `scripts/start_layout.sh` renamed to `scripts/start.sh`; it binds `STRASS_PORT` (default 8000).
+- `app.py`: `POST /remove-background` under the `/layout` lock; the background model loads at
+  startup.
+- `requirements.txt`: `onnxruntime==1.23.2`, `rembg==2.0.69`.
+- `scripts/setup_mac.sh`: downloads the background model into `models/rembg/`.
+- `README.md`: an IS note at the top and the new endpoint.
+- New files (not from RS): `strass_layout/background.py`, `tests/test_background.py`,
+  `tests/fixtures/photos/` (CC0 photos, see `SOURCES.md` there), this file.

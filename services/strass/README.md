@@ -1,4 +1,9 @@
 <!-- From Rhinestone-Studio @38cd831 services/strass-layout/README.md -->
+> **IS copy.** This is RS `services/strass-layout` at `38cd831`, copied for IS (IS-001 spec
+> section 16; see `ORIGIN.md`). IS adds `POST /remove-background` (below). Paths in this file
+> read `services/strass` and `scripts/start.sh` for IS. The RS text is otherwise unchanged; the
+> "Connecting the app" section describes RS, not IS.
+
 # Strass layout service (IMG-026)
 
 Turns an OpenAI rhinestone image (a PNG with a transparent background) into a finished,
@@ -15,7 +20,7 @@ reaches it over HTTP.
 strass_layout/   the package: pipeline modules, catalogue.json, layout() and layout_frame()
 app.py           FastAPI app: POST /layout and GET /health
 models/          StarDist model (committed); the dlib model is downloaded by setup_mac.sh
-scripts/         setup_mac.sh and start_layout.sh
+scripts/         setup_mac.sh and start.sh
 tests/           unittest tests
 prototype/       the research code as delivered, kept for the equivalence test; do not edit
 Dockerfile       the same package and requirements.txt on python:3.12-slim
@@ -26,7 +31,7 @@ requirements.txt exact == pins of every direct dependency
 
 ```
 brew install python@3.12
-services/strass-layout/scripts/setup_mac.sh
+services/strass/scripts/setup_mac.sh
 ```
 
 The script needs `python3.12` on the PATH. It creates `.venv`, installs `requirements.txt`, and
@@ -41,7 +46,7 @@ The environment is about 3 GB on disk. A layout needs about 3 GB of RAM.
 ## Start
 
 ```
-services/strass-layout/scripts/start_layout.sh
+services/strass/scripts/start.sh
 ```
 
 This runs `uvicorn app:app --host 127.0.0.1 --port 8000 --workers 1`. The service is bound to
@@ -52,7 +57,7 @@ A layout takes one to two minutes and the Mac must not sleep during it. Start th
 `caffeinate`:
 
 ```
-caffeinate -i services/strass-layout/scripts/start_layout.sh
+caffeinate -i services/strass/scripts/start.sh
 ```
 
 The script prints this advice; it does not run `caffeinate` itself.
@@ -85,6 +90,14 @@ Errors are `{ "error": code, "message": text }`:
 | 422 | `catalogue-mismatch` | the service's catalogue has a colour id that `colorIds` lacks |
 | 422 | `no-stones` | fewer than 50 stones were detected |
 | 500 | `layout-failed` | any other failure; the message is the exception text |
+
+IS: `POST /remove-background` takes multipart form data `image` (a PNG, at most 20 MB) and answers
+200 with an RGBA PNG of the same size, the background made transparent (rembg, model
+`birefnet-general`; `isnet-general-use` if birefnet runs out of memory or `STRASS_BG_MODEL` names
+it). The model lives in `models/rembg/` (about 1 GB, git-ignored, downloaded by `setup_mac.sh`)
+and loads at startup. It shares the one-at-a-time lock with `/layout`, so `busy` covers both.
+Errors: 400 `bad-image`, 400 `bad-request`, 413 `too-large`, 500 `background-failed`.
+`STRASS_PORT` changes the port `scripts/start.sh` binds (default 8000).
 
 `GET /health` answers `{ "ok": true, "modelsLoaded": true, "version": "...", "busy": false }`.
 `busy` is true while a layout runs. One layout runs at a time; a second request waits.

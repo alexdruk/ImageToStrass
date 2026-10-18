@@ -1,5 +1,5 @@
 # From Rhinestone-Studio @38cd831 services/strass-layout/app.py
-"""HTTP front of the layout service: POST /layout and GET /health.
+"""HTTP front of the layout service: POST /layout, POST /remove-background and GET /health.
 
 Models load at startup and stay loaded. A process-wide lock lets one layout run
 at a time (IMG-026 S7); a second request waits for it. The service has no auth and
@@ -15,10 +15,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 import strass_layout
 from strass_layout import LayoutError, layout, load_models
+from strass_layout.background import load_session, remove_background
 
 MAX_IMAGE_BYTES = 20 * 1024 * 1024
 DEFAULT_PITCH_MM = 2.1
@@ -32,6 +33,11 @@ status = {"modelsLoaded": False}
 async def lifespan(_app):
     load_models()
     status["modelsLoaded"] = True
+    # IS: load the background model now so the first upload does not wait for it.
+    try:
+        load_session()
+    except Exception:
+        log.error("background model failed to load:\n%s", traceback.format_exc())
     yield
 
 
@@ -89,6 +95,23 @@ def post_layout(image: UploadFile = File(...), options: str = Form("{}")):
     except Exception as exc:
         log.error("layout failed:\n%s", traceback.format_exc())
         return error_response(500, "layout-failed", unexpected_message(exc))
+
+
+# IS: background removal (IS-001 spec 6.2), under the same one-at-a-time lock as /layout.
+@app.post("/remove-background")
+def post_remove_background(image: UploadFile = File(...)):
+    data = image.file.read(MAX_IMAGE_BYTES + 1)
+    if len(data) > MAX_IMAGE_BYTES:
+        return error_response(413, "too-large", "The image is larger than 20 MB.")
+    try:
+        with layout_lock:
+            png = remove_background(data)
+    except LayoutError as exc:
+        return error_response(exc.status, exc.code, exc.message)
+    except Exception as exc:
+        log.error("background removal failed:\n%s", traceback.format_exc())
+        return error_response(500, "background-failed", unexpected_message(exc))
+    return Response(content=png, media_type="image/png")
 
 
 @app.get("/health")

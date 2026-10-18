@@ -13,3 +13,7 @@ scipy==1.17.1
 stardist==0.9.2
 tensorflow==2.16.2
 uvicorn==0.54.0
+# IS: background removal (POST /remove-background). rembg 2.0.69 is the last release that accepts
+# numpy 1.x (tensorflow 2.16 needs it); onnxruntime 1.23.2 is the last one with an Intel Mac wheel.
+onnxruntime==1.23.2
+rembg==2.0.69

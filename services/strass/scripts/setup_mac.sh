@@ -49,4 +49,7 @@ else
   echo "dlib model downloaded and verified."
 fi
 
-python -c "import tensorflow, stardist, dlib, cv2, skimage, sklearn, fastapi, uvicorn, multipart; print('environment OK')"
+# IS: the background removal model (about 1 GB) into models/rembg (git-ignored).
+python -c "from strass_layout.background import load_session; load_session(); print('background model OK')"
+
+python -c "import tensorflow, stardist, dlib, cv2, skimage, sklearn, fastapi, uvicorn, multipart, rembg; print('environment OK')"
