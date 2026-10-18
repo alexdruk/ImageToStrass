@@ -17,7 +17,7 @@ strass service on 127.0.0.1:8000.
 
 ```
 prepared image → provider call → strass /layout → stone list (mm)
-→ tiers / B&W mapping → StoneLayout → tinted render + exporters
+→ natural size / B&W mapping → StoneLayout → tinted render + exporters
 ```
 
 - Exactly one StoneLayout per design. Renderers and exporters consume it and never create,

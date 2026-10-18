@@ -1,6 +1,7 @@
 # IS-001 — IS: any image to rhinestone template, sold on Etsy
 
-Status: spec, 18 Oct 2026. No code in this commit.
+Status: spec, 18 Oct 2026. Revised 18 Oct 2026 (IS-03b): no size choice, every design is delivered
+at its natural size.
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -16,7 +17,8 @@ app. There the buyer:
 
 1. uploads an image (PNG, JPG, BMP, TIFF, WebP, AVIF, SVG; at most 50 MB);
 2. prepares it: background removal (on by default), crop, rotate, brightness, contrast, saturation;
-3. chooses the size (longest side, mm or in) and Colour or Black & white;
+3. chooses Colour or Black & white (there is no size to choose: the design has its natural size,
+   shown with the result);
 4. waits while IS makes the design (a few minutes);
 5. sees the original and the **tinted** result side by side;
 6. tries again if unhappy (at most **3 designs per code**), or picks one with "Use this design";
@@ -35,15 +37,15 @@ disclosure in generic words (section 11.1).
 
 | # | Decision |
 | --- | --- |
-| D1 | Size is the **longest side**, in mm or inches; the other side follows the design's aspect. Range 140–600 mm (5.5–23.6 in). |
-| D2 | Large sizes use **stone-size tiers** (section 7.5): positions and diameters scale together and diameters snap down to standard sizes. |
+| D1 | The buyer does not choose a size. Every design is delivered at its **natural size**, exactly as the strass service measures it (section 7.5), shown as width × height in mm and in. |
+| D2 | **SS6** is the main stone size, with occasional **SS4**, **SS10** and **SS16** allowed. No tier multiples in the UI, the result data or the ZIP. |
 | D3 | Black & white means **Jet + Crystal only**. |
 | D4 | The buyer sees only two views: **Original** and **Tinted** (section 8). No mask, AI image, overlay or 3D view. |
 | D5 | At most 3 designs per code. A design that fails for technical reasons, or is declined by the safety check, does not count. |
 | D6 | The buyer picks the delivered design ("Use this design"). If a paid code has no pick, the latest design is delivered. |
 | D7 | Uploads, prepared images, AI images, layouts and code records are kept **indefinitely** in `data/archive/`, managed by Alex by hand. Delivery ZIPs are kept **30 days** after payment, then deleted. |
 | D8 | One Etsy listing, one price. |
-| D9 | Production sheet as the RS exporter: A4 / Letter / A3, multi-page tiling for large designs. A4 when the buyer chose mm, Letter when inches. |
+| D9 | Production sheet as the RS exporter: A4 / Letter / A3, multi-page tiling for large designs. The page size used to follow the buyer's unit (A4 for mm, Letter for inches); with no unit choice it is open (section 19). |
 | D10 | CDR is dropped. AI is a PDF-compatible file; EPS comes from Ghostscript. |
 | D11 | Background removal is **on by default** and can be switched off. |
 | D12 | Hosted on Alex's Mac behind a Cloudflare Tunnel. Etsy OAuth is done once through a temporary quick tunnel until the domain exists. |
@@ -71,7 +73,8 @@ src/
   server/      express app, routes, rate limits, static
   db/          sqlite schema and queries
   prep/        decode, sanitise, normalise, adjust (shared with browser)
-  pipeline/    queue, prompt, provider client, layout client, tiers, bw mapping
+  pipeline/    queue, prompt, provider client, layout client, natural size (tiers kept, unused),
+               bw mapping
   stones/      copied from RS: StoneColors, CrystalColors, StoneSizes, CrystalAppearance,
                CrystalStoneRenderer, Stone, StoneLayout (+ BoundingBox)
   render/      tinted renderer, watermark
@@ -105,8 +108,8 @@ codes(
 attempts(
   code, n INTEGER,                -- 1, 2, 3, ... per code, never reused
   status TEXT,                    -- queued | running | done | failed | declined
-  stage TEXT, settings_json,      -- size, unit, mode, bg removal, adjustments, crop, rotate
-  result_json NULL,               -- stone count, sizes, colours, tier, final w/h, coverage
+  stage TEXT, settings_json,      -- mode, bg removal, adjustments, crop, rotate
+  result_json NULL,               -- stone count, sizes, colours, natural w/h, coverage
   error_code NULL, created_at, finished_at,
   counts INTEGER                  -- 1 if it uses one of the 3 designs (D5)
 )
@@ -146,7 +149,7 @@ data/archive/<code>/                         kept forever (D7)
   attempt-<n>/settings.json
   attempt-<n>/ai.png                         provider output
   attempt-<n>/layout.json                    layout service response
-  attempt-<n>/stones.json                    final StoneLayout after tiers / bw mapping
+  attempt-<n>/stones.json                    final StoneLayout at natural size, after bw mapping
   attempt-<n>/tinted.png                     full-resolution tinted render
 data/delivery/<code>/IS-XXXX-XXXX.zip        deleted 30 days after payment
 ```
@@ -205,12 +208,11 @@ folder is never overwritten.
   same result.
 - The buyer's settings are stored per attempt; "Try again" starts from the previous settings.
 
-### 6.4 Size and mode
+### 6.4 Mode
 
-- Longest side field with mm / in toggle, range 140–600 mm (5.5–23.6 in). The other side is shown
-  live from the prepared image's aspect: "Your design: 200 × 154 mm". The final numbers are
-  confirmed on the result screen (the design's own aspect can differ slightly from the photo's).
-- Colour / Black & white, Colour default.
+- No size input. The design has its natural size (section 7.5); the result screen shows it.
+- The settings are only: Colour / Black & white (Colour default), background removal (6.2) and the
+  adjustments (6.3).
 
 ## 7. Design pipeline
 
@@ -220,27 +222,42 @@ minutes".
 
 ### 7.1 Prepared image → model input
 
-`prepared.png` (background removed if chosen, adjusted, cropped) is padded to a square on a
-transparent canvas and resized to 1024 × 1024.
+`prepared.png` (background removed if chosen, adjusted, cropped) becomes the model input:
+
+- Background removal on: cropped to the bounding box of the cut-out (pixels with alpha ≥ 128) plus a
+  margin of 3 % of the box's longest side on every side; where the margin lies beyond the image it
+  is transparent. A small subject in a wide photo so fills the input.
+- Background removal off: the whole prepared image, not cropped.
+- Then resized to 1024 px on the longest side, aspect kept, no padding to a square.
+
+`prepared.png` itself is not changed (the Original view shows it).
 
 ### 7.2 Prompt
 
 - Based on RS `server/redraw/prompt.mjs` prompt v6 (stones style only; the flat style is not
-  copied). Version constant `IS_PROMPT_VERSION = 1`.
-- Requirement 4 (size and colour mode in the prompt) is met by two additions; the tuned
-  "about 60 stones across" rule is **not** changed, because the layout quality depends on it:
-  - in section 6: `The finished rhinestone design will be {T} {unit} on its longest side.`
-  - Colour mode: palette line and ramps as v6.
-  - Black & white mode: section 4 is replaced by Appendix A.
+  copied). Version constant `IS_PROMPT_VERSION = 2`.
+- There is no size line: the design has its natural size (7.5).
+- Section 6's first rule `Square image at the highest resolution available.` becomes
+  `Use the whole image at the highest resolution available, in the same shape (width to height) as
+  the uploaded image.`
+- The tuned "about 60 stones across" rule is unchanged until Alex decides on the IS-03b report
+  (`docs/IS-03b-results.md`).
+- Colour mode: palette line and ramps as v6.
+- Black & white mode: section 4 and the final check sentence are replaced by Appendix A.
 - The prompt is built server-side only, never logged in a file the web server serves, never sent
   to the browser.
 
 ### 7.3 Provider call
 
 From RS `server/redraw/handler.mjs`: image edit endpoint, `OPENAI_IMAGE_MODEL`,
-`OPENAI_IMAGE_QUALITY`, `size 1024x1024`, `background transparent`, `output_format png`, two
-attempts, safety refusal retried once, timeout 300 s not retried, abort on cancel. The RS access
-code, per-IP limiter and HTTP routes are not copied (IS has its own, section 13).
+`OPENAI_IMAGE_QUALITY`, `size auto` (the output's shape follows the input's), `background
+transparent`, `output_format png`, two attempts, safety refusal retried once, timeout 300 s not
+retried, abort on cancel. The RS access code, per-IP limiter and HTTP routes are not copied (IS has
+its own, section 13).
+
+The output's pixel size (from its PNG header) is recorded in the attempt's `result_json` as
+`outputPx` `{ width, height }`, for the server only. The strass service lays out square, portrait
+and landscape outputs alike (checked in IS-03b).
 
 Error mapping to buyer texts (section 12): declined → `declined`, everything else → `failed`.
 
@@ -251,38 +268,20 @@ From RS `server/redraw/jobs.mjs` `callLayoutService`: `POST http://127.0.0.1:800
 ("Endpoints"). The design is accepted when `violations == 0`, `coverage >= 0.5` and at least 300
 stones; otherwise the whole attempt is re-run once automatically and does not count (D5).
 
-### 7.5 Stone-size tiers (D1, D2)
+### 7.5 Size (D1, D2)
 
-The layout's natural longest side `L0` is about 100–170 mm (SS6 main stones). RS S14 allows only
-enlarging. Plain enlarging widens the gaps, so IS scales positions **and** diameters by a tier
-factor, then snaps every diameter **down** to the nearest standard size (`StoneSizes.js`: SS4 1.5,
-SS6 2.0, SS10 2.8, SS16 4.0, SS20 4.7, SS30 6.4 mm). Snapping down never creates an overlap.
+Natural size only. The design is the layout service's answer as it is: stone positions and
+diameters exactly as measured (`targetPitchMm` 2.1, SS6 main stones), only moved so the stones'
+footprint box starts at the origin. No scaling, no snapping, no minimum or maximum size. IS-03
+measured natural longest sides of 130–168 mm on the 12 RS test layouts.
 
-| Tier k | Main stone | SS4 → | SS16 (pupils) → |
-| --- | --- | --- | --- |
-| 1.0 | SS6 | SS4 | SS16 |
-| 1.4 | SS10 | SS6 | SS20 |
-| 2.0 | SS16 | SS10 | SS30 |
-| 2.35 | SS20 | SS10 | SS30 |
-| 3.2 | SS30 | SS20 | SS30 |
+The gap check (`findOverlappingStonePairs` from StoneLayout.js and a min-gap check of 0.1 mm) runs
+on the natural layout; a violation is a bug and fails the attempt.
 
-Algorithm, for requested longest side `T`:
-
-1. pick the largest tier k with `L0 · k ≤ T`;
-2. scale positions and diameters by k and snap diameters down;
-3. scale positions only by `r = T / (L0 · k)` (r ≥ 1) so the longest side is exactly `T`;
-4. re-run the gap check (`findOverlappingStonePairs` from StoneLayout.js and a min-gap check of
-   0.1 mm); a violation is a bug and fails the attempt.
-
-When `L0 > T` (IS-03 measured `L0` from 130 to 168 mm on the 12 RS test layouts, so this happens at
-the small end of the range), the design is not scaled at all (k = 1, r = 1) and is delivered at its
-natural size `L0`: shrinking would close the gaps. The result screen shows the real size, and
-`result_json` keeps the requested size as `requestedMm`.
-
-`r` can reach about 1.43 between tiers 1.4 and 2.0, which widens gaps by up to 43 %. IS-03 must
-measure this on the 12 RS test images at T = 140, 180, 250, 260, 300, 420 and 600 mm and report
-the largest gap ratio and a visual comparison. If it looks poor, the fallback is a second prompt
-variant asking for about 45 stones across, used for T in the gap bands.
+The stone-size tier code (`applyTier` in `src/pipeline/tiers.js`: scale positions and diameters by a
+tier factor, snap diameters down, stretch positions to an exact longest side) stays in
+`src/pipeline/` with its tests, unused, for a possible later "more sizes" option. It only enlarges:
+a longest side below the natural size is refused.
 
 ### 7.6 Black & white mapping (D3)
 
@@ -293,7 +292,9 @@ becomes Crystal. The threshold is a setting; IS-03 checks it on the test images.
 ### 7.7 Result
 
 `stones.json` (StoneLayout in mm, origin top-left), the tinted render (section 8), and
-`result_json`: stone count, count per size, count per colour, tier, final width × height, coverage.
+`result_json`: stone count, count per size, count per colour, natural width × height in mm
+(`widthMm`, `heightMm`) and in (`widthIn`, `heightIn`), coverage, mode, and `outputPx` (server
+only, 7.3). The browser gets every field except `outputPx`.
 
 ## 8. Tinted view (D4)
 
@@ -328,6 +329,9 @@ upload.
 
 All exporters consume the final StoneLayout only (RS rule: exporters never generate geometry).
 
+The ZIP has one size, the natural size (7.5): all six formats below, the production sheet, the
+preview and README, all at that size.
+
 | File | How |
 | --- | --- |
 | `IS-XXXX-XXXX.svg` | RS `stoneLayoutToSvg`, true size, `width`/`height` in mm, colour groups as `<g>` with ids |
@@ -337,7 +341,7 @@ All exporters consume the final StoneLayout only (RS rule: exporters never gener
 | `IS-XXXX-XXXX.dxf` | RS `stoneLayoutToDxf`, one layer per colour |
 | `IS-XXXX-XXXX.png` | The SVG rendered by `@resvg/resvg-js` at 300 dpi, transparent background |
 | `IS-XXXX-XXXX-preview.png` | Full tinted render (section 8), no watermark |
-| `README.txt` | Code, size, stone count per size and per colour, file list, short how-to |
+| `README.txt` | Code, natural size (width × height in mm and in), stone count per size and per colour, file list, short how-to |
 
 Production sheet changes (copied `ProductionSheetExporter.js`):
 
@@ -366,12 +370,13 @@ Screens (one URL each, history API):
 1. **Upload** `/` — drop zone + file button, accepted formats and 50 MB note, consent checkbox
    (privacy policy link), Turnstile. On success → 2.
 2. **Prepare** `/c/<code>/prepare` — large preview; background removal toggle (on); crop and
-   rotate tools; brightness / contrast / saturation sliders and Auto enhance; size field + mm/in;
-   Colour / Black & white; "Designs left: N of 3"; button **Create design**.
+   rotate tools; brightness / contrast / saturation sliders and Auto enhance; Colour / Black &
+   white; "Designs left: N of 3"; button **Create design**. No size field.
 3. **Working** `/c/<code>/working` — the four stage names with progress, queue position, "You can
    leave this page; your code is IS-XXXX-XXXX". Polls `GET /api/attempts/<code>/<n>` every 3 s.
 4. **Result** `/c/<code>/result/<n>` — Original | Tinted side by side (stacked on phones), with a
-   swipe/compare slider and zoom; size W × H, stone count, sizes and colours used; buttons
+   swipe/compare slider and zoom; the natural size W × H in mm and in, stone count, sizes and
+   colours used; buttons
    **Use this design** and **Try again** (disabled at 3). Earlier designs of this code are shown
    as thumbnails to switch between.
 5. **Your code** `/c/<code>/done` — big code with Copy, three numbered steps back to Etsy
@@ -488,7 +493,7 @@ orders with a "match to code" action, manual unlock, poller status, disk use of 
 | RS path | IS path | Change |
 | --- | --- | --- |
 | `services/strass-layout/` (all, incl. tests, models, scripts) | `services/strass/` | Add `/remove-background` (rembg) under the same lock; rename scripts; keep the 12 test images and golden tests |
-| `server/redraw/prompt.mjs` | `src/pipeline/prompt.js` | Stones prompt only; size line; B&W variant (Appendix A) |
+| `server/redraw/prompt.mjs` | `src/pipeline/prompt.js` | Stones prompt only; whole-image line in section 6; B&W variant (Appendix A) |
 | `server/redraw/handler.mjs` (provider call part) | `src/pipeline/provider.js` | Keep retries, safety retry, timeout, abort; drop routes, access code, limiter, fake routes |
 | `server/redraw/jobs.mjs` (`callLayoutService`) | `src/pipeline/layout.js` | Keep |
 | `server/redraw/fixtures/fake-layout.json`, `src/redraw/FakeRedrawProvider.js` | `src/pipeline/fake/` | For `IS_FAKE=1` |
@@ -523,8 +528,16 @@ in the browser (test compares hashes); background removal works on 3 sample phot
 **IS-03 Pipeline.** Queue, prompt, provider client, layout client, tiers, B&W mapping, acceptance
 checks, auto re-run, attempts accounting (D5).
 *Done when:* fake mode runs end to end; real mode makes one design on the Mac; tier tests show 0
-gap violations at every T in section 7.5 for the 12 RS test layouts; the measurement report of
-7.5 and the B&W threshold check (7.6) are written to `docs/IS-03-results.md`.
+gap violations at every T for the 12 RS test layouts; the tier measurement report and the B&W
+threshold check (7.6) are written to `docs/IS-03-results.md`.
+
+**IS-03b Natural size.** No size choice (D1, D2, 6.4, 7.5); provider `size auto` and the
+whole-image prompt line (7.2, 7.3); model input cropped to the cut-out (7.1); Black & white final
+check (Appendix A); the "about 60 stones across" test.
+*Done when:* `npm test` passes with no size in settings, results or prompt; the natural layouts of
+the 12 RS test layouts pass the gap check; 9 real designs (3 test photos with and without the rule,
+3 portrait or landscape subjects) are measured in `docs/IS-03b-results.md` with a recommendation on
+the rule.
 
 **IS-04 Tinted render and exports.** Section 8 and section 9.
 *Done when:* tinted render matches the definition on a unit fixture (pixel at 1.5 r gets 85 % of
@@ -580,9 +593,12 @@ ETSY_POLL_SECONDS=180
 
 - Domain name (needed before launch; the quick tunnel is for OAuth and testing only).
 - Etsy listing photos and price.
-- Whether the gap bands of 7.5 need the 45-stone prompt variant (decided by the IS-03 report).
+- Keep or drop the "about 60 stones across" rule (7.2), decided from `docs/IS-03b-results.md`.
+- Production sheet page size now that the buyer chooses no unit (D9): A4, Letter, or both.
+- The strass service sometimes picks SS20 or SS30 for pupils (outside D2); counts in
+  `docs/IS-03b-results.md`. The service is not changed for it in IS-03b.
 
-## Appendix A — Black & white section 4 of the prompt
+## Appendix A — Black & white section 4 and final check of the prompt
 
 Replaces section 4 (COLOURS) of prompt v6 when the buyer chose Black & white; `{jet}` and
 `{crystal}` are the catalogue preview colours.
@@ -595,4 +611,10 @@ Jet {jet}, Crystal {crystal}.
 - Dark areas, outlines, pupils and shadows are Jet; light areas, highlights and the catch-light are Crystal.
 - Show mid-tones only by mixing the two colours in clear patterns (rows or patches), never by inventing a grey.
 - Keep the subject clearly readable from a distance: strong Jet outlines around the main shapes.
+```
+
+The final check sentence of v6 is replaced too, so it no longer mentions skin and fur ramps:
+
+```
+Before finishing, check that: every stone is a separate flat circle; no two stones touch, outline stones included; nothing is drawn in the gaps; only the three allowed sizes are used; every stone is Jet or Crystal; the background is transparent or pure magenta.
 ```

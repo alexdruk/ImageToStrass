@@ -2,7 +2,7 @@ import { Stone } from "../stones/Stone.js";
 import { StoneLayout } from "../stones/StoneLayout.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
 
-// Black & white mapping (spec section 7.6, D3), run after the tiers. Every stone colour is mapped by
+// Black & white mapping (spec section 7.6, D3), run after the natural layout. Every stone colour is mapped by
 // the CIE L* of its catalogue fill: L* < threshold -> Jet, otherwise Crystal. "Crystal" is the
 // catalogue colour named Crystal (id crystal-clear, #f5f5f5), the one the prompt's Appendix A and
 // the catch-light rule name; id "crystal" is Crystal AB.

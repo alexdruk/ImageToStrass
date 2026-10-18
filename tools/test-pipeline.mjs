@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { openDatabase } from "../src/db/index.js";
 import { createQueries } from "../src/db/queries.js";
 import { createPipeline } from "../src/pipeline/design.js";
+import { naturalLayout } from "../src/pipeline/tiers.js";
 import { createBackgroundRemover } from "../src/prep/background.js";
 import { createApp } from "../src/server/app.js";
 import { loadConfig } from "../src/server/config.js";
@@ -19,6 +20,8 @@ const GOOD_LAYOUT = JSON.parse(readFileSync(new URL("../src/pipeline/fake/layout
 // RS's fake layout: 193 stones, below the 300-stone acceptance minimum.
 const SMALL_LAYOUT = JSON.parse(readFileSync(new URL("../src/pipeline/fake/fake-layout.json", import.meta.url), "utf8"));
 const PNG = Buffer.from("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8cfc0f01f0005000201a5d6c2bd0000000049454e44ae426082", "hex");
+const NATURAL = naturalLayout(GOOD_LAYOUT).stoneLayout;
+const round1 = (v) => Math.round(v * 10) / 10;
 const quiet = { error() {}, warn() {}, log() {} };
 const LEAK = /openai|gpt|dall|prompt|sunburst/i;
 
@@ -71,7 +74,7 @@ async function start({ env = { IS_FAKE: "1" }, pipelineDeps = null } = {}) {
   };
 }
 
-const SETTINGS = { upload: 1, size: 250, unit: "mm", mode: "colour", removeBackground: true, adjustments: { brightness: 10 } };
+const SETTINGS = { upload: 1, mode: "colour", removeBackground: true, adjustments: { brightness: 10 } };
 
 test("fake mode: Create design runs end to end and writes the archive", async () => {
   const srv = await start();
@@ -93,9 +96,12 @@ test("fake mode: Create design runs end to end and writes the archive", async ()
     assert.equal(done.body.designsLeft, 2);
     const result = done.body.result;
     assert.equal(result.stones, GOOD_LAYOUT.stones.length);
-    assert.equal(Math.max(result.widthMm, result.heightMm), 250);
+    // Natural size only (7.5), in mm and in.
+    assert.deepEqual([result.widthMm, result.heightMm], [round1(NATURAL.widthMm), round1(NATURAL.heightMm)]);
+    assert.equal(result.widthIn, Math.round(NATURAL.widthMm / 25.4 * 100) / 100);
+    assert.equal(result.heightIn, Math.round(NATURAL.heightMm / 25.4 * 100) / 100);
     assert.equal(result.mode, "colour");
-    assert.ok(result.tier >= 1);
+    for (const gone of ["tier", "stretch", "requestedMm", "outputPx"]) assert.ok(!(gone in result), gone);
     assert.equal(Object.values(result.bySize).reduce((a, b) => a + b, 0), result.stones);
     assert.ok(!LEAK.test(JSON.stringify(done.body)) && !LEAK.test(done.text), "IS fields only");
 
@@ -103,10 +109,10 @@ test("fake mode: Create design runs end to end and writes the archive", async ()
     assert.deepEqual(readdirSync(dir).sort(), ["ai.png", "layout.json", "original.png", "prepared.png", "settings.json", "stones.json"]);
     const settings = JSON.parse(readFileSync(path.join(dir, "settings.json"), "utf8"));
     assert.equal(settings.uploadId, 1);
-    assert.equal(settings.sizeMm, 250);
+    for (const gone of ["size", "unit", "sizeMm"]) assert.ok(!(gone in settings), gone);
     const stones = JSON.parse(readFileSync(path.join(dir, "stones.json"), "utf8"));
     assert.equal(stones.count, result.stones);
-    assert.equal(Math.round(Math.max(stones.widthMm, stones.heightMm) * 1e6) / 1e6, 250);
+    assert.ok(Math.abs(stones.widthMm - NATURAL.widthMm) < 1e-9 && Math.abs(stones.heightMm - NATURAL.heightMm) < 1e-9);
 
     const row = srv.q.getAttempt(code, 1);
     assert.deepEqual([row.status, row.counts, row.stage], ["done", 1, "files"]);
@@ -122,13 +128,13 @@ test("fake mode: black & white uses Jet and Crystal only; 3 designs per code", a
   try {
     const { code } = await srv.upload();
     for (const n of [1, 2, 3]) {
-      const created = await srv.create(code, { ...SETTINGS, mode: n === 2 ? "bw" : "colour", size: 8, unit: "in" });
+      const created = await srv.create(code, { ...SETTINGS, mode: n === 2 ? "bw" : "colour" });
       assert.equal(created.status, 202, `design ${n}`);
       await srv.pipeline.idle();
     }
     const bw = (await srv.poll(code, 2)).body.result;
     assert.deepEqual(Object.keys(bw.byColour).sort(), ["crystal-clear", "jet"]);
-    assert.equal(Math.max(bw.widthMm, bw.heightMm), 203.2);
+    assert.deepEqual([bw.widthMm, bw.heightMm], [round1(NATURAL.widthMm), round1(NATURAL.heightMm)]);
     assert.deepEqual((await srv.create(code, SETTINGS)).body, { error: "limit" });
     assert.equal((await srv.poll(code, 3)).body.designsLeft, 0);
   } finally {
@@ -140,7 +146,7 @@ test("Create design refuses bad settings, unknown codes and a missing cut-out", 
   const srv = await start();
   try {
     const { code } = await srv.upload();
-    assert.deepEqual((await srv.create(code, { ...SETTINGS, size: 100 })).body, { error: "bad-request" });
+    assert.deepEqual((await srv.create(code, { ...SETTINGS, mode: "sepia" })).body, { error: "bad-request" });
     assert.deepEqual((await srv.create(code, { ...SETTINGS, upload: 2 })).body, { error: "not-found" });
     assert.equal((await srv.create("IS-0000-0000", SETTINGS)).status, 404);
     rmSync(path.join(srv.config.archiveDir, code, "uploads", "1", "cutout.png"));
@@ -165,7 +171,10 @@ function scripted({ draws, layouts }) {
 }
 
 test("a rejected layout is re-run once automatically and does not count", async () => {
-  const s = scripted({ draws: [{ png: PNG }, { png: PNG }], layouts: [{ layout: SMALL_LAYOUT }, { layout: GOOD_LAYOUT }] });
+  const s = scripted({
+    draws: [{ png: PNG, width: 1024, height: 1536 }, { png: PNG, width: 1536, height: 1024 }],
+    layouts: [{ layout: SMALL_LAYOUT }, { layout: GOOD_LAYOUT }]
+  });
   const srv = await start({ env: {}, pipelineDeps: s.deps });
   try {
     const { code } = await srv.upload();
@@ -177,11 +186,14 @@ test("a rejected layout is re-run once automatically and does not count", async 
     assert.equal(first.result.rejected.stones, 193);
     const second = srv.q.getAttempt(code, 2);
     assert.deepEqual([second.status, second.counts, second.settings.rerunOf], ["done", 1, 1]);
+    // The provider output's pixel size is recorded on the server and never shown.
+    assert.deepEqual(first.result.outputPx, { width: 1024, height: 1536 });
+    assert.deepEqual(second.result.outputPx, { width: 1536, height: 1024 });
     // The browser polls attempt 1 and is shown the re-run.
     const view = (await srv.poll(code, 1)).body;
     assert.deepEqual([view.attempt, view.status, view.designsLeft], [2, "done", 2]);
     assert.ok(existsSync(path.join(srv.config.archiveDir, code, "attempt-2", "prepared.png")));
-    assert.ok(!("rejected" in view) && !("rerunAs" in view));
+    assert.ok(!("rejected" in view) && !("rerunAs" in view) && !("outputPx" in view.result));
   } finally {
     await srv.stop();
   }
