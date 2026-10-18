@@ -1,22 +1,32 @@
-
 import express from "express";
-import { createDesign, getDesign } from "./design-store.js";
-import { MONOGRAM_FRAMES } from "./monogram-frames.js";
-import "dotenv/config";
-import { etsyApiRequest } from "./etsy-api.js";
-import { loadShop, saveShop } from "./shop-store.js";
+import { createDesign, getDesign } from "../design-store.js";
+import { MONOGRAM_FRAMES } from "../monogram-frames.js";
+import { etsyApiRequest } from "../etsy/etsy-api.js";
+import { loadShop, saveShop } from "../etsy/shop-store.js";
 import {
   createAuthorizationRequest,
   exchangeAuthorizationCode
-} from "./etsy-oauth.js";
-import { saveTokens } from "./token-store.js";
+} from "../etsy/etsy-oauth.js";
+import { loadTokens, saveTokens } from "../etsy/token-store.js";
+import { checkHealth } from "./health.js";
 
+export function createApp({ db, config, deps = {} }) {
 const app = express();
+const pendingAuth = new Map();
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.static("public"));
-const PORT = Number(process.env.PORT || 3003);
-const pendingAuth = new Map();
+
+app.get("/health", async (_req, res) => {
+  const health = await checkHealth({
+    db,
+    config,
+    loadTokens: deps.loadTokens || loadTokens,
+    fetch: deps.fetch || fetch
+  });
+
+  res.status(health.ok ? 200 : 503).json(health);
+});
 
 app.get("/", (_req, res) => {
   res.send(`
@@ -434,6 +444,5 @@ app.get("/api/designs/:designId", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`ImageToStrass running at http://localhost:${PORT}`);
-});
+return app;
+}
