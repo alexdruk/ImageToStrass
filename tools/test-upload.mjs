@@ -237,7 +237,7 @@ function streamUpload(srv, fileBytes, { declareLength = false } = {}) {
 
     if (declareLength) {
       req.flushHeaders();
-      setTimeout(() => { if (!answered) pump(); }, 500);
+      setTimeout(() => { if (!answered) pump(); }, 5000);
     } else {
       pump();
     }
