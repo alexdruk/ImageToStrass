@@ -92,9 +92,10 @@ Errors are `{ "error": code, "message": text }`:
 | 500 | `layout-failed` | any other failure; the message is the exception text |
 
 IS: `POST /remove-background` takes multipart form data `image` (a PNG, at most 20 MB) and answers
-200 with an RGBA PNG of the same size, the background made transparent (rembg, model
-`birefnet-general`; `isnet-general-use` if birefnet runs out of memory or `STRASS_BG_MODEL` names
-it). The model lives in `models/rembg/` (about 1 GB, git-ignored, downloaded by `setup_mac.sh`)
+200 with an RGBA PNG of the same size, the background made transparent (rembg). The model is
+`REMBG_MODEL` (default `birefnet-general`; `scripts/start.sh` reads that one line from the app's
+`.env`); a model that runs out of memory is retried with `isnet-general-use`. Models live in
+`models/rembg/` (birefnet about 1 GB, isnet about 180 MB; git-ignored, downloaded by `setup_mac.sh`)
 and loads at startup. It shares the one-at-a-time lock with `/layout`, so `busy` covers both.
 Errors: 400 `bad-image`, 400 `bad-request`, 413 `too-large`, 500 `background-failed`.
 `STRASS_PORT` changes the port `scripts/start.sh` binds (default 8000).

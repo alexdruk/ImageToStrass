@@ -11,5 +11,11 @@ fi
 
 echo "Tip: to keep the Mac awake during long layouts, start this script as: caffeinate -i scripts/start.sh" >&2
 
+# IS: the background removal model is the one setting read from the app's .env (only that line).
+if [ -z "${REMBG_MODEL:-}" ] && [ -f ../../.env ]; then
+  REMBG_MODEL="$(sed -n 's/^REMBG_MODEL=\([^[:space:]#]*\).*/\1/p' ../../.env | tail -n 1)"
+fi
+export REMBG_MODEL
+
 . .venv/bin/activate
 exec uvicorn app:app --host 127.0.0.1 --port "${STRASS_PORT:-8000}" --workers 1
