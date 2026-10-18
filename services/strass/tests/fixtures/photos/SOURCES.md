@@ -8,3 +8,13 @@ the Commons 1280 px thumbnails (the mug at its original 960 × 1280).
 | `dog.jpg` | https://commons.wikimedia.org/wiki/File:Dog_on_dirt_road.jpg |
 | `cat.jpg` | https://commons.wikimedia.org/wiki/File:Domestic_shorthair_cat_portrait_in_grass.jpg |
 | `mug.jpg` | https://commons.wikimedia.org/wiki/File:Mug_image.jpg |
+
+IS-03b added three CC0 photos with a clearly portrait or landscape subject, downloaded on 18 Oct 2026
+from Wikimedia Commons (the giraffe and the car as the Commons 1280 px thumbnails, the dachshund at
+its original 1179 × 792):
+
+| File | Source |
+| --- | --- |
+| `giraffe.jpg` | https://commons.wikimedia.org/wiki/File:Giraffe_posing_in_the_grass.jpg |
+| `dachshund.jpg` | https://commons.wikimedia.org/wiki/File:1_Year_Old_Miniature_Dachshund.jpg |
+| `car.jpg` | https://commons.wikimedia.org/wiki/File:Borgward_concept_car_side_view.jpg |

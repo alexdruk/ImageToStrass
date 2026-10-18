@@ -2,16 +2,19 @@ import { Stone } from "../stones/Stone.js";
 import { StoneLayout, findOverlappingStonePairs } from "../stones/StoneLayout.js";
 import { getStoneSize, listAllStoneSizes } from "../stones/StoneSizes.js";
 
-// Stone-size tiers (spec section 7.5, D1, D2). The layout service's stones (mm, natural size about
-// 100-135 mm on the longest side) become the design at the buyer's longest side T:
+// Natural size (spec section 7.5): every design is delivered at the size the layout service measured,
+// built by naturalLayout() below.
+//
+// Stone-size tiers: kept with their tests but unused, for a possible later "more sizes" option. The
+// layout service's stones (mm, natural size about 130-170 mm on the longest side) become the design
+// at a longest side T >= L0:
 //   1. the largest tier k with L0 * k <= T;
 //   2. positions and diameters scaled by k, every diameter snapped down to a standard size;
 //   3. positions only scaled by r >= 1 so the longest side is exactly T;
 //   4. the gap check (no overlap, every gap at least 0.1 mm); a violation fails the attempt.
 // L0 and "longest side" are the stones' footprint box (centre +/- radius), as StoneLayout measures.
 // r is solved so the footprint box is exactly T after snapping; it is never below T / (L0 * k).
-// When L0 > T the design is not scaled at all (k = 1, r = 1) and its longest side is L0: shrinking
-// would close the gaps (IS-03 decision; the result screen shows the real size).
+// T below L0 is refused: shrinking would close the gaps.
 
 export const TIERS = Object.freeze([1.0, 1.4, 2.0, 2.35, 3.2]);
 export const MIN_GAP_MM = 0.1;
@@ -110,17 +113,10 @@ export function checkGaps(stones) {
   return { ok: overlaps === 0 && belowMinGap === 0, overlaps, belowMinGap, minGapMm };
 }
 
-// layout service answer + T (mm) -> { stoneLayout, tier: { k, r, r0, l0Mm }, gaps }.
-export function applyTier(layout, targetMm) {
-  const natural = stonesOfLayout(layout);
-  if (natural.length === 0) throw new Error("The layout has no stones.");
-  const l0 = longest(footprint(natural));
-  const k = chooseTier(l0, targetMm);
-  const tiered = natural.map((s) => ({ x: s.x * k, y: s.y * k, d: snapDown(s.d * k).diameterMm, color: s.color }));
-  const r0 = Math.max(1, targetMm / (l0 * k));
-  const r = l0 * k > targetMm ? 1 : solveStretch(tiered, targetMm, r0);
-  const box = footprint(tiered, r);
-  const stones = tiered.map((s, index) => new Stone({
+// Plain { x, y, d, color } stones scaled by r -> StoneLayout with its footprint box at the origin.
+function toStoneLayout(stones, r) {
+  const box = footprint(stones, r);
+  const placed = stones.map((s, index) => new Stone({
     xMm: s.x * r - box.minX,
     yMm: s.y * r - box.minY,
     sizeMm: s.d,
@@ -128,6 +124,28 @@ export function applyTier(layout, targetMm) {
     layerId: LAYER_ID,
     index
   }));
-  const stoneLayout = new StoneLayout({ layerId: LAYER_ID, sourceMode: "is", stones });
+  return { stoneLayout: new StoneLayout({ layerId: LAYER_ID, sourceMode: "is", stones: placed }), stones: placed };
+}
+
+// layout service answer -> { stoneLayout, gaps } at the natural size: positions and diameters as
+// measured, only moved so the footprint box starts at the origin.
+export function naturalLayout(layout) {
+  const natural = stonesOfLayout(layout);
+  if (natural.length === 0) throw new Error("The layout has no stones.");
+  const { stoneLayout, stones } = toStoneLayout(natural, 1);
+  return { stoneLayout, gaps: checkGaps(stones) };
+}
+
+// layout service answer + T (mm, at least L0) -> { stoneLayout, tier: { k, r, r0, l0Mm }, gaps }.
+export function applyTier(layout, targetMm) {
+  const natural = stonesOfLayout(layout);
+  if (natural.length === 0) throw new Error("The layout has no stones.");
+  const l0 = longest(footprint(natural));
+  if (targetMm < l0 - EPS) throw new RangeError(`T ${targetMm} mm is below the natural size ${l0} mm.`);
+  const k = chooseTier(l0, targetMm);
+  const tiered = natural.map((s) => ({ x: s.x * k, y: s.y * k, d: snapDown(s.d * k).diameterMm, color: s.color }));
+  const r0 = Math.max(1, targetMm / (l0 * k));
+  const r = solveStretch(tiered, targetMm, r0);
+  const { stoneLayout, stones } = toStoneLayout(tiered, r);
   return { stoneLayout, tier: { k, r, r0, l0Mm: l0 }, gaps: checkGaps(stones) };
 }

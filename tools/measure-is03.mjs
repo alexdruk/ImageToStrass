@@ -58,6 +58,18 @@ function relativeGap(stones) {
   return { d, gap: median(gaps), rel: median(gaps) / d };
 }
 
+// IS-03 delivered a layout larger than T at its natural size; applyTier now refuses T < L0, so the
+// historical numbers are reproduced with T raised to L0.
+function tierAt(layout, T) {
+  return applyTier(layout, Math.max(T, naturalLongest(layout)));
+}
+
+function naturalLongest(layout) {
+  const st = stonesOfLayout(layout);
+  const xs = st.flatMap((s) => [s.x - s.d / 2, s.x + s.d / 2]), ys = st.flatMap((s) => [s.y - s.d / 2, s.y + s.d / 2]);
+  return Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+}
+
 const naturalStones = (layout) => stonesOfLayout(layout).map((s) => ({ xMm: s.x, yMm: s.y, sizeMm: s.d, color: s.color }));
 
 // --- 7.5 tiers ---------------------------------------------------------------------------------
@@ -65,7 +77,7 @@ const tierRows = [];
 for (const { name, layout } of LAYOUTS) {
   const nat = relativeGap(naturalStones(layout));
   for (const T of TARGETS) {
-    const { stoneLayout, tier, gaps } = applyTier(layout, T);
+    const { stoneLayout, tier, gaps } = tierAt(layout, T);
     const now = relativeGap(stoneLayout.stones);
     tierRows.push({
       name, T, l0: tier.l0Mm, k: tier.k, r: tier.r, main: findStoneSizeByDiameterMm(now.d).name,
@@ -138,7 +150,7 @@ for (const name of ["portrait", "cat", "parrot"]) {
   };
   tiles.push(cut(natural, `natural ${fmt(Math.max(...natural.map((s) => s.xMm)), 0)} mm, SS6`));
   for (const T of TARGETS) {
-    const { stoneLayout, tier } = applyTier(layout, T);
+    const { stoneLayout, tier } = tierAt(layout, T);
     tiles.push(cut(stoneLayout.stones, `T ${T}: k ${tier.k}, r ${fmt(tier.r, 2)}, ${findStoneSizeByDiameterMm(mainSize(stoneLayout.stones)).name}`));
   }
   await sheet(tiles, `tiers-${name}.png`, 4);

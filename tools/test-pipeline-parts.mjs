@@ -2,12 +2,13 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { test } from "node:test";
 import { BW_DARK, BW_LIGHT, bwColour, lightness, mapBlackAndWhite } from "../src/pipeline/bw.js";
-import { acceptLayout, normalizeDesignSettings } from "../src/pipeline/design.js";
+import sharp from "sharp";
+import { MODEL_INPUT_SIDE, acceptLayout, modelInput, normalizeDesignSettings, subjectBox } from "../src/pipeline/design.js";
 import { callLayoutService } from "../src/pipeline/layout.js";
 import { IS_PROMPT_VERSION, buildPrompt } from "../src/pipeline/prompt.js";
 import { IMAGE_EDITS_URL, createProvider } from "../src/pipeline/provider.js";
 import { createQueue } from "../src/pipeline/queue.js";
-import { TIERS, applyTier, chooseTier, snapDown } from "../src/pipeline/tiers.js";
+import { TIERS, applyTier, chooseTier, naturalLayout, snapDown } from "../src/pipeline/tiers.js";
 import { STONE_COLORS } from "../src/stones/StoneColors.js";
 import { getStoneSize } from "../src/stones/StoneSizes.js";
 
@@ -15,30 +16,33 @@ import { getStoneSize } from "../src/stones/StoneSizes.js";
 
 const RS_V6_SHA256 = "8d07f1ac1abad6bfa624d46a336581dee810476aff52953491ca0e0ef888e6a5";
 const sha = (text) => crypto.createHash("sha256").update(text).digest("hex");
-const SIZE_LINE = /^- The finished rhinestone design will be (.+) on its longest side\.$/;
+const RS_SQUARE_LINE = "- Square image at the highest resolution available.";
+const WHOLE_IMAGE_LINE = "- Use the whole image at the highest resolution available, in the same shape (width to height) as the uploaded image.";
 const quiet = { warn() {}, error() {}, log() {} };
 
-test("colour prompt is RS prompt v6 plus the size line in section 6", () => {
-  assert.equal(IS_PROMPT_VERSION, 1);
-  const lines = buildPrompt({ size: 200, unit: "mm", mode: "colour" }).split("\n");
-  const i = lines.findIndex((l) => SIZE_LINE.test(l));
-  assert.ok(i > lines.indexOf("6. COMPOSITION"), "size line inside section 6");
-  assert.equal(lines[i].match(SIZE_LINE)[1], "200 mm");
-  assert.equal(sha(lines.filter((_, j) => j !== i).join("\n")), RS_V6_SHA256);
-  const inches = buildPrompt({ size: 8, unit: "in", mode: "colour" }).split("\n").find((l) => SIZE_LINE.test(l));
-  assert.equal(inches.match(SIZE_LINE)[1], "8 inches");
+test("colour prompt is RS prompt v6 with the whole-image line in section 6", () => {
+  assert.equal(IS_PROMPT_VERSION, 2);
+  const lines = buildPrompt({ mode: "colour" }).split("\n");
+  const i = lines.indexOf(WHOLE_IMAGE_LINE);
+  assert.equal(i, lines.indexOf("6. COMPOSITION") + 1, "first rule of section 6");
+  assert.ok(!lines.some((l) => /longest side|\bmm\b|inches/.test(l)), "no size line");
+  lines[i] = RS_SQUARE_LINE;
+  assert.equal(sha(lines.join("\n")), RS_V6_SHA256);
 });
 
-test("black & white prompt replaces section 4 only (Appendix A)", () => {
-  const colour = buildPrompt({ size: 300, unit: "mm", mode: "colour" });
-  const bw = buildPrompt({ size: 300, unit: "mm", mode: "bw" });
+test("black & white prompt replaces section 4 and the final check (Appendix A)", () => {
+  const colour = buildPrompt({ mode: "colour" });
+  const bw = buildPrompt({ mode: "bw" });
   assert.equal(bw.split("4. COLOURS")[0], colour.split("4. COLOURS")[0]);
-  assert.equal(bw.split("5. DESIGN")[1], colour.split("5. DESIGN")[1]);
   const section4 = bw.split("4. COLOURS")[1].split("5. DESIGN")[0];
   assert.ok(section4.includes(`Jet ${STONE_COLORS.jet.previewColor}, Crystal ${STONE_COLORS["crystal-clear"].previewColor}.`));
   assert.ok(!section4.includes("Siam"), "no palette line");
-  assert.throws(() => buildPrompt({ size: 300, unit: "cm", mode: "bw" }));
-  assert.throws(() => buildPrompt({ size: 300, unit: "mm", mode: "grey" }));
+  const [bwDesign, bwCheck] = bw.split("5. DESIGN")[1].split("\n\nBefore finishing, ");
+  const [colourDesign, colourCheck] = colour.split("5. DESIGN")[1].split("\n\nBefore finishing, ");
+  assert.equal(bwDesign, colourDesign);
+  assert.equal(bwCheck, colourCheck.replace("only the listed colours are used, skin and fur only from their ramps", "every stone is Jet or Crystal"));
+  assert.ok(!/ramp|skin|fur/.test(bwCheck));
+  assert.throws(() => buildPrompt({ mode: "grey" }));
 });
 
 // A provider with a scripted fetch. Each entry: a status + body, "reject", or "hang".
@@ -58,7 +62,7 @@ function scripted(entries) {
 
 const PNG_B64 = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]).toString("base64");
 const SETTINGS = { apiKey: "test-key", model: "test-model", quality: "high", timeoutMs: 50 };
-const OPTIONS = { size: 200, unit: "mm", mode: "colour" };
+const OPTIONS = { mode: "colour" };
 const ok = { status: 200, body: { data: [{ b64_json: PNG_B64 }] } };
 const refusal = { status: 400, body: { error: { message: "Your request was rejected by the safety system." } } };
 
@@ -72,9 +76,16 @@ test("provider sends the edit request and returns the PNG", async () => {
   const form = calls[0].form;
   assert.deepEqual(
     ["model", "quality", "size", "background", "output_format", "n"].map((k) => form.get(k)),
-    ["test-model", "high", "1024x1024", "transparent", "png", "1"]
+    ["test-model", "high", "auto", "transparent", "png", "1"]
   );
   assert.equal(form.get("prompt"), buildPrompt(OPTIONS));
+});
+
+test("provider reports the output's pixel size from the PNG header", async () => {
+  const png = await sharp({ create: { width: 15, height: 10, channels: 4, background: "#00000000" } }).png().toBuffer();
+  const { fetch } = scripted([{ status: 200, body: { data: [{ b64_json: png.toString("base64") }] } }]);
+  const out = await createProvider({ settings: SETTINGS, fetch, logger: quiet }).redraw(Buffer.from("png"), OPTIONS);
+  assert.deepEqual([out.width, out.height], [15, 10]);
 });
 
 test("provider: two attempts, safety refusal retried once, errors mapped to declined / failed", async () => {
@@ -129,12 +140,11 @@ test("acceptance: violations 0, coverage >= 0.5, at least 300 stones", () => {
   assert.equal(acceptLayout(layout(500, 0, 0.49)).ok, false);
 });
 
-test("design settings: size range per unit, mode, background", () => {
-  const s = normalizeDesignSettings({ upload: 1, size: 8, unit: "in", mode: "bw" });
-  assert.deepEqual([s.uploadId, s.sizeMm, s.mode, s.removeBackground], [1, 203.2, "bw", true]);
-  assert.equal(normalizeDesignSettings({ upload: 2, size: 140 }).sizeMm, 140);
-  for (const bad of [{ upload: 1, size: 139 }, { upload: 1, size: 601 }, { upload: 1, size: 5.4, unit: "in" },
-    { upload: 0, size: 200 }, { upload: 1, size: 200, mode: "sepia" }, { upload: 1, size: 200, removeBackground: "yes" }]) {
+test("design settings: mode, background removal and adjustments only", () => {
+  const s = normalizeDesignSettings({ upload: 1, mode: "bw" });
+  assert.deepEqual([s.uploadId, s.mode, s.removeBackground], [1, "bw", true]);
+  assert.deepEqual(Object.keys(normalizeDesignSettings({ upload: 2, size: 200, unit: "mm" })).sort(), ["adjustments", "mode", "removeBackground", "uploadId"]);
+  for (const bad of [{ upload: 0 }, { upload: 1, mode: "sepia" }, { upload: 1, removeBackground: "yes" }]) {
     assert.throws(() => normalizeDesignSettings(bad), RangeError, JSON.stringify(bad));
   }
 });
@@ -169,13 +179,55 @@ test("tiers: longest side is exactly T, r >= 1, no gap violations", () => {
   }
 });
 
-test("tiers: a layout larger than T keeps its natural size", () => {
+test("tiers: a T below the natural size is refused (tiers never shrink)", () => {
   const stones = [];
   for (let i = 0; i < 80; i++) for (let j = 0; j < 10; j++) stones.push([1 + i * 2.3, 1 + j * 2.3, "ss6", "jet"]);
-  const { stoneLayout, tier, gaps } = applyTier({ stones }, 140);
-  assert.deepEqual([tier.k, tier.r], [1, 1]);
-  assert.ok(Math.abs(stoneLayout.widthMm - tier.l0Mm) < 1e-9 && tier.l0Mm > 140);
+  assert.throws(() => applyTier({ stones }, 140), RangeError);
+});
+
+test("natural layout: as measured, footprint box at the origin, gap check", () => {
+  const stones = [[10, 20, "ss6", "jet"], [12.2, 20, "ss6", "jet"], [15, 25, "ss16", "jet"]];
+  const { stoneLayout, gaps } = naturalLayout({ stones });
+  const r9 = (v) => Math.round(v * 1e9) / 1e9;
+  assert.deepEqual(stoneLayout.stones.map((s) => [s.xMm, s.yMm, s.sizeMm].map(r9)), [[1, 1, 2], [3.2, 1, 2], [6, 6, 4]]);
+  assert.ok(Math.abs(stoneLayout.widthMm - 8) < 1e-9 && Math.abs(stoneLayout.heightMm - 8) < 1e-9);
   assert.ok(gaps.ok);
+  assert.equal(naturalLayout({ stones: [[0, 0, "ss6", "jet"], [1.9, 0, "ss6", "jet"]] }).gaps.ok, false);
+});
+
+// A w x h RGBA PNG, transparent except an opaque rectangle.
+function cutout(w, h, rect) {
+  const data = Buffer.alloc(w * h * 4);
+  for (let y = rect.top; y < rect.top + rect.height; y++) {
+    for (let x = rect.left; x < rect.left + rect.width; x++) data.set([200, 50, 50, 255], (y * w + x) * 4);
+  }
+  return sharp(data, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
+}
+
+test("model input: background removal on crops to the subject plus 3 %, off keeps the frame; no padding", async () => {
+  const png = await cutout(2000, 1000, { left: 1500, top: 100, width: 200, height: 400 });
+  assert.deepEqual(await subjectBox(png), { left: 1500, top: 100, width: 200, height: 400 });
+
+  // Margin 3 % of 400 = 12 px on every side: 224 x 424, scaled to 1024 on the long side.
+  const cropped = await modelInput(png, { cropToSubject: true });
+  const meta = await sharp(cropped).metadata();
+  assert.deepEqual([meta.width, meta.height], [Math.round(224 * MODEL_INPUT_SIDE / 424), MODEL_INPUT_SIDE]);
+  const box = await subjectBox(cropped);
+  const margin = 12 * MODEL_INPUT_SIDE / 424;
+  assert.ok(Math.abs(box.top - margin) <= 1 && Math.abs(box.left - margin) <= 1, JSON.stringify(box));
+
+  // A subject at the image edge: the margin beyond the image is transparent.
+  const edge = await modelInput(await cutout(500, 500, { left: 0, top: 0, width: 100, height: 100 }), { cropToSubject: true });
+  const edgeBox = await subjectBox(edge);
+  assert.equal((await sharp(edge).metadata()).width, MODEL_INPUT_SIDE);
+  assert.ok(Math.abs(edgeBox.left - 3 * MODEL_INPUT_SIDE / 106) <= 1, JSON.stringify(edgeBox));
+
+  // Off: the whole frame, aspect kept, no square padding.
+  const whole = await sharp(await modelInput(png)).metadata();
+  assert.deepEqual([whole.width, whole.height], [MODEL_INPUT_SIDE, MODEL_INPUT_SIDE / 2]);
+  // Nothing opaque: nothing to crop to.
+  const empty = await sharp(await modelInput(await cutout(300, 200, { left: 0, top: 0, width: 0, height: 0 }), { cropToSubject: true })).metadata();
+  assert.deepEqual([empty.width, empty.height], [MODEL_INPUT_SIDE, Math.round(MODEL_INPUT_SIDE * 2 / 3)]);
 });
 
 test("black & white: L* of the catalogue fill against the threshold", () => {
@@ -187,7 +239,7 @@ test("black & white: L* of the catalogue fill against the threshold", () => {
   assert.equal(bwColour("crystal"), BW_LIGHT);
   assert.equal(bwColour("hematite", 0), BW_LIGHT);
   assert.equal(bwColour("crystal-clear", 101), BW_DARK);
-  const { stoneLayout } = applyTier({ stones: [[1, 1, "ss6", "siam"], [4, 1, "ss6", "silk"], [7, 1, "ss16", "jet"]] }, 140);
+  const { stoneLayout } = naturalLayout({ stones: [[1, 1, "ss6", "siam"], [4, 1, "ss6", "silk"], [7, 1, "ss16", "jet"]] });
   const bw = mapBlackAndWhite(stoneLayout);
   assert.deepEqual(new Set(bw.stones.map((s) => s.color)), new Set([BW_DARK, BW_LIGHT]));
   assert.deepEqual(bw.stones.map((s) => [s.xMm, s.yMm, s.sizeMm]), stoneLayout.stones.map((s) => [s.xMm, s.yMm, s.sizeMm]));

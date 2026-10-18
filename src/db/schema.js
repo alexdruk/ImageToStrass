@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS attempts (
   status        TEXT NOT NULL DEFAULT 'queued'
                 CHECK (status IN ('queued', 'running', 'done', 'failed', 'declined')),
   stage         TEXT,
-  settings_json TEXT,                                 -- size, unit, mode, bg removal, adjustments, crop, rotate
-  result_json   TEXT,                                 -- stone count, sizes, colours, tier, final w/h, coverage
+  settings_json TEXT,                                 -- mode, bg removal, adjustments, crop, rotate
+  result_json   TEXT,                                 -- stone count, sizes, colours, natural w/h, coverage
   error_code    TEXT,
   created_at    TEXT NOT NULL,
   finished_at   TEXT,

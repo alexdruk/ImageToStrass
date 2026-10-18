@@ -4,7 +4,8 @@
 // real time.
 // IS (spec section 7.3): only the provider call is kept (two attempts, the safety refusal retried
 // once, a timeout not retried, abort on cancel). The routes, access code, limiter and fake routes
-// are not copied. The result is { png } or { error: 'declined' | 'failed', detail }; `detail` is for
+// are not copied. The result is { png, width, height } (the output's pixel size, read from its PNG
+// header) or { error: 'declined' | 'failed', detail }; `detail` is for
 // the local log and events table only and never reaches the browser (spec section 12).
 import { buildPrompt } from './prompt.js';
 
@@ -43,7 +44,8 @@ export function createProvider({ settings, fetch = globalThis.fetch, timers = DE
       form.append('prompt', prompt);
       form.append('image', new Blob([pngBuffer], { type: 'image/png' }), 'source.png');
       form.append('quality', settings.quality);
-      form.append('size', '1024x1024');
+      // IS (spec 7.3): the provider picks the output shape from the input's.
+      form.append('size', 'auto');
       form.append('background', 'transparent');
       form.append('output_format', 'png');
       form.append('n', '1');
@@ -105,7 +107,10 @@ export function createProvider({ settings, fetch = globalThis.fetch, timers = DE
     if (response.status !== 200) return failed(`provider-${response.status}`);
     const b64 = body && Array.isArray(body.data) && body.data[0] ? body.data[0].b64_json : null;
     if (!isPngBase64(b64)) return failed('provider-no-image');
-    return { png: Buffer.from(b64, 'base64') };
+    const png = Buffer.from(b64, 'base64');
+    // IS: the output's pixel size (IHDR width and height), when the PNG is long enough to hold them.
+    const size = png.length >= 24 ? { width: png.readUInt32BE(16), height: png.readUInt32BE(20) } : {};
+    return { png, ...size };
   }
 
   return { redraw };

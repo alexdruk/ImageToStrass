@@ -1,13 +1,14 @@
 // From Rhinestone-Studio @38cd831 server/redraw/prompt.mjs
 // IMG-022: the prompt the redraw server sends with every image. The palette line is generated from
 // the stone catalogue, so a colour added there reaches the prompt with no edit here.
-// IS (spec section 7.2): the stones prompt only (the flat style is not copied), with the size line in
-// section 6 and, for Black & white, section 4 replaced by the spec's Appendix A. The prompt is built
+// IS (spec section 7.2): the stones prompt only (the flat style is not copied). Section 6 uses the
+// whole image instead of a square one; for Black & white, section 4 and the final check are replaced
+// by the spec's Appendix A. There is no size line: every design has its natural size (7.5). The prompt is built
 // server-side only; it is never logged, stored under public/ or sent to the browser.
 import { STONE_COLORS } from '../stones/StoneColors.js';
 
 // IS: version of the IS prompt (v6 of RS plus the IS additions). A wording change bumps it.
-export const IS_PROMPT_VERSION = 1;
+export const IS_PROMPT_VERSION = 2;
 
 // IMG-026 (S10, S11, build H): version 6 is the placement-chart prompt of the spec's Appendix D, with
 // the generated palette line inside rule 4.
@@ -79,15 +80,16 @@ const V6_DESIGN = [
   '- Keep the subject, pose, proportions and recognisable features of the uploaded image. Simplify only where stones cannot show the detail.',
   '',
   '6. COMPOSITION',
-  '- Square image at the highest resolution available.',
+  '- Use the whole image at the highest resolution available, in the same shape (width to height) as the uploaded image.',
   '- The whole subject fits inside the image with a margin of about 3 stones on every side; nothing is cut off at the edges.',
   '- One scale for the whole image, no perspective.'
 ].join('\n');
 
-const V6_CHECK = [
-  '',
-  'Before finishing, check that: every stone is a separate flat circle; no two stones touch, outline stones included; nothing is drawn in the gaps; only the three allowed sizes are used; only the listed colours are used, skin and fur only from their ramps; the background is transparent or pure magenta.'
-].join('\n');
+const CHECK_HEAD = 'Before finishing, check that: every stone is a separate flat circle; no two stones touch, outline stones included; nothing is drawn in the gaps; only the three allowed sizes are used; ';
+const CHECK_TAIL = '; the background is transparent or pure magenta.';
+const V6_CHECK = ['', `${CHECK_HEAD}only the listed colours are used, skin and fur only from their ramps${CHECK_TAIL}`].join('\n');
+// IS: spec Appendix A, the final check for Black & white (no ramps to refer to).
+const BW_CHECK = ['', `${CHECK_HEAD}every stone is Jet or Crystal${CHECK_TAIL}`].join('\n');
 
 // "Name #hex" pairs in catalogue order; the hex is previewColor. IMG-026F: the aiOnly colours are
 // listed only with includeAiOnly, which the stones prompt passes.
@@ -95,20 +97,10 @@ export function buildPaletteLine(colors = STONE_COLORS, includeAiOnly = false) {
   return Object.values(colors).filter((c) => includeAiOnly || !c.aiOnly).map((c) => `${c.name} ${c.previewColor}`).join(', ');
 }
 
-// IS: the size as written in the prompt's size line, e.g. "200 mm" or "8 inches".
-function sizeText(size, unit) {
-  const value = Number(size.toFixed(unit === 'in' ? 1 : 0));
-  return unit === 'in' ? `${value} inches` : `${value} mm`;
-}
-
-// IS: { size, unit: 'mm' | 'in', mode: 'colour' | 'bw' } -> the prompt text.
-export function buildPrompt({ size, unit, mode }, colors = STONE_COLORS) {
-  if (!Number.isFinite(size) || size <= 0) throw new RangeError('size must be a positive number.');
-  if (unit !== 'mm' && unit !== 'in') throw new RangeError('unit must be mm or in.');
+// IS: { mode: 'colour' | 'bw' } -> the prompt text.
+export function buildPrompt({ mode }, colors = STONE_COLORS) {
   if (mode !== 'colour' && mode !== 'bw') throw new RangeError('mode must be colour or bw.');
-  const colours = mode === 'bw'
-    ? bwColoursSection(colors)
-    : [V6_COLOURS_INTRO, buildPaletteLine(colors, true), V6_COLOURS_RULES].join('\n');
-  const sizeLine = `- The finished rhinestone design will be ${sizeText(size, unit)} on its longest side.`;
-  return [V6_HEAD, colours, V6_DESIGN, sizeLine, V6_CHECK].join('\n');
+  if (mode === 'bw') return [V6_HEAD, bwColoursSection(colors), V6_DESIGN, BW_CHECK].join('\n');
+  const colours = [V6_COLOURS_INTRO, buildPaletteLine(colors, true), V6_COLOURS_RULES].join('\n');
+  return [V6_HEAD, colours, V6_DESIGN, V6_CHECK].join('\n');
 }
