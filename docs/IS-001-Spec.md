@@ -2,7 +2,8 @@
 
 Status: spec, 18 Oct 2026. Revised 18 Oct 2026 (IS-03b): no size choice, every design is delivered
 at its natural size. Revised 19 Oct 2026 (IS-04): EPS written by IS (no Ghostscript), overlap
-cleanup after the SS16 cap, acceptance on the IS gap check.
+cleanup after the SS16 cap, acceptance on the IS gap check. Revised 19 Oct 2026 (IS-05b): a face's
+two pupils may stay SS20; designs whose pupils are not one plausible pair get no eye stage.
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -39,7 +40,7 @@ disclosure in generic words (section 11.1).
 | # | Decision |
 | --- | --- |
 | D1 | The buyer does not choose a size. Every design is delivered at its **natural size**, exactly as the strass service measures it (section 7.5), shown as width × height in mm and in. |
-| D2 | **SS6** is the main stone size, with occasional **SS4**, **SS10** and **SS16** allowed; nothing larger than SS16 (the layout service's SS20 and SS30 pupils are capped to SS16, section 7.5). No tier multiples in the UI, the result data or the ZIP. |
+| D2 | **SS6** is the main stone size, with occasional **SS4**, **SS10** and **SS16** allowed; nothing larger than SS16, except the two pupils of a face, which may be **SS20** (IS-05b): the layout service's SS30 pupils become SS20, every other stone above SS16 becomes SS16 (section 7.5). No tier multiples in the UI, the result data or the ZIP. |
 | D3 | Black & white means **Jet + Crystal only**. |
 | D4 | The buyer sees only two views: **Original** and **Tinted** (section 8). No mask, AI image, overlay or 3D view. |
 | D5 | At most 3 designs per code. A design that fails for technical reasons, or is declined by the safety check, does not count. |
@@ -280,12 +281,17 @@ diameters as measured (`targetPitchMm` 2.1, SS6 main stones), only moved so the 
 box starts at the origin. No scaling, no minimum or maximum size. IS-03 measured natural longest
 sides of 130–168 mm on the 12 RS test layouts.
 
-Size cap (D2): after the layout, every stone larger than SS16 (the service's SS20 and SS30 pupil
-stones) is snapped down to SS16 at the same centre; the footprint box is that of the capped stones.
-Shrinking a stone only widens its gaps, so the cap never creates an overlap. The number of capped
-stones goes to the design's event log (server only). The 12 RS test layouts have 13 such stones,
-the 8 accepted IS-03b designs 11 (2 in each dog, cat and dachshund design, 1 in the giraffe, none in
-the mugs).
+Size cap (D2): after the layout, every stone larger than SS16 is snapped down to SS16 at the same
+centre, except the pupil stones of a face: when the service's report has `face` set (not null) and
+exactly two pupils in `pupilsAtMm` (IS-05b; the pupil stones' centres), the stones at those two
+centres are only capped at SS20 (an SS30 pupil becomes SS20, an SS20 pupil stays). The service
+sets `face` to null, and places no eye stones, when its pupils are not one plausible pair (more
+than two, or two of very different sizes, far from level or too far apart for the subject; the
+IS-03b car's wheels gave 19 "pupils"). A layout without `pupilsAtMm` gets the SS16 cap for every
+stone. The footprint box is that of the capped stones. Shrinking a stone only widens its gaps, so
+the cap never creates an overlap. The number of capped stones goes to the design's event log
+(server only). Why SS20: capped to SS16, a pupil sits small inside the gap the service left for
+it, and the tinted view paints a black ring around it (`docs/IS-05b-results.md`).
 
 Overlap cleanup (`src/pipeline/cleanup.js`), after the cap: for every pair of stones whose rim gap
 (centre distance minus both radii) is below 0.1 mm, the smaller stone is removed; on equal size the
@@ -301,7 +307,8 @@ rasterised at the service's 10 px per mm. It includes the cap's shrinking.
 The IS gap check (`findOverlappingStonePairs` from StoneLayout.js and a min-gap check of 0.1 mm)
 then runs on the cleaned layout, and acceptance (7.4) uses its result. The rejected IS-03b car (148
 service violations, 145 after the cap) loses 79 SS4 stones of 3716 (2.1 %), its coverage goes from
-0.633 to 0.624, and it is accepted. The cleanup removes nothing from the 12 RS test layouts and the
+0.633 to 0.624, and it is accepted. (Those numbers are the RS 38cd831 rules; with IS-05b's
+plausible-pupil rule the car gets no eye stage and the cleanup removes nothing from it.) The cleanup removes nothing from the 12 RS test layouts and the
 8 accepted IS-03b designs.
 
 The stone-size tier code (`applyTier` in `src/pipeline/tiers.js`: scale positions and diameters by a

@@ -72,9 +72,14 @@ answers 200 with the layout:
 { "version": 1, "widthMm": 103.0, "heightMm": 130.8,
   "stones": [[x, y, "ss6", "jet"], ...],
   "report": { "stones", "bySize", "colours", "minGapMm", "violations", "coverage",
-              "largestEmptyCircleMm", "face", "pupilsMm", "frameMm", "offsetMm", "mmPerPx",
-              "stagesMs": { "detect", "layout", "eyes", "colour", "check" }, "ms" } }
+              "largestEmptyCircleMm", "face", "pupilsMm", "pupilsAtMm", "frameMm", "offsetMm",
+              "mmPerPx", "stagesMs": { "detect", "layout", "eyes", "colour", "check" }, "ms" } }
 ```
+
+IS (IS-05b): `pupilsAtMm` is the centre `[x, y]` of each pupil stone, in the stones' coordinates
+and in the order of `pupilsMm`. `face` is `"human"`, `"animal"` or `null`: null when the pupils
+are not one plausible pair (more than two, or two of very different sizes, far from level or too
+far apart for the subject); the eye stage is then skipped and `pupilsMm` is empty.
 
 Stone coordinates are centres in mm from the top-left corner of the stones' bounding box (S1).
 Size ids are `ss4 ss6 ss10 ss16 ss20 ss30` (1.5, 2.0, 2.8, 4.0, 4.7, 6.4 mm).

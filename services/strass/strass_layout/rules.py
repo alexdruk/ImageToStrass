@@ -6,6 +6,10 @@ BUILD_E to BUILD_I are what builds E to I shipped; DEFAULT is what the service s
 See docs/specifications/IMG-026-StrassLayoutService.md, "Layout quality (build E)",
 "Colour and eyes (build F)", "Pupils and stone colours (build G)",
 "More catalogue colours (build H)", "Faces and eyes (build I)" and "Skin and fur tones (build J)".
+
+IS (IS-05b, not in RS): plausible_eyes treats a design whose pupils are not one plausible pair
+(more than two, or two of very different sizes, far from level or too far apart for the subject)
+as having no face: the eye stage is skipped and report.face is null. See post._plausible_pupils.
 """
 from dataclasses import dataclass
 
@@ -29,6 +33,7 @@ class Rules:
     soft_outlines: bool = False
     calm_skin: bool = False
     skin_nearest: bool = False
+    plausible_eyes: bool = False
 
 
 PROTOTYPE = Rules(pupil_core_only=False, keep_chains=False)
@@ -43,4 +48,4 @@ BUILD_I = Rules(pupil_core_only=True, keep_chains=True, extra_colours=True, mean
                 soft_outlines=True, calm_skin=True)
 DEFAULT = Rules(pupil_core_only=True, keep_chains=True, extra_colours=True, mean_colour=True, human_iris=True, eye_keep=True,
                 pupil_inscribed=True, real_colours=True, more_colours=True, lively_eyes=True, skin_no_wine=True,
-                soft_outlines=True, calm_skin=True, skin_nearest=True)
+                soft_outlines=True, calm_skin=True, skin_nearest=True, plausible_eyes=True)

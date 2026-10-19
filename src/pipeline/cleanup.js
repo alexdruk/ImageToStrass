@@ -1,4 +1,4 @@
-import { MIN_GAP_MM, capStoneSizes, checkGaps, stonesOfLayout, toStoneLayout } from "./tiers.js";
+import { MIN_GAP_MM, capStoneSizes, checkGaps, pupilCentres, stonesOfLayout, toStoneLayout } from "./tiers.js";
 
 // Overlap cleanup (spec section 7.5), after the SS16 cap: for every pair of stones whose rim gap
 // (centre distance minus both radii) is below 0.1 mm, the smaller stone is removed; on equal size
@@ -101,7 +101,7 @@ function boxOf(stones) {
 export function cleanedLayout(layout) {
   const measured = stonesOfLayout(layout);
   if (measured.length === 0) throw new Error("The layout has no stones.");
-  const { stones: capped, capped: cappedCount } = capStoneSizes(measured);
+  const { stones: capped, capped: cappedCount } = capStoneSizes(measured, pupilCentres(layout));
   const { stones: kept, removed } = removeCloseStones(capped);
   const box = boxOf(measured);
   const coverageBefore = Number(layout.report?.coverage);

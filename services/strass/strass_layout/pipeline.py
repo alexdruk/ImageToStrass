@@ -31,7 +31,8 @@ def layout_frame(png_bytes, target_pitch_mm=2.1, models=None, rules=DEFAULT):
 
     Returns {"stones": [{x, y, size, d, color}], "frame": {...}, "stagesMs": {...}, "ms": int}.
     The stones are in OpenAI-frame mm, in the prototype's order. The frame holds
-    mmPerPx, widthMm, heightMm, the strict subject mask (an array), face and pupilsMm.
+    mmPerPx, widthMm, heightMm, the strict subject mask (an array), face, pupilsMm and pupilsAtMm
+    (IS: the pupil stones' centres).
     """
     clock = Stopwatch()
     models = models or load_models()
@@ -61,6 +62,7 @@ def layout_frame(png_bytes, target_pitch_mm=2.1, models=None, rules=DEFAULT):
         "mask": info["mask"],
         "face": info["face"],
         "pupilsMm": info["pupilsMm"],
+        "pupilsAtMm": info["pupilsAtMm"],
     }
     return {"stones": stones, "frame": frame, "stagesMs": clock.stages(), "ms": clock.total()}
 
@@ -113,6 +115,7 @@ def finish_layout(result):
         "largestEmptyCircleMm": round(float(hmax), 3),
         "face": frame["face"],
         "pupilsMm": frame["pupilsMm"],
+        "pupilsAtMm": [[round(x - off_x, 3), round(y - off_y, 3)] for x, y in frame["pupilsAtMm"]],
         "frameMm": round(frame["widthMm"], 3),
         "offsetMm": [off_x, off_y],
         "mmPerPx": round(s, 6),

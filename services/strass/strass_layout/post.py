@@ -9,6 +9,10 @@ brown ones are recoloured; any remaining gap violation is removed.
 Rules.human_iris gives people the iris rings animals get, without their dark stones;
 Rules.eye_keep removes only the stones that overlap an eye stone instead of the whole
 eye zone.
+
+IS (IS-05b): Rules.plausible_eyes skips the eye stage when the pupils are not one plausible pair
+(_plausible_pupils); info["face"] is then None. info["pupilsAtMm"] holds the pupil stones'
+centres (frame mm), in the order of info["pupilsMm"].
 """
 from collections import Counter
 
@@ -54,6 +58,26 @@ def _has_partner(c, cands):
         if dx > 0 and dy <= 0.25 * dx and ratio < 1.6:
             return True
     return False
+
+
+PAIR_MAX_RATIO = 1.6
+PAIR_MAX_SLOPE = 0.5
+PAIR_MAX_SPAN = 0.45
+
+
+def _plausible_pupils(cands, mask):
+    """IS-05b: True for no pupil, one pupil, or two pupils that can be one face's eyes: diameters
+    within a factor PAIR_MAX_RATIO (before they are equalised), the vertical offset at most
+    PAIR_MAX_SLOPE of the horizontal one, and centres at most PAIR_MAX_SPAN of the subject mask's
+    width apart. More than two pupils are never a face (a car's wheels give a dozen)."""
+    if len(cands) != 2:
+        return len(cands) < 2
+    a, b = cands
+    dx, dy = abs(a["x"] - b["x"]), abs(a["y"] - b["y"])
+    cols = np.nonzero(mask.any(0))[0]
+    width = cols[-1] - cols[0] + 1 if len(cols) else mask.shape[1]
+    ratio = max(a["diam_mm"], b["diam_mm"]) / min(a["diam_mm"], b["diam_mm"])
+    return ratio < PAIR_MAX_RATIO and dy <= PAIR_MAX_SLOPE * dx and np.hypot(dx, dy) <= PAIR_MAX_SPAN * width
 
 
 def _best_disc(dt, hl, cx, cy, min_r):
@@ -130,6 +154,9 @@ def post_process(px, det, state, first, models, clock, rules=DEFAULT):
                         hy, hx = yy - Di / 3, xx + Di / 3
                     cands.append(dict(x=float(xx + x0), y=float(yy + y0), diam_mm=float(Di * s * (1.0 if rules.lively_eyes else 1.15)), roundness=1.0, hx=float(hx + x0), hy=float(hy + y0)))
                     break
+    no_face = rules.plausible_eyes and not _plausible_pupils(cands, mask)
+    if no_face:
+        cands, boxes = [], None
     if len(cands) == 2:
         d0, d1 = cands[0]["diam_mm"], cands[1]["diam_mm"]
         if max(d0, d1) / min(d0, d1) < 1.6:
@@ -158,6 +185,7 @@ def post_process(px, det, state, first, models, clock, rules=DEFAULT):
                 pre = [p for k, p in enumerate(pre) if k not in dark_ring]
         pre = [p[:4] for p in pre]
     pupils = [round(c["diam_mm"], 2) for c in cands]
+    pupils_at = [[round(float(c["x"] * s), 3), round(float(c["y"] * s), 3)] for c in cands]
 
     col = first["col"]
     dmm = 2 * det[:, 2] * s
@@ -254,5 +282,6 @@ def post_process(px, det, state, first, models, clock, rules=DEFAULT):
     stones = [{"x": round(float(x), 3), "y": round(float(y), 3), "size": SIZE_KEYS[float(d)], "d": float(d), "color": c}
               for (x, y), d, c in zip(P, D, C)]
     clock.lap("check")
-    info = {"mask": mask, "face": "human" if boxes is not None else "animal", "pupilsMm": pupils, "eyeZones": zones}
+    face = None if no_face else "human" if boxes is not None else "animal"
+    info = {"mask": mask, "face": face, "pupilsMm": pupils, "pupilsAtMm": pupils_at, "eyeZones": zones}
     return stones, info
