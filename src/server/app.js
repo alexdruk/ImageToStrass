@@ -1,6 +1,4 @@
 import express from "express";
-import { createDesign, getDesign } from "../design-store.js";
-import { MONOGRAM_FRAMES } from "../monogram-frames.js";
 import { etsyApiRequest } from "../etsy/etsy-api.js";
 import { loadShop, saveShop } from "../etsy/shop-store.js";
 import {
@@ -62,7 +60,6 @@ app.get("/", (_req, res) => {
     <h1>ImageToStrass</h1>
     <p>Etsy Seller App: imagetotemplate</p>
     <p><a href="/auth/etsy">Connect Etsy</a></p>
-      <p><a href="/customizer">Create a monogram</a></p>
   `);
 });
 
@@ -416,62 +413,6 @@ app.post("/etsy/listings/:listingId/personalization", async (req, res) => {
   }
 });
 
-
-// ETSY-006 CUSTOMIZER ROUTES
-
-app.get("/customizer", (_req, res) => {
-  res.sendFile("customizer.html", { root: "public" });
-});
-
-app.get("/api/frames", (_req, res) => {
-  res.json({ count: MONOGRAM_FRAMES.length, results: MONOGRAM_FRAMES });
-});
-
-app.post("/api/designs", async (req, res) => {
-  const body = req.body || {};
-  const language = body.language;
-  const letters = typeof body.letters === "string"
-    ? body.letters.normalize("NFC").trim().toUpperCase()
-    : "";
-  const frameId = body.frameId;
-
-  if (!["en", "fr", "de", "es", "it"].includes(language)) {
-    return res.status(400).json({ error: "Invalid language." });
-  }
-
-  if (!/^\p{L}{1,3}$/u.test(letters)) {
-    return res.status(400).json({
-      error: "Enter between 1 and 3 letters only."
-    });
-  }
-
-  if (!MONOGRAM_FRAMES.some((frame) => frame.id === frameId)) {
-    return res.status(400).json({ error: "Invalid frame selection." });
-  }
-
-  try {
-    const design = await createDesign({ language, letters, frameId });
-    return res.status(201).json(design);
-  } catch (error) {
-    console.error("Design save failed:", error.message);
-    return res.status(500).json({ error: "Unable to save design." });
-  }
-});
-
-app.get("/api/designs/:designId", async (req, res) => {
-  try {
-    const design = await getDesign(req.params.designId);
-
-    if (!design) {
-      return res.status(404).json({ error: "Design not found." });
-    }
-
-    return res.json(design);
-  } catch (error) {
-    console.error("Design retrieval failed:", error.message);
-    return res.status(500).json({ error: "Unable to retrieve design." });
-  }
-});
 
 return app;
 }
