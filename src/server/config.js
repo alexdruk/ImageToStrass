@@ -18,6 +18,8 @@ export function loadConfig(env = process.env) {
     tmpDir: "data/tmp",
     ipKeyFile: "data/ip-hash.key",
     turnstileSecret: env.TURNSTILE_SECRET_KEY || "",
+    turnstileSiteKey: env.TURNSTILE_SITE_KEY || "",
+    listingUrl: env.IS_ETSY_LISTING_URL || "",
     // Design pipeline (spec section 7). The key is read here and passed only to the provider client.
     provider: {
       apiKey: env.OPENAI_API_KEY || "",

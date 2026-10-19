@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>IS · Image to rhinestone template</title>
+  <meta name="description" content="Turn any image into a production-ready rhinestone template.">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/" data-link aria-label="IS home">
+        <img src="/logo.svg" alt="" width="34" height="34">
+        <span class="brand-name">IS</span>
+        <span class="brand-tag">rhinestone templates</span>
+      </a>
+      <ol class="steps" id="steps" aria-label="Progress" hidden>
+        <li data-step="upload"><span class="dot">1</span><span class="label">Upload</span></li>
+        <li data-step="prepare"><span class="dot">2</span><span class="label">Prepare</span></li>
+        <li data-step="design"><span class="dot">3</span><span class="label">Design</span></li>
+        <li data-step="result"><span class="dot">4</span><span class="label">Result</span></li>
+        <li data-step="code"><span class="dot">5</span><span class="label">Your code</span></li>
+      </ol>
+      <button class="code-chip" id="code-chip" type="button" hidden title="Copy your code"></button>
+    </div>
+  </header>
+
+  <main id="main" class="main" tabindex="-1">
+    <div class="loading"><span class="spinner" aria-hidden="true"></span><span>Loading…</span></div>
+  </main>
+
+  <footer class="footer">
+    <nav>
+      <a href="/download" data-link>Download</a>
+      <a href="/privacy" data-link>Privacy</a>
+      <a href="/terms" data-link>Terms</a>
+      <a href="/contact" data-link>Contact</a>
+    </nav>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

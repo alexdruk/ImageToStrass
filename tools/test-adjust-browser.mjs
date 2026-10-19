@@ -15,6 +15,7 @@ import { readRgba } from "../src/prep/prepare.js";
 
 const CHROME = process.env.CHROME_PATH || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const ADJUST_JS = new URL("../public/adjust.js", import.meta.url);
+const ANSWER_MS = 60_000;
 const PHOTO = new URL("../services/strass/tests/fixtures/photos/cat.jpg", import.meta.url).pathname;
 
 const CASES = [
@@ -86,10 +87,9 @@ function serve(image) {
   return { server, result };
 }
 
-test("adjust.js gives identical output in Node and in the browser", { skip: !existsSync(CHROME) && "Chrome not found" }, async () => {
-  // A real photo at the browser preview size.
-  const image = await readRgba(await (await import("sharp")).default(PHOTO).resize(1024).ensureAlpha().png().toBuffer());
-  const expected = nodeHashes(image);
+// One run in a fresh headless Chrome with a throw-away profile: the browser's answer, or null when
+// no answer arrives within ANSWER_MS.
+async function runInChrome(image) {
   const { server, result } = serve(image);
 
   server.listen(0, "127.0.0.1");
@@ -105,19 +105,15 @@ test("adjust.js gives identical output in Node and in the browser", { skip: !exi
   try {
     // The timers are cleared (or unref'd) so the test process exits as soon as the test is done.
     let timer;
-    const got = await Promise.race([
+    return await Promise.race([
       result,
-      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("browser did not answer in 60 s")), 60_000); })
+      new Promise((resolve) => { timer = setTimeout(() => resolve(null), ANSWER_MS); })
     ]).finally(() => clearTimeout(timer));
-
-    assert.equal(got.error, undefined, got.error);
-    assert.match(got.userAgent, /Chrome/);
-    assert.equal(new Set(expected).size, CASES.length, "every case gives a different image");
-    assert.deepEqual(got.hashes, expected);
   } finally {
     // Only the headless instance started above; it may still write to its profile while exiting.
     const exited = chrome.exitCode !== null ? null : new Promise((resolve) => chrome.once("exit", resolve));
     chrome.kill();
+    server.closeAllConnections();
     server.close();
     await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 5_000).unref())]);
     // Chrome's helper processes can outlive it and keep writing; a profile left in the OS temp
@@ -129,4 +125,23 @@ test("adjust.js gives identical output in Node and in the browser", { skip: !exi
       try { rmSync(profile, { recursive: true, force: true }); } catch { /* left to the OS */ }
     }
   }
+}
+
+test("adjust.js gives identical output in Node and in the browser", { skip: !existsSync(CHROME) && "Chrome not found" }, async () => {
+  // A real photo at the browser preview size.
+  const image = await readRgba(await (await import("sharp")).default(PHOTO).resize(1024).ensureAlpha().png().toBuffer());
+  const expected = nodeHashes(image);
+
+  // A headless Chrome that never answers (seen now and then on a busy Mac) gets one more try in a
+  // new instance; a second silence fails the test. A wrong answer is never retried.
+  let got = await runInChrome(image);
+  if (got === null) {
+    got = await runInChrome(image);
+  }
+
+  assert.ok(got, `browser did not answer in ${ANSWER_MS / 1000} s, twice`);
+  assert.equal(got.error, undefined, got.error);
+  assert.match(got.userAgent, /Chrome/);
+  assert.equal(new Set(expected).size, CASES.length, "every case gives a different image");
+  assert.deepEqual(got.hashes, expected);
 });

@@ -1,0 +1,277 @@
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import path from "node:path";
+import express from "express";
+import sharp from "sharp";
+import { normalizeCode } from "../db/codes.js";
+import { buildDeliveryZip, deliveryZipPath } from "../export/zip.js";
+import { DESIGNS_PER_CODE } from "../pipeline/design.js";
+import { attemptDir, uploadDir, writeCodeJson } from "../prep/archive.js";
+import { previewPng } from "../prep/prepare.js";
+import { renderPreview } from "../render/tinted.js";
+import { STONE_COLORS } from "../stones/StoneColors.js";
+import { StoneLayout } from "../stones/StoneLayout.js";
+import { listAllStoneSizes } from "../stones/StoneSizes.js";
+
+// The web app's own routes (spec section 10): the screens' URLs, the session of a code, the two
+// views of a design (Original and the watermarked Tinted preview), "Use this design" and the
+// download page. Answers carry IS fields only; refusals are { error: <IS code> } (spec 12).
+
+export const DELIVERY_DAYS = 30;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const PREVIEW_CACHE_SIZE = 24;
+const LOOPBACK = new Set(["127.0.0.1", "::1", "::ffff:127.0.0.1"]);
+
+// Every screen URL of the app; each answers with the one page (public/index.html).
+export const SCREEN_PATHS = /^\/(?:c\/[^/]+(?:\/prepare|\/working|\/done|\/result\/\d+)?|download|privacy|terms|contact)?\/?$/;
+
+const INDEX_CSP = [
+  "default-src 'self'",
+  "script-src 'self' https://challenges.cloudflare.com",
+  "frame-src https://challenges.cloudflare.com",
+  "connect-src 'self'",
+  "img-src 'self' blob: data:",
+  "style-src 'self'",
+  "base-uri 'none'",
+  "form-action 'self'",
+  "frame-ancestors 'none'"
+].join("; ");
+
+// Names and swatches for the Result screen's stone counts.
+const COLOURS = Object.fromEntries(Object.values(STONE_COLORS).map((c) => [c.id, { name: c.name, fill: c.fill }]));
+const SIZES = Object.fromEntries(listAllStoneSizes().map((s) => [s.id, s.name]));
+
+const nOf = (text) => (/^[1-9]\d{0,5}$/.test(text) ? Number(text) : null);
+
+// The download state of a code row (spec 10, screen 6).
+export function downloadState(row, now = Date.now()) {
+  if (!row) return { state: "unknown" };
+  if (row.status === "refunded") return { state: "refunded" };
+  const expiresAt = row.delivery_expires_at;
+  if (row.status === "expired" || (row.status === "paid" && expiresAt && Date.parse(expiresAt) <= now)) {
+    return { state: "expired" };
+  }
+  if (row.status === "paid") return { state: "ready", expiresAt };
+  return { state: "unpaid" };
+}
+
+export function webappRoutes({ q, config, background, log = console }) {
+  const router = express.Router();
+  const previews = new Map();
+  const zipBuilds = new Map();
+
+  const codeRow = (req) => {
+    const code = normalizeCode(req.params.code);
+    return code ? q.getCode(code) : null;
+  };
+
+  // Attempt n of a code, following an automatic re-run to the attempt that replaced it.
+  function attemptOf(code, n) {
+    let attempt = n ? q.getAttempt(code, n) : null;
+    while (attempt?.result?.rerunAs) attempt = q.getAttempt(code, attempt.result.rerunAs);
+    return attempt;
+  }
+
+  function latestUpload(code) {
+    const parent = path.join(config.archiveDir, code, "uploads");
+    if (!existsSync(parent)) return null;
+    const ks = readdirSync(parent).map(Number).filter((k) => Number.isInteger(k) && k > 0)
+      .filter((k) => existsSync(path.join(uploadDir(config.archiveDir, code, k), "work.png")));
+    return ks.length ? Math.max(...ks) : null;
+  }
+
+  // The settings the Prepare screen starts from: the latest design's, when it was made from the
+  // latest upload ("Try again starts from the previous settings", spec 6.3).
+  function lastSettings(attempts, upload) {
+    const last = [...attempts].reverse().find((a) => a.settings);
+    if (!last || last.settings.uploadId !== upload) return null;
+    const { removeBackground, adjustments, mode } = last.settings;
+    return { removeBackground, adjustments, mode };
+  }
+
+  // The delivered attempt (D6): the buyer's pick, else the latest done design.
+  function deliveredAttempt(row) {
+    if (row.selected_attempt) return row.selected_attempt;
+    const done = q.listAttempts(row.code).filter((a) => a.status === "done");
+    return done.length ? done[done.length - 1].n : null;
+  }
+
+  function buildZip(row) {
+    const { code } = row;
+    if (!zipBuilds.has(code)) {
+      const n = deliveredAttempt(row);
+      const build = n
+        ? buildDeliveryZip({ archiveDir: config.archiveDir, deliveryDir: config.deliveryDir, code, n })
+        : Promise.reject(new Error("no design to deliver"));
+      zipBuilds.set(code, build.finally(() => zipBuilds.delete(code)));
+    }
+    return zipBuilds.get(code);
+  }
+
+  router.get("/api/config", (_req, res) => {
+    res.json({
+      turnstileSiteKey: config.turnstileSiteKey || null,
+      listingUrl: config.listingUrl || null,
+      designsPerCode: DESIGNS_PER_CODE,
+      colours: COLOURS,
+      sizes: SIZES
+    });
+  });
+
+  // The session of a code (/c/<code> resumes it, spec section 5).
+  router.get("/api/codes/:code", async (req, res) => {
+    const row = codeRow(req);
+    if (!row) {
+      res.status(404).json({ error: "not-found" });
+      return;
+    }
+
+    const attempts = q.listAttempts(row.code);
+    const k = latestUpload(row.code);
+    let upload = null;
+    if (k) {
+      const dir = uploadDir(config.archiveDir, row.code, k);
+      if (background.state(dir) === "none") background.start(dir);
+      const { width, height } = await sharp(path.join(dir, "work.png")).metadata();
+      upload = { upload: k, width, height, background: background.state(dir) };
+    }
+    const active = attempts.find((a) => a.status === "queued" || a.status === "running");
+
+    res.set("Cache-Control", "no-store").json({
+      code: row.code,
+      status: row.status,
+      designsLeft: Math.max(0, DESIGNS_PER_CODE - q.countedAttempts(row.code)),
+      selected: row.selected_attempt ?? null,
+      designs: attempts.filter((a) => a.status === "done").map((a) => ({ attempt: a.n, mode: a.result?.mode })),
+      active: active ? active.n : null,
+      upload,
+      settings: lastSettings(attempts, k)
+    });
+  });
+
+  // Tinted view (spec section 8): the watermarked 900 px preview, white background.
+  router.get("/api/attempts/:code/:n/tinted.png", (req, res) => {
+    const row = codeRow(req);
+    const attempt = row && attemptOf(row.code, nOf(req.params.n));
+    if (!attempt || attempt.status !== "done") {
+      res.status(404).json({ error: "not-found" });
+      return;
+    }
+
+    const key = `${row.code}/${attempt.n}`;
+    try {
+      if (!previews.has(key)) {
+        const file = path.join(attemptDir(config.archiveDir, row.code, attempt.n), "stones.json");
+        const stoneLayout = StoneLayout.fromJSON(JSON.parse(readFileSync(file, "utf8")));
+        previews.set(key, renderPreview(stoneLayout, row.code).png);
+        if (previews.size > PREVIEW_CACHE_SIZE) previews.delete(previews.keys().next().value);
+      }
+      res.set("Cache-Control", "private, max-age=3600").type("png").send(previews.get(key));
+    } catch (error) {
+      log.error(`Tinted preview of ${key} failed: ${error.message}`);
+      res.status(500).json({ error: "failed" });
+    }
+  });
+
+  // Original view (spec section 8): prepared.png, or ?source=upload for the decoded upload. 1024 px.
+  router.get("/api/attempts/:code/:n/original.png", async (req, res) => {
+    const row = codeRow(req);
+    const attempt = row && attemptOf(row.code, nOf(req.params.n));
+    const source = req.query.source ?? "prepared";
+    if (!attempt || !attempt.settings || !["prepared", "upload"].includes(source)) {
+      res.status(404).json({ error: "not-found" });
+      return;
+    }
+
+    const file = source === "prepared"
+      ? path.join(attemptDir(config.archiveDir, row.code, attempt.n), "prepared.png")
+      : path.join(uploadDir(config.archiveDir, row.code, attempt.settings.uploadId), "work.png");
+    try {
+      res.set("Cache-Control", "private, max-age=3600").type("png").send(await previewPng(file));
+    } catch (error) {
+      log.error(`Original view of ${row.code}/${attempt.n} failed: ${error.message}`);
+      res.status(500).json({ error: "failed" });
+    }
+  });
+
+  // "Use this design" (D6).
+  router.post("/api/codes/:code/select", (req, res) => {
+    const row = codeRow(req);
+    const n = Number.isInteger(req.body?.attempt) ? req.body.attempt : null;
+    const attempt = row && n ? q.getAttempt(row.code, n) : null;
+    if (!attempt || attempt.status !== "done") {
+      res.status(404).json({ error: "not-found" });
+      return;
+    }
+    if (row.status !== "open") {
+      res.status(409).json({ error: "paid" });
+      return;
+    }
+
+    q.updateCode(row.code, { selected_attempt: n });
+    writeCodeJson(config.archiveDir, q.getCode(row.code));
+    q.logEvent("design-selected", { code: row.code, detail: { n } });
+    res.json({ code: row.code, selected: n });
+  });
+
+  router.get("/api/download/:code", (req, res) => {
+    res.set("Cache-Control", "no-store").json(downloadState(codeRow(req)));
+  });
+
+  router.get("/api/download/:code/zip", async (req, res) => {
+    const row = codeRow(req);
+    const { state } = downloadState(row);
+    if (state !== "ready") {
+      res.status(state === "unknown" ? 404 : 403).json({ error: state });
+      return;
+    }
+
+    try {
+      const file = deliveryZipPath(config.deliveryDir, row.code);
+      if (!existsSync(file)) await buildZip(row);
+      q.updateCode(row.code, { downloads: (row.downloads || 0) + 1 });
+      q.logEvent("download", { code: row.code });
+      res.set("Cache-Control", "no-store").download(file, `${row.code}.zip`);
+    } catch (error) {
+      log.error(`Download of ${row.code} failed: ${error.stack || error.message}`);
+      res.status(500).json({ error: "failed" });
+    }
+  });
+
+  // Test only (IS-05, until the Etsy poller of IS-06 marks codes paid): sets a code's payment state.
+  // Guarded twice: the route exists only when IS_FAKE=1, and even then it answers only a request
+  // made on this Mac directly (loopback peer and no CF-Connecting-IP header, so nothing that came
+  // through the tunnel).
+  if (config.fake) {
+    router.post("/api/test/payment/:code", async (req, res) => {
+      if (!LOOPBACK.has(req.socket.remoteAddress) || req.get("cf-connecting-ip")) {
+        res.status(404).json({ error: "not-found" });
+        return;
+      }
+      const row = codeRow(req);
+      const state = req.body?.state ?? "paid";
+      if (!row || !["paid", "refunded", "expired", "open"].includes(state)) {
+        res.status(404).json({ error: "not-found" });
+        return;
+      }
+
+      const now = new Date();
+      const fields = state === "paid"
+        ? { status: "paid", paid_at: now.toISOString(), delivery_expires_at: new Date(now.getTime() + DELIVERY_DAYS * DAY_MS).toISOString() }
+        : { status: state };
+      q.updateCode(row.code, fields);
+      const updated = q.getCode(row.code);
+      writeCodeJson(config.archiveDir, updated);
+      q.logEvent("test-payment", { code: row.code, detail: { state } });
+      // The ZIP is built when the code becomes paid (spec section 9).
+      if (state === "paid" && deliveredAttempt(updated)) await buildZip(updated).catch((error) => log.error(error.message));
+      res.json({ code: row.code, ...downloadState(updated) });
+    });
+  }
+
+  router.get(SCREEN_PATHS, (_req, res) => {
+    res.set("Content-Security-Policy", INDEX_CSP).set("Cache-Control", "no-cache")
+      .sendFile("index.html", { root: "public" });
+  });
+
+  return router;
+}

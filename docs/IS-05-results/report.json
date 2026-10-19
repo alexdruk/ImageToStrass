@@ -1,0 +1,64 @@
+{
+  "runs": [
+    {
+      "name": "desktop",
+      "width": 1280,
+      "height": 860,
+      "mobile": false,
+      "code": "IS-3WVN-T8ET",
+      "leaks": 0,
+      "responses": 63,
+      "zipBytes": 5337186,
+      "overflow": 0,
+      "shots": [
+        "desktop-upload.jpg",
+        "desktop-prepare.jpg",
+        "desktop-prepare-crop.jpg",
+        "desktop-working.jpg",
+        "desktop-result.jpg",
+        "desktop-result-compare.jpg",
+        "desktop-try-again.jpg",
+        "desktop-result-2.jpg",
+        "desktop-code.jpg",
+        "desktop-download-unpaid.jpg",
+        "desktop-download-ready.jpg",
+        "desktop-download-expired.jpg",
+        "desktop-download-refunded.jpg",
+        "desktop-download-unknown.jpg",
+        "desktop-privacy.jpg",
+        "desktop-terms.jpg",
+        "desktop-contact.jpg"
+      ]
+    },
+    {
+      "name": "phone",
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "code": "IS-22C2-X15D",
+      "leaks": 0,
+      "responses": 63,
+      "zipBytes": 5337169,
+      "overflow": 0,
+      "shots": [
+        "phone-upload.jpg",
+        "phone-prepare.jpg",
+        "phone-prepare-crop.jpg",
+        "phone-working.jpg",
+        "phone-result.jpg",
+        "phone-result-compare.jpg",
+        "phone-try-again.jpg",
+        "phone-result-2.jpg",
+        "phone-code.jpg",
+        "phone-download-unpaid.jpg",
+        "phone-download-ready.jpg",
+        "phone-download-expired.jpg",
+        "phone-download-refunded.jpg",
+        "phone-download-unknown.jpg",
+        "phone-privacy.jpg",
+        "phone-terms.jpg",
+        "phone-contact.jpg"
+      ]
+    }
+  ]
+}
