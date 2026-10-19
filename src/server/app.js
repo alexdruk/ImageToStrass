@@ -14,6 +14,7 @@ import { checkHealth } from "./health.js";
 import { designRoutes } from "./designs.js";
 import { createTurnstile } from "./turnstile.js";
 import { uploadRoutes } from "./upload.js";
+import { webappRoutes } from "./webapp.js";
 
 export function createApp({ db, config, deps = {} }) {
 const app = express();
@@ -42,6 +43,7 @@ app.use(uploadRoutes({
 
 app.use(express.json({ limit: "16kb" }));
 app.use(designRoutes({ pipeline, verifyTurnstile }));
+app.use(webappRoutes({ q, config, background }));
 app.use(express.static("public"));
 
 app.get("/health", async (_req, res) => {
@@ -53,14 +55,6 @@ app.get("/health", async (_req, res) => {
   });
 
   res.status(health.ok ? 200 : 503).json(health);
-});
-
-app.get("/", (_req, res) => {
-  res.send(`
-    <h1>ImageToStrass</h1>
-    <p>Etsy Seller App: imagetotemplate</p>
-    <p><a href="/auth/etsy">Connect Etsy</a></p>
-  `);
 });
 
 app.get("/auth/etsy", (_req, res) => {
