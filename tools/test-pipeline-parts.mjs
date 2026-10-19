@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import { test } from "node:test";
 import { BW_DARK, BW_LIGHT, bwColour, lightness, mapBlackAndWhite } from "../src/pipeline/bw.js";
 import sharp from "sharp";
+import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import { MODEL_INPUT_SIDE, acceptLayout, modelInput, normalizeDesignSettings, subjectBox } from "../src/pipeline/design.js";
 import { callLayoutService } from "../src/pipeline/layout.js";
 import { IS_PROMPT_VERSION, buildPrompt } from "../src/pipeline/prompt.js";
@@ -17,16 +18,22 @@ import { getStoneSize } from "../src/stones/StoneSizes.js";
 const RS_V6_SHA256 = "8d07f1ac1abad6bfa624d46a336581dee810476aff52953491ca0e0ef888e6a5";
 const sha = (text) => crypto.createHash("sha256").update(text).digest("hex");
 const RS_SQUARE_LINE = "- Square image at the highest resolution available.";
+const RS_MAIN_SIZE_LINE = "- Use one main stone size for the whole design. Make the stones large: about 60 stones across the full width of the image.";
+const MAIN_SIZE_LINE = "- Use one main stone size for the whole design.";
 const WHOLE_IMAGE_LINE = "- Use the whole image at the highest resolution available, in the same shape (width to height) as the uploaded image.";
 const quiet = { warn() {}, error() {}, log() {} };
 
-test("colour prompt is RS prompt v6 with the whole-image line in section 6", () => {
-  assert.equal(IS_PROMPT_VERSION, 2);
+test("colour prompt is RS prompt v6 with the whole-image line and without the 60-stones sentence", () => {
+  assert.equal(IS_PROMPT_VERSION, 3);
   const lines = buildPrompt({ mode: "colour" }).split("\n");
   const i = lines.indexOf(WHOLE_IMAGE_LINE);
   assert.equal(i, lines.indexOf("6. COMPOSITION") + 1, "first rule of section 6");
   assert.ok(!lines.some((l) => /longest side|\bmm\b|inches/.test(l)), "no size line");
+  assert.ok(!lines.some((l) => /stones across|Make the stones large/.test(l)), "no 60-stones sentence");
+  const m = lines.indexOf(MAIN_SIZE_LINE);
+  assert.equal(m, lines.indexOf("1. STONES") + 3, "the other rules of section 1 are kept");
   lines[i] = RS_SQUARE_LINE;
+  lines[m] = RS_MAIN_SIZE_LINE;
   assert.equal(sha(lines.join("\n")), RS_V6_SHA256);
 });
 
@@ -132,12 +139,29 @@ test("layout client posts to /layout with all colour ids and pitch 2.1", async (
   assert.equal(down.error.code, "layout-unavailable");
 });
 
-test("acceptance: violations 0, coverage >= 0.5, at least 300 stones", () => {
-  const layout = (n, violations, coverage) => ({ stones: Array(n).fill([0, 0, "ss6", "jet"]), report: { violations, coverage } });
-  assert.equal(acceptLayout(layout(300, 0, 0.5)).ok, true);
-  assert.equal(acceptLayout(layout(299, 0, 0.9)).ok, false);
-  assert.equal(acceptLayout(layout(500, 1, 0.9)).ok, false);
-  assert.equal(acceptLayout(layout(500, 0, 0.49)).ok, false);
+test("acceptance: under 3 % removed, coverage >= 0.5, IS gap check 0, at least 300 stones", () => {
+  // A 20 x 20 grid of SS6 stones at 2.3 mm pitch: no violation.
+  const grid = [];
+  for (let i = 0; i < 20; i++) for (let j = 0; j < 20; j++) grid.push([1 + i * 2.3, 1 + j * 2.3, "ss6", "jet"]);
+  const layout = (stones, coverage, violations = 0) => ({ stones, report: { violations, coverage } });
+  const check = (l) => acceptLayout(cleanedLayout(l));
+  assert.equal(check(layout(grid, 0.6)).ok, true);
+  assert.equal(check(layout(grid.slice(0, 299), 0.9)).ok, false, "below 300 stones");
+  assert.equal(check(layout(grid, 0.49)).ok, false, "coverage below 0.5");
+  // The service's violation count is not used: the IS check after the cleanup decides.
+  assert.equal(check(layout(grid, 0.6, 12)).ok, true);
+  // 11 SS4 stones into 11 grid stones: 11 of 411 removed (2.7 %), accepted; 12 of 412 (2.9 %) too;
+  // 13 of 413 (3.1 %) is rejected.
+  const extra = (n) => grid.concat(Array.from({ length: n }, (_, k) => [1 + k * 2.3 + 0.5, 1, "ss4", "jet"]));
+  for (const [n, ok] of [[11, true], [12, true], [13, false]]) {
+    const c = check(layout(extra(n), 0.6));
+    assert.equal(c.removed, n);
+    assert.equal(c.ok, ok, `${n} removed`);
+    assert.equal(c.violations, 0);
+  }
+  // Coverage is the service's, scaled by the stone area left: removing stones lowers it.
+  const c = check(layout(extra(13), 0.6));
+  assert.ok(c.coverage < 0.6 && c.coverage > 0.59, String(c.coverage));
 });
 
 test("design settings: mode, background removal and adjustments only", () => {
@@ -193,6 +217,19 @@ test("natural layout: as measured, footprint box at the origin, gap check", () =
   assert.ok(Math.abs(stoneLayout.widthMm - 8) < 1e-9 && Math.abs(stoneLayout.heightMm - 8) < 1e-9);
   assert.ok(gaps.ok);
   assert.equal(naturalLayout({ stones: [[0, 0, "ss6", "jet"], [1.9, 0, "ss6", "jet"]] }).gaps.ok, false);
+});
+
+test("natural layout: stones above SS16 become SS16 at the same centre, the box follows", () => {
+  const stones = [[10, 10, "ss30", "jet"], [16, 10, "ss20", "jet"], [21, 10, "ss16", "jet"], [25, 10, "ss6", "jet"]];
+  const { stoneLayout, gaps, capped } = naturalLayout({ stones });
+  assert.equal(capped, 2);
+  assert.deepEqual(stoneLayout.stones.map((s) => s.sizeMm), [4, 4, 4, 2]);
+  const r9 = (v) => Math.round(v * 1e9) / 1e9;
+  assert.deepEqual(stoneLayout.stones.map((s) => r9(s.xMm)), [2, 8, 13, 17], "centres kept, box from the capped stones");
+  assert.equal(r9(stoneLayout.heightMm), 4);
+  assert.ok(gaps.ok);
+  // Two SS30 stones 0.4 mm into each other are 2 mm apart as SS16: the cap only widens gaps.
+  assert.equal(naturalLayout({ stones: [[0, 0, "ss30", "jet"], [6, 0, "ss30", "jet"]] }).gaps.ok, true);
 });
 
 // A w x h RGBA PNG, transparent except an opaque rectangle.

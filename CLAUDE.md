@@ -48,7 +48,8 @@ prepared image → provider call → strass /layout → stone list (mm)
 
 - Node 20+, ES modules, plain JavaScript. No TypeScript, no frontend framework, no build step.
 - Express 5, better-sqlite3, sharp, busboy, @napi-rs/canvas, @resvg/resvg-js, archiver,
-  @tarikjabiri/dxf@2.8.9. Ghostscript and cloudflared from Homebrew.
+  @tarikjabiri/dxf@2.8.9; pdfjs-dist (dev only, the tests open the PDFs with it). cloudflared
+  from Homebrew. No Ghostscript or poppler: IS writes the EPS itself.
 - Add a dependency only when it removes real risk or work, and say why in the commit.
 - The public web app targets current evergreen browsers (the RS Chrome 103 baseline does not
   apply here).

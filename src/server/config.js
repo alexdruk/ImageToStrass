@@ -14,6 +14,7 @@ export function loadConfig(env = process.env) {
     strassServiceUrl: (env.STRASS_SERVICE_URL || "http://127.0.0.1:8000").replace(/\/+$/, ""),
     dbFile: "data/is.sqlite",
     archiveDir: "data/archive",
+    deliveryDir: "data/delivery",
     tmpDir: "data/tmp",
     ipKeyFile: "data/ip-hash.key",
     turnstileSecret: env.TURNSTILE_SECRET_KEY || "",

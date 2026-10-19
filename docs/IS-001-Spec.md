@@ -1,7 +1,8 @@
 # IS-001 — IS: any image to rhinestone template, sold on Etsy
 
 Status: spec, 18 Oct 2026. Revised 18 Oct 2026 (IS-03b): no size choice, every design is delivered
-at its natural size.
+at its natural size. Revised 19 Oct 2026 (IS-04): EPS written by IS (no Ghostscript), overlap
+cleanup after the SS16 cap, acceptance on the IS gap check.
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -38,15 +39,15 @@ disclosure in generic words (section 11.1).
 | # | Decision |
 | --- | --- |
 | D1 | The buyer does not choose a size. Every design is delivered at its **natural size**, exactly as the strass service measures it (section 7.5), shown as width × height in mm and in. |
-| D2 | **SS6** is the main stone size, with occasional **SS4**, **SS10** and **SS16** allowed. No tier multiples in the UI, the result data or the ZIP. |
+| D2 | **SS6** is the main stone size, with occasional **SS4**, **SS10** and **SS16** allowed; nothing larger than SS16 (the layout service's SS20 and SS30 pupils are capped to SS16, section 7.5). No tier multiples in the UI, the result data or the ZIP. |
 | D3 | Black & white means **Jet + Crystal only**. |
 | D4 | The buyer sees only two views: **Original** and **Tinted** (section 8). No mask, AI image, overlay or 3D view. |
 | D5 | At most 3 designs per code. A design that fails for technical reasons, or is declined by the safety check, does not count. |
 | D6 | The buyer picks the delivered design ("Use this design"). If a paid code has no pick, the latest design is delivered. |
 | D7 | Uploads, prepared images, AI images, layouts and code records are kept **indefinitely** in `data/archive/`, managed by Alex by hand. Delivery ZIPs are kept **30 days** after payment, then deleted. |
 | D8 | One Etsy listing, one price. |
-| D9 | Production sheet as the RS exporter: A4 / Letter / A3, multi-page tiling for large designs. The page size used to follow the buyer's unit (A4 for mm, Letter for inches); with no unit choice it is open (section 19). |
-| D10 | CDR is dropped. AI is a PDF-compatible file; EPS comes from Ghostscript. |
+| D9 | Production sheet as the RS exporter, multi-page tiling for large designs. With no unit choice the ZIP carries **both** an A4 sheet (mm) and a Letter sheet (inches) (IS-03b decision). |
+| D10 | CDR is dropped. AI is a PDF-compatible file; EPS is written by IS directly from the stones (no Ghostscript). |
 | D11 | Background removal is **on by default** and can be switched off. |
 | D12 | Hosted on Alex's Mac behind a Cloudflare Tunnel. Etsy OAuth is done once through a temporary quick tunnel until the domain exists. |
 | D13 | No framework, no TypeScript. Node (ES modules) + plain HTML/CSS/JS. Python only in `services/`. |
@@ -235,13 +236,14 @@ minutes".
 ### 7.2 Prompt
 
 - Based on RS `server/redraw/prompt.mjs` prompt v6 (stones style only; the flat style is not
-  copied). Version constant `IS_PROMPT_VERSION = 2`.
+  copied). Version constant `IS_PROMPT_VERSION = 3`.
 - There is no size line: the design has its natural size (7.5).
 - Section 6's first rule `Square image at the highest resolution available.` becomes
   `Use the whole image at the highest resolution available, in the same shape (width to height) as
   the uploaded image.`
-- The tuned "about 60 stones across" rule is unchanged until Alex decides on the IS-03b report
-  (`docs/IS-03b-results.md`).
+- Rule 1's sentence `Make the stones large: about 60 stones across the full width of the image.` is
+  removed (IS-03b decision, from `docs/IS-03b-results.md`: with non-square images it does not set the
+  stone size). Every other stone rule of v6 is kept.
 - Colour mode: palette line and ramps as v6.
 - Black & white mode: section 4 and the final check sentence are replaced by Appendix A.
 - The prompt is built server-side only, never logged in a file the web server serves, never sent
@@ -265,18 +267,42 @@ Error mapping to buyer texts (section 12): declined → `declined`, everything e
 
 From RS `server/redraw/jobs.mjs` `callLayoutService`: `POST http://127.0.0.1:8000/layout` with
 `colorIds` = all catalogue ids and `targetPitchMm` 2.1. Timeout 180 s. Response as RS README
-("Endpoints"). The design is accepted when `violations == 0`, `coverage >= 0.5` and at least 300
-stones; otherwise the whole attempt is re-run once automatically and does not count (D5).
+("Endpoints"). Acceptance is decided on the design after the SS16 cap and the overlap cleanup
+(7.5), not on the service's own `violations`: the design is accepted when the cleanup removed fewer
+than 3 % of the stones, the coverage after the cleanup is at least 0.5, the IS gap check finds 0
+violations and at least 300 stones are left; otherwise the whole attempt is re-run once
+automatically and does not count (D5).
 
 ### 7.5 Size (D1, D2)
 
 Natural size only. The design is the layout service's answer as it is: stone positions and
-diameters exactly as measured (`targetPitchMm` 2.1, SS6 main stones), only moved so the stones'
-footprint box starts at the origin. No scaling, no snapping, no minimum or maximum size. IS-03
-measured natural longest sides of 130–168 mm on the 12 RS test layouts.
+diameters as measured (`targetPitchMm` 2.1, SS6 main stones), only moved so the stones' footprint
+box starts at the origin. No scaling, no minimum or maximum size. IS-03 measured natural longest
+sides of 130–168 mm on the 12 RS test layouts.
 
-The gap check (`findOverlappingStonePairs` from StoneLayout.js and a min-gap check of 0.1 mm) runs
-on the natural layout; a violation is a bug and fails the attempt.
+Size cap (D2): after the layout, every stone larger than SS16 (the service's SS20 and SS30 pupil
+stones) is snapped down to SS16 at the same centre; the footprint box is that of the capped stones.
+Shrinking a stone only widens its gaps, so the cap never creates an overlap. The number of capped
+stones goes to the design's event log (server only). The 12 RS test layouts have 13 such stones,
+the 8 accepted IS-03b designs 11 (2 in each dog, cat and dachshund design, 1 in the giraffe, none in
+the mugs).
+
+Overlap cleanup (`src/pipeline/cleanup.js`), after the cap: for every pair of stones whose rim gap
+(centre distance minus both radii) is below 0.1 mm, the smaller stone is removed; on equal size the
+one with fewer neighbours (other stones with a rim gap below 0.5 mm, counted once on the capped
+stones), and on equal neighbours the later one in the layout. Pairs are taken worst gap first; a
+pair with a stone already removed is skipped. The footprint box is that of the stones left. The
+number of removed stones goes to the design's event log (server only).
+
+Coverage after the cleanup: the service's `coverage` (the share of subject-mask pixels under a
+stone) times the area under the delivered stones over the area under the service's stones, both
+rasterised at the service's 10 px per mm. It includes the cap's shrinking.
+
+The IS gap check (`findOverlappingStonePairs` from StoneLayout.js and a min-gap check of 0.1 mm)
+then runs on the cleaned layout, and acceptance (7.4) uses its result. The rejected IS-03b car (148
+service violations, 145 after the cap) loses 79 SS4 stones of 3716 (2.1 %), its coverage goes from
+0.633 to 0.624, and it is accepted. The cleanup removes nothing from the 12 RS test layouts and the
+8 accepted IS-03b designs.
 
 The stone-size tier code (`applyTier` in `src/pipeline/tiers.js`: scale positions and diameters by a
 tier factor, snap diameters down, stretch positions to an exact longest side) stays in
@@ -314,9 +340,12 @@ Definition (from the RS 30 Sep decision, sharpened here):
 The result reads as a solid, painted picture, close to what the buyer expects from the photo.
 
 Implementation: Node with `@napi-rs/canvas` (Canvas 2D compatible, so the RS renderer runs
-unchanged). Nearest-stone search through a uniform grid of cell size = 2 × the largest stone
-diameter. Two renders: preview (900 px long side, watermarked, sent to the browser) and full
-(2400 px long side, archived and put in the ZIP).
+unchanged), `src/render/tinted.js`. Nearest-stone search: a pixel can only be filled when its
+nearest stone's edge is at most 0.6 × the largest radius away, so each stone writes its edge
+distance into the pixels within that reach and the smallest wins; this is exact for every pixel
+that can be filled. "Main stone" is the most common stone size. Two renders: preview (900 px long
+side, white background, watermarked, sent to the browser) and full (2400 px long side, transparent,
+written to `attempt-<n>/tinted.png` in the "Preparing files" stage and put in the ZIP).
 
 Watermark on every preview the browser receives: tiled diagonal "IS · PREVIEW · <code>" at 18 %
 opacity, plus no right-click save of the full image (best effort only; the low resolution is the
@@ -329,17 +358,18 @@ upload.
 
 All exporters consume the final StoneLayout only (RS rule: exporters never generate geometry).
 
-The ZIP has one size, the natural size (7.5): all six formats below, the production sheet, the
-preview and README, all at that size.
+The ZIP has one size, the natural size (7.5): all six formats below, both production sheets (D9),
+the preview and README, all at that size.
 
 | File | How |
 | --- | --- |
-| `IS-XXXX-XXXX.svg` | RS `stoneLayoutToSvg`, true size, `width`/`height` in mm, colour groups as `<g>` with ids |
-| `IS-XXXX-XXXX-production-sheet.pdf` | RS `productionSheetToPdf`, D9 page size, multi-page tiling, mirror off, registration marks on |
-| `IS-XXXX-XXXX.ai` | New `aiExport.js`: one-page true-size vector PDF of the stones (page = design + 10 mm), built with RS `PdfDocument`, saved as `.ai` (PDF-compatible; Illustrator opens it) |
-| `IS-XXXX-XXXX.eps` | Ghostscript `gs -dNOPAUSE -dBATCH -sDEVICE=eps2write` from the `.ai` PDF |
-| `IS-XXXX-XXXX.dxf` | RS `stoneLayoutToDxf`, one layer per colour |
-| `IS-XXXX-XXXX.png` | The SVG rendered by `@resvg/resvg-js` at 300 dpi, transparent background |
+| `IS-XXXX-XXXX.svg` | RS `stoneLayoutToSvg` in its grouped form, true size, `width`/`height` in mm, one `<g>` per colour and size with an id such as `jet-ss6` (the empty regions group left out) |
+| `production-sheet-A4.pdf` | RS `productionSheetToPdf`, A4, mm, multi-page tiling, mirror off, registration marks on |
+| `production-sheet-Letter.pdf` | The same on Letter, inches (D9) |
+| `IS-XXXX-XXXX.ai` | New `aiExport.js`: one-page true-size vector PDF of the stones (page = design + 10 mm, 5 mm on every side), built with RS `PdfDocument`, saved as `.ai` (PDF-compatible; Illustrator opens it) |
+| `IS-XXXX-XXXX.eps` | New `epsExport.js`: EPSF-3.0 written directly from the StoneLayout; `%%BoundingBox` and `%%HiResBoundingBox` in points at true size (the design, no margin), `%%Creator: IS`, `%%Title` the design, no other tool named; one filled circle per stone in its catalogue fill colour, grouped by colour, y flipped (origin bottom-left) |
+| `IS-XXXX-XXXX.dxf` | RS `stoneLayoutToDxf`, one layer per colour; header `$LASTSAVEDBY` set to `IS` |
+| `IS-XXXX-XXXX.png` | The SVG rendered by `@resvg/resvg-js` at 300 dpi (size = mm / 25.4 × 300, rounded), transparent background (the SVG's white rectangle left out), a `pHYs` chunk of 300 dpi and no other metadata |
 | `IS-XXXX-XXXX-preview.png` | Full tinted render (section 8), no watermark |
 | `README.txt` | Code, natural size (width × height in mm and in), stone count per size and per colour, file list, short how-to |
 
@@ -349,12 +379,18 @@ Production sheet changes (copied `ProductionSheetExporter.js`):
 - the Object line and the plate/vessel lines are removed (no products in IS);
 - header keeps: production size, stone count, stone sizes with counts, gap, every colour with its
   count (RS build F rule), page / margin / mirror / registration;
-- footer: `Made with IS` and the page number. No other branding.
+- the gap is the minimum gap of the gap check, `0.1 mm`, printed in mm on both sheets (in inches it
+  would round to 0);
+- footer: `Made with IS · Page i of N` on every page, inside the bottom margin. No other branding.
 
-PDF metadata: Producer and Creator `IS`. No comments or metadata in SVG/DXF/PNG naming anything
-else (section 12).
+Both sheets: margin 10 mm, mirror off, registration marks on; A4 with sizes in mm, Letter in inches.
 
-The ZIP (`archiver`, deflate) is built when the code becomes paid (or at the first download if the
+PDF metadata: Producer and Creator `IS`, Title `IS design IS-XXXX-XXXX`, added to the
+`PdfDocument` output as an incremental update (`src/export/pdfInfo.js`), so `PdfDocument.js` stays
+unchanged. No comments or metadata in SVG/DXF/PNG naming anything else (section 12).
+
+The ZIP (`archiver`, deflate; `buildDeliveryZip` in `src/export/zip.js`, from `attempt-<n>/stones.json`
+and `tinted.png`, never writing to the archive) is built when the code becomes paid (or at the first download if the
 build was skipped), stored in `data/delivery/`, and rebuilt from the archive if the buyer
 downloads again within 30 days and the file is missing.
 
@@ -485,8 +521,9 @@ orders with a "match to code" action, manual unlock, poller status, disk use of 
   `data/is.sqlite` to `data/backup/`.
 - Runbook `docs/RUNBOOK.md`: start/stop, check health, reconnect Etsy, what to do when the Mac was
   off (the poller catches up with `min_last_modified`).
-- Tools to install: Node 20+, `brew install ghostscript cloudflared`, Python 3.12 (already there
-  for the RS layout service).
+- Tools to install: Node 20+, `brew install cloudflared`, Python 3.12 (already there for the RS
+  layout service). No PDF or PostScript tools are needed: IS writes the EPS itself, and the tests
+  open the PDFs with pdf.js (`pdfjs-dist`, a dev dependency).
 
 ## 16. Code taken from RS (at `38cd831`)
 
@@ -542,8 +579,11 @@ the rule.
 **IS-04 Tinted render and exports.** Section 8 and section 9.
 *Done when:* tinted render matches the definition on a unit fixture (pixel at 1.5 r gets 85 % of
 the nearest stone's fill, pixel at 1.7 r is background); all files open (SVG in a browser, PDF and
-AI via `pdfinfo`, EPS via Ghostscript, DXF via the RS DXF test approach, PNG size equals 300 dpi
-true size); ZIP contents match the table.
+AI via pdf.js with page count and page size, EPS by a structure check with its bounding box equal to
+the design size and one circle per stone, DXF via the RS DXF test approach, PNG size equals 300 dpi
+true size); ZIP contents match the table; the overlap cleanup (7.5) is measured on the rejected
+car, the 8 accepted IS-03b designs and the 12 RS test layouts; one ZIP is built end to end from an
+archive.
 
 **IS-05 Web app.** Section 10.
 *Done when:* the full flow runs in fake mode in a desktop and a 390 px-wide browser; no screen
@@ -593,10 +633,6 @@ ETSY_POLL_SECONDS=180
 
 - Domain name (needed before launch; the quick tunnel is for OAuth and testing only).
 - Etsy listing photos and price.
-- Keep or drop the "about 60 stones across" rule (7.2), decided from `docs/IS-03b-results.md`.
-- Production sheet page size now that the buyer chooses no unit (D9): A4, Letter, or both.
-- The strass service sometimes picks SS20 or SS30 for pupils (outside D2); counts in
-  `docs/IS-03b-results.md`. The service is not changed for it in IS-03b.
 
 ## Appendix A — Black & white section 4 and final check of the prompt
 

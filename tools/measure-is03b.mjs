@@ -4,8 +4,9 @@
 // Nine designs: dog, cat and mug with and without the "about 60 stones across" sentence, and the
 // giraffe, dachshund and car with it. Each runs the production steps once (decode, background
 // removal, adjustments, model input crop, provider with size auto, layout, natural size), with no
-// automatic re-run. Provider outputs and layouts stay in <work dir> (never in the repository); a
-// design already there is not made again. The prompt text is never printed.
+// automatic re-run. The sentence was removed from the prompt afterwards (prompt version 3), so the
+// "rule" designs reproduce only with prompt version 2. Provider outputs and layouts stay in
+// <work dir> (never in the repository); a design already there is not made again. The prompt text is never printed.
 import "dotenv/config";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";

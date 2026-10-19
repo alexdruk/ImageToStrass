@@ -3,7 +3,10 @@ import { StoneLayout, findOverlappingStonePairs } from "../stones/StoneLayout.js
 import { getStoneSize, listAllStoneSizes } from "../stones/StoneSizes.js";
 
 // Natural size (spec section 7.5): every design is delivered at the size the layout service measured,
-// built by naturalLayout() below.
+// built by naturalLayout() below. The one change to the measured stones is the size cap (D2): every
+// stone larger than SS16 (the service's SS20 and SS30 pupils) becomes SS16 at the same centre.
+// Shrinking a stone only widens its gaps, so the cap never creates an overlap; the gap check runs
+// on the capped stones anyway.
 //
 // Stone-size tiers: kept with their tests but unused, for a possible later "more sizes" option. The
 // layout service's stones (mm, natural size about 130-170 mm on the longest side) become the design
@@ -19,9 +22,11 @@ import { getStoneSize, listAllStoneSizes } from "../stones/StoneSizes.js";
 export const TIERS = Object.freeze([1.0, 1.4, 2.0, 2.35, 3.2]);
 export const MIN_GAP_MM = 0.1;
 export const LAYER_ID = "design";
+export const MAX_STONE_SIZE_ID = "ss16";
 
 const EPS = 1e-9;
 const SIZES = listAllStoneSizes(); // ascending diameter, SS4 included
+const MAX_D = getStoneSize(MAX_STONE_SIZE_ID).diameterMm;
 
 // The largest standard size whose diameter is at most d (the smallest size if d is below it).
 export function snapDown(d) {
@@ -114,7 +119,7 @@ export function checkGaps(stones) {
 }
 
 // Plain { x, y, d, color } stones scaled by r -> StoneLayout with its footprint box at the origin.
-function toStoneLayout(stones, r) {
+export function toStoneLayout(stones, r) {
   const box = footprint(stones, r);
   const placed = stones.map((s, index) => new Stone({
     xMm: s.x * r - box.minX,
@@ -127,13 +132,26 @@ function toStoneLayout(stones, r) {
   return { stoneLayout: new StoneLayout({ layerId: LAYER_ID, sourceMode: "is", stones: placed }), stones: placed };
 }
 
-// layout service answer -> { stoneLayout, gaps } at the natural size: positions and diameters as
-// measured, only moved so the footprint box starts at the origin.
+// Plain { x, y, d, color } stones -> { stones, capped }: every diameter above SS16 set to SS16.
+export function capStoneSizes(stones) {
+  let capped = 0;
+  const out = stones.map((s) => {
+    if (s.d <= MAX_D + EPS) return s;
+    capped++;
+    return { ...s, d: MAX_D };
+  });
+  return { stones: out, capped };
+}
+
+// layout service answer -> { stoneLayout, gaps, capped } at the natural size: positions as measured,
+// diameters as measured but capped at SS16 (capped = how many changed), moved so the footprint box
+// of the capped stones starts at the origin.
 export function naturalLayout(layout) {
-  const natural = stonesOfLayout(layout);
-  if (natural.length === 0) throw new Error("The layout has no stones.");
+  const measured = stonesOfLayout(layout);
+  if (measured.length === 0) throw new Error("The layout has no stones.");
+  const { stones: natural, capped } = capStoneSizes(measured);
   const { stoneLayout, stones } = toStoneLayout(natural, 1);
-  return { stoneLayout, gaps: checkGaps(stones) };
+  return { stoneLayout, gaps: checkGaps(stones), capped };
 }
 
 // layout service answer + T (mm, at least L0) -> { stoneLayout, tier: { k, r, r0, l0Mm }, gaps }.

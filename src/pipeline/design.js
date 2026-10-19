@@ -4,18 +4,19 @@ import sharp from "sharp";
 import { attemptDir, storeNew, uploadDir, writeAttemptInputs, writeCodeJson } from "../prep/archive.js";
 import { normalizeSettings } from "../prep/adjust.js";
 import { preparePng } from "../prep/prepare.js";
+import { renderFull } from "../render/tinted.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
 import { findStoneSizeByDiameterMm } from "../stones/StoneSizes.js";
 import { mapBlackAndWhite } from "./bw.js";
+import { cleanedLayout } from "./cleanup.js";
 import { FAKE_REDRAW_DATA_URL } from "./fake/FakeRedrawProvider.js";
 import { callLayoutService } from "./layout.js";
 import { DEFAULT_TIMERS, createProvider } from "./provider.js";
 import { QUEUE_LIMIT, createQueue } from "./queue.js";
-import { naturalLayout } from "./tiers.js";
 
 // The design pipeline (spec section 7): Create design -> attempt row and archive inputs -> queue ->
-// model input -> provider -> layout -> acceptance (one automatic re-run) -> natural size -> B&W ->
-// result.
+// model input -> provider -> layout -> natural size (SS16 cap, overlap cleanup) -> acceptance (one
+// automatic re-run) -> B&W -> stones.json and the full tinted render (section 8) -> result.
 //
 // Attempts accounting (D5, section 4.1): an attempt counts (counts = 1) only when it is done. A
 // failed, declined or re-run attempt has counts = 0. A code makes a new design only while it is
@@ -35,6 +36,7 @@ export const SUBJECT_MARGIN = 0.03;
 // Acceptance (spec section 7.4).
 export const MIN_STONES = 300;
 export const MIN_COVERAGE = 0.5;
+export const MAX_REMOVED_SHARE = 0.03;
 
 // Layout service refusals caused by the drawn image itself; like a failed acceptance check they
 // lead to the automatic re-run.
@@ -117,17 +119,20 @@ export async function modelInput(preparedPng, { cropToSubject = false } = {}) {
     .toBuffer();
 }
 
-// (violations == 0, coverage >= 0.5, at least 300 stones) -> { ok, stones, violations, coverage }.
-export function acceptLayout(layout) {
-  const report = layout.report || {};
-  const stones = layout.stones.length;
-  const violations = Number(report.violations);
-  const coverage = Number(report.coverage);
+// The design after the SS16 cap and the overlap cleanup (7.5) -> { ok, stones, removed,
+// removedShare, coverage, violations }: accepted when fewer than 3 % of the stones were removed, the
+// coverage is still at least 0.5, the IS gap check finds no violation and at least 300 stones are
+// left. The service's own violation count is not used.
+export function acceptLayout(cleaned) {
+  const { stoneLayout, removed, removedShare, coverage, gaps } = cleaned;
+  const violations = gaps.belowMinGap;
   return {
-    ok: violations === 0 && coverage >= MIN_COVERAGE && stones >= MIN_STONES,
-    stones,
-    violations,
-    coverage
+    ok: removedShare < MAX_REMOVED_SHARE && coverage >= MIN_COVERAGE && violations === 0 && stoneLayout.count >= MIN_STONES,
+    stones: stoneLayout.count,
+    removed,
+    removedShare: Math.round(removedShare * 10000) / 10000,
+    coverage: Math.round(coverage * 1000) / 1000,
+    violations
   };
 }
 
@@ -244,22 +249,19 @@ export function createPipeline({
         return fail(code, n, placed.error.code);
       }
       storeNew(dir, "layout.json", `${JSON.stringify(placed.layout)}\n`);
-      const check = acceptLayout(placed.layout);
+      // Natural size: SS16 cap and overlap cleanup (7.5), then acceptance (7.4) on the result.
+      const natural = cleanedLayout(placed.layout);
+      const check = acceptLayout(natural);
       if (!check.ok) return rerunOrFail(code, n, settings, check, outputPx);
-
-      const natural = naturalLayout(placed.layout);
-      if (!natural.gaps.ok) {
-        log.error(`Gap check failed for ${id}: ${JSON.stringify(natural.gaps)}`);
-        return fail(code, n, "gaps", { result: { gaps: natural.gaps, outputPx } });
-      }
       const stoneLayout = settings.mode === "bw"
         ? mapBlackAndWhite(natural.stoneLayout, config.bwThreshold)
         : natural.stoneLayout;
 
       stage("files");
       storeNew(dir, "stones.json", `${JSON.stringify(stoneLayout.toJSON())}\n`);
+      storeNew(dir, "tinted.png", renderFull(stoneLayout).png);
       const result = designResult(stoneLayout, { coverage: check.coverage, settings, outputPx });
-      finish(code, n, "done", { counts: 1, result }, { stones: result.stones });
+      finish(code, n, "done", { counts: 1, result }, { stones: result.stones, capped: natural.capped, removed: natural.removed });
     } catch (error) {
       log.error(`Design ${id} failed: ${error.stack || error.message}`);
       fail(code, n, "error");

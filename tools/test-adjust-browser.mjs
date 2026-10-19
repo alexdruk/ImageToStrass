@@ -103,10 +103,12 @@ test("adjust.js gives identical output in Node and in the browser", { skip: !exi
   ], { stdio: "ignore" });
 
   try {
+    // The timers are cleared (or unref'd) so the test process exits as soon as the test is done.
+    let timer;
     const got = await Promise.race([
       result,
-      new Promise((_, reject) => setTimeout(() => reject(new Error("browser did not answer in 60 s")), 60_000))
-    ]);
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("browser did not answer in 60 s")), 60_000); })
+    ]).finally(() => clearTimeout(timer));
 
     assert.equal(got.error, undefined, got.error);
     assert.match(got.userAgent, /Chrome/);
@@ -117,13 +119,13 @@ test("adjust.js gives identical output in Node and in the browser", { skip: !exi
     const exited = chrome.exitCode !== null ? null : new Promise((resolve) => chrome.once("exit", resolve));
     chrome.kill();
     server.close();
-    await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 5_000))]);
+    await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 5_000).unref())]);
     // Chrome's helper processes can outlive it and keep writing; a profile left in the OS temp
     // folder is not a test failure.
     try {
       rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
     } catch {
-      await new Promise((resolve) => setTimeout(resolve, 3_000));
+      await new Promise((resolve) => setTimeout(resolve, 3_000).unref());
       try { rmSync(profile, { recursive: true, force: true }); } catch { /* left to the OS */ }
     }
   }

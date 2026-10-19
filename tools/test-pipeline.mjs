@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { openDatabase } from "../src/db/index.js";
 import { createQueries } from "../src/db/queries.js";
 import { createPipeline } from "../src/pipeline/design.js";
-import { naturalLayout } from "../src/pipeline/tiers.js";
+import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import { createBackgroundRemover } from "../src/prep/background.js";
 import { createApp } from "../src/server/app.js";
 import { loadConfig } from "../src/server/config.js";
@@ -20,7 +20,7 @@ const GOOD_LAYOUT = JSON.parse(readFileSync(new URL("../src/pipeline/fake/layout
 // RS's fake layout: 193 stones, below the 300-stone acceptance minimum.
 const SMALL_LAYOUT = JSON.parse(readFileSync(new URL("../src/pipeline/fake/fake-layout.json", import.meta.url), "utf8"));
 const PNG = Buffer.from("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8cfc0f01f0005000201a5d6c2bd0000000049454e44ae426082", "hex");
-const NATURAL = naturalLayout(GOOD_LAYOUT).stoneLayout;
+const NATURAL = cleanedLayout(GOOD_LAYOUT).stoneLayout;
 const round1 = (v) => Math.round(v * 10) / 10;
 const quiet = { error() {}, warn() {}, log() {} };
 const LEAK = /openai|gpt|dall|prompt|sunburst/i;
@@ -106,7 +106,7 @@ test("fake mode: Create design runs end to end and writes the archive", async ()
     assert.ok(!LEAK.test(JSON.stringify(done.body)) && !LEAK.test(done.text), "IS fields only");
 
     const dir = path.join(srv.config.archiveDir, code, "attempt-1");
-    assert.deepEqual(readdirSync(dir).sort(), ["ai.png", "layout.json", "original.png", "prepared.png", "settings.json", "stones.json"]);
+    assert.deepEqual(readdirSync(dir).sort(), ["ai.png", "layout.json", "original.png", "prepared.png", "settings.json", "stones.json", "tinted.png"]);
     const settings = JSON.parse(readFileSync(path.join(dir, "settings.json"), "utf8"));
     assert.equal(settings.uploadId, 1);
     for (const gone of ["size", "unit", "sizeMm"]) assert.ok(!(gone in settings), gone);
