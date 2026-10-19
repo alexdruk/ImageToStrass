@@ -1,18 +1,21 @@
 # IS-05 tinted comparison
 
 Docs only; the app and the tinted definition (spec section 8) are unchanged. Made by
-`node tools/tinted-comparison.mjs` from saved layouts, with no provider or strass call.
+`node tools/tinted-comparison.mjs <IS-03b work dir>` from saved layouts, with no provider or strass call.
 
-Each row shows three images side by side:
+Each row shows four images side by side:
 
 1. **Original**: for the IS-03b designs, the buyer photo the design was made from (before background
    removal and the model-input crop, so the framing differs from the design); for the RS test layouts,
-   the RS test image the layout was made from.
-2. **Plain stones**: the faceted stones (RS `drawCrystalStone`) on white, with no fill between them.
-3. **Tinted**: `renderTinted` as in the app's preview, without the watermark.
+   the RS test image (there is no other original: the RS test images are themselves model outputs, so
+   columns 1 and 2 are the same image on those rows).
+2. **AI image**: the model output the strass service laid out (IS-05b; docs only, the app never
+   shows it, spec D4). For the IS-03b designs, the saved provider output of IS-03b.
+3. **Plain stones**: the faceted stones (RS `drawCrystalStone`) on white, with no fill between them.
+4. **Tinted**: `renderTinted` as in the app's preview, without the watermark.
 
 Plain and tinted use the same canvas (the stones' box plus 2 main-stone diameters) at the same
-pixels per mm (640 px on the long side). The original is scaled to the same height. Each design
+pixels per mm (640 px on the long side). The original and the AI image are scaled to the same height. Each design
 is the delivered one: the saved strass `/layout` answer after the SS16 cap and the overlap cleanup.
 Under each row: stone count, stones per size, and the natural size.
 
@@ -20,49 +23,49 @@ Under each row: stone count, stones per size, and the natural size.
 
 ### dog-rule
 
-![dog-rule: original, plain stones, tinted](IS-05-tinted-comparison/dog-rule.jpg)
+![dog-rule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/dog-rule.jpg)
 
 2049 stones (SS6 1933, SS4 114, SS16 2) · 83.8 × 200.8 mm (3.30 × 7.91 in)
 
 ### dog-norule
 
-![dog-norule: original, plain stones, tinted](IS-05-tinted-comparison/dog-norule.jpg)
+![dog-norule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/dog-norule.jpg)
 
 2092 stones (SS6 1973, SS4 117, SS16 2) · 87.0 × 203.1 mm (3.43 × 8.00 in)
 
 ### cat-rule
 
-![cat-rule: original, plain stones, tinted](IS-05-tinted-comparison/cat-rule.jpg)
+![cat-rule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/cat-rule.jpg)
 
 3573 stones (SS6 3269, SS4 302, SS16 2) · 167.8 × 125.7 mm (6.61 × 4.95 in)
 
 ### cat-norule
 
-![cat-norule: original, plain stones, tinted](IS-05-tinted-comparison/cat-norule.jpg)
+![cat-norule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/cat-norule.jpg)
 
 3141 stones (SS6 2758, SS4 381, SS16 2) · 158.4 × 120.8 mm (6.23 × 4.76 in)
 
 ### mug-rule
 
-![mug-rule: original, plain stones, tinted](IS-05-tinted-comparison/mug-rule.jpg)
+![mug-rule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/mug-rule.jpg)
 
 1751 stones (SS6 1681, SS4 70) · 130.4 × 96.0 mm (5.13 × 3.78 in)
 
 ### mug-norule
 
-![mug-norule: original, plain stones, tinted](IS-05-tinted-comparison/mug-norule.jpg)
+![mug-norule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/mug-norule.jpg)
 
 2224 stones (SS6 2120, SS4 104) · 146.5 × 109.6 mm (5.77 × 4.32 in)
 
 ### giraffe-rule
 
-![giraffe-rule: original, plain stones, tinted](IS-05-tinted-comparison/giraffe-rule.jpg)
+![giraffe-rule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/giraffe-rule.jpg)
 
 2314 stones (SS6 1914, SS4 396, SS16 3, SS10 1) · 79.8 × 309.4 mm (3.14 × 12.18 in)
 
 ### dachshund-rule
 
-![dachshund-rule: original, plain stones, tinted](IS-05-tinted-comparison/dachshund-rule.jpg)
+![dachshund-rule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/dachshund-rule.jpg)
 
 1628 stones (SS6 1452, SS4 174, SS16 2) · 159.2 × 106.4 mm (6.27 × 4.19 in)
 
@@ -70,7 +73,7 @@ Under each row: stone count, stones per size, and the natural size.
 
 ### car-rule
 
-![car-rule: original, plain stones, tinted](IS-05-tinted-comparison/car-rule.jpg)
+![car-rule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/car-rule.jpg)
 
 3637 stones (SS6 2920, SS4 698, SS16 18, SS10 1) · 260.0 × 88.8 mm (10.24 × 3.49 in)
 
@@ -78,73 +81,73 @@ Under each row: stone count, stones per size, and the natural size.
 
 ### rs-cat
 
-![rs-cat: original, plain stones, tinted](IS-05-tinted-comparison/rs-cat.jpg)
+![rs-cat: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-cat.jpg)
 
 2150 stones (SS6 1801, SS4 347, SS16 2) · 103.0 × 130.8 mm (4.06 × 5.15 in)
 
 ### rs-dog
 
-![rs-dog: original, plain stones, tinted](IS-05-tinted-comparison/rs-dog.jpg)
+![rs-dog: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-dog.jpg)
 
 1671 stones (SS6 1528, SS4 141, SS16 2) · 96.6 × 160.6 mm (3.80 × 6.32 in)
 
 ### rs-einstein
 
-![rs-einstein: original, plain stones, tinted](IS-05-tinted-comparison/rs-einstein.jpg)
+![rs-einstein: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-einstein.jpg)
 
 3591 stones (SS6 3231, SS4 358, SS16 2) · 150.2 × 143.2 mm (5.91 × 5.64 in)
 
 ### rs-jesus
 
-![rs-jesus: original, plain stones, tinted](IS-05-tinted-comparison/rs-jesus.jpg)
+![rs-jesus: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-jesus.jpg)
 
 3298 stones (SS6 2880, SS4 417, SS16 1) · 145.8 × 163.9 mm (5.74 × 6.45 in)
 
 ### rs-lake
 
-![rs-lake: original, plain stones, tinted](IS-05-tinted-comparison/rs-lake.jpg)
+![rs-lake: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-lake.jpg)
 
 4089 stones (SS6 3927, SS4 162) · 154.7 × 152.1 mm (6.09 × 5.99 in)
 
 ### rs-leopard
 
-![rs-leopard: original, plain stones, tinted](IS-05-tinted-comparison/rs-leopard.jpg)
+![rs-leopard: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-leopard.jpg)
 
 2431 stones (SS6 2205, SS4 224, SS16 2) · 117.2 × 153.7 mm (4.62 × 6.05 in)
 
 ### rs-logo
 
-![rs-logo: original, plain stones, tinted](IS-05-tinted-comparison/rs-logo.jpg)
+![rs-logo: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-logo.jpg)
 
 833 stones (SS6 824, SS4 9) · 144.9 × 79.1 mm (5.70 × 3.12 in)
 
 ### rs-parrot
 
-![rs-parrot: original, plain stones, tinted](IS-05-tinted-comparison/rs-parrot.jpg)
+![rs-parrot: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-parrot.jpg)
 
 2542 stones (SS6 2307, SS4 234, SS16 1) · 168.3 × 151.6 mm (6.62 × 5.97 in)
 
 ### rs-portrait
 
-![rs-portrait: original, plain stones, tinted](IS-05-tinted-comparison/rs-portrait.jpg)
+![rs-portrait: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-portrait.jpg)
 
 3995 stones (SS6 3572, SS4 421, SS10 2) · 149.5 × 166.0 mm (5.89 × 6.54 in)
 
 ### rs-rose
 
-![rs-rose: original, plain stones, tinted](IS-05-tinted-comparison/rs-rose.jpg)
+![rs-rose: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-rose.jpg)
 
 1846 stones (SS6 1689, SS4 157) · 121.0 × 130.5 mm (4.76 × 5.14 in)
 
 ### rs-tulips
 
-![rs-tulips: original, plain stones, tinted](IS-05-tinted-comparison/rs-tulips.jpg)
+![rs-tulips: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-tulips.jpg)
 
 2673 stones (SS6 2547, SS4 126) · 140.3 × 141.7 mm (5.52 × 5.58 in)
 
 ### rs-woman
 
-![rs-woman: original, plain stones, tinted](IS-05-tinted-comparison/rs-woman.jpg)
+![rs-woman: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-woman.jpg)
 
 2612 stones (SS6 2392, SS4 218, SS16 2) · 143.9 × 146.7 mm (5.67 × 5.78 in)
 

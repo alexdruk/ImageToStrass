@@ -1,9 +1,12 @@
 // IS-05 tinted comparison for docs/IS-05-tinted-comparison.md, run by hand (no provider or strass
 // call): for the 8 accepted IS-03b designs, the IS-03b car and the 12 RS test layouts, one image per
-// design with three panels side by side: the original image, plain stones (faceted stones on
-// white, no fill) and tinted (spec section 8, unchanged). Plus a zoomed eye crop, plain vs tinted,
-// for 3 designs.
-//   node tools/tinted-comparison.mjs
+// design with four panels side by side: the original image, the AI image the layout was made from,
+// plain stones (faceted stones on white, no fill) and tinted (spec section 8, unchanged). Plus a
+// zoomed eye crop, plain vs tinted, for 3 designs. The AI image is a docs-only column: the app
+// never shows it (spec D4).
+//   node tools/tinted-comparison.mjs <IS-03b work dir>
+// The IS-03b AI images are the saved provider outputs <work dir>/<id>-output.png of
+// tools/measure-is03b.mjs (never in the repository); the RS AI images are the RS test images.
 // Each design is the delivered one: the saved strass /layout answer after the SS16 cap and the
 // overlap cleanup (cleanedLayout). Plain and tinted share one canvas (the tinted canvas: stones'
 // box + 2 main-stone margins) at the same px per mm; the original is shown at the same height.
@@ -30,10 +33,12 @@ const EYE_REACH_MM = 6;   // stones this far outside the crop are rendered too (
 
 const IS03B = ["dog-rule", "dog-norule", "cat-rule", "cat-norule", "mug-rule", "mug-norule", "giraffe-rule", "dachshund-rule"];
 const RS = ["cat", "dog", "einstein", "jesus", "lake", "leopard", "logo", "parrot", "portrait", "rose", "tulips", "woman"];
+const WORK = process.argv[2];
+if (!WORK) throw new Error("usage: node tools/tinted-comparison.mjs <IS-03b work dir>");
 const DESIGNS = [
-  ...IS03B.map((id) => ({ id, group: "IS-03b (accepted)", fixture: `is03b/${id}.json`, original: path.join(PHOTOS, `${id.split("-")[0]}.jpg`) })),
-  { id: "car-rule", group: "IS-03b car (accepted after the cleanup)", fixture: "is03b-rejected/car-rule.json", original: path.join(PHOTOS, "car.jpg") },
-  ...RS.map((id) => ({ id: `rs-${id}`, group: "RS test layouts", fixture: `layouts/${id}.json`, original: path.join(RS_IMAGES, `N2_${id}.png`) }))
+  ...IS03B.map((id) => ({ id, group: "IS-03b (accepted)", fixture: `is03b/${id}.json`, original: path.join(PHOTOS, `${id.split("-")[0]}.jpg`), ai: path.join(WORK, `${id}-output.png`) })),
+  { id: "car-rule", group: "IS-03b car (accepted after the cleanup)", fixture: "is03b-rejected/car-rule.json", original: path.join(PHOTOS, "car.jpg"), ai: path.join(WORK, "car-rule-output.png") },
+  ...RS.map((id) => ({ id: `rs-${id}`, group: "RS test layouts", fixture: `layouts/${id}.json`, original: path.join(RS_IMAGES, `N2_${id}.png`), ai: path.join(RS_IMAGES, `N2_${id}.png`) }))
 ];
 const EYES = ["dog-rule", "cat-rule", "rs-portrait"];
 
@@ -61,9 +66,10 @@ async function row(design, stoneLayout) {
   const plain = renderPlain(stoneLayout, box, tinted.scale);
   const height = tinted.heightPx;
   const original = await flatten(readFileSync(design.original)).resize({ height }).png().toBuffer({ resolveWithObject: true });
-  const panels = [original.data, plain, tinted.png];
-  const widths = [original.info.width, tinted.widthPx, tinted.widthPx];
-  const width = widths.reduce((a, b) => a + b, 0) + GAP_PX * 2;
+  const ai = await flatten(readFileSync(design.ai)).resize({ height }).png().toBuffer({ resolveWithObject: true });
+  const panels = [original.data, ai.data, plain, tinted.png];
+  const widths = [original.info.width, ai.info.width, tinted.widthPx, tinted.widthPx];
+  const width = widths.reduce((a, b) => a + b, 0) + GAP_PX * (panels.length - 1);
   let left = 0;
   const composite = panels.map((input, i) => {
     const at = { input, left, top: 0 };
@@ -131,18 +137,21 @@ const lines = [
   "# IS-05 tinted comparison",
   "",
   "Docs only; the app and the tinted definition (spec section 8) are unchanged. Made by",
-  "`node tools/tinted-comparison.mjs` from saved layouts, with no provider or strass call.",
+  "`node tools/tinted-comparison.mjs <IS-03b work dir>` from saved layouts, with no provider or strass call.",
   "",
-  "Each row shows three images side by side:",
+  "Each row shows four images side by side:",
   "",
   "1. **Original**: for the IS-03b designs, the buyer photo the design was made from (before background",
   "   removal and the model-input crop, so the framing differs from the design); for the RS test layouts,",
-  "   the RS test image the layout was made from.",
-  "2. **Plain stones**: the faceted stones (RS `drawCrystalStone`) on white, with no fill between them.",
-  "3. **Tinted**: `renderTinted` as in the app's preview, without the watermark.",
+  "   the RS test image (there is no other original: the RS test images are themselves model outputs, so",
+  "   columns 1 and 2 are the same image on those rows).",
+  "2. **AI image**: the model output the strass service laid out (IS-05b; docs only, the app never",
+  "   shows it, spec D4). For the IS-03b designs, the saved provider output of IS-03b.",
+  "3. **Plain stones**: the faceted stones (RS `drawCrystalStone`) on white, with no fill between them.",
+  "4. **Tinted**: `renderTinted` as in the app's preview, without the watermark.",
   "",
   "Plain and tinted use the same canvas (the stones' box plus 2 main-stone diameters) at the same",
-  "pixels per mm (640 px on the long side). The original is scaled to the same height. Each design",
+  "pixels per mm (640 px on the long side). The original and the AI image are scaled to the same height. Each design",
   "is the delivered one: the saved strass `/layout` answer after the SS16 cap and the overlap cleanup.",
   "Under each row: stone count, stones per size, and the natural size.",
   ""
@@ -153,7 +162,7 @@ for (const r of rows) {
     group = r.design.group;
     lines.push(`## ${group}`, "");
   }
-  lines.push(`### ${r.design.id}`, "", `![${r.design.id}: original, plain stones, tinted](IS-05-tinted-comparison/${r.file})`, "", r.stats, "");
+  lines.push(`### ${r.design.id}`, "", `![${r.design.id}: original, AI image, plain stones, tinted](IS-05-tinted-comparison/${r.file})`, "", r.stats, "");
 }
 lines.push(
   "## Eye area up close",
