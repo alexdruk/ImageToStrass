@@ -91,9 +91,8 @@ export function readmeText(stoneLayout, code) {
   ].join("\r\n");
 }
 
-// StoneLayout + code + the full tinted render -> [{ name, data }] in zipEntryNames() order. epsOf
-// replaces the Ghostscript step in tests on a machine without it.
-export async function designFiles(stoneLayout, { code, tintedPng, epsOf = designEps }) {
+// StoneLayout + code + the full tinted render -> [{ name, data }] in zipEntryNames() order.
+export async function designFiles(stoneLayout, { code, tintedPng }) {
   const title = `IS design ${code}`;
   const sheet = (s) => withInfo(productionSheetToPdf(stoneLayout, {
     projectName: title, productionWidthMm: stoneLayout.widthMm, productionHeightMm: stoneLayout.heightMm,
@@ -105,7 +104,7 @@ export async function designFiles(stoneLayout, { code, tintedPng, epsOf = design
     [`${code}.svg`, Buffer.from(svg, "utf8")],
     ...SHEETS.map((s) => [s.name, sheet(s)]),
     [`${code}.ai`, ai],
-    [`${code}.eps`, await epsOf(ai, { title })],
+    [`${code}.eps`, designEps(stoneLayout, { title })],
     [`${code}.dxf`, Buffer.from(designDxf(stoneLayout), "utf8")],
     [`${code}.png`, designPng(svg).png],
     [`${code}-preview.png`, tintedPng],

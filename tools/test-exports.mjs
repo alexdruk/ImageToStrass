@@ -9,10 +9,10 @@ import { promisify } from "node:util";
 import sharp from "sharp";
 import { AI_MARGIN_MM } from "../src/export/aiExport.js";
 import { dxfLayerNameForColor } from "../src/export/DxfExporter.js";
-import { ghostscriptPath } from "../src/export/epsExport.js";
 import { PNG_DPI } from "../src/export/pngExport.js";
 import { buildDeliveryZip, deliveryZipPath, designFiles, writeZip, zipEntryNames } from "../src/export/zip.js";
-import { naturalLayout } from "../src/pipeline/tiers.js";
+import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import { FILL_REACH, TINT_BRIGHTNESS, renderFull, renderPreview, renderTinted, tintCanvasMm } from "../src/render/tinted.js";
 import { Stone } from "../src/stones/Stone.js";
 import { STONE_COLORS } from "../src/stones/StoneColors.js";
@@ -20,25 +20,21 @@ import { StoneLayout } from "../src/stones/StoneLayout.js";
 
 // IS-04 (spec sections 8 and 9): the tinted render on a unit fixture, then every export of the 8
 // accepted IS-03b designs (tools/fixtures/is03b, strass /layout answers) opened by an outside
-// reader: SVG in a browser, PDF and AI by pdfinfo, EPS by Ghostscript, DXF by the RS DXF test's
-// group-code reader, PNG by sharp; and the ZIP's entries against the spec's table.
+// reader: SVG in a browser, PDF and AI by pdf.js (pdfjs-dist), EPS by a DSC structure check that
+// runs its drawing operators, DXF by the RS DXF test's group-code reader, PNG by sharp; and the
+// ZIP's entries against the spec's table.
 
 const run = promisify(execFile);
 const CODE = "IS-7K3Q-9XPA";
 const PT_PER_MM = 72 / 25.4;
 const CHROME = process.env.CHROME_PATH || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
-const PDFINFO = ["/usr/local/bin/pdfinfo", "/opt/homebrew/bin/pdfinfo"].find((f) => existsSync(f)) || "pdfinfo";
-const GS = ghostscriptPath();
-const exists = (cmd) => cmd.startsWith("/") ? existsSync(cmd) : false;
-const NO_GS = !exists(GS) && "Ghostscript (gs) is not installed";
-const NO_PDFINFO = !exists(PDFINFO) && "pdfinfo (poppler) is not installed";
 // Words no delivered file may contain (spec section 12, and section 9: no metadata naming anything
 // but IS).
 const FOREIGN = /openai|gpt|dall|prompt|ghostscript|artifex|resvg|tarikjabiri|napi|skia|cairo|rsvg|rhinestone.studio/i;
 
 const FIXTURES = new URL("./fixtures/is03b/", import.meta.url);
 const DESIGNS = readdirSync(FIXTURES).filter((f) => f.endsWith(".json")).sort().map((f) => {
-  const { stoneLayout, gaps } = naturalLayout(JSON.parse(readFileSync(new URL(f, FIXTURES), "utf8")));
+  const { stoneLayout, gaps } = cleanedLayout(JSON.parse(readFileSync(new URL(f, FIXTURES), "utf8")));
   return { id: f.replace(/\.json$/, ""), stoneLayout, gaps };
 });
 
@@ -120,8 +116,7 @@ const WORK = mkdtempSync(path.join(tmpdir(), "is-exports-"));
 const FILES = new Map();
 for (const d of DESIGNS) {
   const tintedPng = renderTinted(d.stoneLayout, { longSidePx: 600 }).png; // small: only its presence matters here
-  // Without Ghostscript the EPS entry is a placeholder and the EPS and ZIP-build tests are skipped.
-  const files = await designFiles(d.stoneLayout, { code: CODE, tintedPng, ...(NO_GS ? { epsOf: async () => Buffer.from("%!PS-Adobe-3.0 EPSF-3.0\n") } : {}) });
+  const files = await designFiles(d.stoneLayout, { code: CODE, tintedPng });
   const dir = path.join(WORK, d.id);
   mkdirSync(dir);
   for (const f of files) writeFileSync(path.join(dir, f.name), f.data);
@@ -131,7 +126,7 @@ process.on("exit", () => rmSync(WORK, { recursive: true, force: true }));
 
 const fileOf = (id, name) => path.join(FILES.get(id).dir, name);
 
-test("the 8 IS-03b designs: natural size, gap check passed after the SS16 cap", () => {
+test("the 8 IS-03b designs: natural size, gap check passed after the SS16 cap and the cleanup", () => {
   assert.equal(DESIGNS.length, 8);
   for (const d of DESIGNS) {
     assert.ok(d.gaps.ok, d.id);
@@ -226,7 +221,12 @@ await fetch("/result", { method: "POST", body: JSON.stringify(out) });
     `http://127.0.0.1:${server.address().port}/`
   ], { stdio: "ignore" });
   try {
-    const got = await Promise.race([result, new Promise((_, reject) => setTimeout(() => reject(new Error("browser did not answer in 60 s")), 60_000))]);
+    // The timers are cleared (or unref'd) so the test process exits as soon as the test is done.
+    let timer;
+    const got = await Promise.race([
+      result,
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("browser did not answer in 60 s")), 60_000); })
+    ]).finally(() => clearTimeout(timer));
     for (const d of DESIGNS) {
       // An SVG with a mm size decodes at 96 px per inch.
       const [w, h] = got[d.id];
@@ -237,30 +237,41 @@ await fetch("/result", { method: "POST", body: JSON.stringify(out) });
     const exited = chrome.exitCode !== null ? null : new Promise((resolve) => chrome.once("exit", resolve));
     chrome.kill();
     server.close();
-    await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 5_000))]);
+    await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 5_000).unref())]);
     try { rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 }); } catch { /* left to the OS */ }
   }
 });
 
-async function pdfinfo(file) {
-  const { stdout } = await run(PDFINFO, ["-l", "999", file]);
-  const info = Object.fromEntries(stdout.split("\n").filter((l) => /^[\w ]+:/.test(l)).map((l) => [l.slice(0, l.indexOf(":")), l.slice(l.indexOf(":") + 1).trim()]));
-  const pages = [...stdout.matchAll(/^Page\s+\d+ size:\s+([\d.]+) x ([\d.]+) pts/gm)].map((m) => [Number(m[1]), Number(m[2])]);
-  return { info, pages };
+// pdf.js opens the file: { info (document info), pages ([width, height] in pt per page) }.
+async function pdfOpen(file) {
+  const task = getDocument({ data: new Uint8Array(readFileSync(file)), verbosity: 0, isEvalSupported: false });
+  try {
+    const doc = await task.promise;
+    const { info } = await doc.getMetadata();
+    const pages = [];
+    for (let i = 1; i <= doc.numPages; i++) {
+      const { width, height } = (await doc.getPage(i)).getViewport({ scale: 1 });
+      pages.push([width, height]);
+    }
+    return { info, pages, numPages: doc.numPages };
+  } finally {
+    await task.destroy();
+  }
 }
 
 const near = (a, b, tol = 0.5) => Math.abs(a - b) <= tol;
 const samePage = ([w, h], [a, b]) => (near(w, a) && near(h, b)) || (near(w, b) && near(h, a));
 
-test("production sheets (A4 and Letter) open in pdfinfo: page size, Producer and Creator IS", { skip: NO_PDFINFO }, async () => {
+test("production sheets (A4 and Letter) open in pdf.js: page count, page size, Producer and Creator IS", async () => {
+  // Page counts of the 8 designs (A4 and Letter alike), as in docs/IS-04-results.md.
+  const PAGES = { "cat-norule": 2, "cat-rule": 2, "dachshund-rule": 1, "dog-norule": 2, "dog-rule": 2, "giraffe-rule": 3, "mug-norule": 1, "mug-rule": 1 };
   for (const d of DESIGNS) {
     for (const [name, size] of [["production-sheet-A4.pdf", [595.28, 841.89]], ["production-sheet-Letter.pdf", [612, 792]]]) {
-      const { info, pages } = await pdfinfo(fileOf(d.id, name));
+      const { info, pages, numPages } = await pdfOpen(fileOf(d.id, name));
       assert.equal(info.Producer, "IS", `${d.id} ${name}`);
       assert.equal(info.Creator, "IS");
       assert.equal(info.Title, `IS design ${CODE}`);
-      assert.equal(Number(info.Pages), pages.length);
-      assert.ok(pages.length >= 1);
+      assert.equal(numPages, PAGES[d.id], `${d.id} ${name}: pages`);
       for (const p of pages) assert.ok(samePage(p, size), `${d.id} ${name}: ${p}`);
     }
   }
@@ -281,9 +292,9 @@ test("production sheet text: title, no Object line, footer on every page, units"
   }
 });
 
-test("AI opens in pdfinfo: one page, the design plus 10 mm, Producer IS", { skip: NO_PDFINFO }, async () => {
+test("AI opens in pdf.js: one page, the design plus 10 mm, Producer IS", async () => {
   for (const d of DESIGNS) {
-    const { info, pages } = await pdfinfo(fileOf(d.id, `${CODE}.ai`));
+    const { info, pages } = await pdfOpen(fileOf(d.id, `${CODE}.ai`));
     assert.equal(info.Producer, "IS");
     assert.equal(info.Creator, "IS");
     assert.equal(pages.length, 1);
@@ -294,18 +305,76 @@ test("AI opens in pdfinfo: one page, the design plus 10 mm, Producer IS", { skip
   }
 });
 
-test("EPS opens in Ghostscript: bounding box of the stones, header names IS", { skip: NO_GS }, async () => {
+// EPSF-3.0 structure (DSC): the header comments up to %%EndComments, prolog, one page, trailer,
+// %%EOF; then the drawing run as PostScript: every line outside comments is numbers and the known
+// operators (C = filled circle x y r, setrgbcolor, gsave/grestore, showpage) with the operand
+// counts they need, nothing left on the stack. -> { header, circles: [{ x, y, r, rgb }] }.
+function parseEps(text) {
+  assert.ok(/^[\x0a\x20-\x7e]*$/.test(text), "7-bit text only");
+  const lines = text.split("\n");
+  assert.equal(lines[0], "%!PS-Adobe-3.0 EPSF-3.0");
+  const end = lines.indexOf("%%EndComments");
+  assert.ok(end > 0, "%%EndComments");
+  const header = {};
+  for (const line of lines.slice(1, end)) {
+    const m = /^%%(\w+): (.*)$/.exec(line);
+    assert.ok(m, `header line ${line}`);
+    header[m[1]] = m[2];
+  }
+  const at = (marker) => lines.indexOf(marker);
+  const order = ["%%EndComments", "%%BeginProlog", "%%EndProlog", "%%Page: 1 1", "%%Trailer", "%%EOF"].map(at);
+  assert.ok(order.every((i, k) => i > 0 && (k === 0 || i > order[k - 1])), `DSC sections in order: ${order}`);
+  assert.deepEqual(lines.slice(order[5] + 1), [""], "nothing after %%EOF");
+  assert.deepEqual(lines.slice(order[1] + 1, order[2]), ["/C { newpath 0 360 arc closepath fill } bind def"]);
+
+  const circles = [];
+  const stack = [];
+  let rgb = null;
+  let depth = 0;
+  let shown = 0;
+  for (const line of lines.slice(order[3] + 1, order[4])) {
+    if (line.startsWith("%")) continue;
+    for (const token of line.split(" ")) {
+      if (/^-?\d+(\.\d+)?$/.test(token)) { stack.push(Number(token)); continue; }
+      const take = (n) => { assert.ok(stack.length >= n, `${token} needs ${n} operands`); return stack.splice(-n); };
+      if (token === "C") { const [x, y, r] = take(3); circles.push({ x, y, r, rgb }); }
+      else if (token === "setrgbcolor") { rgb = take(3); assert.ok(rgb.every((v) => v >= 0 && v <= 1)); }
+      else if (token === "gsave") depth++;
+      else if (token === "grestore") { depth--; assert.ok(depth >= 0, "grestore without gsave"); }
+      else if (token === "showpage") shown++;
+      else assert.fail(`unknown operator ${token}`);
+    }
+    assert.equal(stack.length, 0, `operands left on line ${line}`);
+  }
+  assert.equal(depth, 0, "gsave/grestore balanced");
+  assert.equal(shown, 1, "one showpage");
+  assert.ok(circles.every((c) => c.rgb), "a colour is set before the first circle");
+  return { header, circles };
+}
+
+test("EPS: valid EPSF-3.0 structure, bounding box = design size, one circle per stone, header names IS", () => {
+  const unit = (hex) => [0, 2, 4].map((i) => parseInt(hex.replace("#", "").slice(i, i + 2), 16) / 255);
   for (const d of DESIGNS) {
-    const file = fileOf(d.id, `${CODE}.eps`);
-    const eps = readFileSync(file, "latin1");
-    assert.ok(eps.startsWith("%!PS-Adobe-3.0 EPSF-3.0"), d.id);
-    assert.match(eps, /\n%%Creator: IS\n/);
-    assert.match(eps, new RegExp(`\\n%%Title: IS design ${CODE}\\n`));
-    const { stderr } = await run(GS, ["-q", "-dSAFER", "-dNOPAUSE", "-dBATCH", "-sDEVICE=bbox", file]);
-    const [, x0, y0, x1, y1] = /%%HiResBoundingBox: ([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)/.exec(stderr).map(Number);
     const L = d.stoneLayout;
-    // The drawn stones (with their 0.12 mm stroke) span the design's natural size.
-    assert.ok(near((x1 - x0) / PT_PER_MM, L.widthMm, 0.3) && near((y1 - y0) / PT_PER_MM, L.heightMm, 0.3), `${d.id}: ${stderr}`);
+    const { header, circles } = parseEps(readFileSync(fileOf(d.id, `${CODE}.eps`), "latin1"));
+    assert.equal(header.Creator, "IS", d.id);
+    assert.equal(header.Title, `IS design ${CODE}`);
+    assert.equal(header.Pages, "1");
+    const W = L.widthMm * PT_PER_MM, H = L.heightMm * PT_PER_MM;
+    const hi = header.HiResBoundingBox.split(" ").map(Number);
+    assert.ok(hi[0] === 0 && hi[1] === 0 && near(hi[2], W, 0.001) && near(hi[3], H, 0.001), `${d.id}: ${header.HiResBoundingBox}`);
+    assert.deepEqual(header.BoundingBox.split(" ").map(Number), [0, 0, Math.ceil(hi[2]), Math.ceil(hi[3])]);
+    assert.equal(circles.length, L.count, `${d.id}: one circle per stone`);
+    // Grouped by colour: each colour is set once. Each circle is its stone, y flipped, in the box.
+    const colourRuns = circles.filter((c, i) => i === 0 || c.rgb !== circles[i - 1].rgb).length;
+    assert.equal(colourRuns, new Set(L.stones.map((s) => s.color)).size, `${d.id}: one group per colour`);
+    const byColour = [...new Set(L.stones.map((s) => s.color))].flatMap((c) => L.stones.filter((s) => s.color === c));
+    byColour.forEach((s, i) => {
+      const c = circles[i];
+      assert.ok(near(c.x, s.xMm * PT_PER_MM, 0.002) && near(c.y, H - s.yMm * PT_PER_MM, 0.002) && near(c.r, s.sizeMm / 2 * PT_PER_MM, 0.002), `${d.id} stone ${i}`);
+      assert.ok(unit(STONE_COLORS[s.color].fill).every((v, k) => near(c.rgb[k], v, 1e-4)), `${d.id} stone ${i}: catalogue fill`);
+      assert.ok(c.x - c.r >= -0.002 && c.y - c.r >= -0.002 && c.x + c.r <= W + 0.002 && c.y + c.r <= H + 0.002);
+    });
   }
 });
 
@@ -394,7 +463,7 @@ test("writeZip: a deflate ZIP with the entries in table order, contents unchange
   }
 });
 
-test("buildDeliveryZip: from the archive to data/delivery/<code>/<code>.zip", { skip: NO_GS }, async () => {
+test("buildDeliveryZip: from the archive to data/delivery/<code>/<code>.zip", async () => {
   const root = mkdtempSync(path.join(tmpdir(), "is-delivery-"));
   try {
     const archiveDir = path.join(root, "archive");

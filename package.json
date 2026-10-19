@@ -34,5 +34,8 @@
   "homepage": "https://github.com/alexdruk/ImageToStrass#readme",
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "pdfjs-dist": "6.4.299"
   }
 }

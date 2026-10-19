@@ -119,7 +119,7 @@ export function checkGaps(stones) {
 }
 
 // Plain { x, y, d, color } stones scaled by r -> StoneLayout with its footprint box at the origin.
-function toStoneLayout(stones, r) {
+export function toStoneLayout(stones, r) {
   const box = footprint(stones, r);
   const placed = stones.map((s, index) => new Stone({
     xMm: s.x * r - box.minX,

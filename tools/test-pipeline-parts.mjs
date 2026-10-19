@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import { test } from "node:test";
 import { BW_DARK, BW_LIGHT, bwColour, lightness, mapBlackAndWhite } from "../src/pipeline/bw.js";
 import sharp from "sharp";
+import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import { MODEL_INPUT_SIDE, acceptLayout, modelInput, normalizeDesignSettings, subjectBox } from "../src/pipeline/design.js";
 import { callLayoutService } from "../src/pipeline/layout.js";
 import { IS_PROMPT_VERSION, buildPrompt } from "../src/pipeline/prompt.js";
@@ -138,12 +139,29 @@ test("layout client posts to /layout with all colour ids and pitch 2.1", async (
   assert.equal(down.error.code, "layout-unavailable");
 });
 
-test("acceptance: violations 0, coverage >= 0.5, at least 300 stones", () => {
-  const layout = (n, violations, coverage) => ({ stones: Array(n).fill([0, 0, "ss6", "jet"]), report: { violations, coverage } });
-  assert.equal(acceptLayout(layout(300, 0, 0.5)).ok, true);
-  assert.equal(acceptLayout(layout(299, 0, 0.9)).ok, false);
-  assert.equal(acceptLayout(layout(500, 1, 0.9)).ok, false);
-  assert.equal(acceptLayout(layout(500, 0, 0.49)).ok, false);
+test("acceptance: under 3 % removed, coverage >= 0.5, IS gap check 0, at least 300 stones", () => {
+  // A 20 x 20 grid of SS6 stones at 2.3 mm pitch: no violation.
+  const grid = [];
+  for (let i = 0; i < 20; i++) for (let j = 0; j < 20; j++) grid.push([1 + i * 2.3, 1 + j * 2.3, "ss6", "jet"]);
+  const layout = (stones, coverage, violations = 0) => ({ stones, report: { violations, coverage } });
+  const check = (l) => acceptLayout(cleanedLayout(l));
+  assert.equal(check(layout(grid, 0.6)).ok, true);
+  assert.equal(check(layout(grid.slice(0, 299), 0.9)).ok, false, "below 300 stones");
+  assert.equal(check(layout(grid, 0.49)).ok, false, "coverage below 0.5");
+  // The service's violation count is not used: the IS check after the cleanup decides.
+  assert.equal(check(layout(grid, 0.6, 12)).ok, true);
+  // 11 SS4 stones into 11 grid stones: 11 of 411 removed (2.7 %), accepted; 12 of 412 (2.9 %) too;
+  // 13 of 413 (3.1 %) is rejected.
+  const extra = (n) => grid.concat(Array.from({ length: n }, (_, k) => [1 + k * 2.3 + 0.5, 1, "ss4", "jet"]));
+  for (const [n, ok] of [[11, true], [12, true], [13, false]]) {
+    const c = check(layout(extra(n), 0.6));
+    assert.equal(c.removed, n);
+    assert.equal(c.ok, ok, `${n} removed`);
+    assert.equal(c.violations, 0);
+  }
+  // Coverage is the service's, scaled by the stone area left: removing stones lowers it.
+  const c = check(layout(extra(13), 0.6));
+  assert.ok(c.coverage < 0.6 && c.coverage > 0.59, String(c.coverage));
 });
 
 test("design settings: mode, background removal and adjustments only", () => {

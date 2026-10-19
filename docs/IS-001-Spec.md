@@ -1,7 +1,8 @@
 # IS-001 — IS: any image to rhinestone template, sold on Etsy
 
 Status: spec, 18 Oct 2026. Revised 18 Oct 2026 (IS-03b): no size choice, every design is delivered
-at its natural size.
+at its natural size. Revised 19 Oct 2026 (IS-04): EPS written by IS (no Ghostscript), overlap
+cleanup after the SS16 cap, acceptance on the IS gap check.
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -46,7 +47,7 @@ disclosure in generic words (section 11.1).
 | D7 | Uploads, prepared images, AI images, layouts and code records are kept **indefinitely** in `data/archive/`, managed by Alex by hand. Delivery ZIPs are kept **30 days** after payment, then deleted. |
 | D8 | One Etsy listing, one price. |
 | D9 | Production sheet as the RS exporter, multi-page tiling for large designs. With no unit choice the ZIP carries **both** an A4 sheet (mm) and a Letter sheet (inches) (IS-03b decision). |
-| D10 | CDR is dropped. AI is a PDF-compatible file; EPS comes from Ghostscript. |
+| D10 | CDR is dropped. AI is a PDF-compatible file; EPS is written by IS directly from the stones (no Ghostscript). |
 | D11 | Background removal is **on by default** and can be switched off. |
 | D12 | Hosted on Alex's Mac behind a Cloudflare Tunnel. Etsy OAuth is done once through a temporary quick tunnel until the domain exists. |
 | D13 | No framework, no TypeScript. Node (ES modules) + plain HTML/CSS/JS. Python only in `services/`. |
@@ -266,8 +267,11 @@ Error mapping to buyer texts (section 12): declined → `declined`, everything e
 
 From RS `server/redraw/jobs.mjs` `callLayoutService`: `POST http://127.0.0.1:8000/layout` with
 `colorIds` = all catalogue ids and `targetPitchMm` 2.1. Timeout 180 s. Response as RS README
-("Endpoints"). The design is accepted when `violations == 0`, `coverage >= 0.5` and at least 300
-stones; otherwise the whole attempt is re-run once automatically and does not count (D5).
+("Endpoints"). Acceptance is decided on the design after the SS16 cap and the overlap cleanup
+(7.5), not on the service's own `violations`: the design is accepted when the cleanup removed fewer
+than 3 % of the stones, the coverage after the cleanup is at least 0.5, the IS gap check finds 0
+violations and at least 300 stones are left; otherwise the whole attempt is re-run once
+automatically and does not count (D5).
 
 ### 7.5 Size (D1, D2)
 
@@ -283,10 +287,22 @@ stones goes to the design's event log (server only). The 12 RS test layouts have
 the 8 accepted IS-03b designs 11 (2 in each dog, cat and dachshund design, 1 in the giraffe, none in
 the mugs).
 
-The gap check (`findOverlappingStonePairs` from StoneLayout.js and a min-gap check of 0.1 mm) runs
-again on the capped layout; a violation is a bug and fails the attempt. Acceptance (7.4) still uses
-the service's own `violations`: the cap does not rescue a rejected layout. (The rejected IS-03b car
-had 148 violations, 145 after capping its 15 SS20 stones; 125 of them are SS4–SS4 pairs.)
+Overlap cleanup (`src/pipeline/cleanup.js`), after the cap: for every pair of stones whose rim gap
+(centre distance minus both radii) is below 0.1 mm, the smaller stone is removed; on equal size the
+one with fewer neighbours (other stones with a rim gap below 0.5 mm, counted once on the capped
+stones), and on equal neighbours the later one in the layout. Pairs are taken worst gap first; a
+pair with a stone already removed is skipped. The footprint box is that of the stones left. The
+number of removed stones goes to the design's event log (server only).
+
+Coverage after the cleanup: the service's `coverage` (the share of subject-mask pixels under a
+stone) times the area under the delivered stones over the area under the service's stones, both
+rasterised at the service's 10 px per mm. It includes the cap's shrinking.
+
+The IS gap check (`findOverlappingStonePairs` from StoneLayout.js and a min-gap check of 0.1 mm)
+then runs on the cleaned layout, and acceptance (7.4) uses its result. The rejected IS-03b car (148
+service violations, 145 after the cap) loses 79 SS4 stones of 3716 (2.1 %), its coverage goes from
+0.633 to 0.624, and it is accepted. The cleanup removes nothing from the 12 RS test layouts and the
+8 accepted IS-03b designs.
 
 The stone-size tier code (`applyTier` in `src/pipeline/tiers.js`: scale positions and diameters by a
 tier factor, snap diameters down, stretch positions to an exact longest side) stays in
@@ -351,7 +367,7 @@ the preview and README, all at that size.
 | `production-sheet-A4.pdf` | RS `productionSheetToPdf`, A4, mm, multi-page tiling, mirror off, registration marks on |
 | `production-sheet-Letter.pdf` | The same on Letter, inches (D9) |
 | `IS-XXXX-XXXX.ai` | New `aiExport.js`: one-page true-size vector PDF of the stones (page = design + 10 mm, 5 mm on every side), built with RS `PdfDocument`, saved as `.ai` (PDF-compatible; Illustrator opens it) |
-| `IS-XXXX-XXXX.eps` | Ghostscript `gs -dNOPAUSE -dBATCH -sDEVICE=eps2write` from the `.ai` PDF; the DSC header's `%%Creator` and `%%Title` name IS and the design, `%%Invocation` is left out |
+| `IS-XXXX-XXXX.eps` | New `epsExport.js`: EPSF-3.0 written directly from the StoneLayout; `%%BoundingBox` and `%%HiResBoundingBox` in points at true size (the design, no margin), `%%Creator: IS`, `%%Title` the design, no other tool named; one filled circle per stone in its catalogue fill colour, grouped by colour, y flipped (origin bottom-left) |
 | `IS-XXXX-XXXX.dxf` | RS `stoneLayoutToDxf`, one layer per colour; header `$LASTSAVEDBY` set to `IS` |
 | `IS-XXXX-XXXX.png` | The SVG rendered by `@resvg/resvg-js` at 300 dpi (size = mm / 25.4 × 300, rounded), transparent background (the SVG's white rectangle left out), a `pHYs` chunk of 300 dpi and no other metadata |
 | `IS-XXXX-XXXX-preview.png` | Full tinted render (section 8), no watermark |
@@ -505,8 +521,9 @@ orders with a "match to code" action, manual unlock, poller status, disk use of 
   `data/is.sqlite` to `data/backup/`.
 - Runbook `docs/RUNBOOK.md`: start/stop, check health, reconnect Etsy, what to do when the Mac was
   off (the poller catches up with `min_last_modified`).
-- Tools to install: Node 20+, `brew install ghostscript cloudflared`, Python 3.12 (already there
-  for the RS layout service).
+- Tools to install: Node 20+, `brew install cloudflared`, Python 3.12 (already there for the RS
+  layout service). No PDF or PostScript tools are needed: IS writes the EPS itself, and the tests
+  open the PDFs with pdf.js (`pdfjs-dist`, a dev dependency).
 
 ## 16. Code taken from RS (at `38cd831`)
 
@@ -562,8 +579,11 @@ the rule.
 **IS-04 Tinted render and exports.** Section 8 and section 9.
 *Done when:* tinted render matches the definition on a unit fixture (pixel at 1.5 r gets 85 % of
 the nearest stone's fill, pixel at 1.7 r is background); all files open (SVG in a browser, PDF and
-AI via `pdfinfo`, EPS via Ghostscript, DXF via the RS DXF test approach, PNG size equals 300 dpi
-true size); ZIP contents match the table.
+AI via pdf.js with page count and page size, EPS by a structure check with its bounding box equal to
+the design size and one circle per stone, DXF via the RS DXF test approach, PNG size equals 300 dpi
+true size); ZIP contents match the table; the overlap cleanup (7.5) is measured on the rejected
+car, the 8 accepted IS-03b designs and the 12 RS test layouts; one ZIP is built end to end from an
+archive.
 
 **IS-05 Web app.** Section 10.
 *Done when:* the full flow runs in fake mode in a desktop and a 390 px-wide browser; no screen
