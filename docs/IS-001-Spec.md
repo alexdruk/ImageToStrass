@@ -324,9 +324,12 @@ Definition (from the RS 30 Sep decision, sharpened here):
 The result reads as a solid, painted picture, close to what the buyer expects from the photo.
 
 Implementation: Node with `@napi-rs/canvas` (Canvas 2D compatible, so the RS renderer runs
-unchanged). Nearest-stone search through a uniform grid of cell size = 2 × the largest stone
-diameter. Two renders: preview (900 px long side, watermarked, sent to the browser) and full
-(2400 px long side, archived and put in the ZIP).
+unchanged), `src/render/tinted.js`. Nearest-stone search: a pixel can only be filled when its
+nearest stone's edge is at most 0.6 × the largest radius away, so each stone writes its edge
+distance into the pixels within that reach and the smallest wins; this is exact for every pixel
+that can be filled. "Main stone" is the most common stone size. Two renders: preview (900 px long
+side, white background, watermarked, sent to the browser) and full (2400 px long side, transparent,
+written to `attempt-<n>/tinted.png` in the "Preparing files" stage and put in the ZIP).
 
 Watermark on every preview the browser receives: tiled diagonal "IS · PREVIEW · <code>" at 18 %
 opacity, plus no right-click save of the full image (best effort only; the low resolution is the
@@ -344,13 +347,13 @@ the preview and README, all at that size.
 
 | File | How |
 | --- | --- |
-| `IS-XXXX-XXXX.svg` | RS `stoneLayoutToSvg`, true size, `width`/`height` in mm, colour groups as `<g>` with ids |
+| `IS-XXXX-XXXX.svg` | RS `stoneLayoutToSvg` in its grouped form, true size, `width`/`height` in mm, one `<g>` per colour and size with an id such as `jet-ss6` (the empty regions group left out) |
 | `production-sheet-A4.pdf` | RS `productionSheetToPdf`, A4, mm, multi-page tiling, mirror off, registration marks on |
 | `production-sheet-Letter.pdf` | The same on Letter, inches (D9) |
-| `IS-XXXX-XXXX.ai` | New `aiExport.js`: one-page true-size vector PDF of the stones (page = design + 10 mm), built with RS `PdfDocument`, saved as `.ai` (PDF-compatible; Illustrator opens it) |
-| `IS-XXXX-XXXX.eps` | Ghostscript `gs -dNOPAUSE -dBATCH -sDEVICE=eps2write` from the `.ai` PDF |
-| `IS-XXXX-XXXX.dxf` | RS `stoneLayoutToDxf`, one layer per colour |
-| `IS-XXXX-XXXX.png` | The SVG rendered by `@resvg/resvg-js` at 300 dpi, transparent background |
+| `IS-XXXX-XXXX.ai` | New `aiExport.js`: one-page true-size vector PDF of the stones (page = design + 10 mm, 5 mm on every side), built with RS `PdfDocument`, saved as `.ai` (PDF-compatible; Illustrator opens it) |
+| `IS-XXXX-XXXX.eps` | Ghostscript `gs -dNOPAUSE -dBATCH -sDEVICE=eps2write` from the `.ai` PDF; the DSC header's `%%Creator` and `%%Title` name IS and the design, `%%Invocation` is left out |
+| `IS-XXXX-XXXX.dxf` | RS `stoneLayoutToDxf`, one layer per colour; header `$LASTSAVEDBY` set to `IS` |
+| `IS-XXXX-XXXX.png` | The SVG rendered by `@resvg/resvg-js` at 300 dpi (size = mm / 25.4 × 300, rounded), transparent background (the SVG's white rectangle left out), a `pHYs` chunk of 300 dpi and no other metadata |
 | `IS-XXXX-XXXX-preview.png` | Full tinted render (section 8), no watermark |
 | `README.txt` | Code, natural size (width × height in mm and in), stone count per size and per colour, file list, short how-to |
 
@@ -360,12 +363,18 @@ Production sheet changes (copied `ProductionSheetExporter.js`):
 - the Object line and the plate/vessel lines are removed (no products in IS);
 - header keeps: production size, stone count, stone sizes with counts, gap, every colour with its
   count (RS build F rule), page / margin / mirror / registration;
-- footer: `Made with IS` and the page number. No other branding.
+- the gap is the minimum gap of the gap check, `0.1 mm`, printed in mm on both sheets (in inches it
+  would round to 0);
+- footer: `Made with IS · Page i of N` on every page, inside the bottom margin. No other branding.
 
-PDF metadata: Producer and Creator `IS`. No comments or metadata in SVG/DXF/PNG naming anything
-else (section 12).
+Both sheets: margin 10 mm, mirror off, registration marks on; A4 with sizes in mm, Letter in inches.
 
-The ZIP (`archiver`, deflate) is built when the code becomes paid (or at the first download if the
+PDF metadata: Producer and Creator `IS`, Title `IS design IS-XXXX-XXXX`, added to the
+`PdfDocument` output as an incremental update (`src/export/pdfInfo.js`), so `PdfDocument.js` stays
+unchanged. No comments or metadata in SVG/DXF/PNG naming anything else (section 12).
+
+The ZIP (`archiver`, deflate; `buildDeliveryZip` in `src/export/zip.js`, from `attempt-<n>/stones.json`
+and `tinted.png`, never writing to the archive) is built when the code becomes paid (or at the first download if the
 build was skipped), stored in `data/delivery/`, and rebuilt from the archive if the buyer
 downloads again within 30 days and the file is missing.
 

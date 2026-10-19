@@ -106,7 +106,7 @@ test("fake mode: Create design runs end to end and writes the archive", async ()
     assert.ok(!LEAK.test(JSON.stringify(done.body)) && !LEAK.test(done.text), "IS fields only");
 
     const dir = path.join(srv.config.archiveDir, code, "attempt-1");
-    assert.deepEqual(readdirSync(dir).sort(), ["ai.png", "layout.json", "original.png", "prepared.png", "settings.json", "stones.json"]);
+    assert.deepEqual(readdirSync(dir).sort(), ["ai.png", "layout.json", "original.png", "prepared.png", "settings.json", "stones.json", "tinted.png"]);
     const settings = JSON.parse(readFileSync(path.join(dir, "settings.json"), "utf8"));
     assert.equal(settings.uploadId, 1);
     for (const gone of ["size", "unit", "sizeMm"]) assert.ok(!(gone in settings), gone);

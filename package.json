@@ -10,6 +10,10 @@
     "dev": "node --watch src/server/index.js"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^1.0.11",
+    "@resvg/resvg-js": "^2.6.2",
+    "@tarikjabiri/dxf": "2.8.9",
+    "archiver": "^8.0.0",
     "better-sqlite3": "^12.11.1",
     "bmp-js": "^0.1.0",
     "busboy": "^1.6.0",

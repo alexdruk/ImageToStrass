@@ -4,6 +4,7 @@ import sharp from "sharp";
 import { attemptDir, storeNew, uploadDir, writeAttemptInputs, writeCodeJson } from "../prep/archive.js";
 import { normalizeSettings } from "../prep/adjust.js";
 import { preparePng } from "../prep/prepare.js";
+import { renderFull } from "../render/tinted.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
 import { findStoneSizeByDiameterMm } from "../stones/StoneSizes.js";
 import { mapBlackAndWhite } from "./bw.js";
@@ -15,7 +16,7 @@ import { naturalLayout } from "./tiers.js";
 
 // The design pipeline (spec section 7): Create design -> attempt row and archive inputs -> queue ->
 // model input -> provider -> layout -> acceptance (one automatic re-run) -> natural size -> B&W ->
-// result.
+// stones.json and the full tinted render (section 8) -> result.
 //
 // Attempts accounting (D5, section 4.1): an attempt counts (counts = 1) only when it is done. A
 // failed, declined or re-run attempt has counts = 0. A code makes a new design only while it is
@@ -259,6 +260,7 @@ export function createPipeline({
 
       stage("files");
       storeNew(dir, "stones.json", `${JSON.stringify(stoneLayout.toJSON())}\n`);
+      storeNew(dir, "tinted.png", renderFull(stoneLayout).png);
       const result = designResult(stoneLayout, { coverage: check.coverage, settings, outputPx });
       finish(code, n, "done", { counts: 1, result }, { stones: result.stones, capped: natural.capped });
     } catch (error) {
