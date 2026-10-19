@@ -1,9 +1,11 @@
 // IS-05b images and numbers for docs/IS-05b-results.md, run by hand (no provider or strass call):
-//   node tools/is05b-results.mjs <IS-03b work dir> <runs dir>
-// <IS-03b work dir> holds the saved IS-03b provider outputs (<id>-output.png, see
-// tools/measure-is03b.mjs); <runs dir> holds the layouts of services/strass/scripts/is05b_runs.py
-// (<name>.<variant>.json, <name>.stages.json). Images go to docs/IS-05b-results/; the numbers are
-// printed as JSON (docs/IS-05b-results/numbers.json) for the hand-written results document.
+//   node tools/is05b-results.mjs <runs dir> [<earlier runs dir>]
+// The IS-03b AI images are the fixtures in tools/fixtures/is03b-ai. <runs dir> holds the layouts of
+// services/strass/scripts/is05b_runs.py (<name>.<variant>.json, <name>.stages.json);
+// <earlier runs dir> the "default" layouts of the first IS-05b service (soft outlines on, no pupil
+// pair kept of more than two), for the giraffe and the unchanged-design check. Images go to
+// docs/IS-05b-results/; the numbers to docs/IS-05b-results/numbers.json for the hand-written
+// results document. IS05B_PARTS picks the parts (comma-separated).
 import { createCanvas } from "@napi-rs/canvas";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -14,7 +16,8 @@ import { renderTinted, tintCanvasMm } from "../src/render/tinted.js";
 import { getCrystalAppearance } from "../src/stones/CrystalAppearance.js";
 import { drawCrystalStone } from "../src/stones/CrystalStoneRenderer.js";
 import { StoneLayout } from "../src/stones/StoneLayout.js";
-import { CAT_LAB, decodeRgba, delivered, measure, stageSummary, summary } from "./is05b-measure.mjs";
+import { AI_DIR, ALL_DESIGNS, CAT_LAB, decodeRgba, delivered, layoutOf, measure, stageSummary, summary } from "./is05b-measure.mjs";
+import { prepareDesign, renderTintedBefore, scoreRender } from "./is05b-tint.mjs";
 import { deltaE2000, discLab, mean } from "./colour-diff.mjs";
 import { Stone } from "../src/stones/Stone.js";
 
@@ -24,8 +27,8 @@ const RS_IMG = path.join(ROOT, "services/strass/prototype/img");
 const GAP = 10;
 const LABEL_H = 34;
 
-const [WORK, RUNS] = process.argv.slice(2);
-if (!WORK || !RUNS) throw new Error("usage: node tools/is05b-results.mjs <IS-03b work dir> <runs dir>");
+const [RUNS, EARLIER] = process.argv.slice(2);
+if (!RUNS) throw new Error("usage: node tools/is05b-results.mjs <runs dir> [<earlier runs dir>]");
 mkdirSync(OUT, { recursive: true });
 
 // The six diagnosis designs: the saved layout the docs showed, and the AI image it was made from.
@@ -33,9 +36,9 @@ const DESIGNS = {
   portrait: { fixture: "layouts/portrait.json", ai: path.join(RS_IMG, "N2_portrait.png") },
   woman: { fixture: "layouts/woman.json", ai: path.join(RS_IMG, "N2_woman.png") },
   leopard: { fixture: "layouts/leopard.json", ai: path.join(RS_IMG, "N2_leopard.png") },
-  car: { fixture: "is03b-rejected/car-rule.json", ai: path.join(WORK, "car-rule-output.png") },
-  dog: { fixture: "is03b/dog-rule.json", ai: path.join(WORK, "dog-rule-output.png") },
-  cat: { fixture: "is03b/cat-rule.json", ai: path.join(WORK, "cat-rule-output.png") }
+  car: { fixture: "is03b-rejected/car-rule.json", ai: path.join(AI_DIR, "car-rule-output.png") },
+  dog: { fixture: "is03b/dog-rule.json", ai: path.join(AI_DIR, "dog-rule-output.png") },
+  cat: { fixture: "is03b/cat-rule.json", ai: path.join(AI_DIR, "cat-rule-output.png") }
 };
 const fixture = (rel) => JSON.parse(readFileSync(path.join(ROOT, "tools/fixtures", rel), "utf8"));
 const run = (name, variant) => JSON.parse(readFileSync(path.join(RUNS, `${name}.${variant}.json`), "utf8"));
@@ -86,13 +89,13 @@ async function strip(panels, file) {
 
 // A window { minXmm, minYmm, widthMm, heightMm } of a StoneLayout, rendered plain and tinted at
 // pxPerMm from the stones near it only (exact: a pixel's tint depends on stones within 3 mm).
-async function windowRenders(stoneLayout, win, pxPerMm) {
+async function windowRenders(stoneLayout, win, pxPerMm, render = renderTinted) {
   const reach = 8;
   const near = stoneLayout.stones.filter((s) => s.xMm > win.minXmm - reach && s.xMm < win.minXmm + win.widthMm + reach &&
     s.yMm > win.minYmm - reach && s.yMm < win.minYmm + win.heightMm + reach);
   const sub = new StoneLayout({ layerId: "win", stones: near });
   const box = tintCanvasMm(sub);
-  const tinted = renderTinted(sub, { longSidePx: Math.round(Math.max(box.widthMm, box.heightMm) * pxPerMm), background: "white" });
+  const tinted = render(sub, { longSidePx: Math.round(Math.max(box.widthMm, box.heightMm) * pxPerMm), background: "white" });
   const plain = renderPlain(sub, box, tinted.scale);
   const extract = {
     left: Math.max(0, Math.round((win.minXmm - box.minXmm) * tinted.scale)), top: Math.max(0, Math.round((win.minYmm - box.minYmm) * tinted.scale)),
@@ -105,8 +108,8 @@ async function windowRenders(stoneLayout, win, pxPerMm) {
 }
 
 // Whole design, plain and tinted, long side px.
-async function wholeRenders(stoneLayout, longSidePx) {
-  const tinted = renderTinted(stoneLayout, { longSidePx, background: "white" });
+async function wholeRenders(stoneLayout, longSidePx, render = renderTinted) {
+  const tinted = render(stoneLayout, { longSidePx, background: "white" });
   return { plain: renderPlain(stoneLayout, tintCanvasMm(stoneLayout), tinted.scale), tinted: tinted.png, height: tinted.heightPx };
 }
 
@@ -296,14 +299,14 @@ function faceRuleCheck() {
 // Renderer fidelity: a hex patch of 36 SS6 stones per catalogue colour, rendered tinted at 24 px per
 // mm; ΔE2000 from the fill to the mean of the stones' inner 60 % discs (as (c) samples) and to the
 // whole cell around the middle stone (stone + tint, radius 1.05 mm).
-async function renderer() {
+async function renderer(render = renderTinted, key = "renderer") {
   const rows = [];
   for (const k of Object.keys(CAT_LAB)) {
     const stones = [];
     for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) stones.push(new Stone({ xMm: c * 2.1 + (r % 2) * 1.05, yMm: r * 1.82, sizeMm: 2, color: k, layerId: "x", index: stones.length }));
     const sl = new StoneLayout({ layerId: "x", stones });
     const box = tintCanvasMm(sl);
-    const rr = renderTinted(sl, { longSidePx: Math.round(Math.max(box.widthMm, box.heightMm) * 24), background: "white" });
+    const rr = render(sl, { longSidePx: Math.round(Math.max(box.widthMm, box.heightMm) * 24), background: "white" });
     const img = await decodeRgba(rr.png);
     const at = (s, rad) => discLab(img, (s.xMm - box.minXmm) * rr.scale, (s.yMm - box.minYmm) * rr.scale, rad * rr.scale);
     const labs = stones.map((s) => at(s, 0.6));
@@ -311,7 +314,7 @@ async function renderer() {
     const cell = at(stones[14], 1.05);
     rows.push({ id: k, fillL: CAT_LAB[k][0], stoneL: stone[0], cellL: cell[0], deStone: deltaE2000(CAT_LAB[k], stone), deCell: deltaE2000(CAT_LAB[k], cell) });
   }
-  numbers.renderer = rows;
+  numbers[key] = rows;
 }
 
 // The 10 most frequent changes from the nearest catalogue colour (a) to the service's first pick
@@ -349,6 +352,106 @@ async function giraffe() {
   numbers.giraffe = { file: await strip(panels, "giraffe-head.jpg"), pupilsBefore: before.report.pupilsMm, bigStones: big.map((s) => [s.x, s.y, s.d]) };
 }
 
+// ---- IS-05b follow-up (Alex's decisions of 19 Oct) ---------------------------------------------
+
+// Item 3: the first-pick experiments of is05b_runs.py (rs with the first pick changed). Mean ΔE
+// from the AI colour after the first pick and as assigned (b), and the first pick of the stones
+// the service filled in (their colour is the nearest detection's) against the detected ones.
+async function picks() {
+  const out = {};
+  for (const [name, d] of Object.entries(DESIGNS)) {
+    const img = await decodeRgba(d.ai);
+    const row = {};
+    for (const v of ["rs", "rs-pick-nearest", "rs-pick-sample", "rs-pick-both"]) {
+      const layout = run(name, v);
+      const stages = JSON.parse(readFileSync(path.join(RUNS, v === "rs" ? `${name}.stages.json` : `${name}.${v}.stages.json`), "utf8"));
+      const recs = await measure(layout, img);
+      const first = stageSummary(recs, stages)[0];
+      const de = (r) => deltaE2000(r.aiLab, CAT_LAB[stages.colours[r.layoutIndex][0]]);
+      const filled = recs.filter((r) => stages.fill[r.layoutIndex]), detected = recs.filter((r) => !stages.fill[r.layoutIndex]);
+      const m = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+      row[v] = { a: summary(recs).a.mean, first: first.mean, b: summary(recs).b.mean, filled: filled.length, firstFilled: m(filled.map(de)), firstDetected: m(detected.map(de)) };
+    }
+    out[name] = row;
+    console.log("picks", name, JSON.stringify(Object.fromEntries(Object.entries(row).map(([k, x]) => [k, [x.first.toFixed(2), x.b.toFixed(2)]]))));
+  }
+  numbers.picks = out;
+}
+
+// Item 5: the giraffe's eyes with the RS rules (four pupils), the first IS-05b rule (no face) and
+// now (the one plausible pair kept), all with today's renderer.
+async function giraffeEyes() {
+  const rs = fixture("is03b/giraffe-rule.json");
+  const states = [["RS rules", rs], ["IS-05b, no face", JSON.parse(readFileSync(path.join(EARLIER, "giraffe-rule.default.json"), "utf8"))], ["now", run("giraffe-rule", "default")]];
+  const eyes = run("giraffe-rule", "default").report.pupilsAtMm;
+  const all = run("giraffe-rule", "rs").report.pupilsAtMm;
+  const panels = [];
+  for (const [tag, layout] of states) {
+    const { stoneLayout, offset } = cappedLayout(layout, "pupils-ss20");
+    const xs = eyes.map((p) => p[0]), ys = eyes.map((p) => p[1]);
+    // Window around the two eyes (the stone coordinates of every run share the same crop).
+    const win = { minXmm: Math.min(...xs) - 7 - offset.minX, minYmm: Math.min(...ys) - 7 - offset.minY, widthMm: Math.max(...xs) - Math.min(...xs) + 14, heightMm: Math.max(...ys) - Math.min(...ys) + 14 };
+    const r = await windowRenders(stoneLayout, win, 20);
+    panels.push({ png: r.plain, label: `${tag} · plain` }, { png: r.tinted, label: `${tag} · tinted` });
+  }
+  const now = run("giraffe-rule", "default");
+  numbers.giraffeEyes = {
+    file: await strip(panels, "giraffe-eyes.jpg"), candidates: all, candidateMm: run("giraffe-rule", "rs").report.pupilsMm,
+    now: { face: now.report.face, pupilsMm: now.report.pupilsMm, pupilsAtMm: now.report.pupilsAtMm, stones: now.report.stones, violations: now.report.violations },
+    capped: cleanedLayout(now).capped, removed: cleanedLayout(now).removed
+  };
+}
+
+// Item 5: every design's new "default" layout against the first IS-05b service's (EARLIER, soft
+// outlines on): stone positions and sizes, face and pupils must be identical except the giraffe;
+// colours may differ only where soft_outlines acted (checked stone for stone on the six diagnosis
+// designs against "rs-no-soft-outlines" of the RS rules, which differ from today's DEFAULT only by
+// the eye rule; the car is left out because the eye rule changes it).
+function unchanged() {
+  const rows = [];
+  for (const d of ALL_DESIGNS) {
+    const now = run(d.run, "default");
+    const before = JSON.parse(readFileSync(path.join(EARLIER, `${d.run}.default.json`), "utf8"));
+    const geo = (l) => JSON.stringify(l.stones.map((q) => q.slice(0, 3)));
+    const colours = now.stones.filter((q, i) => before.stones[i] && q[3] !== before.stones[i][3]).length;
+    const row = { id: d.id, geometry: geo(now) === geo(before), face: now.report.face === before.report.face, pupils: JSON.stringify(now.report.pupilsMm) === JSON.stringify(before.report.pupilsMm),
+      colourChanges: colours, faceNow: now.report.face, stones: now.stones.length, stonesBefore: before.stones.length };
+    const ref = path.join(RUNS, "before", `${d.run}.rs-no-soft-outlines.json`);
+    if (d.run !== "car" && existsSync(ref)) row.equalsRsNoSoftOutlines = JSON.stringify(JSON.parse(readFileSync(ref, "utf8")).stones) === JSON.stringify(now.stones);
+    rows.push(row);
+    console.log("unchanged", JSON.stringify(row));
+  }
+  numbers.unchanged = rows;
+}
+
+// Item 6: before (the saved RS-rules layout and the renderer before IS-05b) and after (today's
+// service and renderer), plus "layout only" (today's layout, old renderer): images for six
+// designs, per-stone ΔE for them, and the downsampled ΔE of tools/is05b-tint.mjs for all 21.
+const BA = ["rs-woman", "rs-portrait", "rs-leopard", "car-rule", "giraffe-rule", "dog-rule"];
+async function beforeAfter() {
+  const per = {};
+  for (const id of BA) {
+    const d = ALL_DESIGNS.find((x) => x.id === id);
+    const before = layoutOf(d), after = layoutOf(d, RUNS);
+    const img = await decodeRgba(d.ai);
+    const sb = summary(await measure(before, img, renderTintedBefore));
+    const sl = summary(await measure(after, img, renderTintedBefore));
+    const sa = summary(await measure(after, img));
+    const panels = [{ png: await aiCrop(before, d.ai), label: "AI image" },
+      { png: (await wholeRenders(delivered(before).stoneLayout, 900, renderTintedBefore)).tinted, label: "before" },
+      { png: (await wholeRenders(delivered(after).stoneLayout, 900)).tinted, label: "after" }];
+    per[id] = { file: await grid(panels, 3, 560, `ba-${id.replace(/^rs-|-rule$/g, "")}.jpg`), before: { a: sb.a, b: sb.b, c: sb.c, n: sb.n }, layoutOnly: { b: sl.b, c: sl.c, n: sl.n }, after: { a: sa.a, b: sa.b, c: sa.c, t: sa.t, n: sa.n } };
+    console.log("ba", id, sb.c.mean.toFixed(2), "->", sa.c.mean.toFixed(2));
+  }
+  const cells = [];
+  for (const d of ALL_DESIGNS) {
+    const before = await prepareDesign(d, null), after = await prepareDesign(d, RUNS);
+    cells.push({ id: d.id, before: await scoreRender(before, renderTintedBefore), layoutOnly: await scoreRender(after, renderTintedBefore), after: await scoreRender(after, renderTinted) });
+    console.log("cells", JSON.stringify(cells.at(-1)));
+  }
+  numbers.beforeAfter = { stones: per, cells };
+}
+
 const parts = (process.env.IS05B_PARTS || "eyes,colours,car,check").split(",");
 const numbersFile = path.join(OUT, "numbers.json");
 if (existsSync(numbersFile)) Object.assign(numbers, JSON.parse(readFileSync(numbersFile, "utf8")));
@@ -359,4 +462,10 @@ if (parts.includes("check")) faceRuleCheck();
 if (parts.includes("renderer")) await renderer();
 if (parts.includes("giraffe")) await giraffe();
 if (parts.includes("firstpick")) await firstPick();
+if (parts.includes("picks")) await picks();
+if (parts.includes("giraffe-eyes")) await giraffeEyes();
+if (parts.includes("unchanged")) unchanged();
+if (parts.includes("before-after")) await beforeAfter();
+if (parts.includes("renderer-before")) await renderer(renderTintedBefore, "renderer");
+if (parts.includes("renderer-after")) await renderer(renderTinted, "rendererAfter");
 writeFileSync(numbersFile, `${JSON.stringify(numbers, null, 1)}\n`);

@@ -40,6 +40,9 @@ async function start({ env = { IS_FAKE: "1" }, pipelineDeps = null } = {}) {
   const pipeline = createPipeline({ q, config, log: quiet, ...(pipelineDeps || {}) });
   const app = createApp({ db, config, deps: { verifyTurnstile: async () => true, background, pipeline } });
   const server = app.listen(0, "127.0.0.1");
+  // A render blocks the event loop for seconds; with Node's 5 s keep-alive the server can close a
+  // pooled connection just as fetch reuses it ("fetch failed"). The tests are not about that.
+  server.keepAliveTimeout = 60_000;
   await new Promise((resolve) => server.once("listening", resolve));
   const url = `http://127.0.0.1:${server.address().port}`;
 

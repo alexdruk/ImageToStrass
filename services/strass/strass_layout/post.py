@@ -10,9 +10,10 @@ Rules.human_iris gives people the iris rings animals get, without their dark sto
 Rules.eye_keep removes only the stones that overlap an eye stone instead of the whole
 eye zone.
 
-IS (IS-05b): Rules.plausible_eyes skips the eye stage when the pupils are not one plausible pair
-(_plausible_pupils); info["face"] is then None. info["pupilsAtMm"] holds the pupil stones'
-centres (frame mm), in the order of info["pupilsMm"].
+IS (IS-05b): Rules.plausible_eyes keeps only pupils that can be one face's eyes
+(_plausible_pupils): of more than two, the one plausible pair when exactly one pair passes;
+otherwise the eye stage is skipped and info["face"] is None. info["pupilsAtMm"] holds the pupil
+stones' centres (frame mm), in the order of info["pupilsMm"].
 """
 from collections import Counter
 
@@ -65,19 +66,30 @@ PAIR_MAX_SLOPE = 0.5
 PAIR_MAX_SPAN = 0.45
 
 
-def _plausible_pupils(cands, mask):
-    """IS-05b: True for no pupil, one pupil, or two pupils that can be one face's eyes: diameters
-    within a factor PAIR_MAX_RATIO (before they are equalised), the vertical offset at most
-    PAIR_MAX_SLOPE of the horizontal one, and centres at most PAIR_MAX_SPAN of the subject mask's
-    width apart. More than two pupils are never a face (a car's wheels give a dozen)."""
-    if len(cands) != 2:
-        return len(cands) < 2
-    a, b = cands
+def _plausible_pair(a, b, width):
+    """IS-05b: two pupils can be one face's eyes: diameters within a factor PAIR_MAX_RATIO (before
+    they are equalised), the vertical offset at most PAIR_MAX_SLOPE of the horizontal one, and
+    centres at most PAIR_MAX_SPAN of the subject width apart."""
     dx, dy = abs(a["x"] - b["x"]), abs(a["y"] - b["y"])
-    cols = np.nonzero(mask.any(0))[0]
-    width = cols[-1] - cols[0] + 1 if len(cols) else mask.shape[1]
     ratio = max(a["diam_mm"], b["diam_mm"]) / min(a["diam_mm"], b["diam_mm"])
     return ratio < PAIR_MAX_RATIO and dy <= PAIR_MAX_SLOPE * dx and np.hypot(dx, dy) <= PAIR_MAX_SPAN * width
+
+
+def _plausible_pupils(cands, mask):
+    """IS-05b: the pupils to keep, or None when the design has no face. No pupil or one pupil is
+    kept as it is; two are kept when they are a plausible pair (_plausible_pair, the width being the
+    subject mask's). Of more than two, the pair is kept when exactly one pair passes; the others
+    are then laid out as ordinary stones. Several passing pairs, or none, are no face (a car's
+    wheels give a dozen pupils and dozens of passing pairs; a giraffe's ossicone and neck add two
+    false pupils to its eyes, and only the eyes pass)."""
+    if len(cands) < 2:
+        return list(cands)
+    cols = np.nonzero(mask.any(0))[0]
+    width = cols[-1] - cols[0] + 1 if len(cols) else mask.shape[1]
+    pairs = [(i, j) for i in range(len(cands)) for j in range(i + 1, len(cands)) if _plausible_pair(cands[i], cands[j], width)]
+    if len(pairs) != 1:
+        return None
+    return [cands[k] for k in pairs[0]]
 
 
 def _best_disc(dt, hl, cx, cy, min_r):
@@ -154,9 +166,13 @@ def post_process(px, det, state, first, models, clock, rules=DEFAULT):
                         hy, hx = yy - Di / 3, xx + Di / 3
                     cands.append(dict(x=float(xx + x0), y=float(yy + y0), diam_mm=float(Di * s * (1.0 if rules.lively_eyes else 1.15)), roundness=1.0, hx=float(hx + x0), hy=float(hy + y0)))
                     break
-    no_face = rules.plausible_eyes and not _plausible_pupils(cands, mask)
+    no_face = False
+    if rules.plausible_eyes:
+        kept = _plausible_pupils(cands, mask)
+        no_face = kept is None
+        cands = [] if no_face else kept
     if no_face:
-        cands, boxes = [], None
+        boxes = None
     if len(cands) == 2:
         d0, d1 = cands[0]["diam_mm"], cands[1]["diam_mm"]
         if max(d0, d1) / min(d0, d1) < 1.6:

@@ -8,8 +8,14 @@ See docs/specifications/IMG-026-StrassLayoutService.md, "Layout quality (build E
 "More catalogue colours (build H)", "Faces and eyes (build I)" and "Skin and fur tones (build J)".
 
 IS (IS-05b, not in RS): plausible_eyes treats a design whose pupils are not one plausible pair
-(more than two, or two of very different sizes, far from level or too far apart for the subject)
-as having no face: the eye stage is skipped and report.face is null. See post._plausible_pupils.
+(two of very different sizes, far from level or too far apart for the subject; of more than two,
+none or several passing pairs) as having no face: the eye stage is skipped and report.face is
+null. Of more than two pupils with exactly one plausible pair, that pair is kept and the others
+are ordinary stones. See post._plausible_pupils.
+
+IS (IS-05b, not in RS): DEFAULT has soft_outlines off (RS 38cd831 ships it on). It turned the
+AI's black outline stones on skin into smoked topaz and raised the colour error where it acted
+(docs/IS-05b-results.md in the IS repository).
 """
 from dataclasses import dataclass
 
@@ -48,4 +54,4 @@ BUILD_I = Rules(pupil_core_only=True, keep_chains=True, extra_colours=True, mean
                 soft_outlines=True, calm_skin=True)
 DEFAULT = Rules(pupil_core_only=True, keep_chains=True, extra_colours=True, mean_colour=True, human_iris=True, eye_keep=True,
                 pupil_inscribed=True, real_colours=True, more_colours=True, lively_eyes=True, skin_no_wine=True,
-                soft_outlines=True, calm_skin=True, skin_nearest=True, plausible_eyes=True)
+                soft_outlines=False, calm_skin=True, skin_nearest=True, plausible_eyes=True)  # IS (IS-05b): soft_outlines off

@@ -1,0 +1,852 @@
+{
+ "runs": "/private/tmp/claude-501/-Users-alex-Documents-ImageToStrass/e261c2b4-e170-4acb-9595-ebba86a6d781/scratchpad/runs",
+ "cellMm": 2,
+ "gapRule": {
+  "minStep": 4,
+  "slope": 0.05,
+  "fromL": 80,
+  "darkBelow": 0
+ },
+ "best": {
+  "rule": {
+   "minStep": 4,
+   "slope": 0.05,
+   "fromL": 80,
+   "darkBelow": 0
+  },
+  "visible": true,
+  "score": 8.660785933171834
+ },
+ "top": [
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.05,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.660785933171834
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0,
+    "fromL": 0,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.668231385052518
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.1,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.695510793700072
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.15,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.696052764863733
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.05,
+    "fromL": 60,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.705480878528455
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.2,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.711350063920674
+  },
+  {
+   "rule": {
+    "minStep": 5,
+    "slope": 0.05,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.712059643144299
+  },
+  {
+   "rule": {
+    "minStep": 5,
+    "slope": 0,
+    "fromL": 0,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.714533184155915
+  },
+  {
+   "rule": {
+    "minStep": 5,
+    "slope": 0.1,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.727499643330239
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.3,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.748197768868144
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.25,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.748265821119073
+  },
+  {
+   "rule": {
+    "minStep": 5,
+    "slope": 0.2,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.761343428353769
+  },
+  {
+   "rule": {
+    "minStep": 5,
+    "slope": 0.15,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.764469170112667
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.1,
+    "fromL": 60,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.768957741393207
+  },
+  {
+   "rule": {
+    "minStep": 6,
+    "slope": 0,
+    "fromL": 0,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.772789874650295
+  }
+ ],
+ "topVisible": [
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.05,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.660785933171834
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0,
+    "fromL": 0,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.668231385052518
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.1,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.695510793700072
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.15,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.696052764863733
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.05,
+    "fromL": 60,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.705480878528455
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.2,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.711350063920674
+  },
+  {
+   "rule": {
+    "minStep": 5,
+    "slope": 0.05,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.712059643144299
+  },
+  {
+   "rule": {
+    "minStep": 5,
+    "slope": 0,
+    "fromL": 0,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.714533184155915
+  },
+  {
+   "rule": {
+    "minStep": 5,
+    "slope": 0.1,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.727499643330239
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.3,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.748197768868144
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.25,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.748265821119073
+  },
+  {
+   "rule": {
+    "minStep": 5,
+    "slope": 0.2,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.761343428353769
+  },
+  {
+   "rule": {
+    "minStep": 5,
+    "slope": 0.15,
+    "fromL": 80,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.764469170112667
+  },
+  {
+   "rule": {
+    "minStep": 4,
+    "slope": 0.1,
+    "fromL": 60,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.768957741393207
+  },
+  {
+   "rule": {
+    "minStep": 6,
+    "slope": 0,
+    "fromL": 0,
+    "darkBelow": 0
+   },
+   "visible": true,
+   "score": 8.772789874650295
+  }
+ ],
+ "reference": {
+  "noStep": 8.504742369101882,
+  "before085": 9.254758078511912,
+  "asDrawn": {
+   "best": 9.543662006187143,
+   "noStep": 10.019751104066962,
+   "before085": 9.417067103379612
+  }
+ },
+ "reach": {
+  "1.4": 9.122286861653375,
+  "1.5": 8.798222744940665,
+  "1.6": 8.660785933171834,
+  "1.7": 8.600459944739125,
+  "1.8": 8.576870376012593
+ },
+ "designs": [
+  {
+   "id": "dog-rule",
+   "cells": 2384,
+   "before": {
+    "stones": 10.996826949711563,
+    "asDrawn": 7.609365213435023
+   },
+   "after": {
+    "stones": 9.4643105536159,
+    "asDrawn": 8.580338671647072
+   },
+   "bestRuleModel": 9.453806478655295
+  },
+  {
+   "id": "dog-norule",
+   "cells": 2443,
+   "before": {
+    "stones": 10.803392640634888,
+    "asDrawn": 7.564021888362204
+   },
+   "after": {
+    "stones": 9.153788433128707,
+    "asDrawn": 7.6914965916490585
+   },
+   "bestRuleModel": 9.133416003226609
+  },
+  {
+   "id": "cat-rule",
+   "cells": 4033,
+   "before": {
+    "stones": 8.496196197125586,
+    "asDrawn": 5.996203757825022
+   },
+   "after": {
+    "stones": 6.064669016466105,
+    "asDrawn": 8.006610191100648
+   },
+   "bestRuleModel": 6.015025157302181
+  },
+  {
+   "id": "cat-norule",
+   "cells": 3592,
+   "before": {
+    "stones": 8.459519293179232,
+    "asDrawn": 8.170183178122441
+   },
+   "after": {
+    "stones": 6.5404468604363055,
+    "asDrawn": 10.780068574879927
+   },
+   "bestRuleModel": 6.521950969161627
+  },
+  {
+   "id": "mug-rule",
+   "cells": 1911,
+   "before": {
+    "stones": 10.17303595668446,
+    "asDrawn": 13.182561381832778
+   },
+   "after": {
+    "stones": 6.034243499412923,
+    "asDrawn": 18.15340159893215
+   },
+   "bestRuleModel": 6.0169868465306084
+  },
+  {
+   "id": "mug-norule",
+   "cells": 2460,
+   "before": {
+    "stones": 10.079096588670462,
+    "asDrawn": 12.509144157297152
+   },
+   "after": {
+    "stones": 6.5846179478750555,
+    "asDrawn": 16.9576266481869
+   },
+   "bestRuleModel": 6.578852900065535
+  },
+  {
+   "id": "giraffe-rule",
+   "cells": 2518,
+   "before": {
+    "stones": 13.886714328999556,
+    "asDrawn": 10.575516771854216
+   },
+   "after": {
+    "stones": 11.825501412889828,
+    "asDrawn": 9.282265175485364
+   },
+   "bestRuleModel": 11.789511523349773
+  },
+  {
+   "id": "dachshund-rule",
+   "cells": 1777,
+   "before": {
+    "stones": 11.235365917232546,
+    "asDrawn": 10.782848289768703
+   },
+   "after": {
+    "stones": 10.650021598949506,
+    "asDrawn": 10.283336899221057
+   },
+   "bestRuleModel": 10.656775955516803
+  },
+  {
+   "id": "car-rule",
+   "cells": 4147,
+   "before": {
+    "stones": 12.314059618265505,
+    "asDrawn": 11.472999090451756
+   },
+   "after": {
+    "stones": 10.383277468401788,
+    "asDrawn": 12.287705204520977
+   },
+   "bestRuleModel": 10.342789828448664
+  },
+  {
+   "id": "rs-cat",
+   "cells": 2379,
+   "before": {
+    "stones": 8.38450953989292,
+    "asDrawn": 7.367575508972902
+   },
+   "after": {
+    "stones": 6.497628681418551,
+    "asDrawn": 5.782677920948025
+   },
+   "bestRuleModel": 6.4832220074910385
+  },
+  {
+   "id": "rs-dog",
+   "cells": 1960,
+   "before": {
+    "stones": 9.501208696250577,
+    "asDrawn": 4.894776279445962
+   },
+   "after": {
+    "stones": 6.116368233222551,
+    "asDrawn": 5.800088644886597
+   },
+   "bestRuleModel": 6.092737468825625
+  },
+  {
+   "id": "rs-einstein",
+   "cells": 3996,
+   "before": {
+    "stones": 10.292965108829915,
+    "asDrawn": 8.89907284393469
+   },
+   "after": {
+    "stones": 9.03207741350263,
+    "asDrawn": 7.981057259590901
+   },
+   "bestRuleModel": 9.023847757514883
+  },
+  {
+   "id": "rs-jesus",
+   "cells": 3808,
+   "before": {
+    "stones": 10.059962401624743,
+    "asDrawn": 8.313501137542556
+   },
+   "after": {
+    "stones": 7.614272503330231,
+    "asDrawn": 6.361662280016518
+   },
+   "bestRuleModel": 7.547469828897255
+  },
+  {
+   "id": "rs-lake",
+   "cells": 4711,
+   "before": {
+    "stones": 10.668369780026387,
+    "asDrawn": 9.157256482838381
+   },
+   "after": {
+    "stones": 9.646419935257368,
+    "asDrawn": 8.618686749513639
+   },
+   "bestRuleModel": 9.651504335187761
+  },
+  {
+   "id": "rs-leopard",
+   "cells": 2777,
+   "before": {
+    "stones": 11.242269566011306,
+    "asDrawn": 8.984553984321796
+   },
+   "after": {
+    "stones": 8.96035505940633,
+    "asDrawn": 7.349235918726219
+   },
+   "bestRuleModel": 8.89353843225616
+  },
+  {
+   "id": "rs-logo",
+   "cells": 771,
+   "before": {
+    "stones": 11.35101903478077,
+    "asDrawn": 10.675792654824297
+   },
+   "after": {
+    "stones": 6.19251366806625,
+    "asDrawn": 5.931101360318945
+   },
+   "bestRuleModel": 5.990116134511193
+  },
+  {
+   "id": "rs-parrot",
+   "cells": 2908,
+   "before": {
+    "stones": 12.774192276447586,
+    "asDrawn": 9.130165179347577
+   },
+   "after": {
+    "stones": 11.877060391215188,
+    "asDrawn": 10.63366472091735
+   },
+   "bestRuleModel": 11.875095630011101
+  },
+  {
+   "id": "rs-portrait",
+   "cells": 4381,
+   "before": {
+    "stones": 10.321291709714105,
+    "asDrawn": 9.480581510403209
+   },
+   "after": {
+    "stones": 7.731968292706595,
+    "asDrawn": 10.448061517763307
+   },
+   "bestRuleModel": 7.6967838996244256
+  },
+  {
+   "id": "rs-rose",
+   "cells": 2037,
+   "before": {
+    "stones": 11.692999515583509,
+    "asDrawn": 11.5409385310566
+   },
+   "after": {
+    "stones": 11.493839016886366,
+    "asDrawn": 11.366181489684964
+   },
+   "bestRuleModel": 11.502973066420104
+  },
+  {
+   "id": "rs-tulips",
+   "cells": 3047,
+   "before": {
+    "stones": 12.325668416605186,
+    "asDrawn": 9.978986183626999
+   },
+   "after": {
+    "stones": 11.865581625918443,
+    "asDrawn": 10.356910417804432
+   },
+   "bestRuleModel": 11.868162072562965
+  },
+  {
+   "id": "rs-woman",
+   "cells": 2924,
+   "before": {
+    "stones": 10.630701312628718,
+    "asDrawn": 9.089933763464504
+   },
+   "after": {
+    "stones": 8.792703746290487,
+    "asDrawn": 7.8665355576250064
+   },
+   "bestRuleModel": 8.741938301048904
+  }
+ ],
+ "steps": [
+  {
+   "id": "crystal-clear",
+   "l": 96.53748961423615,
+   "step": -4.892902706717507
+  },
+  {
+   "id": "crystal",
+   "l": 96.43644512665381,
+   "step": -4.821876674090646
+  },
+  {
+   "id": "jet",
+   "l": 6.318928113230204,
+   "step": -4.1255297127049895
+  },
+  {
+   "id": "siam",
+   "l": 27.030574369266596,
+   "step": -4.125979267106885
+  },
+  {
+   "id": "light-siam",
+   "l": 33.8604615040617,
+   "step": -4.262713879240508
+  },
+  {
+   "id": "rose",
+   "l": 56.57975371908495,
+   "step": -4.018448721962173
+  },
+  {
+   "id": "fuchsia",
+   "l": 35.82853494590106,
+   "step": -4.358712151844912
+  },
+  {
+   "id": "amethyst",
+   "l": 40.1147470941481,
+   "step": -4.023560099944554
+  },
+  {
+   "id": "sapphire",
+   "l": 52.701997626776304,
+   "step": -5.023837155083683
+  },
+  {
+   "id": "light-sapphire",
+   "l": 72.60262640498694,
+   "step": -4.003203853643313
+  },
+  {
+   "id": "aquamarine",
+   "l": 71.2999958163913,
+   "step": -4.16925070299672
+  },
+  {
+   "id": "emerald",
+   "l": 43.485294395417675,
+   "step": -4.050547390718492
+  },
+  {
+   "id": "peridot",
+   "l": 67.8996334798785,
+   "step": -4.100364610829558
+  },
+  {
+   "id": "topaz",
+   "l": 54.587168864295165,
+   "step": -4.614991499887367
+  },
+  {
+   "id": "citrine",
+   "l": 82.4733106398706,
+   "step": -5.263276088763291
+  },
+  {
+   "id": "gold",
+   "l": 79.4338613621443,
+   "step": -4.061754795102715
+  },
+  {
+   "id": "silver",
+   "l": 87.9266233849539,
+   "step": -5.616688296559886
+  },
+  {
+   "id": "hematite",
+   "l": 26.72469408789261,
+   "step": -4.032812867056464
+  },
+  {
+   "id": "black-diamond",
+   "l": 46.478917980666644,
+   "step": -4.750122691845014
+  },
+  {
+   "id": "grey",
+   "l": 64.36720774552947,
+   "step": -4.105967127565961
+  },
+  {
+   "id": "smoked-topaz",
+   "l": 28.95267853215436,
+   "step": -4.577746935435556
+  },
+  {
+   "id": "light-colorado",
+   "l": 62.806989594821886,
+   "step": -4.0204186824209245
+  },
+  {
+   "id": "light-peach",
+   "l": 73.45036862978611,
+   "step": -4.968958810386894
+  },
+  {
+   "id": "colorado-topaz",
+   "l": 47.00481241457969,
+   "step": -4.1280834001087285
+  },
+  {
+   "id": "light-smoked-topaz",
+   "l": 44.088404260491465,
+   "step": -4.651786312004077
+  },
+  {
+   "id": "scarlet",
+   "l": 40.48524111728606,
+   "step": -4.116797384925221
+  },
+  {
+   "id": "hyacinth",
+   "l": 54.985138430748734,
+   "step": -4.0362884455597765
+  },
+  {
+   "id": "golden-shadow",
+   "l": 66.98627900129974,
+   "step": -5.011770142998614
+  },
+  {
+   "id": "copper",
+   "l": 54.755163287102334,
+   "step": -4.005346955473598
+  },
+  {
+   "id": "rose-gold",
+   "l": 65.57790913741212,
+   "step": -4.138213756146357
+  },
+  {
+   "id": "vintage-rose",
+   "l": 67.28129314070368,
+   "step": -4.023948163179824
+  },
+  {
+   "id": "padparadscha",
+   "l": 53.28961748762774,
+   "step": -4.634366142566265
+  },
+  {
+   "id": "chrysolite",
+   "l": 79.12744682605866,
+   "step": -4.084942342878378
+  },
+  {
+   "id": "fern-green",
+   "l": 52.67576891559162,
+   "step": -4.957304239895798
+  },
+  {
+   "id": "erinite",
+   "l": 50.05602247906275,
+   "step": -4.034546092292636
+  },
+  {
+   "id": "olivine",
+   "l": 46.27489425975861,
+   "step": -4.680408031027824
+  },
+  {
+   "id": "khaki",
+   "l": 37.29001403870044,
+   "step": -4.157698992366342
+  },
+  {
+   "id": "metallic-sunshine",
+   "l": 76.23014454170045,
+   "step": -4.123097946844538
+  },
+  {
+   "id": "jet-hematite",
+   "l": 34.532390225823846,
+   "step": -4.205377065221398
+  },
+  {
+   "id": "silk",
+   "l": 76.93835106762705,
+   "step": -4.901575159950397
+  },
+  {
+   "id": "light-topaz",
+   "l": 70.92846692184361,
+   "step": -4.014048846792861
+  },
+  {
+   "id": "rose-peach",
+   "l": 67.8892575978937,
+   "step": -4.023840828574876
+  },
+  {
+   "id": "indian-siam",
+   "l": 19.389169697465242,
+   "step": -4.223972771374946
+  },
+  {
+   "id": "greige",
+   "l": 49.398905819398166,
+   "step": -4.0755600626536435
+  },
+  {
+   "id": "graphite",
+   "l": 40.62672980394279,
+   "step": -4.039407624350943
+  },
+  {
+   "id": "citrus-green",
+   "l": 70.99540794315152,
+   "step": -5.147750718360783
+  },
+  {
+   "id": "capri-blue",
+   "l": 44.1738002117877,
+   "step": -4.033311849236689
+  }
+ ]
+}

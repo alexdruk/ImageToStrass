@@ -6,12 +6,17 @@ service.
     .venv/bin/python scripts/is05b_runs.py OUT_DIR VARIANTS NAME=PNG [NAME=PNG ...]
 
 VARIANTS is a comma-separated list of names from VARIANTS below: "default" (the service's rules),
-"rs" (the rules of RS 38cd831, i.e. DEFAULT without the IS plausible_eyes rule), "rs-no-<rule>"
-(rs with one colour rule off) and "rs-no-colour-rules". For each NAME and variant it writes
-OUT_DIR/NAME.VARIANT.json (the /layout answer, colour id check skipped) and, for the "rs" variant,
-OUT_DIR/NAME.stages.json: per stone of the answer, in its order, the colour
-id after each colour step (STAGES). Detections are computed once per image and cached in
-OUT_DIR/NAME.det.npy; rules never change them.
+"rs" (the rules of RS 38cd831, i.e. DEFAULT without the IS plausible_eyes rule and with
+soft_outlines on), "rs-no-<rule>"
+(rs with one colour rule off) and "rs-no-colour-rules", and the first-pick experiments (rs with
+the first pick of ordered.py changed, PICKS): "rs-pick-nearest" (plain ΔE2000 nearest, none of
+snap_colours' penalties and blocks), "rs-pick-sample" (each detection's colour is the mean of
+the inner 60 % of its disc, as tools/is05b-measure.mjs samples the AI image) and
+"rs-pick-both". For each NAME and variant it writes OUT_DIR/NAME.VARIANT.json (the /layout
+answer, colour id check skipped) and, for the "rs" variant and the first-pick experiments,
+OUT_DIR/NAME.stages.json (rs) or OUT_DIR/NAME.VARIANT.stages.json: per stone of the answer, in
+its order, the colour id after each colour step (STAGES). Detections are computed once per image
+and cached in OUT_DIR/NAME.det.npy; rules never change them.
 """
 import dataclasses
 import json
@@ -23,12 +28,14 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from strass_layout import DEFAULT, faces, load_models, pipeline, post  # noqa: E402
+from skimage.color import deltaE_ciede2000, rgb2lab  # noqa: E402
+
+from strass_layout import DEFAULT, faces, load_models, ordered, pipeline, post  # noqa: E402
 from strass_layout.pipeline import finish_layout, layout_frame  # noqa: E402
 
 COLOUR_RULES = ["extra_colours", "mean_colour", "real_colours", "more_colours", "skin_no_wine", "soft_outlines",
                 "calm_skin", "skin_nearest"]
-RS = dataclasses.replace(DEFAULT, plausible_eyes=False)
+RS = dataclasses.replace(DEFAULT, plausible_eyes=False, soft_outlines=True)
 VARIANTS = {"default": DEFAULT, "rs": RS}
 VARIANTS.update({"rs-no-" + r.replace("_", "-"): dataclasses.replace(RS, **{r: False}) for r in COLOUR_RULES})
 VARIANTS["rs-no-colour-rules"] = dataclasses.replace(RS, **{r: False for r in COLOUR_RULES})
@@ -37,6 +44,42 @@ for name in os.environ.get("IS05B_EXTRA", "").split(";"):
     if name.strip():
         key, spec = name.split(":")
         VARIANTS[key] = dataclasses.replace(RS, **{k: v == "1" for k, v in (kv.split("=") for kv in spec.split(","))})
+
+
+
+def _nearest(lab, pal):
+    """Plain ΔE2000 nearest catalogue id (kL = kH = 1), no penalty or block."""
+    lab = np.array(lab, float)
+    d = np.stack([deltaE_ciede2000(lab, np.repeat(c[None], len(lab), 0)) for c in pal.lab], 1)
+    k = d.argmin(1)
+    return [pal.ids[i] for i in k], d[np.arange(len(lab)), k]
+
+
+def _inner_mean(rgb, a, det, mean=False):
+    """With mean (the colour the first pick reads): the mean Lab of the opaque pixels within 60 %
+    of each detection's radius. Without: the service's own median rule (keep-or-drop decisions)."""
+    if not mean:
+        return _ORIG_STONE_COLOURS(rgb, a, det)
+    lab = rgb2lab(rgb)
+    h, w = a.shape
+    out = np.zeros((len(det), 3))
+    for i, (y, x, r) in enumerate(det[:, :3]):
+        R = max(1.0, 0.6 * r)
+        y0, y1 = int(max(0, y - R)), int(min(h, y + R + 1))
+        x0, x1 = int(max(0, x - R)), int(min(w, x + R + 1))
+        yy, xx = np.mgrid[y0:y1, x0:x1]
+        m = (np.hypot(yy - y, xx - x) <= R) & (a[y0:y1, x0:x1] > 0.5)
+        if m.sum() < 1:
+            m = np.hypot(yy - y, xx - x) <= R
+        out[i] = lab[y0:y1, x0:x1][m].mean(0) if m.any() else _ORIG_STONE_COLOURS(rgb, a, det[i:i + 1])[0]
+    return out
+
+
+_ORIG_STONE_COLOURS = ordered.stone_colours
+_ORIG_SNAP = ordered.snap_colours
+PICKS = {"rs-pick-nearest": (_ORIG_STONE_COLOURS, _nearest), "rs-pick-sample": (_inner_mean, _ORIG_SNAP),
+         "rs-pick-both": (_inner_mean, _nearest)}
+VARIANTS.update({k: RS for k in PICKS})
 
 STAGES = ["start", "darkdots", "family_fix", "gap_check", "distinct", "skin_nearest", "soft_outlines", "calm_skin"]
 
@@ -140,7 +183,9 @@ def main(out_dir, variants, pairs):
                     np.save(det_file, det)
                 return det.copy()
             pipeline.detect_stones = detect
-            rec = Recorder() if v == "rs" else None
+            if v in PICKS:
+                ordered.stone_colours, ordered.snap_colours = PICKS[v]
+            rec = Recorder() if v == "rs" or v in PICKS else None
             if rec:
                 rec.install()
             try:
@@ -149,13 +194,15 @@ def main(out_dir, variants, pairs):
                 if rec:
                     rec.uninstall()
                 pipeline.detect_stones = real_detect
+                ordered.stone_colours, ordered.snap_colours = _ORIG_STONE_COLOURS, _ORIG_SNAP
             result = finish_layout(frame)
             with open(os.path.join(out_dir, "%s.%s.json" % (name, v)), "w") as f:
                 json.dump(result, f, separators=(",", ":"))
             if rec:
                 rows = [[rec.maps.get(st, {}).get(_key(q["x"], q["y"])) for st in STAGES] for q in frame["stones"]]
                 fill = [_key(q["x"], q["y"]) in rec.fill for q in frame["stones"]]
-                with open(os.path.join(out_dir, name + ".stages.json"), "w") as f:
+                stages_file = name + (".stages.json" if v == "rs" else ".%s.stages.json" % v)
+                with open(os.path.join(out_dir, stages_file), "w") as f:
                     json.dump({"stages": STAGES, "colours": rows, "fill": fill}, f, separators=(",", ":"))
             r = result["report"]
             print("%s %s: %d stones, face %s, pupils %s, %.0f s" % (name, v, r["stones"], r["face"], r["pupilsMm"], time.time() - t0),

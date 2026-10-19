@@ -81,3 +81,25 @@ additions above. Each is marked `IS (IS-05b)` in the code.
 Effect (docs/IS-05b-results.md): the IS-03b car (19 "pupils" on its wheels) and giraffe (4) lose
 their eye stage; the 12 RS test layouts and every other IS-03b design are unchanged stone for
 stone, apart from the new report key.
+
+### IS-05b follow-up (19 Oct 2026): soft outlines off, one plausible pair of more than two pupils
+
+- `strass_layout/rules.py`: `DEFAULT` has `soft_outlines=False` (RS ships it on; `BUILD_I` keeps it
+  on). On the RS woman it turned 94 black outline stones on the skin into smoked topaz, which the
+  AI drew black; switched off, the colour error falls where it acted (woman 7.73 → 7.02, portrait
+  8.23 → 8.06, dog 7.76 → 7.66 mean ΔE2000) and nothing else changes. Docstring note.
+- `strass_layout/post.py`: `_plausible_pupils(cands, mask)` now returns the pupils to keep, or
+  `None` for no face (it returned a bool); the pair test is `_plausible_pair(a, b, width)`. Of more
+  than two pupils, the pair is kept when exactly one pair passes the test, and the others are laid
+  out as ordinary stones; none or several passing pairs are still no face. The IS-03b giraffe (4
+  pupils, only its eyes pass) keeps its eyes; the IS-03b car (19 pupils, 31 passing pairs) still
+  has no face. Every other test design is unchanged stone for stone apart from `soft_outlines`.
+- `tests/test_build_j.py`: `DefaultAgainstBuildI` compares `DEFAULT` with `BUILD_I` with
+  `soft_outlines` off.
+- `tests/test_is05b.py`: tests for the kept pair, several pairs, and `soft_outlines` off.
+- `scripts/is05b_runs.py` (IS diagnosis only): "rs" keeps `soft_outlines` on, so it stays the RS
+  38cd831 rules; first-pick experiments "rs-pick-nearest", "rs-pick-sample", "rs-pick-both".
+
+The service's first colour pick was checked against the prompt (IS-05b follow-up, item 3): the
+service matches against `fill` (`DEFAULT` → `PLUS_REAL_SKIN`, real colours), and every one of the
+47 `fill` values equals the hex the prompt gives the AI (`previewColor`). Nothing was changed.

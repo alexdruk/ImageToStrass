@@ -4,16 +4,22 @@
 images (the 12 RS test images, which are themselves model outputs, and the IS-03b provider outputs
 of 18 Oct) and the strass service run locally.
 
-How to reproduce:
+How to reproduce (the IS-03b AI images are the fixtures in `tools/fixtures/is03b-ai/`):
 
 ```
 # layouts with rule variants, plus each stone's colour after every colour step (services/strass)
 .venv/bin/python scripts/is05b_runs.py <runs> <variants> <name>=<AI png> ...
-# images and numbers (docs/IS-05b-results/, numbers.json)
-node tools/is05b-results.mjs <IS-03b work dir> <runs>
+# images and numbers (docs/IS-05b-results/, numbers.json); IS05B_PARTS picks the parts
+node tools/is05b-results.mjs <runs> [<runs of the first IS-05b service>]
+# the gap-rule tuning of section 6.4 (docs/IS-05b-results/tint-tune.json)
+node tools/is05b-tint.mjs <runs>
 # the comparison document with the AI column
-node tools/tinted-comparison.mjs <IS-03b work dir>
+node tools/tinted-comparison.mjs <runs>
 ```
+
+Sections 1 to 5 are the first IS-05b round, as written then (old renderer, RS colour rules).
+**Section 6** is the follow-up on Alex's decisions: soft outlines off, the tinted renderer
+revised, the giraffe's eyes kept, and the before/after numbers.
 
 Re-running the service with the RS 38cd831 rules on a saved AI image reproduces the saved layout
 exactly (checked on all 21 designs: 6 below plus 15 in section 4), so the runs below compare like
@@ -138,7 +144,8 @@ contrast:
 Across all 47 colours, the rendered stone is 10–16 L\* lighter than the fill for every colour
 below L\* 45, and the 85 % tint takes 8–19 L\* off every colour above L\* 60. So dark hair and
 outlines turn grey-brown, and light skin turns mid-brown. That is the woman's dark look
-(`colours-woman.jpg` below). The renderer and the tint are spec section 8 and are unchanged here.
+(`colours-woman.jpg` below). The renderer and the tint are spec section 8 and were unchanged in
+this round; section 6.4 revises them.
 They are a separate lever (tint brightness, or how the faceted renderer shades dark colours),
 for Alex to decide.
 
@@ -196,7 +203,7 @@ each rule off. Rules that change nothing are left out.
 
 ![cat: AI image, today, each rule off](IS-05b-results/colours-cat.jpg)
 
-### Recommended rule set (not applied)
+### Recommended rule set (applied in the follow-up, section 6.2)
 
 **Today's rules with `soft_outlines` off.** It is the only rule whose removal lowers ΔE on the
 designs where it acts (woman −0.71, portrait −0.17, dog −0.10) and it changes nothing elsewhere.
@@ -335,7 +342,7 @@ The false pupils on the ossicone and the neck are gone, which is cleaner, but th
 large pupil and catch-light. The two real eyes (ratio 1.43, level, 21 mm apart) would pass as a
 plausible pair. A possible refinement is to keep the best plausible pair when more than two
 pupils are found, instead of none. It is not implemented, because the brief says more than two
-means no face. Alex to decide.
+means no face. Alex to decide. (Decided and implemented in section 6.5.)
 
 ## 5. Changes made
 
@@ -350,3 +357,268 @@ means no face. Alex to decide.
 - Diagnosis tools: `tools/colour-diff.mjs` (Lab, ΔE2000), `tools/is05b-measure.mjs`,
   `tools/is05b-results.mjs`.
 - Colour rule defaults: **unchanged**, as asked.
+
+## 6. Follow-up: Alex's decisions (19 Oct 2026)
+
+Same rules as before: no provider call. Every layout below was made again by the strass service
+from its saved AI image (`scripts/is05b_runs.py`), and every image was rendered by IS.
+
+### 6.1 Fixtures
+
+The nine IS-03b AI images are now test fixtures in `tools/fixtures/is03b-ai/`. They come from CC0
+photos, and their sources are listed in the README there. Each PNG carried a C2PA metadata chunk
+naming the provider, so every ancillary chunk was stripped before the commit. The decoded pixels
+are unchanged: the car re-runs to the same layout stone for stone. The copies of the nine layouts
+that came with them were byte-identical to `tools/fixtures/is03b*/`, so they were not added.
+`tools/tinted-comparison.mjs` and `tools/is05b-results.mjs` now read the images from the fixture
+folder and need no work dir.
+
+### 6.2 Soft outlines off
+
+`soft_outlines` is now off in the service's `DEFAULT` (recorded in `services/strass/ORIGIN.md`).
+It only changes the colours of outline stones on human faces. Mean ΔE (b), RS rules → today:
+woman 7.73 → 7.02, portrait 8.23 → 8.06, dog 7.76 → 7.66. On einstein, lake and dog-norule it
+changes 30, 20 and 6 stones. Nothing else changes.
+
+### 6.3 First colour pick: the hex values do not differ
+
+- **The prompt** gives the AI each catalogue colour's `previewColor`, which `CrystalColors.js`
+  sets equal to `fill`.
+- **The service** matches against `fill`. `DEFAULT` has `more_colours` and `skin_no_wine`, so
+  `palette()` returns `PLUS_REAL_SKIN`, whose fills come from `fill` (real colours). The
+  `prototypeFill` values (17 colours) are used only by the BASE/FULL palettes of the prototype and
+  builds E–F. Every `snap_colours` call in the service (first pick, eye stones, gap check,
+  distinct tones) uses `palette(rules)`.
+- The service's `catalogue.json` and IS's catalogue have the same 47 ids, and every `fill` equals
+  the prompt's hex.
+
+So nothing was changed (as asked). **What else causes the drift.** Three experiments changed only
+the first pick (`rs-pick-*` in `is05b_runs.py`, RS rules otherwise). Mean ΔE from the AI colour:
+
+| Design | (a) nearest | first pick, today | no penalties (plain nearest) | sampled as measured (inner 60 % mean) | both |
+| --- | --- | --- | --- | --- | --- |
+| portrait | 5.66 | 7.65 | 7.49 | 7.72 | 7.51 |
+| woman | 6.36 | 7.14 | 7.13 | 6.69 | 6.68 |
+| leopard | 5.12 | 5.86 | 5.81 | 5.94 | 5.74 |
+| car | 6.66 | 10.78 | 10.73 | 10.74 | 10.69 |
+| dog | 7.24 | 7.67 | 7.63 | 7.61 | 7.56 |
+| cat | 5.59 | 6.22 | 6.22 | 6.05 | 6.01 |
+
+`snap_colours`' penalties and blocks and the sampling rule explain at most 0.5 of the gap (woman
+0.46, portrait 0.16, car 0.09). What is left:
+
+1. **Position.** The first pick reads each colour at the stone's *detection*. The ordered layout
+   then delivers the stone in its row, sometimes elsewhere. On the car, 18 % of the delivered stones
+   are more than 0.5 mm from their detection (90th percentile 0.96 mm), and the AI colour there
+   differs from the colour at the detection by ΔE 3.3 on average. That matches the 3.5 the car
+   keeps after both experiments (10.14 on detected stones vs 6.66). Portrait: 10 % of stones over
+   0.5 mm, ΔE 1.3 between the two places, against 1.6 left. On woman, leopard, dog and cat fewer
+   than 3 % of the stones move that far (ΔE 0.5–0.7).
+2. **Filled stones.** Stones the service adds to fill holes take the colour of the nearest
+   detection, not their own pixels: ΔE 14–65 on average (car 88 stones at 32, portrait 31 at 34,
+   leopard 10 at 64). They are few, so they add 0.1–0.6 to the mean.
+
+The lever would be to sample the AI image at each delivered stone's own position (and fill
+stones at theirs) after the layout. That is a change in the service's ordered layout, outside
+this item's scope, so it was not made. **Stopped here, as asked.**
+
+### 6.4 Tinted renderer (spec section 8, IS code only)
+
+`src/render/tinted.js`; the RS file `CrystalStoneRenderer.js` is unchanged.
+
+**Stones.** After the faceted stones are drawn, each stone's mean L\* (over the pixels whose centre
+lies inside its disc) is brought to within 2 of its catalogue fill's L\*. A stone that is too light
+has its linear RGB scaled down; one that is too dark is screened towards white. Either way the
+facets, highlights and sparkle keep their relative contrast. A stone already within 2 is left as
+drawn, so the per-stone brightness variety stays. Test: every stone of every colour, at 6 and 16
+px per mm, is within 2.5 L\* (2 plus 8-bit rounding; the brief allows 3). The facet spread (5th to
+95th percentile L\* inside a stone) is still 9 for crystal and 27–54 for the other colours.
+
+Renderer fidelity on the IS-05b patch (36 SS6 stones per colour). The stone column is the
+**inner 60 %** of the disc, the measure of section 2's (c):
+
+| Colour | fill L\* | stone L\* before / after | cell L\* before / after | ΔE fill → stone before / after |
+| --- | --- | --- | --- | --- |
+| jet | 6 | 18 / 7 | 23 / 14 | 7.2 / 0.6 |
+| indian-siam | 19 | 35 / 32 | 23 / 20 | 13.0 / 11.1 |
+| hematite | 27 | 42 / 40 | 30 / 27 | 12.8 / 10.4 |
+| smoked-topaz | 29 | 43 / 41 | 32 / 30 | 11.9 / 11.0 |
+| graphite | 41 | 52 / 52 | 38 / 38 | 10.8 / 10.7 |
+| copper | 55 | 61 / 62 | 48 / 51 | 7.7 / 9.0 |
+| rose-gold | 66 | 68 / 71 | 55 / 62 | 5.1 / 7.7 |
+| silk | 77 | 77 / 81 | 70 / 73 | 4.3 / 7.8 |
+| silver | 88 | 85 / 90 | 77 / 83 | 2.0 / 2.4 |
+| crystal-clear | 97 | 91 / 97 | 78 / 92 | 3.5 / 0.1 |
+
+**Read this with care.** The rule holds the *whole* stone's mean L\* to the catalogue. The RS
+renderer puts its highlight in the inner part of the stone and darkens the rim. So the inner 60 %
+of a mid-dark stone still reads about 13 L\* light (hematite 40 against 27) while the whole stone
+averages 27–29. Only jet was lifted as a whole stone (by its light rim and highlights), and only
+jet is fixed on both measures. Holding the inner 60 % to the catalogue instead would make whole
+mid-dark stones darker than their colour. I kept the whole-stone reading, which is what "a stone's
+average" means; **Alex to confirm.** The cell (stone + gap) is now within 5 L\* of the fill for
+every colour above, against 8–19 before.
+
+**Gaps.** The flat 85 % is replaced by a darkening in CIE L\*. The fill's linear RGB is scaled so
+the gap is darker by `minStep + slope · max(0, L − fromL)` L\* (hue kept), with `darkBelow`: fills
+darker than that get a gap lighter by `minStep` instead. 8-bit rounding never reduces the step.
+
+Tuning (`tools/is05b-tint.mjs`, `tint-tune.json`): the downsampled tinted render against the AI
+image on the 21 designs (today's layouts), in 2 mm cells. Mean ΔE2000 per design, then the mean
+over the designs. **The AI cell is the mean colour of the AI's stones** (pixels within 80 % of a
+stone's radius), not of everything it drew. Most AI images ignore the prompt and paint the gaps
+opaque and dark: mug, gap L\* 14 between stones of L\* 78; portrait, 23 between 53; car, 31
+between 47. Compared with those, darker tints always "win" (the first pass, on all opaque pixels,
+put its best rule at the edge of the grid). That is the AI's artefact, not a colour of the design.
+
+| Gap rule | mean cell ΔE |
+| --- | --- |
+| no darkening (gaps invisible; not allowed) | 8.50 |
+| **4 L\* + 0.05 per L\* above 80 (chosen, best of the grid)** | **8.66** |
+| flat 4 L\* | 8.67 |
+| 4 L\* + 0.2 per L\* above 40 | 9.25 |
+| flat 6 / flat 8 L\* | 8.77 / 8.90 |
+| 4 L\*, very dark fills (L\* < 12 or < 20) lighter by 4 | 9.23 / 9.23 |
+| 85 % (before), same stones | 9.25 |
+
+Grid: minStep 4, 5, 6, 8; slope 0–0.4; fromL 0–80; darkBelow 0, 8, 12, 16, 20; 720 rules. Only
+rules whose every gap is at least 4 L\* darker (or lighter) were eligible.
+
+The tuning says: darken as little as the visibility limit allows. A darkening that grows with
+lightness does not help (the chosen rule beats flat 4 by 0.007; crystal's gap gets 4.9 L\*, every
+fill of L\* 80 or below gets 4). Lightening the gaps of jet costs 0.6, because jet is common and its
+grey gaps show. Gap steps over the 47 colours: 4.0 to 5.6 L\* darker (jet 4.1, crystal 4.9).
+
+Fill reach, with the chosen rule (same cells): 1.4 → 9.12, 1.5 → 8.80, **1.6 → 8.66**,
+1.7 → 8.60, 1.8 → 8.58. The gain beyond 1.6 is under 0.1, not a clear signal, so the reach stays
+1.6.
+
+Spec section 8 is updated with the final rule (steps 3 and 6).
+
+### 6.5 Giraffe: the one plausible pair is kept
+
+**Rule** (`_plausible_pupils` in `post.py`): with more than two pupils, every pair is put to the
+pair test. If **exactly one** pair passes, it is kept and the other pupils are laid out as ordinary
+stones. If none or several pass, there is no face. (Alex chose "exactly one" over "the best pair",
+because the car's 19 wheel "pupils" give 31 passing pairs, and "the best pair" would put two SS20
+pupils on one wheel.)
+
+Giraffe: 4 candidates (5.56 mm on an ossicone, 3.96 on the neck, 3.95 and 3.34 at the eyes). Only
+the eyes pass (ratio 1.18, level, 21 mm apart). Today it has `face` animal and two 3.65 mm pupils
+(SS20 after the cap, 0 capped, 0 removed by the cleanup), 2286 service stones, 0 violations.
+
+![giraffe eyes: RS rules (4 pupils), first IS-05b rule (no face), now (the eyes kept), plain and tinted](IS-05b-results/giraffe-eyes.jpg)
+
+Unchanged elsewhere. Every design's layout today was compared with the first IS-05b service's,
+which had soft outlines on:
+
+| | stone positions and sizes | face, pupils | colours |
+| --- | --- | --- | --- |
+| giraffe | changed (above) | animal, 2 (was null, 0) | |
+| the 12 RS layouts, the other 8 IS-03b designs incl. the car | identical | identical (car: still null, 0) | identical, except on the 6 human-face designs: soft outlines (6.2) |
+
+On the 5 designs that have an "RS rules with soft outlines off" run (woman, portrait, leopard,
+dog, cat), today's layout equals it stone for stone, so the only change there is 6.2.
+
+### 6.6 Before and after
+
+**Before** is the start of this branch: the saved layouts (RS 38cd831 rules) and the old renderer
+(85 % tint, stones as drawn). **After** is today: the service with soft outlines off and the
+pupil pair rule, and the revised renderer. **Layout only** is today's layout with the old
+renderer.
+
+Per stone (delivered stones; (a) nearest, (b) assigned, (c) rendered, inner 60 % of the disc as in
+section 2), mean ΔE2000:
+
+| Design | stones | (a) | (b) before / after | (c) before / after | (c) layout only | (c) p90 before / after |
+| --- | --- | --- | --- | --- | --- | --- |
+| woman | 2612 | 6.36 | 7.73 / 7.02 | 13.68 / **11.69** | 12.91 | 20.1 / 18.6 |
+| portrait | 3995 | 5.66 | 8.23 / 8.06 | 9.52 / **8.25** | 9.28 | 16.5 / 16.0 |
+| leopard | 2431 | 5.12 | 5.87 / 5.87 | 9.82 / **8.12** | 9.82 | 17.9 / 17.5 |
+| car | 3531 | 6.73 | 11.24 / 9.38 | 13.65 / **11.14** | 12.44 | 22.2 / 18.9 |
+| giraffe | 2282 | 10.22 | 11.21 / 11.10 | 14.59 / **13.37** | 14.60 | 22.4 / 21.5 |
+| dog | 2049 | 7.24 | 7.76 / 7.66 | 11.92 / 12.13 | 11.81 | 24.4 / 23.3 |
+
+The dog's (c) mean rises by 0.3 while its 90th percentile falls. Its jet and smoked-topaz stones
+improve (−5.4 and −1.2 per stone). Its tan stones (golden shadow, light colorado, silk, copper)
+now show their catalogue lightness, and the AI image is darker than the colours the service gave
+them there. That is the service's pick ((b), section 6.3), which the renderer no longer hides.
+
+Downsampled (2 mm cells, section 6.4's measure). "AI stones" is the AI's stone colours; "AI as
+drawn" includes its painted gaps:
+
+| Design | AI stones: before | layout only | after | AI as drawn: before | after |
+| --- | --- | --- | --- | --- | --- |
+| dog-rule | 11.0 | 11.0 | **9.5** | 7.6 | 8.6 |
+| dog-norule | 10.8 | 10.8 | **9.2** | 7.6 | 7.7 |
+| cat-rule | 8.5 | 8.5 | **6.1** | 6.0 | 8.0 |
+| cat-norule | 8.5 | 8.5 | **6.5** | 8.2 | 10.8 |
+| mug-rule | 10.2 | 10.2 | **6.0** | 13.2 | 18.2 |
+| mug-norule | 10.1 | 10.1 | **6.6** | 12.5 | 17.0 |
+| giraffe-rule | 13.9 | 13.9 | **11.8** | 10.6 | 9.3 |
+| dachshund-rule | 11.2 | 11.2 | **10.7** | 10.7 | 10.3 |
+| car-rule | 12.9 | 12.3 | **10.4** | 11.2 | 12.3 |
+| rs-cat | 8.4 | 8.4 | **6.5** | 7.4 | 5.8 |
+| rs-dog | 9.5 | 9.5 | **6.1** | 4.8 | 5.8 |
+| rs-einstein | 10.4 | 10.3 | **9.0** | 8.9 | 8.0 |
+| rs-jesus | 10.1 | 10.1 | **7.6** | 8.3 | 6.4 |
+| rs-lake | 10.7 | 10.7 | **9.6** | 9.2 | 8.6 |
+| rs-leopard | 11.3 | 11.2 | **9.0** | 9.0 | 7.3 |
+| rs-logo | 11.4 | 11.4 | **6.2** | 10.7 | 5.9 |
+| rs-parrot | 12.8 | 12.8 | **11.9** | 9.1 | 10.6 |
+| rs-portrait | 10.4 | 10.3 | **7.7** | 9.6 | 10.4 |
+| rs-rose | 11.7 | 11.7 | **11.5** | 11.5 | 11.4 |
+| rs-tulips | 12.3 | 12.3 | **11.9** | 10.0 | 10.4 |
+| rs-woman | 10.9 | 10.6 | **8.8** | 9.3 | 7.9 |
+| **mean** | 10.8 | 10.7 | **8.7** | 9.3 | 9.5 |
+
+Against the AI's stone colours, all 21 designs improve (mean 10.8 → 8.7). Nearly all of that is
+the renderer; the layout changes add 0.05. Against the AI image as drawn, the mean goes from 9.3
+to 9.5. It worsens most where the AI painted dark gaps: mug 13.2 → 18.2, cat-norule 8.2 → 10.8.
+It improves where the AI's gaps are transparent: logo 10.7 → 5.9, woman 9.3 → 7.9.
+
+Images: the AI image (cropped to the stones), before tinted, after tinted.
+
+#### woman
+
+![woman: AI image, before, after](IS-05b-results/ba-woman.jpg)
+
+#### portrait
+
+![portrait: AI image, before, after](IS-05b-results/ba-portrait.jpg)
+
+#### leopard
+
+![leopard: AI image, before, after](IS-05b-results/ba-leopard.jpg)
+
+#### car
+
+![car: AI image, before, after](IS-05b-results/ba-car.jpg)
+
+#### giraffe
+
+![giraffe: AI image, before, after](IS-05b-results/ba-giraffe.jpg)
+
+#### dog
+
+![dog: AI image, before, after](IS-05b-results/ba-dog.jpg)
+
+[`IS-05-tinted-comparison.md`](IS-05-tinted-comparison.md) is re-rendered with the final
+settings: today's layouts and renderer, for all 21 designs.
+
+### 6.7 Changes made in the follow-up
+
+- `tools/fixtures/is03b-ai/`: the 9 AI images (metadata stripped) and a README with the sources.
+- Service (`services/strass`, recorded in `ORIGIN.md`): `soft_outlines` off in `DEFAULT`;
+  `_plausible_pupils` keeps the one plausible pair of more than two (`_plausible_pair`);
+  `test_build_j.py` compares with `BUILD_I` with soft outlines off; tests in `test_is05b.py`;
+  first-pick experiments in `scripts/is05b_runs.py`.
+- IS: `src/render/tinted.js`: gap rule `GAP_RULE` (`gapRgb`), stone lightness step
+  (`keepStoneLightness`, `STONE_L_TOLERANCE`), `nearestStones` split out; `TINT_BRIGHTNESS` is
+  gone. Tests in `tools/test-exports.mjs`. Spec section 8 (steps 3 and 6, why) and 7.5 (the kept
+  pair).
+- Tools: `tools/is05b-tint.mjs` (the old renderer for before/after, the cell comparison, the grid
+  search); `tools/is05b-measure.mjs` (the 21 designs, a pluggable renderer);
+  `tools/is05b-results.mjs` (parts `picks`, `giraffe-eyes`, `unchanged`, `before-after`,
+  `renderer-after`); `tools/tinted-comparison.mjs` (fixtures, runs dir).
+
