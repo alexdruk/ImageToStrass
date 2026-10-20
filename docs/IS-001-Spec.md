@@ -5,7 +5,10 @@ at its natural size. Revised 19 Oct 2026 (IS-04): EPS written by IS (no Ghostscr
 cleanup after the SS16 cap, acceptance on the IS gap check. Revised 19 Oct 2026 (IS-05b): a face's
 two pupils may stay SS20; designs whose pupils are not one plausible pair get no eye stage. Revised
 19 Oct 2026 (IS-05b follow-up): of more than two pupils, the one plausible pair is kept; tinted
-view: stones keep their catalogue lightness, gaps 4 L* darker (section 8).
+view: stones keep their catalogue lightness, gaps 4 L* darker (section 8). Revised 20 Oct 2026 (IS-05b,
+second follow-up): stone colours read at the delivered stones (7.4); a stone's inner 60 % held to its
+catalogue lightness, near-white gaps 8 L* darker (section 8); renders and ZIP builds in a worker thread;
+AI images archived without metadata (4.2); the section 12 test exists.
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -151,7 +154,8 @@ data/archive/<code>/                         kept forever (D7)
   attempt-<n>/original.<ext>                 copy of the upload the attempt was made from
   attempt-<n>/prepared.png                   after background removal and adjustments
   attempt-<n>/settings.json
-  attempt-<n>/ai.png                         provider output
+  attempt-<n>/ai.png                         provider output, without metadata (only the chunks of its
+                                             pixels: IHDR, PLTE, tRNS, IDAT, IEND; section 12)
   attempt-<n>/layout.json                    layout service response
   attempt-<n>/stones.json                    final StoneLayout at natural size, after bw mapping
   attempt-<n>/tinted.png                     full-resolution tinted render
@@ -276,6 +280,12 @@ than 3 % of the stones, the coverage after the cleanup is at least 0.5, the IS g
 violations and at least 300 stones are left; otherwise the whole attempt is re-run once
 automatically and does not count (D5).
 
+Stone colours (IS's strass copy, rule `sample_delivered`, on in `DEFAULT`, IS-05b): the service reads
+each stone's colour from the AI image at the stone's delivered position, from the inner 60 % of its
+radius, after its ordered layout has moved it, instead of at the detection it came from; the stones it
+adds to fill holes read their own pixels too. RS 38cd831 reads them at the detections and gives fill stones the nearest
+detection's or their neighbours' colour (`services/strass/ORIGIN.md`, `docs/IS-05b-results.md`).
+
 ### 7.5 Size (D1, D2)
 
 Natural size only. The design is the layout service's answer as it is: stone positions and
@@ -341,23 +351,28 @@ Definition (from the RS 30 Sep decision, sharpened here):
 1. The canvas covers the design's bounding box plus a margin of 2 main-stone diameters.
 2. Every pixel that is not inside a stone takes the colour of its **nearest stone**, measured to
    the stone's edge (`distance to centre − radius`), so large pupil stones claim their own gaps.
-3. That colour is the stone's catalogue fill **darkened by 4 L\*, plus 0.05 L\* per L\* above 80**
-   (CIE L\*: a fill of L\* 97, crystal, is darkened by 4.85; every fill of L\* 80 or less by 4). The
-   fill's linear RGB is scaled so the gap has that L\* (its hue is kept), rounded to 8 bits so the
-   step is never less than 4. Every gap is thus at least 4 L\* darker than its stone, the darkest
-   (jet, L\* 6) included.
+3. That colour is the stone's catalogue fill **darkened by 4 L\*, plus 0.05 L\* per L\* above 80,
+   and by at least 8 L\* when the fill's L\* is above 85** (CIE L\*: a fill of L\* 70 is darkened by 4,
+   silver (L\* 88) and crystal (L\* 96) by 8). The fill's linear RGB is scaled so the gap has that
+   L\* (its hue is kept), rounded to 8 bits so the step is never less than the rule's. Every gap is
+   thus at least 4 L\* darker than its stone, the darkest (jet, L\* 6) included, and at least 8 on
+   near-white fills, whose 4–5 L\* gaps were hard to see.
 4. A pixel is filled only if its distance to that stone's centre is at most **1.6 × the stone's
    radius**. Beyond that (the design's outer edge and true holes) the background shows: white in
    the app, transparent in the PNG file.
 5. The stones are drawn on top with the RS faceted crystal renderer
    (`CrystalStoneRenderer.drawCrystalStone`, deterministic per-stone appearance; the RS file is
    unchanged).
-6. Each drawn stone's mean L\* (the mean of the L\* of the pixels whose centre lies inside its disc)
-   is brought to within **2** of its catalogue fill's L\*: a stone drawn too light (the dark
-   colours, above all jet, whose highlights and light rim the renderer draws over a near-black body) has its linear RGB
-   scaled down, one drawn too dark (crystal, silver) is screened towards white, by the amount that
-   gives a mean of fill ± 2. The facets, highlights and sparkle keep their relative contrast; a
-   stone already within 2 is left as drawn.
+6. Each drawn stone's lightness is brought to its catalogue fill's L\*, over the pixels whose
+   centre lies inside its disc, in two zones. First the **inner 60 %** of the radius, where the
+   renderer puts its highlight: its mean L\* is brought to within **4** of the fill's. Then the
+   **whole stone**: its mean L\* is brought to within **2**, by changing the whole stone evenly when
+   that keeps the inner zone within 4, else only outside the inner zone. A zone drawn too light (the
+   central highlight of mid-dark and dark stones, and jet's light rim) has its linear RGB scaled
+   down; one drawn too dark (crystal, silver) is screened towards white. The change fades out over a
+   ring of 0.2 radii outside the inner zone, so no edge shows. The facets, highlights and sparkle
+   keep their relative contrast; a stone already within both is left as drawn. Every stone is so
+   within 3 L\* of its fill as a whole and within 5 in its inner 60 % (8-bit rounding included).
 
 The result reads as a solid, painted picture, close to what the buyer expects from the photo.
 
@@ -369,10 +384,15 @@ gaps are darkened the closer the picture, so the rule is the visibility limit of
 growing with lightness was no better (4 + 0.05 per L\* above 80 is the best of the grid by 0.01),
 lightening the gaps of very dark stones was worse, and a reach of 1.7 or 1.8 radii gained less than
 0.1, so the reach stays 1.6. Mean cell ΔE over the 21 designs: 10.8 before (RS layouts, 85 % tint,
-stones as drawn), 8.7 after.
+stones as drawn), 8.7 after. The second follow-up (20 Oct 2026) held the inner 60 % of each stone to
+its catalogue lightness too (before, the highlight left mid-dark stones' centres 10–13 L\* light,
+while the whole stone averaged right) and set 8 L\* for near-white gaps at Alex's request
+(`docs/IS-05b-results.md` section 7).
 
 Implementation: Node with `@napi-rs/canvas` (Canvas 2D compatible, so the RS renderer runs
-unchanged), `src/render/tinted.js` (`GAP_RULE`, `STONE_L_TOLERANCE`). Nearest-stone search: a pixel can only be filled when its
+unchanged), `src/render/tinted.js` (`GAP_RULE`, `STONE_LIGHTNESS`). The renders run in a worker
+thread (`src/render/offthread.js`, `worker_threads`), so the server keeps answering polls and pages
+while one runs. Nearest-stone search: a pixel can only be filled when its
 nearest stone's edge is at most 0.6 × the largest radius away, so each stone writes its edge
 distance into the pixels within that reach and the smallest wins; this is exact for every pixel
 that can be filled. "Main stone" is the most common stone size. Two renders: preview (900 px long
@@ -422,7 +442,7 @@ PDF metadata: Producer and Creator `IS`, Title `IS design IS-XXXX-XXXX`, added t
 unchanged. No comments or metadata in SVG/DXF/PNG naming anything else (section 12).
 
 The ZIP (`archiver`, deflate; `buildDeliveryZip` in `src/export/zip.js`, from `attempt-<n>/stones.json`
-and `tinted.png`, never writing to the archive) is built when the code becomes paid (or at the first download if the
+and `tinted.png`, never writing to the archive; in the render worker of section 8) is built when the code becomes paid (or at the first download if the
 build was skipped), stored in `data/delivery/`, and rebuilt from the archive if the buyer
 downloads again within 30 days and the file is missing.
 
@@ -510,9 +530,15 @@ orders with a "match to code" action, manual unlock, poller status, disk use of 
 - `x-powered-by` off; no third-party names in HTML, JS, CSS, comments, file names, ZIP contents,
   PDF/SVG metadata.
 - Logs stay in `logs/` outside `public/`.
-- Test (IS-08): run a fake design, grep every HTTP response body and header and every ZIP entry
-  for `openai`, `gpt`, `dall`, `prompt`, the model name and the first 40 characters of the prompt;
-  any match fails.
+- Test `tools/test-no-provider-leak.mjs` (part of `npm test`; word list `tools/leak-words.mjs`):
+  run a fake design, check every HTTP response body and header, every file the server sends (pages,
+  scripts, images, the ZIP) and every ZIP entry for `openai`, `gpt`, `dall`, `prompt`, the model
+  name and the first 40 characters of the prompt, image and document metadata included (PNG text,
+  XMP, EXIF, ICC and C2PA chunks, JPEG APP segments, PDF info and streams, SVG and DXF comments);
+  any match, or any metadata chunk in a file the buyer gets, fails. A scripted provider whose image
+  carries such metadata and whose errors name it must leave no trace either.
+- The AI image is archived without metadata (4.2): provider outputs carry C2PA chunks that name
+  the provider.
 
 ## 13. Abuse and cost
 

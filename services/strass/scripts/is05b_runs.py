@@ -6,8 +6,9 @@ service.
     .venv/bin/python scripts/is05b_runs.py OUT_DIR VARIANTS NAME=PNG [NAME=PNG ...]
 
 VARIANTS is a comma-separated list of names from VARIANTS below: "default" (the service's rules),
-"rs" (the rules of RS 38cd831, i.e. DEFAULT without the IS plausible_eyes rule and with
-soft_outlines on), "rs-no-<rule>"
+"default-no-sample" (DEFAULT with sample_delivered off: colours read at the detections),
+"rs" (the rules of RS 38cd831, i.e. DEFAULT without the IS plausible_eyes and sample_delivered
+rules and with soft_outlines on), "rs-no-<rule>"
 (rs with one colour rule off) and "rs-no-colour-rules", and the first-pick experiments (rs with
 the first pick of ordered.py changed, PICKS): "rs-pick-nearest" (plain ΔE2000 nearest, none of
 snap_colours' penalties and blocks), "rs-pick-sample" (each detection's colour is the mean of
@@ -35,8 +36,8 @@ from strass_layout.pipeline import finish_layout, layout_frame  # noqa: E402
 
 COLOUR_RULES = ["extra_colours", "mean_colour", "real_colours", "more_colours", "skin_no_wine", "soft_outlines",
                 "calm_skin", "skin_nearest"]
-RS = dataclasses.replace(DEFAULT, plausible_eyes=False, soft_outlines=True)
-VARIANTS = {"default": DEFAULT, "rs": RS}
+RS = dataclasses.replace(DEFAULT, plausible_eyes=False, soft_outlines=True, sample_delivered=False)
+VARIANTS = {"default": DEFAULT, "rs": RS, "default-no-sample": dataclasses.replace(DEFAULT, sample_delivered=False)}
 VARIANTS.update({"rs-no-" + r.replace("_", "-"): dataclasses.replace(RS, **{r: False}) for r in COLOUR_RULES})
 VARIANTS["rs-no-colour-rules"] = dataclasses.replace(RS, **{r: False for r in COLOUR_RULES})
 for name in os.environ.get("IS05B_EXTRA", "").split(";"):

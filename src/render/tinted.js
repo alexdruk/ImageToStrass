@@ -8,15 +8,20 @@ import { STONE_COLORS } from "../stones/StoneColors.js";
 //   2. A pixel takes the colour of its nearest stone, measured to the stone's edge (distance to
 //      the centre minus the radius),
 //   3. that is the gap colour of the stone's catalogue fill (gapRgb: darker by a CIE L* step that
-//      grows with the fill's lightness; lighter for very dark fills),
+//      grows with the fill's lightness, at least lightMinStep for near-white fills; lighter for
+//      very dark fills),
 //   4. but only if the pixel lies within FILL_REACH radii of that stone's centre; elsewhere the
 //      background shows (white in the app, transparent in the PNG file).
 //   5. The stones are drawn on top with the RS faceted crystal renderer,
-//   6. then each stone's mean L* (over the pixels whose centre lies inside its disc) is brought to
-//      within STONE_L_TOLERANCE of its catalogue fill's L*: a stone too light is darkened (its
-//      linear RGB scaled down), one too dark is lightened (screened towards white), so the facets,
-//      highlights and sparkle keep their relative contrast. A stone already within the tolerance is
-//      left as drawn.
+//   6. then each stone's lightness is brought to its catalogue fill's L* in two zones (the pixels
+//      whose centre lies inside its disc): first the inner INNER_SHARE of the radius (where the
+//      renderer puts its highlight) to a mean within STONE_LIGHTNESS.inner, then the whole stone to
+//      a mean within STONE_LIGHTNESS.whole, by changing the uniform whole stone when that keeps the
+//      inner zone within its tolerance, else only outside the inner zone. A zone too light is
+//      darkened (its linear RGB scaled down), one too dark is lightened (screened towards white),
+//      so the facets, highlights and sparkle keep their relative contrast; the change fades out
+//      over a ring of RAMP_SHARE of the radius, so no edge shows. A stone already within both
+//      tolerances is left as drawn.
 //
 // Nearest-stone search: a pixel can only be filled when its nearest stone's edge is at most
 // (FILL_REACH - 1) * r <= (FILL_REACH - 1) * rMax away, and any stone whose edge is farther than
@@ -25,11 +30,18 @@ import { STONE_COLORS } from "../stones/StoneColors.js";
 
 export const MARGIN_STONES = 2;
 export const FILL_REACH = 1.6;
-export const STONE_L_TOLERANCE = 2;
+// Step 6 (IS-05b): the whole stone's mean L* within `whole` of the fill's, the inner zone's within
+// `inner` (aims; the spec allows 3 and 5, the rest is left for 8-bit rounding). inner: null keeps
+// only the whole-stone step (the renderer of the first IS-05b follow-up; tools only).
+export const STONE_LIGHTNESS = Object.freeze({ whole: 2, inner: 4 });
+export const STONE_L_TOLERANCE = STONE_LIGHTNESS.whole;
+export const INNER_SHARE = 0.6;
+export const RAMP_SHARE = 0.2;
 // Step 3 (IS-05b, tuned against the AI images, docs/IS-05b-results.md): a fill of lightness L is
-// darkened by minStep + slope * max(0, L - fromL) L*; a fill darker than darkBelow is lightened by
-// minStep instead.
-export const GAP_RULE = Object.freeze({ minStep: 4, slope: 0.05, fromL: 80, darkBelow: 0 });
+// darkened by minStep + slope * max(0, L - fromL) L*, and by at least lightMinStep when L is above
+// lightAbove (near-white fills, whose gaps were hard to see); a fill darker than darkBelow is
+// lightened by minStep instead.
+export const GAP_RULE = Object.freeze({ minStep: 4, slope: 0.05, fromL: 80, darkBelow: 0, lightAbove: 85, lightMinStep: 8 });
 export const PREVIEW_LONG_SIDE_PX = 900;
 export const FULL_LONG_SIDE_PX = 2400;
 export const WATERMARK_OPACITY = 0.18;
@@ -98,7 +110,9 @@ export function gapRgb(hex, rule = GAP_RULE) {
     while (lightOf(out) < want && h > 0) out = lin.map((c) => toSrgb8(1 - (h *= 0.98) * (1 - c)));
     return out;
   }
-  const want = Math.max(0, l - rule.minStep - rule.slope * Math.max(0, l - rule.fromL));
+  let step = rule.minStep + rule.slope * Math.max(0, l - rule.fromL);
+  if (rule.lightAbove !== undefined && l > rule.lightAbove) step = Math.max(step, rule.lightMinStep);
+  const want = Math.max(0, l - step);
   let k = y > 0 ? yOfLightness(want) / y : 0;
   let out = lin.map((c) => toSrgb8(c * k));
   while (lightOf(out) > want && k > 0) out = lin.map((c) => toSrgb8(c * (k *= 0.98)));
@@ -122,7 +136,8 @@ export function tintCanvasMm(stoneLayout) {
 }
 
 // The nearest stone of every pixel that can be filled: owner (stone index or -1) and best (the
-// distance from the pixel centre to that stone's edge, px; negative inside the stone).
+// distance from the pixel centre to that stone's edge, px; negative inside the stone), and the
+// canvas scale (px per mm).
 // fillReach: FILL_REACH (tools may try others).
 export function nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale, fillReach = FILL_REACH }) {
   const best = new Float32Array(widthPx * heightPx).fill(Infinity);
@@ -150,7 +165,7 @@ export function nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale
       }
     }
   });
-  return { owner, best };
+  return { owner, best, scale };
 }
 
 // Steps 1-4: RGBA pixels of the tint at `scale` px per mm, the canvas starting at (minXmm, minYmm).
@@ -173,8 +188,10 @@ export function tintPixels(stones, { minXmm, minYmm, widthPx, heightPx, scale, b
 }
 
 // Step 6 on RGBA pixels (in place): each stone's pixels (those whose centre lies inside its disc,
-// best <= 0) are brought to a mean L* within STONE_L_TOLERANCE of the stone's fill L*.
-export function keepStoneLightness(data, stones, { owner, best }) {
+// best <= 0) are brought to the fill's L*: the inner zone to a mean within `inner`, then the whole
+// stone to a mean within `whole` (STONE_LIGHTNESS). `near` is nearestStones() of the canvas.
+export function keepStoneLightness(data, stones, near, { whole = STONE_LIGHTNESS.whole, inner = STONE_LIGHTNESS.inner } = {}) {
+  const { owner, best, scale } = near;
   const count = new Int32Array(stones.length + 1);
   for (let p = 0; p < owner.length; p++) if (owner[p] >= 0 && best[p] <= 0) count[owner[p] + 1]++;
   for (let i = 0; i < stones.length; i++) count[i + 1] += count[i];
@@ -183,44 +200,89 @@ export function keepStoneLightness(data, stones, { owner, best }) {
   for (let p = 0; p < owner.length; p++) if (owner[p] >= 0 && best[p] <= 0) pix[fillAt[owner[p]]++] = p;
 
   const targets = new Map();
-  let ys = new Float64Array(64);
+  let ys = new Float64Array(64), ws = new Float64Array(64), alpha = new Float64Array(64), beta = new Float64Array(64);
+  let isInner = new Uint8Array(64);
   for (let i = 0; i < stones.length; i++) {
     const from = count[i], n = count[i + 1] - from;
     if (!n) continue;
     const color = stones[i].color;
     if (!targets.has(color)) targets.set(color, lightnessOfHex(fillOf(color)));
     const target = targets.get(color);
-    if (ys.length < n) ys = new Float64Array(n);
-    let sum = 0;
+    if (ys.length < n) {
+      [ys, ws, alpha, beta] = [n, n, n, n].map((k) => new Float64Array(k));
+      isInner = new Uint8Array(n);
+    }
+    // ws: 1 in the inner zone, fading to 0 over the ramp; each pixel's change so far is
+    // lin' = alpha * lin + beta, the same on every channel (so on Y too).
+    const r = (stones[i].sizeMm / 2) * scale;
+    let innerN = 0;
     for (let k = 0; k < n; k++) {
-      const q = pix[from + k] * 4;
+      const p = pix[from + k], q = p * 4;
       ys[k] = lumOf(data[q], data[q + 1], data[q + 2]);
-      sum += fastL(ys[k]);
+      const rho = (best[p] + r) / r;
+      const f = Math.max(0, Math.min(1, (INNER_SHARE + RAMP_SHARE - rho) / RAMP_SHARE));
+      isInner[k] = rho <= INNER_SHARE ? 1 : 0;
+      ws[k] = isInner[k] ? 1 : f * f * (3 - 2 * f);
+      innerN += isInner[k];
+      alpha[k] = 1;
+      beta[k] = 0;
     }
-    const mean = sum / n;
-    if (Math.abs(mean - target) <= STONE_L_TOLERANCE) continue;
-    const darken = mean > target;
-    const want = darken ? target + STONE_L_TOLERANCE : target - STONE_L_TOLERANCE;
-    // Mean L* after the change with strength t in [0, 1] (t = 1: unchanged), increasing in t when
-    // darkening (scale by t) and decreasing when lightening (screen by t).
-    const meanAt = (t) => {
-      let s = 0;
-      for (let k = 0; k < n; k++) s += fastL(darken ? t * ys[k] : 1 - t * (1 - ys[k]));
-      return s / n;
-    };
-    let lo = 0, hi = 1;
-    for (let it = 0; it < 14; it++) {
-      const mid = (lo + hi) / 2;
-      if ((meanAt(mid) > want) === darken) hi = mid;
-      else lo = mid;
-    }
-    const t = (lo + hi) / 2;
-    for (let k = 0; k < n; k++) {
-      const q = pix[from + k] * 4;
-      for (let c = 0; c < 3; c++) {
-        const lin = TO_LINEAR[data[q + c]];
-        data[q + c] = toSrgb8Fast(darken ? t * lin : 1 - t * (1 - lin));
+    // Mean L* of the pixels selected by pick(k) after the change (strength t in [0, 1], t = 1:
+    // unchanged; pixel k changed with strength 1 - weight(k) * (1 - t)): darkening scales by it,
+    // lightening screens by it.
+    const meanAt = (t, darken, weight, pick) => {
+      let sum = 0, m = 0;
+      for (let k = 0; k < n; k++) {
+        if (!pick(k)) continue;
+        const tk = 1 - weight(k) * (1 - t);
+        sum += fastL(darken ? tk * ys[k] : 1 - tk * (1 - ys[k]));
+        m++;
       }
+      return m ? sum / m : target;
+    };
+    const meanOf = (pick) => meanAt(1, true, () => 0, pick);
+    // Bring the mean of pick's pixels to within tol of the target by changing them with weight;
+    // false if even full strength (t = 0) does not get there.
+    const solve = (tol, weight, pick) => {
+      const mean = meanOf(pick);
+      if (Math.abs(mean - target) <= tol) return true;
+      const darken = mean > target;
+      const want = darken ? target + tol : target - tol;
+      if ((meanAt(0, darken, weight, pick) > want) === darken) return false;
+      let lo = 0, hi = 1;
+      for (let it = 0; it < 14; it++) {
+        const mid = (lo + hi) / 2;
+        if ((meanAt(mid, darken, weight, pick) > want) === darken) hi = mid;
+        else lo = mid;
+      }
+      const t = (lo + hi) / 2;
+      for (let k = 0; k < n; k++) {
+        const tk = 1 - weight(k) * (1 - t);
+        if (tk === 1) continue;
+        if (darken) {
+          ys[k] *= tk; alpha[k] *= tk; beta[k] *= tk;
+        } else {
+          ys[k] = 1 - tk * (1 - ys[k]); alpha[k] *= tk; beta[k] = 1 - tk * (1 - beta[k]);
+        }
+      }
+      return true;
+    };
+    const all = () => true;
+    const inInner = (k) => isInner[k] === 1;
+    if (inner !== null && innerN) solve(inner, (k) => ws[k], inInner);
+    const innerOk = () => inner === null || !innerN || Math.abs(meanOf(inInner) - target) <= inner + 0.25;
+    if (Math.abs(meanOf(all) - target) > whole) {
+      const saved = [ys.slice(0, n), alpha.slice(0, n), beta.slice(0, n)];
+      solve(whole, () => 1, all);
+      if (!innerOk()) {
+        ys.set(saved[0]); alpha.set(saved[1]); beta.set(saved[2]);
+        if (!solve(whole, (k) => 1 - ws[k], all)) solve(whole, () => 1, all);
+      }
+    }
+    for (let k = 0; k < n; k++) {
+      if (alpha[k] === 1 && beta[k] === 0) continue;
+      const q = pix[from + k] * 4;
+      for (let c = 0; c < 3; c++) data[q + c] = toSrgb8Fast(alpha[k] * TO_LINEAR[data[q + c]] + beta[k]);
     }
   }
 }
@@ -252,8 +314,11 @@ function drawWatermark(ctx, widthPx, heightPx, code) {
 
 // StoneLayout -> { png, widthPx, heightPx, scale } with the long side at longSidePx. background
 // "white" (the app) or "transparent" (the PNG file); watermark: the code to tile over it, or null.
-// rule: the gap rule of step 3 (tools only; the app always uses GAP_RULE).
-export function renderTinted(stoneLayout, { longSidePx = FULL_LONG_SIDE_PX, background = "transparent", watermark = null, rule = GAP_RULE } = {}) {
+// rule and stoneLightness: the rules of steps 3 and 6 (tools only; the app always uses GAP_RULE and
+// STONE_LIGHTNESS).
+export function renderTinted(stoneLayout, {
+  longSidePx = FULL_LONG_SIDE_PX, background = "transparent", watermark = null, rule = GAP_RULE, stoneLightness = STONE_LIGHTNESS
+} = {}) {
   if (!stoneLayout?.stones?.length) throw new TypeError("renderTinted requires a StoneLayout with stones.");
   const box = tintCanvasMm(stoneLayout);
   const scale = longSidePx / Math.max(box.widthMm, box.heightMm);
@@ -275,7 +340,7 @@ export function renderTinted(stoneLayout, { longSidePx = FULL_LONG_SIDE_PX, back
     drawCrystalStone(ctx, x, y, (stone.sizeMm / 2) * scale, stone.color, getCrystalAppearance(stone));
   }
   const drawn = ctx.getImageData(0, 0, widthPx, heightPx);
-  keepStoneLightness(drawn.data, stoneLayout.stones, near);
+  keepStoneLightness(drawn.data, stoneLayout.stones, near, stoneLightness);
   ctx.putImageData(drawn, 0, 0);
   if (watermark) drawWatermark(ctx, widthPx, heightPx, watermark);
   return { png: canvas.toBuffer("image/png"), widthPx, heightPx, scale };

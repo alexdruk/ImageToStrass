@@ -1,11 +1,13 @@
 # IS: new file, not from Rhinestone-Studio.
-"""IS-05b: plausible pupils (Rules.plausible_eyes), the pupil positions in the report and
-soft_outlines off in DEFAULT."""
+"""IS-05b: plausible pupils (Rules.plausible_eyes), the pupil positions in the report,
+soft_outlines off in DEFAULT and colours read at the delivered stones (Rules.sample_delivered)."""
+import dataclasses
 import unittest
 
 import numpy as np
 
-from strass_layout import DEFAULT
+from strass_layout import DEFAULT, PROTOTYPE
+from strass_layout.ordered import CATCH_LAB, _delivered_colours
 from strass_layout.post import _plausible_pupils
 from strass_layout.rules import BUILD_I
 from tests import support
@@ -84,6 +86,40 @@ class PupilPositions(unittest.TestCase):
                 for (x, y) in report["pupilsAtMm"]:
                     self.assertIn((x, y), centres)
                     self.assertIn(centres[(x, y)], ("ss20", "ss30"))
+
+
+class SampleDelivered(unittest.TestCase):
+    def test_only_default_reads_the_delivered_stones(self):
+        self.assertTrue(DEFAULT.sample_delivered)
+        self.assertFalse(BUILD_I.sample_delivered)
+        self.assertFalse(PROTOTYPE.sample_delivered)
+
+    def test_each_stone_reads_its_own_position_and_the_catch_light_is_kept(self):
+        # 0.1 mm per px: left half red, right half blue, all opaque.
+        rgb = np.zeros((100, 200, 3))
+        rgb[:, :100, 0] = 1.0
+        rgb[:, 100:, 2] = 1.0
+        a = np.ones((100, 200))
+        P = np.array([[5.0, 5.0], [15.0, 5.0], [15.0, 5.0]])
+        D = np.array([2.0, 2.0, 2.0])
+        detected = np.array([[50.0, 0.0, 0.0], [50.0, 0.0, 0.0], CATCH_LAB])
+        for mean in (False, True):
+            lab = _delivered_colours(rgb, a, 0.1, P, D, detected, mean)
+            self.assertGreater(lab[0, 1], 60)   # red: a* high
+            self.assertLess(lab[1, 2], -60)     # blue: b* low
+            np.testing.assert_array_equal(lab[2], CATCH_LAB)
+
+    def test_only_colours_change(self):
+        # The stones, their sizes, the face and the pupils are those of DEFAULT without the rule.
+        for name in ("cat", "woman"):
+            with self.subTest(image=name):
+                on = support.layout_result(name, DEFAULT)
+                off = support.layout_result(name, dataclasses.replace(DEFAULT, sample_delivered=False))
+                self.assertEqual([s[:3] for s in on["stones"]], [s[:3] for s in off["stones"]])
+                for key in ("face", "pupilsMm", "pupilsAtMm", "bySize", "violations", "coverage"):
+                    self.assertEqual(on["report"][key], off["report"][key], key)
+                changed = sum(a[3] != b[3] for a, b in zip(on["stones"], off["stones"]))
+                self.assertGreater(changed, 0)
 
 
 if __name__ == "__main__":

@@ -103,3 +103,31 @@ stone, apart from the new report key.
 The service's first colour pick was checked against the prompt (IS-05b follow-up, item 3): the
 service matches against `fill` (`DEFAULT` → `PLUS_REAL_SKIN`, real colours), and every one of the
 47 `fill` values equals the hex the prompt gives the AI (`previewColor`). Nothing was changed.
+
+### IS-05b second follow-up (20 Oct 2026): colours read at the delivered stones
+
+- `strass_layout/rules.py`: new rule `sample_delivered` (default `False`, so `PROTOTYPE` and
+  `BUILD_E` … `BUILD_I` are unchanged and the equivalence test against the prototype still holds);
+  `DEFAULT` sets it `True`. Docstring note.
+- `strass_layout/ordered.py`: new `SAMPLE_SHARE = 0.6`, `delivered_lab(rgb, a, s, P, D, mean)` and
+  `_delivered_colours(rgb, a, s, P, D, C, mean)`. With `rules.sample_delivered`, after the last
+  `resolve_idx` (the stones' final positions, fill stones included) each stone's Lab colour is read
+  again by `stone_colours` at its delivered position (rounded to 0.001 mm as returned), from the
+  inner 60 % of its radius, by the same rule the detections are read with (`mean_colour`); a tiled
+  big stone's catch-light keeps `CATCH_LAB`. RS reads every colour at the detection and gives fill
+  stones the nearest detection's colour. The keep-or-drop decisions still read the detections
+  (`col`), so no stone moves. Why 60 %: the whole disc of a stone that moved, or is larger than the
+  stone the AI drew, reaches into the AI's gaps, which most AI images paint dark; on the IS-03b mug
+  that took the mean ΔE from 3.3 to 7.1, the inner 60 % gives 3.2.
+- `strass_layout/post.py`: with `rules.sample_delivered`, a stone added by the second fill takes
+  the catalogue colour of its own pixels (`ordered.delivered_lab`) instead of its neighbours' most
+  common colour.
+- `tests/test_build_j.py`: `DefaultAgainstBuildI` runs `DEFAULT` with `sample_delivered` off
+  (it checks that build J changes only skin colours relative to build I).
+- `tests/test_is05b.py`: `SampleDelivered` (the rule's defaults, `_delivered_colours` on a
+  two-colour image, and on cat and woman: stones, sizes, face, pupils, coverage identical, only
+  colours change).
+- `scripts/is05b_runs.py` (IS diagnosis only): variant "default-no-sample"; "rs" has the rule off.
+
+Effect on the 21 test designs (docs/IS-05b-results.md section 7): stone positions, sizes, faces and
+pupils identical on all 21; only colours change.

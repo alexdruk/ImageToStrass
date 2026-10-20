@@ -14,6 +14,9 @@ IS (IS-05b): Rules.plausible_eyes keeps only pupils that can be one face's eyes
 (_plausible_pupils): of more than two, the one plausible pair when exactly one pair passes;
 otherwise the eye stage is skipped and info["face"] is None. info["pupilsAtMm"] holds the pupil
 stones' centres (frame mm), in the order of info["pupilsMm"].
+
+IS (IS-05b): with Rules.sample_delivered a stone added by the fill here takes the catalogue colour
+of its own pixels (ordered.delivered_lab) instead of its neighbours' most common colour.
 """
 from collections import Counter
 
@@ -23,7 +26,7 @@ from scipy import ndimage as ndi
 from scipy.spatial import cKDTree
 from skimage.feature import peak_local_max
 
-from . import darkdots
+from . import darkdots, ordered
 from .colour import palette, snap_colours, stone_colours
 from .chains import chain_mask
 from .colsmooth import family_fix
@@ -260,6 +263,9 @@ def post_process(px, det, state, first, models, clock, rules=DEFAULT):
     t = cKDTree(P)
     dark_ids = darkdots.DARK
     for i in [k for k in range(len(P)) if C[k] is None]:
+        if rules.sample_delivered:  # IS (IS-05b)
+            C[i] = snap_colours(ordered.delivered_lab(rgb, a, s, P[i:i + 1], D[i:i + 1], mean), pal)[0][0]
+            continue
         nb = [j for j in t.query_ball_point(P[i], 2.6) if j != i and C[j] is not None and not fixed[j]]
         if nb:
             cs = [C[j] for j in nb]

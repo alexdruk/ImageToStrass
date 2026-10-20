@@ -3,13 +3,12 @@ import path from "node:path";
 import express from "express";
 import sharp from "sharp";
 import { normalizeCode } from "../db/codes.js";
-import { buildDeliveryZip, deliveryZipPath } from "../export/zip.js";
+import { deliveryZipPath } from "../export/zip.js";
 import { DESIGNS_PER_CODE } from "../pipeline/design.js";
 import { attemptDir, uploadDir, writeCodeJson } from "../prep/archive.js";
 import { previewPng } from "../prep/prepare.js";
-import { renderPreview } from "../render/tinted.js";
+import { buildDeliveryZipOffThread, renderPreviewOffThread } from "../render/offthread.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
-import { StoneLayout } from "../stones/StoneLayout.js";
 import { listAllStoneSizes } from "../stones/StoneSizes.js";
 
 // The web app's own routes (spec section 10): the screens' URLs, the session of a code, the two
@@ -100,7 +99,7 @@ export function webappRoutes({ q, config, background, log = console }) {
     if (!zipBuilds.has(code)) {
       const n = deliveredAttempt(row);
       const build = n
-        ? buildDeliveryZip({ archiveDir: config.archiveDir, deliveryDir: config.deliveryDir, code, n })
+        ? buildDeliveryZipOffThread({ archiveDir: config.archiveDir, deliveryDir: config.deliveryDir, code, n })
         : Promise.reject(new Error("no design to deliver"));
       zipBuilds.set(code, build.finally(() => zipBuilds.delete(code)));
     }
@@ -148,8 +147,9 @@ export function webappRoutes({ q, config, background, log = console }) {
     });
   });
 
-  // Tinted view (spec section 8): the watermarked 900 px preview, white background.
-  router.get("/api/attempts/:code/:n/tinted.png", (req, res) => {
+  // Tinted view (spec section 8): the watermarked 900 px preview, white background, rendered in the
+  // render worker. One render per design at a time; concurrent requests share it.
+  router.get("/api/attempts/:code/:n/tinted.png", async (req, res) => {
     const row = codeRow(req);
     const attempt = row && attemptOf(row.code, nOf(req.params.n));
     if (!attempt || attempt.status !== "done") {
@@ -161,11 +161,14 @@ export function webappRoutes({ q, config, background, log = console }) {
     try {
       if (!previews.has(key)) {
         const file = path.join(attemptDir(config.archiveDir, row.code, attempt.n), "stones.json");
-        const stoneLayout = StoneLayout.fromJSON(JSON.parse(readFileSync(file, "utf8")));
-        previews.set(key, renderPreview(stoneLayout, row.code).png);
+        const layout = JSON.parse(readFileSync(file, "utf8"));
+        const render = renderPreviewOffThread(layout, row.code);
+        previews.set(key, render);
+        render.catch(() => previews.delete(key));
         if (previews.size > PREVIEW_CACHE_SIZE) previews.delete(previews.keys().next().value);
       }
-      res.set("Cache-Control", "private, max-age=3600").type("png").send(previews.get(key));
+      const png = await previews.get(key);
+      res.set("Cache-Control", "private, max-age=3600").type("png").send(png);
     } catch (error) {
       log.error(`Tinted preview of ${key} failed: ${error.message}`);
       res.status(500).json({ error: "failed" });

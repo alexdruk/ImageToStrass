@@ -168,9 +168,10 @@ function scoreCells(model, ai, cells, tintOf) {
   return sum / cells.length;
 }
 
-// Everything one design needs for scoring: its models (by fill reach) and the counted cells.
-export async function prepareDesign(design, runs) {
-  const layout = layoutOf(design, runs);
+// Everything one design needs for scoring: its models (by fill reach) and the counted cells. The
+// layout is <runs>/<run>.<variant>.json (layoutOf).
+export async function prepareDesign(design, runs, variant = "default") {
+  const layout = layoutOf(design, runs, variant);
   const { stoneLayout, shift } = deliveredOf(layout);
   const box = tintCanvasMm(stoneLayout);
   const cols = Math.ceil(box.widthMm / CELL_MM), rows = Math.ceil(box.heightMm / CELL_MM);

@@ -14,7 +14,7 @@ import { buildDeliveryZip, deliveryZipPath, designFiles, writeZip, zipEntryNames
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import {
-  FILL_REACH, GAP_RULE, STONE_L_TOLERANCE, gapRgb, lightnessOfHex, renderFull, renderPreview, renderTinted, tintCanvasMm
+  FILL_REACH, GAP_RULE, INNER_SHARE, gapRgb, lightnessOfHex, renderFull, renderPreview, renderTinted, tintCanvasMm
 } from "../src/render/tinted.js";
 import { srgbToLab } from "./colour-diff.mjs";
 import { Stone } from "../src/stones/Stone.js";
@@ -90,18 +90,24 @@ test("tinted render: 1.5 r gets the gap colour of the nearest stone's fill, 1.7 
   assert.equal(px(12.9, 10).rgba[3], 0);
 });
 
-test("tinted render: gaps at least 4 L* darker than the fill (IS-05b gap rule)", () => {
-  assert.deepEqual({ ...GAP_RULE }, { minStep: 4, slope: 0.05, fromL: 80, darkBelow: 0 });
+test("tinted render: gaps at least 4 L* darker than the fill, 8 above L* 85 (IS-05b gap rule)", () => {
+  assert.deepEqual({ ...GAP_RULE }, { minStep: 4, slope: 0.05, fromL: 80, darkBelow: 0, lightAbove: 85, lightMinStep: 8 });
+  let nearWhite = 0;
   for (const [id, c] of Object.entries(STONE_COLORS)) {
-    const step = srgbToLab(gapRgb(c.fill))[0] - lightnessOfHex(c.fill);
-    assert.ok(step <= -4 + 1e-9, `${id}: gap ${step.toFixed(2)} L*`);
-    // Darkened by about the rule's step: 4 L*, plus 0.05 per L* above 80 (8-bit rounding adds < 2).
-    const want = 4 + 0.05 * Math.max(0, lightnessOfHex(c.fill) - 80);
+    const l = lightnessOfHex(c.fill);
+    const step = srgbToLab(gapRgb(c.fill))[0] - l;
+    const min = l > 85 ? 8 : 4;
+    nearWhite += l > 85;
+    assert.ok(step <= -min + 1e-9, `${id}: gap ${step.toFixed(2)} L*`);
+    // Darkened by about the rule's step: 4 L*, plus 0.05 per L* above 80, at least 8 above L* 85
+    // (8-bit rounding adds < 2).
+    const want = Math.max(4 + 0.05 * Math.max(0, l - 80), min);
     assert.ok(-step < want + 2, `${id}: gap ${step.toFixed(2)} L*, rule ${want.toFixed(2)}`);
   }
+  assert.ok(nearWhite >= 3, "crystal, crystal clear and silver are near-white");
 });
 
-test("tinted render: every stone's mean L* within 3 of its catalogue colour, facets kept", async () => {
+test("tinted render: every stone within 3 L* of its catalogue colour, its inner 60 % within 5, facets kept", async () => {
   for (const pxPerMm of [6, 16]) {
     for (const [id, c] of Object.entries(STONE_COLORS)) {
       const stones = [];
@@ -114,19 +120,23 @@ test("tinted render: every stone's mean L* within 3 of its catalogue colour, fac
       let spread = 0;
       for (const s of stones) {
         const cx = (s.xMm - box.minXmm) * render.scale, cy = (s.yMm - box.minYmm) * render.scale, R = render.scale;
-        const ls = [];
+        const ls = [], inner = [];
         for (let y = Math.floor(cy - R); y <= cy + R; y++) for (let x = Math.floor(cx - R); x <= cx + R; x++) {
-          if ((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 > R * R) continue;
+          const d2 = (x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2;
+          if (d2 > R * R) continue;
           const p = (y * info.width + x) * info.channels;
           ls.push(srgbToLab([data[p], data[p + 1], data[p + 2]])[0]);
+          if (d2 <= (INNER_SHARE * R) ** 2) inner.push(ls.at(-1));
         }
         const mean = ls.reduce((a, b) => a + b, 0) / ls.length;
-        assert.ok(Math.abs(mean - target) <= STONE_L_TOLERANCE + 0.5, `${id} at ${pxPerMm} px/mm: stone L* ${mean.toFixed(1)}, fill ${target.toFixed(1)}`);
+        const innerMean = inner.reduce((a, b) => a + b, 0) / inner.length;
+        assert.ok(Math.abs(mean - target) <= 3, `${id} at ${pxPerMm} px/mm: stone L* ${mean.toFixed(1)}, fill ${target.toFixed(1)}`);
+        assert.ok(Math.abs(innerMean - target) <= 5, `${id} at ${pxPerMm} px/mm: inner 60 % L* ${innerMean.toFixed(1)}, fill ${target.toFixed(1)}`);
         ls.sort((a, b) => a - b);
         spread += (ls[Math.floor(ls.length * 0.95)] - ls[Math.floor(ls.length * 0.05)]) / stones.length;
       }
       // Facets and highlights stay visible: an L* spread inside the stones (5th to 95th
-      // percentile) of at least 5 on average (crystal, the palest, has about 8).
+      // percentile) of at least 5 on average (crystal, the palest, has about 10; the others 18-49).
       assert.ok(spread >= 5, `${id} at ${pxPerMm} px/mm: facet spread ${spread.toFixed(1)}`);
     }
   }

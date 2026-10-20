@@ -3,8 +3,9 @@ import path from "node:path";
 import sharp from "sharp";
 import { attemptDir, storeNew, uploadDir, writeAttemptInputs, writeCodeJson } from "../prep/archive.js";
 import { normalizeSettings } from "../prep/adjust.js";
+import { aiImageForArchive } from "../prep/pngmeta.js";
 import { preparePng } from "../prep/prepare.js";
-import { renderFull } from "../render/tinted.js";
+import { renderFullOffThread } from "../render/offthread.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
 import { findStoneSizeByDiameterMm } from "../stones/StoneSizes.js";
 import { mapBlackAndWhite } from "./bw.js";
@@ -16,7 +17,8 @@ import { QUEUE_LIMIT, createQueue } from "./queue.js";
 
 // The design pipeline (spec section 7): Create design -> attempt row and archive inputs -> queue ->
 // model input -> provider -> layout -> natural size (SS16 cap, overlap cleanup) -> acceptance (one
-// automatic re-run) -> B&W -> stones.json and the full tinted render (section 8) -> result.
+// automatic re-run) -> B&W -> stones.json and the full tinted render (section 8, in the render
+// worker, so the server keeps answering meanwhile) -> result.
 //
 // Attempts accounting (D5, section 4.1): an attempt counts (counts = 1) only when it is done. A
 // failed, declined or re-run attempt has counts = 0. A code makes a new design only while it is
@@ -236,11 +238,14 @@ export function createPipeline({
       if (!drawn) return fail(code, n, "cancelled");
       if (drawn.error === "declined") return finish(code, n, "declined", { error_code: "declined" }, { reason: drawn.detail });
       if (drawn.error) return fail(code, n, drawn.detail);
-      storeNew(dir, "ai.png", drawn.png);
+      // Archived without metadata (text, XMP, EXIF, C2PA chunks can name the provider); the layout
+      // service gets the same pixels.
+      const aiPng = await aiImageForArchive(drawn.png);
+      storeNew(dir, "ai.png", aiPng);
       const outputPx = { width: drawn.width, height: drawn.height };
 
       stage("placing");
-      const placed = await layoutOf(drawn.png, stopping.signal);
+      const placed = await layoutOf(aiPng, stopping.signal);
       if (placed.cancelled) return fail(code, n, "cancelled");
       if (placed.error) {
         const refusal = IMAGE_REFUSALS.find((c) => placed.error.message.startsWith(`${c}:`));
@@ -259,7 +264,7 @@ export function createPipeline({
 
       stage("files");
       storeNew(dir, "stones.json", `${JSON.stringify(stoneLayout.toJSON())}\n`);
-      storeNew(dir, "tinted.png", renderFull(stoneLayout).png);
+      storeNew(dir, "tinted.png", await renderFullOffThread(stoneLayout));
       const result = designResult(stoneLayout, { coverage: check.coverage, settings, outputPx });
       finish(code, n, "done", { counts: 1, result }, { stones: result.stones, capped: natural.capped, removed: natural.removed });
     } catch (error) {

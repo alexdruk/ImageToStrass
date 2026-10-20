@@ -1,10 +1,12 @@
 # IS-05 tinted comparison
 
 Docs only. Made by `node tools/tinted-comparison.mjs <runs dir>` with no provider call. Re-rendered
-for IS-05b with the final settings: the tinted renderer of spec section 8 as revised in IS-05b (stones
-kept within 2 L* of their catalogue colour, gaps 4 L* darker than the fill, a little more above L* 80), and each design laid out
-again by today's strass service from its saved AI image (`services/strass/scripts/is05b_runs.py`,
-rules `DEFAULT`: soft outlines off, plausible pupils, the one plausible pair kept of more than two).
+for the IS-05b second follow-up (20 Oct 2026) with the final settings: the tinted renderer of spec
+section 8 (each stone within 2 L* of its catalogue colour and its inner 60 % within 4, gaps 4 L*
+darker than the fill, a little more above L* 80, and 8 L* on near-white fills above L* 85), and each
+design laid out again by today's strass service from its saved AI image
+(`services/strass/scripts/is05b_runs.py`, rules `DEFAULT`: soft outlines off, plausible pupils, the
+one plausible pair kept of more than two, colours read at the delivered stones).
 
 Each row shows four images side by side:
 

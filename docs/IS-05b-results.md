@@ -15,11 +15,15 @@ node tools/is05b-results.mjs <runs> [<runs of the first IS-05b service>]
 node tools/is05b-tint.mjs <runs>
 # the comparison document with the AI column
 node tools/tinted-comparison.mjs <runs>
+# section 7 (second follow-up): needs the "default-no-sample" and "default" runs
+node tools/is05b-followup2.mjs <runs>
 ```
 
 Sections 1 to 5 are the first IS-05b round, as written then (old renderer, RS colour rules).
 **Section 6** is the follow-up on Alex's decisions: soft outlines off, the tinted renderer
-revised, the giraffe's eyes kept, and the before/after numbers.
+revised, the giraffe's eyes kept, and the before/after numbers. **Section 7** is the second
+follow-up (20 Oct 2026): colours read at the delivered stones, the stones' central highlight held
+to their colour, 8 L\* gaps on near-white, renders off the main thread, and the leak test.
 
 Re-running the service with the RS 38cd831 rules on a saved AI image reproduces the saved layout
 exactly (checked on all 21 designs: 6 below plus 15 in section 4), so the runs below compare like
@@ -621,4 +625,265 @@ settings: today's layouts and renderer, for all 21 designs.
   search); `tools/is05b-measure.mjs` (the 21 designs, a pluggable renderer);
   `tools/is05b-results.mjs` (parts `picks`, `giraffe-eyes`, `unchanged`, `before-after`,
   `renderer-after`); `tools/tinted-comparison.mjs` (fixtures, runs dir).
+
+## 7. Second follow-up: Alex's decisions (20 Oct 2026)
+
+No provider call. Every layout below was made again by the strass service from its saved AI image
+(`scripts/is05b_runs.py`, variants `default-no-sample` and `default`); numbers and images by
+`tools/is05b-followup2.mjs` (`numbers-2.json`). The `default-no-sample` layouts are identical,
+stone for stone, to the `default` layouts of section 6 on all 21 designs, so "before" below is the
+start of this round.
+
+### 7.1 Colours read at the delivered stones
+
+**Change** (IS's strass copy, recorded in `services/strass/ORIGIN.md`): new rule `sample_delivered`,
+on in `DEFAULT`, off in `PROTOTYPE` and the `BUILD_*` rules (so the equivalence test against the
+prototype is unchanged). Each stone's colour is read from the AI image at its **delivered** position
+after the ordered layout, from the **inner 60 % of its radius**, instead of at the detection it came
+from; fill stones read their own pixels too, instead of the nearest detection's colour (first fill)
+or their neighbours' most common colour (second fill). A tiled big stone's catch-light keeps its
+colour. The keep-or-drop decisions still read the detections, so no stone moves.
+
+**Why the inner 60 %.** The first version read the whole disc of the delivered stone (the rule the
+detections are read with). That made the mug much worse: its AI image paints the gaps dark (L\* 14
+between stones of L\* 78), and a full SS6 disc, larger than the stone the AI drew or moved off it,
+reaches into them. Mean ΔE (b) / cells, on four designs:
+
+| | at the detections (before) | whole disc | inner 60 % (chosen) | inner 80 % |
+| --- | --- | --- | --- | --- |
+| mug-rule | 3.25 / 6.40 | 7.14 / 10.08 | 3.22 / 6.36 | 3.27 / 6.39 |
+| cat-rule | 6.35 / 6.25 | 7.29 / 6.88 | 6.29 / 6.45 | 6.36 / 6.39 |
+| car-rule | 9.38 / 10.23 | 7.86 / 9.40 | 6.89 / 8.72 | 7.08 / 8.79 |
+| rs-portrait | 8.06 / 7.77 | 6.84 / 7.62 | 6.71 / 6.81 | 6.62 / 6.82 |
+
+(cells here with today's renderer.) 60 % and 80 % tie on the cells; 60 % is how this document reads
+"the AI colour under a stone" (section 2).
+
+**Unchanged** (`default-no-sample` against `default`, all 21 designs): stone positions and sizes,
+`face`, `pupilsMm`, `pupilsAtMm`, `bySize`, `violations`, `coverage`, `minGapMm` and
+`largestEmptyCircleMm` are identical on every design. Only colours change (column "colours changed"
+below). Test: `tests/test_is05b.py` `SampleDelivered` (cat and woman).
+
+**Per stone** (delivered stones, section 2's measures; (c) is the inner 60 % of the rendered stone).
+"Before" is the layout before this round with the renderer before this round; "sampling only" is
+the new layout with the same renderer; "after" is the new layout with today's renderer (7.2, 7.3):
+
+| Design | stones | colours changed | (a) | (b) before / after | (c) before / sampling only / after | (c) p90 before / after |
+| --- | --- | --- | --- | --- | --- | --- |
+| dog-rule | 2049 | 38 | 7.24 | 7.66 / 7.58 | 12.13 / 12.08 / **9.83** | 23.3 / 16.8 |
+| dog-norule | 2092 | 25 | 6.50 | 6.92 / 6.90 | 11.21 / 11.23 / **9.28** | 19.3 / 13.8 |
+| cat-rule | 3573 | 445 | 5.59 | 6.35 / 6.29 | 7.06 / 6.78 / **5.85** | 12.8 / 9.9 |
+| cat-norule | 3141 | 602 | 6.74 | 8.08 / 7.60 | 7.85 / 7.79 / **6.96** | 12.6 / 11.2 |
+| mug-rule | 1751 | 17 | 3.18 | 3.25 / 3.22 | 4.25 / 4.25 / **3.87** | 14.5 / 12.2 |
+| mug-norule | 2224 | 124 | 3.01 | 3.20 / 3.38 | 5.47 / 5.57 / **4.65** | 14.1 / 11.6 |
+| giraffe-rule | 2282 | 82 | 10.22 | 11.10 / 10.93 | 13.37 / 13.31 / **11.98** | 21.5 / 17.3 |
+| dachshund-rule | 1626 | 5 | 8.70 | 9.04 / 9.04 | 16.74 / 16.73 / **13.45** | 22.2 / 16.4 |
+| car-rule | 3531 | 376 | 6.73 | **9.38 / 6.89** | 11.14 / 8.56 / **7.32** | 18.9 / 13.4 |
+| rs-cat | 2150 | 68 | 4.88 | 5.50 / 5.40 | 8.82 / 8.71 / **6.81** | 15.8 / 11.3 |
+| rs-dog | 1671 | 37 | 3.64 | 4.32 / 4.20 | 6.56 / 6.46 / **4.99** | 13.7 / 11.5 |
+| rs-einstein | 3590 | 120 | 5.85 | 7.04 / 7.01 | 12.12 / 12.30 / **9.69** | 18.7 / 15.2 |
+| rs-jesus | 3296 | 109 | 5.17 | 5.94 / 5.81 | 8.76 / 8.78 / **7.13** | 18.3 / 14.0 |
+| rs-lake | 4087 | 547 | 7.71 | 8.59 / 8.53 | 13.16 / 12.67 / **10.36** | 24.2 / 19.1 |
+| rs-leopard | 2431 | 169 | 5.12 | 5.87 / 5.56 | 8.12 / 7.67 / **6.68** | 17.5 / 14.9 |
+| rs-logo | 833 | 30 | 3.42 | 3.57 / 3.42 | 5.43 / 5.49 / **4.18** | 11.0 / 7.4 |
+| rs-parrot | 2542 | 239 | 8.64 | 9.35 / 8.99 | 13.51 / 12.83 / **11.68** | 18.8 / 17.1 |
+| rs-portrait | 3995 | 420 | 5.66 | **8.06 / 6.71** | 8.25 / 6.42 / **6.02** | 16.0 / 10.8 |
+| rs-rose | 1846 | 37 | 7.95 | 8.05 / 7.98 | 16.03 / 16.01 / **13.49** | 19.2 / 14.8 |
+| rs-tulips | 2673 | 135 | 9.14 | 9.38 / 9.34 | 15.92 / 15.85 / **13.41** | 27.8 / 22.3 |
+| rs-woman | 2612 | 10 | 6.36 | 7.02 / 7.01 | 11.69 / 11.67 / **9.84** | 18.6 / 15.4 |
+| **mean** | | | 6.26 | 7.03 / 6.75 | 10.36 / 10.05 / **8.45** | |
+
+The service's colours (b) improve or stay on 20 of 21 designs; mug-norule is 0.18 worse. Section
+6.3 predicted the gain where stones move: the car (−2.5) and the portrait (−1.4) close most of
+their gap to the nearest catalogue colour (a). Elsewhere few stones move, and the change is small.
+
+**Downsampled** (2 mm cells against the AI's stone colours, section 6.4's measure):
+
+| Design | AI stones: before | sampling only | after | AI as drawn: before | after |
+| --- | --- | --- | --- | --- | --- |
+| dog-rule | 9.46 | 9.41 | **9.26** | 8.58 | 8.30 |
+| dog-norule | 9.15 | 9.15 | **9.02** | 7.69 | 7.48 |
+| cat-rule | 6.06 | 6.25 | **6.45** | 8.01 | 7.37 |
+| cat-norule | 6.54 | 6.39 | **6.37** | 10.78 | 10.55 |
+| mug-rule | 6.03 | 6.00 | **6.36** | 18.15 | 17.81 |
+| mug-norule | 6.58 | 6.53 | **6.89** | 16.96 | 16.71 |
+| giraffe-rule | 11.83 | 11.76 | **11.68** | 9.28 | 9.32 |
+| dachshund-rule | 10.65 | 10.64 | **10.52** | 10.28 | 10.14 |
+| car-rule | 10.38 | 8.84 | **8.72** | 12.29 | 10.33 |
+| rs-cat | 6.50 | 6.43 | **6.47** | 5.78 | 5.72 |
+| rs-dog | 6.12 | 6.04 | **6.23** | 5.80 | 5.40 |
+| rs-einstein | 9.03 | 9.03 | **8.86** | 7.98 | 7.81 |
+| rs-jesus | 7.61 | 7.58 | **7.47** | 6.36 | 6.18 |
+| rs-lake | 9.65 | 9.69 | **9.56** | 8.62 | 8.35 |
+| rs-leopard | 8.96 | 8.87 | **8.82** | 7.35 | 7.20 |
+| rs-logo | 6.19 | 6.13 | **6.00** | 5.93 | 5.83 |
+| rs-parrot | 11.88 | 11.65 | **11.63** | 10.63 | 9.92 |
+| rs-portrait | 7.73 | 6.72 | **6.81** | 10.45 | 8.91 |
+| rs-rose | 11.49 | 11.55 | **11.66** | 11.37 | 11.56 |
+| rs-tulips | 11.87 | 11.74 | **11.59** | 10.36 | 10.07 |
+| rs-woman | 8.79 | 8.79 | **8.90** | 7.87 | 7.85 |
+| **mean** | 8.69 | 8.53 | **8.54** | 9.55 | 9.18 |
+
+The sampling change alone takes the cell mean from 8.69 to 8.53 (car −1.5, portrait −1.0; cat-rule
++0.2 is the one clear loss). The renderer changes (7.2, 7.3) are neutral on this measure overall
+(8.53 → 8.54): darker centres help the dark designs, the 8 L\* near-white gaps cost the mug +0.4,
+as darker gaps always do on this measure (section 6.4). Against the AI image as drawn the mean goes
+9.55 → 9.18.
+
+Images: AI image, plain and tinted, before (top) and after (bottom) the sampling change; both
+tinted with today's renderer, so only the colours differ.
+
+#### car
+
+![car: before and after the sampling change](IS-05b-results/sample-car.jpg)
+
+The wheels, door lines and window frames are darker and read as in the AI image.
+
+#### dog
+
+![dog: before and after the sampling change](IS-05b-results/sample-dog.jpg)
+
+#### portrait
+
+![portrait: before and after the sampling change](IS-05b-results/sample-portrait.jpg)
+
+The hair is dark with defined curls instead of grey patches.
+
+#### woman
+
+![woman: before and after the sampling change](IS-05b-results/sample-woman.jpg)
+
+10 stones change; the woman's stones barely move in the ordered layout.
+
+### 7.2 Tinted stones: the central highlight
+
+**Change** (`src/render/tinted.js`, spec section 8 step 6): the lightness step now works in two
+zones. First the **inner 60 %** of the radius, where the RS renderer puts its highlight: its mean
+L\* is brought to within 4 of the catalogue fill's. Then the **whole stone** to within 2, by
+changing the stone evenly when that keeps the inner zone within 4, else only outside it. Darkening
+scales linear RGB, lightening screens towards white; the change fades out over 0.2 radii, so no
+ring shows. The RS renderer is unchanged.
+
+Renderer fidelity per colour (patch of 36 SS6 stones at 16 px per mm; mean L\* of the inner 60 %
+and of the whole stone; facet spread = 5th to 95th percentile L\* inside a stone):
+
+| Colour | fill L\* | inner 60 % before / after | whole before / after | spread before / after |
+| --- | --- | --- | --- | --- |
+| jet | 6 | 7.4 / **5.2** | 8.3 / 8.3 | 49 / 49 |
+| indian-siam | 19 | 31.7 / **23.4** | 21.4 / 18.6 | 55 / 42 |
+| hematite | 27 | 39.5 / **30.7** | 28.7 / 25.5 | 55 / 42 |
+| smoked-topaz | 29 | 41.4 / **33.0** | 30.7 / 27.3 | 55 / 42 |
+| graphite | 41 | 51.6 / **44.7** | 41.1 / 38.6 | 53 / 42 |
+| copper | 55 | 62.1 / **58.5** | 53.0 / 52.8 | 45 / 38 |
+| rose-gold | 66 | 71.4 / **68.0** | 63.6 / 63.6 | 38 / 32 |
+| silk | 77 | 81.4 / **80.0** | 74.9 / 74.9 | 31 / 29 |
+| silver | 88 | 90.5 / **90.8** | 85.9 / 85.9 | 23 / 23 |
+| crystal | 96 | 96.8 / **97.1** | 94.4 / 94.4 | 14 / 14 |
+
+Over all 47 colours, the worst single stone's inner 60 % is 4.2 L\* from its fill (13.6 before) and
+its whole stone 2.05 (2.11 before). The facet spread stays at 13–49 L\* (crystal, the palest, 13), so
+facets, highlight and sparkle stay visible; on mid-dark stones it drops from about 55 to 42 because
+the highlight is less bright. Test (`tools/test-exports.mjs`): every stone of every colour at 6 and
+16 px per mm within 3 L\* as a whole and 5 in its inner 60 %, spread at least 5.
+
+Per stone, (c) on the 21 designs: mean 10.05 → 8.45, every design better (table in 7.1, "sampling
+only" → "after", which also includes 7.3).
+
+Eye close-ups at 30 px per mm: plain, tinted before, tinted after (same layout):
+
+#### portrait
+
+![portrait eyes: plain, tinted before, tinted after](IS-05b-results/eyes2-portrait.jpg)
+
+#### woman
+
+![woman eyes: plain, tinted before, tinted after](IS-05b-results/eyes2-woman.jpg)
+
+The brown and grey stones around the eyes lose their pale centres; the hair and skin read as their
+catalogue colours. Jet and the light skin stones barely change.
+
+### 7.3 Gaps on near-white
+
+**Change** (spec section 8 step 3, `GAP_RULE.lightAbove` 85, `lightMinStep` 8): a fill above
+L\* 85 gets a gap at least 8 L\* darker; the rest of the rule is kept (4 L\* + 0.05 per L\* above 80).
+Three catalogue colours are affected:
+
+| Colour | fill L\* | gap step before | after |
+| --- | --- | --- | --- |
+| crystal clear | 96.5 | −4.9 | −8.1 |
+| crystal | 96.4 | −4.8 | −8.0 |
+| silver | 87.9 | −5.6 | −9.3 |
+
+(Silver's step is past 8 by 8-bit rounding.) The mug, the design with the most near-white stones
+(1237 of 1751), before and after (same layout and stones, only the gap rule differs):
+
+![mug: AI image, tinted before, tinted after](IS-05b-results/mug-gaps.jpg)
+
+Close-up, 16 mm square at 30 px per mm:
+
+![mug close-up: plain, tinted before, tinted after](IS-05b-results/mug-gaps-close.jpg)
+
+The stones now read as separate stones. On the cell measure the mug pays +0.4 (7.1), the cost
+section 6.4 found for any darker gap.
+
+### 7.4 Rendering off the main thread
+
+`src/render/offthread.js` runs the full tinted render (the "Preparing files" stage), the browser's
+preview and the delivery ZIP build in one worker thread (`worker_threads`,
+`src/render/offthread-worker.js`); jobs queue in the worker. The worker starts on the first job and
+does not keep the process alive when idle; a worker that dies fails its pending jobs and the next
+job starts a new one. The design pipeline and the web routes await it.
+
+On the fake layout (2150 stones) those jobs take 3.8 s (full render), 0.7 s (preview) and 0.3 s
+(ZIP files) of CPU, all on the event loop before. The keep-alive workaround in
+`tools/test-pipeline.mjs` (`server.keepAliveTimeout = 60_000`) is removed: the server no longer
+stalls. New test there: polls every 20 ms during the design's render, a cold preview render and the
+ZIP build; every poll must be answered within 200 ms (with the render on the main thread no poll is
+answered during it, and the test fails).
+
+### 7.5 Leak test and AI image metadata
+
+`tools/test-no-provider-leak.mjs` (part of `npm test`, word list `tools/leak-words.mjs`):
+
+- a fake design (colour and black & white) end to end over HTTP: every page and static file under
+  `public/`, `/api/config`, `/health`, upload, session, Create design and every poll, the tinted
+  and original views, "Use this design", the download states, the ZIP, and refusals (the test
+  requires at least 40 responses). Every body and header is checked;
+- every file by type: PNG (every chunk; text, iTXt/XMP, zTXt and iCCP inflated; any metadata chunk
+  fails: tEXt, zTXt, iTXt, eXIf, iCCP, tIME, caBX/C2PA, anything not pixels, `pHYs` or the canvas's
+  numeric `sRGB`/`sBIT`), JPEG (APP and comment segments), PDF (every stream inflated, no XMP
+  metadata stream, Producer and Creator `IS`), ZIP (entry names, comments, extra fields, every entry
+  by its type), text (SVG/HTML comments, DXF 999 comments, PostScript `%` lines);
+- a scripted provider whose PNG carries tEXt, XMP, EXIF and C2PA chunks naming it, and whose
+  failed and declined errors name it: nothing reaches the browser, and its archived `ai.png` holds
+  only `IHDR`, `IDAT`, `IEND`;
+- nothing is written under `public/`.
+
+Sanity checks: a planted word in the ZIP's README fails the test; the scanners find planted words
+in an SVG comment and in each metadata chunk.
+
+**AI image metadata.** `src/prep/pngmeta.js`: the AI image is archived with only the chunks of its
+pixels (`IHDR`, `PLTE`, `tRNS`, `IDAT`, `IEND`), byte for byte, so the decoded pixels are unchanged
+(tested); an answer that is not a PNG is re-encoded as one without metadata. The layout service gets
+the same stripped PNG. Spec 4.2 and 12 updated.
+
+**Not changed, for Alex:** the 12 RS test images in `services/strass/prototype/img/` (unchanged RS
+copies, used by the equivalence and golden tests) carry a C2PA `caBX` chunk. They are never sent
+to a buyer; stripping them would change files `ORIGIN.md` lists as unchanged copies.
+
+### 7.6 Changes made
+
+- Service (`services/strass`, `ORIGIN.md`): rule `sample_delivered` (on in `DEFAULT`),
+  `SAMPLE_SHARE`, `delivered_lab`, `_delivered_colours` in `ordered.py`, the second fill in
+  `post.py`; `test_build_j.py` compares with the rule off; `SampleDelivered` in `test_is05b.py`;
+  variant `default-no-sample` in `scripts/is05b_runs.py`.
+- IS: `src/render/tinted.js` (two-zone `keepStoneLightness`, `STONE_LIGHTNESS`, `GAP_RULE`
+  near-white step; `nearestStones` returns the scale); `src/render/offthread.js` and
+  `offthread-worker.js`, used by `src/pipeline/design.js` and `src/server/webapp.js`;
+  `src/prep/pngmeta.js`, used by `design.js`.
+- Tests: `tools/test-exports.mjs` (gap rule, inner 60 %), `tools/test-pipeline.mjs` (poll latency,
+  keep-alive workaround removed), new `tools/test-no-provider-leak.mjs`.
+- Tools: `tools/is05b-followup2.mjs`; `prepareDesign` takes a run variant; the comparison
+  document re-rendered (`docs/IS-05-tinted-comparison.md`).
+- Spec: 4.2, 7.4, 8 (steps 3 and 6, why, implementation), 9, 12.
 
