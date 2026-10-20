@@ -30,6 +30,7 @@ async function start({ env = { IS_FAKE: "1" }, pipelineDeps = null } = {}) {
   const config = {
     ...loadConfig(env),
     archiveDir: path.join(root, "archive"),
+    deliveryDir: path.join(root, "delivery"),
     tmpDir: path.join(root, "tmp"),
     ipKeyFile: path.join(root, "ip-hash.key")
   };
@@ -139,6 +140,76 @@ test("fake mode: black & white uses Jet and Crystal only; 3 designs per code", a
     assert.equal((await srv.poll(code, 3)).body.designsLeft, 0);
   } finally {
     await srv.stop();
+  }
+});
+
+// A poll timed from just before it is sent: { ms, body }.
+async function timedPoll(env, code, n) {
+  const t0 = performance.now();
+  const { body } = await env.poll(code, n);
+  return { ms: performance.now() - t0, body };
+}
+
+// Polls every 20 ms while busy() is true; their times.
+async function pollWhile(env, code, n, busy) {
+  const times = [];
+  while (busy()) {
+    times.push((await timedPoll(env, code, n)).ms);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  return times;
+}
+
+test("renders run off the main thread: a poll is answered within 200 ms while one runs", async () => {
+  const env = await start();
+  try {
+    const { code } = await env.upload();
+    const created = await env.create(code, SETTINGS);
+    const n = created.body.attempt;
+
+    // The design's full render ("Preparing files"): polls sent once that stage was seen, while it
+    // is still running.
+    let first;
+    do first = await timedPoll(env, code, n);
+    while (first.body.status !== "done" && first.body.stage !== "files");
+    const during = [];
+    for (;;) {
+      const p = await timedPoll(env, code, n);
+      if (p.body.status !== "running") break;
+      during.push(p.ms);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    assert.equal((await env.poll(code, n)).body.status, "done");
+    assert.ok(during.length >= 5, `${during.length} polls during the render`);
+    assert.ok(Math.max(...during) < 200, `render: slowest poll ${Math.max(...during).toFixed(0)} ms`);
+
+    // The watermarked preview, rendered on first request.
+    let previewDone = false;
+    const preview = fetch(`${env.url}/api/attempts/${code}/${n}/tinted.png`).then(async (r) => {
+      await r.arrayBuffer();
+      previewDone = true;
+      return r.status;
+    });
+    const previewTimes = await pollWhile(env, code, n, () => !previewDone);
+    assert.equal(await preview, 200);
+    assert.ok(previewTimes.length >= 3, `${previewTimes.length} polls during the preview`);
+    assert.ok(Math.max(...previewTimes) < 200, `preview: slowest poll ${Math.max(...previewTimes).toFixed(0)} ms`);
+
+    // The delivery ZIP, built when the code becomes paid.
+    let paidDone = false;
+    const paid = fetch(`${env.url}/api/test/payment/${code}`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ state: "paid" })
+    }).then(async (r) => {
+      paidDone = true;
+      return (await r.json()).state;
+    });
+    const zipTimes = await pollWhile(env, code, n, () => !paidDone);
+    assert.equal(await paid, "ready");
+    assert.ok(existsSync(path.join(env.config.deliveryDir, code, `${code}.zip`)));
+    assert.ok(zipTimes.length >= 3, `${zipTimes.length} polls during the ZIP build`);
+    assert.ok(Math.max(...zipTimes) < 200, `ZIP: slowest poll ${Math.max(...zipTimes).toFixed(0)} ms`);
+  } finally {
+    await env.stop();
   }
 });
 

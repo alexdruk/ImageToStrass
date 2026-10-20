@@ -4,7 +4,8 @@ import { getStoneSize, listAllStoneSizes } from "../stones/StoneSizes.js";
 
 // Natural size (spec section 7.5): every design is delivered at the size the layout service measured,
 // built by naturalLayout() below. The one change to the measured stones is the size cap (D2): every
-// stone larger than SS16 (the service's SS20 and SS30 pupils) becomes SS16 at the same centre.
+// stone larger than SS16 (the service's SS20 and SS30 pupils) becomes SS16 at the same centre, except
+// a face's two pupils (pupilCentres below), which may stay SS20 (an SS30 pupil becomes SS20).
 // Shrinking a stone only widens its gaps, so the cap never creates an overlap; the gap check runs
 // on the capped stones anyway.
 //
@@ -23,10 +24,13 @@ export const TIERS = Object.freeze([1.0, 1.4, 2.0, 2.35, 3.2]);
 export const MIN_GAP_MM = 0.1;
 export const LAYER_ID = "design";
 export const MAX_STONE_SIZE_ID = "ss16";
+export const MAX_PUPIL_SIZE_ID = "ss20";
 
 const EPS = 1e-9;
 const SIZES = listAllStoneSizes(); // ascending diameter, SS4 included
 const MAX_D = getStoneSize(MAX_STONE_SIZE_ID).diameterMm;
+const MAX_PUPIL_D = getStoneSize(MAX_PUPIL_SIZE_ID).diameterMm;
+const PUPIL_MATCH_MM = 0.002;
 
 // The largest standard size whose diameter is at most d (the smallest size if d is below it).
 export function snapDown(d) {
@@ -132,24 +136,35 @@ export function toStoneLayout(stones, r) {
   return { stoneLayout: new StoneLayout({ layerId: LAYER_ID, sourceMode: "is", stones: placed }), stones: placed };
 }
 
-// Plain { x, y, d, color } stones -> { stones, capped }: every diameter above SS16 set to SS16.
-export function capStoneSizes(stones) {
+// The centres [x, y] of the stones that may stay SS20: the pupils the layout service reports
+// (report.pupilsAtMm), when it found a face (report.face set) and exactly two pupils. Otherwise none.
+export function pupilCentres(layout) {
+  const report = layout?.report;
+  if (!report || report.face == null || !Array.isArray(report.pupilsAtMm) || report.pupilsAtMm.length !== 2) return [];
+  return report.pupilsAtMm;
+}
+
+// Plain { x, y, d, color } stones -> { stones, capped }: every diameter above SS16 set to SS16, but a
+// stone centred on one of `pupils` ([x, y], from pupilCentres) only capped at SS20.
+export function capStoneSizes(stones, pupils = []) {
   let capped = 0;
   const out = stones.map((s) => {
-    if (s.d <= MAX_D + EPS) return s;
+    const isPupil = pupils.some(([x, y]) => Math.hypot(s.x - x, s.y - y) <= PUPIL_MATCH_MM);
+    const max = isPupil ? MAX_PUPIL_D : MAX_D;
+    if (s.d <= max + EPS) return s;
     capped++;
-    return { ...s, d: MAX_D };
+    return { ...s, d: max };
   });
   return { stones: out, capped };
 }
 
 // layout service answer -> { stoneLayout, gaps, capped } at the natural size: positions as measured,
-// diameters as measured but capped at SS16 (capped = how many changed), moved so the footprint box
-// of the capped stones starts at the origin.
+// diameters as measured but capped (capStoneSizes; capped = how many changed), moved so the footprint
+// box of the capped stones starts at the origin.
 export function naturalLayout(layout) {
   const measured = stonesOfLayout(layout);
   if (measured.length === 0) throw new Error("The layout has no stones.");
-  const { stones: natural, capped } = capStoneSizes(measured);
+  const { stones: natural, capped } = capStoneSizes(measured, pupilCentres(layout));
   const { stoneLayout, stones } = toStoneLayout(natural, 1);
   return { stoneLayout, gaps: checkGaps(stones), capped };
 }

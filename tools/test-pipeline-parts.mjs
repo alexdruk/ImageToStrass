@@ -232,6 +232,22 @@ test("natural layout: stones above SS16 become SS16 at the same centre, the box 
   assert.equal(naturalLayout({ stones: [[0, 0, "ss30", "jet"], [6, 0, "ss30", "jet"]] }).gaps.ok, true);
 });
 
+test("natural layout: a face's two reported pupils may stay SS20; everything else is capped at SS16", () => {
+  const stones = [[10, 10, "ss30", "jet"], [30, 10, "ss20", "jet"], [50, 10, "ss30", "jet"], [70, 10, "ss20", "jet"]];
+  const pupils = [[10, 10], [30, 10]];
+  const sizes = (report) => naturalLayout({ stones, report }).stoneLayout.stones.map((s) => s.sizeMm);
+  // Face set, two pupils: SS30 pupil -> SS20, SS20 pupil stays; the other two -> SS16.
+  assert.deepEqual(sizes({ face: "human", pupilsMm: [6.4, 4.7], pupilsAtMm: pupils }), [4.7, 4.7, 4, 4]);
+  assert.equal(naturalLayout({ stones, report: { face: "animal", pupilsAtMm: pupils } }).capped, 3);
+  // No face, one or three pupils, or an old layout without positions: the SS16 cap for all.
+  assert.deepEqual(sizes({ face: null, pupilsMm: [], pupilsAtMm: pupils }), [4, 4, 4, 4]);
+  assert.deepEqual(sizes({ face: "animal", pupilsAtMm: [[10, 10]] }), [4, 4, 4, 4]);
+  assert.deepEqual(sizes({ face: "animal", pupilsAtMm: [...pupils, [50, 10]] }), [4, 4, 4, 4]);
+  assert.deepEqual(sizes({ face: "human", pupilsMm: [6.4, 6.4] }), [4, 4, 4, 4]);
+  // A pupil position matches its stone only at the same centre.
+  assert.deepEqual(sizes({ face: "human", pupilsAtMm: [[10.01, 10], [30, 10]] }), [4, 4.7, 4, 4]);
+});
+
 // A w x h RGBA PNG, transparent except an opaque rectangle.
 function cutout(w, h, rect) {
   const data = Buffer.alloc(w * h * 4);

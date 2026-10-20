@@ -3,7 +3,12 @@
 
 See docs/specifications/IMG-026-StrassLayoutService.md, "Skin and fur tones (build J)" and the
 Build J acceptance figures.
+
+IS (IS-05b): DEFAULT has soft_outlines off, so it is compared with BUILD_I with soft_outlines off.
+IS (IS-05b): DEFAULT's sample_delivered recolours stones everywhere, so DefaultAgainstBuildI runs
+DEFAULT with it off (test_is05b.SampleDelivered checks that it changes only colours).
 """
+import dataclasses
 import unittest
 
 import numpy as np
@@ -46,8 +51,8 @@ class DefaultAgainstBuildI(unittest.TestCase):
         changed = 0
         for name in IMAGES:
             with self.subTest(image=name):
-                i = support.layout_result(name, BUILD_I)
-                j = support.layout_result(name, DEFAULT)
+                i = support.layout_result(name, dataclasses.replace(BUILD_I, soft_outlines=False))  # IS (IS-05b)
+                j = support.layout_result(name, dataclasses.replace(DEFAULT, sample_delivered=False))  # IS (IS-05b)
                 ri, rj = i["report"], j["report"]
                 self.assertEqual(rj["violations"], 0)
                 self.assertGreaterEqual(rj["minGapMm"], MIN_GAP_MM)

@@ -2,7 +2,13 @@
 
 Status: spec, 18 Oct 2026. Revised 18 Oct 2026 (IS-03b): no size choice, every design is delivered
 at its natural size. Revised 19 Oct 2026 (IS-04): EPS written by IS (no Ghostscript), overlap
-cleanup after the SS16 cap, acceptance on the IS gap check.
+cleanup after the SS16 cap, acceptance on the IS gap check. Revised 19 Oct 2026 (IS-05b): a face's
+two pupils may stay SS20; designs whose pupils are not one plausible pair get no eye stage. Revised
+19 Oct 2026 (IS-05b follow-up): of more than two pupils, the one plausible pair is kept; tinted
+view: stones keep their catalogue lightness, gaps 4 L* darker (section 8). Revised 20 Oct 2026 (IS-05b,
+second follow-up): stone colours read at the delivered stones (7.4); a stone's inner 60 % held to its
+catalogue lightness, near-white gaps 8 L* darker (section 8); renders and ZIP builds in a worker thread;
+AI images archived without metadata (4.2); the section 12 test exists.
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -39,7 +45,7 @@ disclosure in generic words (section 11.1).
 | # | Decision |
 | --- | --- |
 | D1 | The buyer does not choose a size. Every design is delivered at its **natural size**, exactly as the strass service measures it (section 7.5), shown as width × height in mm and in. |
-| D2 | **SS6** is the main stone size, with occasional **SS4**, **SS10** and **SS16** allowed; nothing larger than SS16 (the layout service's SS20 and SS30 pupils are capped to SS16, section 7.5). No tier multiples in the UI, the result data or the ZIP. |
+| D2 | **SS6** is the main stone size, with occasional **SS4**, **SS10** and **SS16** allowed; nothing larger than SS16, except the two pupils of a face, which may be **SS20** (IS-05b): the layout service's SS30 pupils become SS20, every other stone above SS16 becomes SS16 (section 7.5). No tier multiples in the UI, the result data or the ZIP. |
 | D3 | Black & white means **Jet + Crystal only**. |
 | D4 | The buyer sees only two views: **Original** and **Tinted** (section 8). No mask, AI image, overlay or 3D view. |
 | D5 | At most 3 designs per code. A design that fails for technical reasons, or is declined by the safety check, does not count. |
@@ -148,7 +154,8 @@ data/archive/<code>/                         kept forever (D7)
   attempt-<n>/original.<ext>                 copy of the upload the attempt was made from
   attempt-<n>/prepared.png                   after background removal and adjustments
   attempt-<n>/settings.json
-  attempt-<n>/ai.png                         provider output
+  attempt-<n>/ai.png                         provider output, without metadata (only the chunks of its
+                                             pixels: IHDR, PLTE, tRNS, IDAT, IEND; section 12)
   attempt-<n>/layout.json                    layout service response
   attempt-<n>/stones.json                    final StoneLayout at natural size, after bw mapping
   attempt-<n>/tinted.png                     full-resolution tinted render
@@ -273,6 +280,12 @@ than 3 % of the stones, the coverage after the cleanup is at least 0.5, the IS g
 violations and at least 300 stones are left; otherwise the whole attempt is re-run once
 automatically and does not count (D5).
 
+Stone colours (IS's strass copy, rule `sample_delivered`, on in `DEFAULT`, IS-05b): the service reads
+each stone's colour from the AI image at the stone's delivered position, from the inner 60 % of its
+radius, after its ordered layout has moved it, instead of at the detection it came from; the stones it
+adds to fill holes read their own pixels too. RS 38cd831 reads them at the detections and gives fill stones the nearest
+detection's or their neighbours' colour (`services/strass/ORIGIN.md`, `docs/IS-05b-results.md`).
+
 ### 7.5 Size (D1, D2)
 
 Natural size only. The design is the layout service's answer as it is: stone positions and
@@ -280,12 +293,20 @@ diameters as measured (`targetPitchMm` 2.1, SS6 main stones), only moved so the 
 box starts at the origin. No scaling, no minimum or maximum size. IS-03 measured natural longest
 sides of 130–168 mm on the 12 RS test layouts.
 
-Size cap (D2): after the layout, every stone larger than SS16 (the service's SS20 and SS30 pupil
-stones) is snapped down to SS16 at the same centre; the footprint box is that of the capped stones.
-Shrinking a stone only widens its gaps, so the cap never creates an overlap. The number of capped
-stones goes to the design's event log (server only). The 12 RS test layouts have 13 such stones,
-the 8 accepted IS-03b designs 11 (2 in each dog, cat and dachshund design, 1 in the giraffe, none in
-the mugs).
+Size cap (D2): after the layout, every stone larger than SS16 is snapped down to SS16 at the same
+centre, except the pupil stones of a face: when the service's report has `face` set (not null) and
+exactly two pupils in `pupilsAtMm` (IS-05b; the pupil stones' centres), the stones at those two
+centres are only capped at SS20 (an SS30 pupil becomes SS20, an SS20 pupil stays). The service
+sets `face` to null, and places no eye stones, when its pupils are not one plausible pair (two of
+very different sizes, far from level or too far apart for the subject; of more than two, none or
+several plausible pairs: the IS-03b car's wheels gave 19 "pupils" and 31 plausible pairs). Of more
+than two pupils with exactly one plausible pair, that pair is kept and the others are laid out as
+ordinary stones (the IS-03b giraffe: its two eyes kept, the false pupils on an ossicone and the
+neck dropped). A layout without `pupilsAtMm` gets the SS16 cap for every
+stone. The footprint box is that of the capped stones. Shrinking a stone only widens its gaps, so
+the cap never creates an overlap. The number of capped stones goes to the design's event log
+(server only). Why SS20: capped to SS16, a pupil sits small inside the gap the service left for
+it, and the tinted view paints a black ring around it (`docs/IS-05b-results.md`).
 
 Overlap cleanup (`src/pipeline/cleanup.js`), after the cap: for every pair of stones whose rim gap
 (centre distance minus both radii) is below 0.1 mm, the smaller stone is removed; on equal size the
@@ -301,7 +322,8 @@ rasterised at the service's 10 px per mm. It includes the cap's shrinking.
 The IS gap check (`findOverlappingStonePairs` from StoneLayout.js and a min-gap check of 0.1 mm)
 then runs on the cleaned layout, and acceptance (7.4) uses its result. The rejected IS-03b car (148
 service violations, 145 after the cap) loses 79 SS4 stones of 3716 (2.1 %), its coverage goes from
-0.633 to 0.624, and it is accepted. The cleanup removes nothing from the 12 RS test layouts and the
+0.633 to 0.624, and it is accepted. (Those numbers are the RS 38cd831 rules; with IS-05b's
+plausible-pupil rule the car gets no eye stage and the cleanup removes nothing from it.) The cleanup removes nothing from the 12 RS test layouts and the
 8 accepted IS-03b designs.
 
 The stone-size tier code (`applyTier` in `src/pipeline/tiers.js`: scale positions and diameters by a
@@ -329,18 +351,48 @@ Definition (from the RS 30 Sep decision, sharpened here):
 1. The canvas covers the design's bounding box plus a margin of 2 main-stone diameters.
 2. Every pixel that is not inside a stone takes the colour of its **nearest stone**, measured to
    the stone's edge (`distance to centre − radius`), so large pupil stones claim their own gaps.
-3. That colour is the stone's catalogue fill **darkened to 85 % brightness** (each sRGB channel
-   × 0.85).
+3. That colour is the stone's catalogue fill **darkened by 4 L\*, plus 0.05 L\* per L\* above 80,
+   and by at least 8 L\* when the fill's L\* is above 85** (CIE L\*: a fill of L\* 70 is darkened by 4,
+   silver (L\* 88) and crystal (L\* 96) by 8). The fill's linear RGB is scaled so the gap has that
+   L\* (its hue is kept), rounded to 8 bits so the step is never less than the rule's. Every gap is
+   thus at least 4 L\* darker than its stone, the darkest (jet, L\* 6) included, and at least 8 on
+   near-white fills, whose 4–5 L\* gaps were hard to see.
 4. A pixel is filled only if its distance to that stone's centre is at most **1.6 × the stone's
    radius**. Beyond that (the design's outer edge and true holes) the background shows: white in
    the app, transparent in the PNG file.
 5. The stones are drawn on top with the RS faceted crystal renderer
-   (`CrystalStoneRenderer.drawCrystalStone`, deterministic per-stone appearance).
+   (`CrystalStoneRenderer.drawCrystalStone`, deterministic per-stone appearance; the RS file is
+   unchanged).
+6. Each drawn stone's lightness is brought to its catalogue fill's L\*, over the pixels whose
+   centre lies inside its disc, in two zones. First the **inner 60 %** of the radius, where the
+   renderer puts its highlight: its mean L\* is brought to within **4** of the fill's. Then the
+   **whole stone**: its mean L\* is brought to within **2**, by changing the whole stone evenly when
+   that keeps the inner zone within 4, else only outside the inner zone. A zone drawn too light (the
+   central highlight of mid-dark and dark stones, and jet's light rim) has its linear RGB scaled
+   down; one drawn too dark (crystal, silver) is screened towards white. The change fades out over a
+   ring of 0.2 radii outside the inner zone, so no edge shows. The facets, highlights and sparkle
+   keep their relative contrast; a stone already within both is left as drawn. Every stone is so
+   within 3 L\* of its fill as a whole and within 5 in its inner 60 % (8-bit rounding included).
 
 The result reads as a solid, painted picture, close to what the buyer expects from the photo.
 
+Why these values (IS-05b, `docs/IS-05b-results.md`): before, the renderer lifted every colour below
+L\* 45 by 10–16 L\* and the 85 % tint took 8–19 L\* off every colour above L\* 60, so dark hair turned
+grey-brown and light skin mid-brown. The gap rule was tuned on the 21 test designs against the AI
+images (mean ΔE2000 of 2 mm cells, the AI cell being the mean colour of its stones): the less the
+gaps are darkened the closer the picture, so the rule is the visibility limit of 4 L\*; a step
+growing with lightness was no better (4 + 0.05 per L\* above 80 is the best of the grid by 0.01),
+lightening the gaps of very dark stones was worse, and a reach of 1.7 or 1.8 radii gained less than
+0.1, so the reach stays 1.6. Mean cell ΔE over the 21 designs: 10.8 before (RS layouts, 85 % tint,
+stones as drawn), 8.7 after. The second follow-up (20 Oct 2026) held the inner 60 % of each stone to
+its catalogue lightness too (before, the highlight left mid-dark stones' centres 10–13 L\* light,
+while the whole stone averaged right) and set 8 L\* for near-white gaps at Alex's request
+(`docs/IS-05b-results.md` section 7).
+
 Implementation: Node with `@napi-rs/canvas` (Canvas 2D compatible, so the RS renderer runs
-unchanged), `src/render/tinted.js`. Nearest-stone search: a pixel can only be filled when its
+unchanged), `src/render/tinted.js` (`GAP_RULE`, `STONE_LIGHTNESS`). The renders run in a worker
+thread (`src/render/offthread.js`, `worker_threads`), so the server keeps answering polls and pages
+while one runs. Nearest-stone search: a pixel can only be filled when its
 nearest stone's edge is at most 0.6 × the largest radius away, so each stone writes its edge
 distance into the pixels within that reach and the smallest wins; this is exact for every pixel
 that can be filled. "Main stone" is the most common stone size. Two renders: preview (900 px long
@@ -390,7 +442,7 @@ PDF metadata: Producer and Creator `IS`, Title `IS design IS-XXXX-XXXX`, added t
 unchanged. No comments or metadata in SVG/DXF/PNG naming anything else (section 12).
 
 The ZIP (`archiver`, deflate; `buildDeliveryZip` in `src/export/zip.js`, from `attempt-<n>/stones.json`
-and `tinted.png`, never writing to the archive) is built when the code becomes paid (or at the first download if the
+and `tinted.png`, never writing to the archive; in the render worker of section 8) is built when the code becomes paid (or at the first download if the
 build was skipped), stored in `data/delivery/`, and rebuilt from the archive if the buyer
 downloads again within 30 days and the file is missing.
 
@@ -478,9 +530,15 @@ orders with a "match to code" action, manual unlock, poller status, disk use of 
 - `x-powered-by` off; no third-party names in HTML, JS, CSS, comments, file names, ZIP contents,
   PDF/SVG metadata.
 - Logs stay in `logs/` outside `public/`.
-- Test (IS-08): run a fake design, grep every HTTP response body and header and every ZIP entry
-  for `openai`, `gpt`, `dall`, `prompt`, the model name and the first 40 characters of the prompt;
-  any match fails.
+- Test `tools/test-no-provider-leak.mjs` (part of `npm test`; word list `tools/leak-words.mjs`):
+  run a fake design, check every HTTP response body and header, every file the server sends (pages,
+  scripts, images, the ZIP) and every ZIP entry for `openai`, `gpt`, `dall`, `prompt`, the model
+  name and the first 40 characters of the prompt, image and document metadata included (PNG text,
+  XMP, EXIF, ICC and C2PA chunks, JPEG APP segments, PDF info and streams, SVG and DXF comments);
+  any match, or any metadata chunk in a file the buyer gets, fails. A scripted provider whose image
+  carries such metadata and whose errors name it must leave no trace either.
+- The AI image is archived without metadata (4.2): provider outputs carry C2PA chunks that name
+  the provider.
 
 ## 13. Abuse and cost
 
@@ -578,7 +636,7 @@ the rule.
 
 **IS-04 Tinted render and exports.** Section 8 and section 9.
 *Done when:* tinted render matches the definition on a unit fixture (pixel at 1.5 r gets 85 % of
-the nearest stone's fill, pixel at 1.7 r is background); all files open (SVG in a browser, PDF and
+the nearest stone's fill, since IS-05b its gap colour; pixel at 1.7 r is background); all files open (SVG in a browser, PDF and
 AI via pdf.js with page count and page size, EPS by a structure check with its bounding box equal to
 the design size and one circle per stone, DXF via the RS DXF test approach, PNG size equals 300 dpi
 true size); ZIP contents match the table; the overlap cleanup (7.5) is measured on the rejected
