@@ -9,6 +9,7 @@ IS (IS-05b): DEFAULT's sample_delivered recolours stones everywhere, so DefaultA
 DEFAULT with it off (test_is05b.SampleDelivered checks that it changes only colours).
 IS (IS-05c): DEFAULT has human_iris off and skin_nearest_inner on; DefaultAgainstBuildI runs DEFAULT with
 human_iris on and skin_nearest_inner off (tests/test_is05c.py checks both).
+IS (IS-05d): DEFAULT has warm_shadow on; DefaultAgainstBuildI runs DEFAULT with it off (tests/test_is05d.py checks it).
 """
 import dataclasses
 import unittest
@@ -55,7 +56,7 @@ class DefaultAgainstBuildI(unittest.TestCase):
             with self.subTest(image=name):
                 i = support.layout_result(name, dataclasses.replace(BUILD_I, soft_outlines=False))  # IS (IS-05b)
                 j = support.layout_result(name, dataclasses.replace(DEFAULT, sample_delivered=False, human_iris=True,  # IS (IS-05b, IS-05c)
-                                                                   skin_nearest_inner=False))
+                                                                   skin_nearest_inner=False, warm_shadow=False))
                 ri, rj = i["report"], j["report"]
                 self.assertEqual(rj["violations"], 0)
                 self.assertGreaterEqual(rj["minGapMm"], MIN_GAP_MM)

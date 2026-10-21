@@ -1,0 +1,1495 @@
+{
+ "rs-woman": {
+  "rows": [
+   {
+    "variant": "default",
+    "stones": 2613,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 6.48,
+    "deRendered": 9.81,
+    "skin": 1751,
+    "skinDe": 7.3,
+    "skinDL": 2.24,
+    "skinAreaDe": 5.52,
+    "skinByColour": {
+     "colorado-topaz": 730,
+     "silk": 425,
+     "smoked-topaz": 364,
+     "rose-gold": 170,
+     "copper": 59,
+     "crystal-clear": 1,
+     "light-siam": 1,
+     "light-peach": 1
+    },
+    "skinRendered": {
+     "de": 15.34,
+     "dL": -15.88,
+     "dC": 3.4
+    },
+    "face": {
+     "n": 1252,
+     "de": 7.4,
+     "areaDe": 5.58,
+     "rendered": 15.17,
+     "byColour": {
+      "colorado-topaz": 505,
+      "silk": 307,
+      "smoked-topaz": 258,
+      "rose-gold": 140,
+      "copper": 39,
+      "crystal-clear": 1,
+      "light-siam": 1,
+      "light-peach": 1
+     }
+    },
+    "shadow": {
+     "n": 521,
+     "de": 10.1,
+     "areaDe": 7.68,
+     "dL": 4.66,
+     "mixDL": 8.06,
+     "rendered": {
+      "de": 23.47,
+      "dL": -23.51,
+      "dC": 7.18
+     },
+     "byColour": {
+      "colorado-topaz": 263,
+      "smoked-topaz": 257,
+      "light-siam": 1
+     }
+    }
+   },
+   {
+    "variant": "warm-1.5",
+    "stones": 2613,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 38,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 38
+    },
+    "changedInSkin": 38,
+    "deStone": 6.49,
+    "deRendered": 9.84,
+    "skin": 1751,
+    "skinDe": 7.31,
+    "skinDL": 2.63,
+    "skinAreaDe": 5.56,
+    "skinByColour": {
+     "colorado-topaz": 768,
+     "silk": 425,
+     "smoked-topaz": 326,
+     "rose-gold": 170,
+     "copper": 59,
+     "crystal-clear": 1,
+     "light-siam": 1,
+     "light-peach": 1
+    },
+    "skinRendered": {
+     "de": 15.07,
+     "dL": -15.58,
+     "dC": 3.74
+    },
+    "face": {
+     "n": 1252,
+     "de": 7.41,
+     "areaDe": 5.62,
+     "rendered": 14.93,
+     "byColour": {
+      "colorado-topaz": 531,
+      "silk": 307,
+      "smoked-topaz": 232,
+      "rose-gold": 140,
+      "copper": 39,
+      "crystal-clear": 1,
+      "light-siam": 1,
+      "light-peach": 1
+     }
+    },
+    "shadow": {
+     "n": 521,
+     "de": 10.12,
+     "areaDe": 7.77,
+     "dL": 5.56,
+     "mixDL": 8.8,
+     "rendered": {
+      "de": 22.95,
+      "dL": -22.91,
+      "dC": 7.86
+     },
+     "byColour": {
+      "colorado-topaz": 289,
+      "smoked-topaz": 231,
+      "light-siam": 1
+     }
+    }
+   },
+   {
+    "variant": "warm-3",
+    "stones": 2613,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 75,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 75
+    },
+    "changedInSkin": 75,
+    "deStone": 6.52,
+    "deRendered": 9.87,
+    "skin": 1751,
+    "skinDe": 7.36,
+    "skinDL": 3.01,
+    "skinAreaDe": 5.65,
+    "skinByColour": {
+     "colorado-topaz": 805,
+     "silk": 425,
+     "smoked-topaz": 289,
+     "rose-gold": 170,
+     "copper": 59,
+     "crystal-clear": 1,
+     "light-siam": 1,
+     "light-peach": 1
+    },
+    "skinRendered": {
+     "de": 14.82,
+     "dL": -15.29,
+     "dC": 4.06
+    },
+    "face": {
+     "n": 1252,
+     "de": 7.46,
+     "areaDe": 5.71,
+     "rendered": 14.66,
+     "byColour": {
+      "colorado-topaz": 559,
+      "silk": 307,
+      "smoked-topaz": 204,
+      "rose-gold": 140,
+      "copper": 39,
+      "crystal-clear": 1,
+      "light-siam": 1,
+      "light-peach": 1
+     }
+    },
+    "shadow": {
+     "n": 521,
+     "de": 10.24,
+     "areaDe": 8,
+     "dL": 6.53,
+     "mixDL": 9.6,
+     "rendered": {
+      "de": 22.36,
+      "dL": -22.24,
+      "dC": 8.59
+     },
+     "byColour": {
+      "colorado-topaz": 317,
+      "smoked-topaz": 203,
+      "light-siam": 1
+     }
+    }
+   },
+   {
+    "variant": "mixed",
+    "stones": 2613,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 337,
+    "transitions": {
+     "colorado-topaz → smoked-topaz": 193,
+     "smoked-topaz → colorado-topaz": 144
+    },
+    "changedInSkin": 317,
+    "deStone": 7.24,
+    "deRendered": 10.35,
+    "skin": 1751,
+    "skinDe": 8.29,
+    "skinDL": 1.53,
+    "skinAreaDe": 5.12,
+    "skinByColour": {
+     "colorado-topaz": 661,
+     "smoked-topaz": 433,
+     "silk": 425,
+     "rose-gold": 170,
+     "copper": 59,
+     "crystal-clear": 1,
+     "light-siam": 1,
+     "light-peach": 1
+    },
+    "skinRendered": {
+     "de": 15.78,
+     "dL": -16.29,
+     "dC": 3.05
+    },
+    "face": {
+     "n": 1252,
+     "de": 8.35,
+     "areaDe": 5.11,
+     "rendered": 15.63,
+     "byColour": {
+      "colorado-topaz": 454,
+      "smoked-topaz": 309,
+      "silk": 307,
+      "rose-gold": 140,
+      "copper": 39,
+      "crystal-clear": 1,
+      "light-siam": 1,
+      "light-peach": 1
+     }
+    },
+    "shadow": {
+     "n": 521,
+     "de": 11.8,
+     "areaDe": 6.84,
+     "dL": 3.97,
+     "mixDL": 7.74,
+     "rendered": {
+      "de": 24,
+      "dL": -23.91,
+      "dC": 6.94
+     },
+     "byColour": {
+      "smoked-topaz": 277,
+      "colorado-topaz": 243,
+      "light-siam": 1
+     }
+    }
+   },
+   {
+    "variant": "warm-1.5-mixed",
+    "stones": 2613,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 337,
+    "transitions": {
+     "colorado-topaz → smoked-topaz": 193,
+     "smoked-topaz → colorado-topaz": 144
+    },
+    "changedInSkin": 317,
+    "deStone": 7.24,
+    "deRendered": 10.35,
+    "skin": 1751,
+    "skinDe": 8.29,
+    "skinDL": 1.53,
+    "skinAreaDe": 5.12,
+    "skinByColour": {
+     "colorado-topaz": 661,
+     "smoked-topaz": 433,
+     "silk": 425,
+     "rose-gold": 170,
+     "copper": 59,
+     "crystal-clear": 1,
+     "light-siam": 1,
+     "light-peach": 1
+    },
+    "skinRendered": {
+     "de": 15.78,
+     "dL": -16.29,
+     "dC": 3.05
+    },
+    "face": {
+     "n": 1252,
+     "de": 8.35,
+     "areaDe": 5.11,
+     "rendered": 15.63,
+     "byColour": {
+      "colorado-topaz": 454,
+      "smoked-topaz": 309,
+      "silk": 307,
+      "rose-gold": 140,
+      "copper": 39,
+      "crystal-clear": 1,
+      "light-siam": 1,
+      "light-peach": 1
+     }
+    },
+    "shadow": {
+     "n": 521,
+     "de": 11.8,
+     "areaDe": 6.84,
+     "dL": 3.97,
+     "mixDL": 7.74,
+     "rendered": {
+      "de": 24,
+      "dL": -23.91,
+      "dC": 6.94
+     },
+     "byColour": {
+      "smoked-topaz": 277,
+      "colorado-topaz": 243,
+      "light-siam": 1
+     }
+    }
+   },
+   {
+    "variant": "warm-3-mixed",
+    "stones": 2613,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 338,
+    "transitions": {
+     "colorado-topaz → smoked-topaz": 193,
+     "smoked-topaz → colorado-topaz": 145
+    },
+    "changedInSkin": 318,
+    "deStone": 7.24,
+    "deRendered": 10.36,
+    "skin": 1751,
+    "skinDe": 8.3,
+    "skinDL": 1.54,
+    "skinAreaDe": 5.12,
+    "skinByColour": {
+     "colorado-topaz": 662,
+     "smoked-topaz": 432,
+     "silk": 425,
+     "rose-gold": 170,
+     "copper": 59,
+     "crystal-clear": 1,
+     "light-siam": 1,
+     "light-peach": 1
+    },
+    "skinRendered": {
+     "de": 15.78,
+     "dL": -16.28,
+     "dC": 3.06
+    },
+    "face": {
+     "n": 1252,
+     "de": 8.35,
+     "areaDe": 5.1,
+     "rendered": 15.62,
+     "byColour": {
+      "colorado-topaz": 455,
+      "smoked-topaz": 308,
+      "silk": 307,
+      "rose-gold": 140,
+      "copper": 39,
+      "crystal-clear": 1,
+      "light-siam": 1,
+      "light-peach": 1
+     }
+    },
+    "shadow": {
+     "n": 521,
+     "de": 11.8,
+     "areaDe": 6.84,
+     "dL": 4,
+     "mixDL": 7.74,
+     "rendered": {
+      "de": 23.99,
+      "dL": -23.9,
+      "dC": 6.95
+     },
+     "byColour": {
+      "smoked-topaz": 276,
+      "colorado-topaz": 244,
+      "light-siam": 1
+     }
+    }
+   }
+  ],
+  "faceFile": "woman-face.jpg",
+  "windows": {
+   "eye": {
+    "x": 86.85900000000001,
+    "y": 30.47200000000001,
+    "w": 40.20099999999999,
+    "h": 20.647999999999996
+   },
+   "cheek": {
+    "x": 86.85900000000001,
+    "y": 46.120000000000005,
+    "w": 40.20099999999999,
+    "h": 24.777599999999996
+   }
+  },
+  "closeupFile": "closeup-rs-woman.jpg"
+ },
+ "rs-portrait": {
+  "rows": [
+   {
+    "variant": "default",
+    "stones": 3990,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 6.42,
+    "deRendered": 5.78,
+    "skin": 1577,
+    "skinDe": 7.27,
+    "skinDL": -5.54,
+    "skinAreaDe": 6.46,
+    "skinByColour": {
+     "silk": 1187,
+     "golden-shadow": 114,
+     "rose-gold": 87,
+     "light-peach": 87,
+     "greige": 73,
+     "siam": 19,
+     "light-siam": 5,
+     "light-smoked-topaz": 3,
+     "scarlet": 2
+    },
+    "skinRendered": {
+     "de": 3.6,
+     "dL": 1.63,
+     "dC": 0.36
+    }
+   },
+   {
+    "variant": "warm-1.5",
+    "stones": 3990,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 6.42,
+    "deRendered": 5.78,
+    "skin": 1577,
+    "skinDe": 7.27,
+    "skinDL": -5.54,
+    "skinAreaDe": 6.46,
+    "skinByColour": {
+     "silk": 1187,
+     "golden-shadow": 114,
+     "rose-gold": 87,
+     "light-peach": 87,
+     "greige": 73,
+     "siam": 19,
+     "light-siam": 5,
+     "light-smoked-topaz": 3,
+     "scarlet": 2
+    },
+    "skinRendered": {
+     "de": 3.6,
+     "dL": 1.63,
+     "dC": 0.36
+    }
+   },
+   {
+    "variant": "warm-3",
+    "stones": 3990,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 6.42,
+    "deRendered": 5.78,
+    "skin": 1577,
+    "skinDe": 7.27,
+    "skinDL": -5.54,
+    "skinAreaDe": 6.46,
+    "skinByColour": {
+     "silk": 1187,
+     "golden-shadow": 114,
+     "rose-gold": 87,
+     "light-peach": 87,
+     "greige": 73,
+     "siam": 19,
+     "light-siam": 5,
+     "light-smoked-topaz": 3,
+     "scarlet": 2
+    },
+    "skinRendered": {
+     "de": 3.6,
+     "dL": 1.63,
+     "dC": 0.36
+    }
+   },
+   {
+    "variant": "mixed",
+    "stones": 3990,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 6.42,
+    "deRendered": 5.78,
+    "skin": 1577,
+    "skinDe": 7.27,
+    "skinDL": -5.54,
+    "skinAreaDe": 6.46,
+    "skinByColour": {
+     "silk": 1187,
+     "golden-shadow": 114,
+     "rose-gold": 87,
+     "light-peach": 87,
+     "greige": 73,
+     "siam": 19,
+     "light-siam": 5,
+     "light-smoked-topaz": 3,
+     "scarlet": 2
+    },
+    "skinRendered": {
+     "de": 3.6,
+     "dL": 1.63,
+     "dC": 0.36
+    }
+   },
+   {
+    "variant": "warm-1.5-mixed",
+    "stones": 3990,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 6.42,
+    "deRendered": 5.78,
+    "skin": 1577,
+    "skinDe": 7.27,
+    "skinDL": -5.54,
+    "skinAreaDe": 6.46,
+    "skinByColour": {
+     "silk": 1187,
+     "golden-shadow": 114,
+     "rose-gold": 87,
+     "light-peach": 87,
+     "greige": 73,
+     "siam": 19,
+     "light-siam": 5,
+     "light-smoked-topaz": 3,
+     "scarlet": 2
+    },
+    "skinRendered": {
+     "de": 3.6,
+     "dL": 1.63,
+     "dC": 0.36
+    }
+   },
+   {
+    "variant": "warm-3-mixed",
+    "stones": 3990,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 6.42,
+    "deRendered": 5.78,
+    "skin": 1577,
+    "skinDe": 7.27,
+    "skinDL": -5.54,
+    "skinAreaDe": 6.46,
+    "skinByColour": {
+     "silk": 1187,
+     "golden-shadow": 114,
+     "rose-gold": 87,
+     "light-peach": 87,
+     "greige": 73,
+     "siam": 19,
+     "light-siam": 5,
+     "light-smoked-topaz": 3,
+     "scarlet": 2
+    },
+    "skinRendered": {
+     "de": 3.6,
+     "dL": 1.63,
+     "dC": 0.36
+    }
+   }
+  ],
+  "windows": {
+   "eye": {
+    "x": 41.28099999999999,
+    "y": 68.505,
+    "w": 53.221000000000004,
+    "h": 21.15700000000001
+   },
+   "cheek": {
+    "x": 41.28099999999999,
+    "y": 84.662,
+    "w": 53.221000000000004,
+    "h": 25.38840000000001
+   }
+  },
+  "closeupFile": "closeup-rs-portrait.jpg"
+ },
+ "rs-einstein": {
+  "rows": [
+   {
+    "variant": "default",
+    "stones": 3590,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 6.87,
+    "deRendered": 9.74,
+    "skin": 1232,
+    "skinDe": 7.57,
+    "skinDL": 0.46,
+    "skinAreaDe": 5.65,
+    "skinByColour": {
+     "colorado-topaz": 421,
+     "silk": 374,
+     "rose-gold": 182,
+     "copper": 124,
+     "smoked-topaz": 89,
+     "siam": 36,
+     "light-siam": 4,
+     "greige": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 15.66,
+     "dL": -18.18,
+     "dC": 2.41
+    }
+   },
+   {
+    "variant": "warm-1.5",
+    "stones": 3590,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 9,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 9
+    },
+    "changedInSkin": 9,
+    "deStone": 6.87,
+    "deRendered": 9.74,
+    "skin": 1232,
+    "skinDe": 7.57,
+    "skinDL": 0.6,
+    "skinAreaDe": 5.67,
+    "skinByColour": {
+     "colorado-topaz": 430,
+     "silk": 374,
+     "rose-gold": 182,
+     "copper": 124,
+     "smoked-topaz": 80,
+     "siam": 36,
+     "light-siam": 4,
+     "greige": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 15.6,
+     "dL": -18.1,
+     "dC": 2.49
+    }
+   },
+   {
+    "variant": "warm-3",
+    "stones": 3590,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 17,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 17
+    },
+    "changedInSkin": 17,
+    "deStone": 6.88,
+    "deRendered": 9.74,
+    "skin": 1232,
+    "skinDe": 7.59,
+    "skinDL": 0.71,
+    "skinAreaDe": 5.68,
+    "skinByColour": {
+     "colorado-topaz": 438,
+     "silk": 374,
+     "rose-gold": 182,
+     "copper": 124,
+     "smoked-topaz": 72,
+     "siam": 36,
+     "light-siam": 4,
+     "greige": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 15.54,
+     "dL": -18.04,
+     "dC": 2.56
+    }
+   },
+   {
+    "variant": "mixed",
+    "stones": 3590,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 133,
+    "transitions": {
+     "colorado-topaz → smoked-topaz": 70,
+     "smoked-topaz → colorado-topaz": 63
+    },
+    "changedInSkin": 97,
+    "deStone": 7.19,
+    "deRendered": 9.99,
+    "skin": 1232,
+    "skinDe": 8.12,
+    "skinDL": -0.17,
+    "skinAreaDe": 5.68,
+    "skinByColour": {
+     "colorado-topaz": 378,
+     "silk": 374,
+     "rose-gold": 182,
+     "smoked-topaz": 132,
+     "copper": 124,
+     "siam": 36,
+     "light-siam": 4,
+     "greige": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 15.86,
+     "dL": -18.36,
+     "dC": 2.23
+    }
+   },
+   {
+    "variant": "warm-1.5-mixed",
+    "stones": 3590,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 135,
+    "transitions": {
+     "colorado-topaz → smoked-topaz": 70,
+     "smoked-topaz → colorado-topaz": 65
+    },
+    "changedInSkin": 99,
+    "deStone": 7.19,
+    "deRendered": 9.99,
+    "skin": 1232,
+    "skinDe": 8.12,
+    "skinDL": -0.14,
+    "skinAreaDe": 5.67,
+    "skinByColour": {
+     "colorado-topaz": 380,
+     "silk": 374,
+     "rose-gold": 182,
+     "smoked-topaz": 130,
+     "copper": 124,
+     "siam": 36,
+     "light-siam": 4,
+     "greige": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 15.84,
+     "dL": -18.34,
+     "dC": 2.25
+    }
+   },
+   {
+    "variant": "warm-3-mixed",
+    "stones": 3590,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 138,
+    "transitions": {
+     "colorado-topaz → smoked-topaz": 70,
+     "smoked-topaz → colorado-topaz": 68
+    },
+    "changedInSkin": 102,
+    "deStone": 7.19,
+    "deRendered": 9.99,
+    "skin": 1232,
+    "skinDe": 8.13,
+    "skinDL": -0.09,
+    "skinAreaDe": 5.67,
+    "skinByColour": {
+     "colorado-topaz": 383,
+     "silk": 374,
+     "rose-gold": 182,
+     "smoked-topaz": 127,
+     "copper": 124,
+     "siam": 36,
+     "light-siam": 4,
+     "greige": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 15.82,
+     "dL": -18.32,
+     "dC": 2.27
+    }
+   }
+  ],
+  "windows": {
+   "eye": {
+    "x": 78.3,
+    "y": 67.45700000000001,
+    "w": 45.137000000000015,
+    "h": 23.923000000000002
+   },
+   "cheek": {
+    "x": 78.3,
+    "y": 86.38000000000001,
+    "w": 45.137000000000015,
+    "h": 28.707600000000003
+   }
+  },
+  "closeupFile": "closeup-rs-einstein.jpg"
+ },
+ "rs-jesus": {
+  "rows": [
+   {
+    "variant": "default",
+    "stones": 3297,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 5.47,
+    "deRendered": 7.25,
+    "skin": 1041,
+    "skinDe": 6.54,
+    "skinDL": -0.98,
+    "skinAreaDe": 4.97,
+    "skinByColour": {
+     "silk": 347,
+     "golden-shadow": 345,
+     "smoked-topaz": 268,
+     "copper": 49,
+     "colorado-topaz": 17,
+     "light-smoked-topaz": 6,
+     "greige": 3,
+     "siam": 2,
+     "jet": 2,
+     "scarlet": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 11.08,
+     "dL": -11.37,
+     "dC": 1.43
+    }
+   },
+   {
+    "variant": "warm-1.5",
+    "stones": 3297,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 1,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 1
+    },
+    "changedInSkin": 1,
+    "deStone": 5.48,
+    "deRendered": 7.25,
+    "skin": 1041,
+    "skinDe": 6.54,
+    "skinDL": -0.96,
+    "skinAreaDe": 4.98,
+    "skinByColour": {
+     "silk": 347,
+     "golden-shadow": 345,
+     "smoked-topaz": 267,
+     "copper": 49,
+     "colorado-topaz": 18,
+     "light-smoked-topaz": 6,
+     "greige": 3,
+     "siam": 2,
+     "jet": 2,
+     "scarlet": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 11.07,
+     "dL": -11.36,
+     "dC": 1.44
+    }
+   },
+   {
+    "variant": "warm-3",
+    "stones": 3297,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 2,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 2
+    },
+    "changedInSkin": 2,
+    "deStone": 5.48,
+    "deRendered": 7.25,
+    "skin": 1041,
+    "skinDe": 6.54,
+    "skinDL": -0.94,
+    "skinAreaDe": 4.97,
+    "skinByColour": {
+     "silk": 347,
+     "golden-shadow": 345,
+     "smoked-topaz": 266,
+     "copper": 49,
+     "colorado-topaz": 19,
+     "light-smoked-topaz": 6,
+     "greige": 3,
+     "siam": 2,
+     "jet": 2,
+     "scarlet": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 11.06,
+     "dL": -11.36,
+     "dC": 1.45
+    }
+   },
+   {
+    "variant": "mixed",
+    "stones": 3297,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 134,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 130,
+     "colorado-topaz → smoked-topaz": 4
+    },
+    "changedInSkin": 74,
+    "deStone": 5.94,
+    "deRendered": 7.62,
+    "skin": 1041,
+    "skinDe": 7.19,
+    "skinDL": 0.17,
+    "skinAreaDe": 5.21,
+    "skinByColour": {
+     "silk": 347,
+     "golden-shadow": 345,
+     "smoked-topaz": 202,
+     "colorado-topaz": 83,
+     "copper": 49,
+     "light-smoked-topaz": 6,
+     "greige": 3,
+     "siam": 2,
+     "jet": 2,
+     "scarlet": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 10.48,
+     "dL": -10.61,
+     "dC": 2.37
+    }
+   },
+   {
+    "variant": "warm-1.5-mixed",
+    "stones": 3297,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 134,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 130,
+     "colorado-topaz → smoked-topaz": 4
+    },
+    "changedInSkin": 74,
+    "deStone": 5.94,
+    "deRendered": 7.62,
+    "skin": 1041,
+    "skinDe": 7.19,
+    "skinDL": 0.17,
+    "skinAreaDe": 5.21,
+    "skinByColour": {
+     "silk": 347,
+     "golden-shadow": 345,
+     "smoked-topaz": 202,
+     "colorado-topaz": 83,
+     "copper": 49,
+     "light-smoked-topaz": 6,
+     "greige": 3,
+     "siam": 2,
+     "jet": 2,
+     "scarlet": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 10.48,
+     "dL": -10.61,
+     "dC": 2.37
+    }
+   },
+   {
+    "variant": "warm-3-mixed",
+    "stones": 3297,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 135,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 131,
+     "colorado-topaz → smoked-topaz": 4
+    },
+    "changedInSkin": 75,
+    "deStone": 5.94,
+    "deRendered": 7.62,
+    "skin": 1041,
+    "skinDe": 7.2,
+    "skinDL": 0.18,
+    "skinAreaDe": 5.2,
+    "skinByColour": {
+     "silk": 347,
+     "golden-shadow": 345,
+     "smoked-topaz": 201,
+     "colorado-topaz": 84,
+     "copper": 49,
+     "light-smoked-topaz": 6,
+     "greige": 3,
+     "siam": 2,
+     "jet": 2,
+     "scarlet": 1,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 10.47,
+     "dL": -10.61,
+     "dC": 2.38
+    }
+   }
+  ],
+  "windows": {
+   "eye": {
+    "x": 82.657,
+    "y": 63.548,
+    "w": 18.900000000000006,
+    "h": 18.900000000000006
+   },
+   "cheek": {
+    "x": 82.657,
+    "y": 77.44800000000001,
+    "w": 18.900000000000006,
+    "h": 22.680000000000007
+   }
+  },
+  "closeupFile": "closeup-rs-jesus.jpg"
+ },
+ "rs-dog": {
+  "rows": [
+   {
+    "variant": "default",
+    "stones": 1670,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 4.17,
+    "deRendered": 4.95,
+    "skin": 146,
+    "skinDe": 8.32,
+    "skinDL": -1.15,
+    "skinAreaDe": 7.9,
+    "skinByColour": {
+     "light-peach": 73,
+     "copper": 14,
+     "smoked-topaz": 11,
+     "colorado-topaz": 11,
+     "silk": 7,
+     "light-smoked-topaz": 7,
+     "light-colorado": 5,
+     "greige": 5,
+     "grey": 5,
+     "golden-shadow": 4,
+     "silver": 3,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 6.63,
+     "dL": -4.51,
+     "dC": -5.24
+    }
+   },
+   {
+    "variant": "warm-1.5",
+    "stones": 1670,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 1,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 1
+    },
+    "changedInSkin": 1,
+    "deStone": 4.17,
+    "deRendered": 4.95,
+    "skin": 146,
+    "skinDe": 8.32,
+    "skinDL": -1.03,
+    "skinAreaDe": 7.9,
+    "skinByColour": {
+     "light-peach": 73,
+     "copper": 14,
+     "colorado-topaz": 12,
+     "smoked-topaz": 10,
+     "silk": 7,
+     "light-smoked-topaz": 7,
+     "light-colorado": 5,
+     "greige": 5,
+     "grey": 5,
+     "golden-shadow": 4,
+     "silver": 3,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 6.59,
+     "dL": -4.47,
+     "dC": -5.18
+    }
+   },
+   {
+    "variant": "warm-3",
+    "stones": 1670,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 1,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 1
+    },
+    "changedInSkin": 1,
+    "deStone": 4.17,
+    "deRendered": 4.95,
+    "skin": 146,
+    "skinDe": 8.32,
+    "skinDL": -1.03,
+    "skinAreaDe": 7.9,
+    "skinByColour": {
+     "light-peach": 73,
+     "copper": 14,
+     "colorado-topaz": 12,
+     "smoked-topaz": 10,
+     "silk": 7,
+     "light-smoked-topaz": 7,
+     "light-colorado": 5,
+     "greige": 5,
+     "grey": 5,
+     "golden-shadow": 4,
+     "silver": 3,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 6.59,
+     "dL": -4.47,
+     "dC": -5.18
+    }
+   },
+   {
+    "variant": "mixed",
+    "stones": 1670,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 26,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 25,
+     "colorado-topaz → smoked-topaz": 1
+    },
+    "changedInSkin": 2,
+    "deStone": 4.32,
+    "deRendered": 5.08,
+    "skin": 146,
+    "skinDe": 8.44,
+    "skinDL": -1.15,
+    "skinAreaDe": 8.02,
+    "skinByColour": {
+     "light-peach": 73,
+     "copper": 14,
+     "smoked-topaz": 11,
+     "colorado-topaz": 11,
+     "silk": 7,
+     "light-smoked-topaz": 7,
+     "light-colorado": 5,
+     "greige": 5,
+     "grey": 5,
+     "golden-shadow": 4,
+     "silver": 3,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 6.57,
+     "dL": -4.45,
+     "dC": -5.16
+    }
+   },
+   {
+    "variant": "warm-1.5-mixed",
+    "stones": 1670,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 27,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 26,
+     "colorado-topaz → smoked-topaz": 1
+    },
+    "changedInSkin": 3,
+    "deStone": 4.32,
+    "deRendered": 5.08,
+    "skin": 146,
+    "skinDe": 8.44,
+    "skinDL": -1.03,
+    "skinAreaDe": 8.02,
+    "skinByColour": {
+     "light-peach": 73,
+     "copper": 14,
+     "colorado-topaz": 12,
+     "smoked-topaz": 10,
+     "silk": 7,
+     "light-smoked-topaz": 7,
+     "light-colorado": 5,
+     "greige": 5,
+     "grey": 5,
+     "golden-shadow": 4,
+     "silver": 3,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 6.53,
+     "dL": -4.41,
+     "dC": -5.11
+    }
+   },
+   {
+    "variant": "warm-3-mixed",
+    "stones": 1670,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 27,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 26,
+     "colorado-topaz → smoked-topaz": 1
+    },
+    "changedInSkin": 3,
+    "deStone": 4.32,
+    "deRendered": 5.08,
+    "skin": 146,
+    "skinDe": 8.44,
+    "skinDL": -1.03,
+    "skinAreaDe": 8.02,
+    "skinByColour": {
+     "light-peach": 73,
+     "copper": 14,
+     "colorado-topaz": 12,
+     "smoked-topaz": 10,
+     "silk": 7,
+     "light-smoked-topaz": 7,
+     "light-colorado": 5,
+     "greige": 5,
+     "grey": 5,
+     "golden-shadow": 4,
+     "silver": 3,
+     "crystal-clear": 1
+    },
+    "skinRendered": {
+     "de": 6.53,
+     "dL": -4.41,
+     "dC": -5.11
+    }
+   }
+  ]
+ },
+ "cat-rule": {
+  "rows": [
+   {
+    "variant": "default",
+    "stones": 3573,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 6.27,
+    "deRendered": 5.85,
+    "skin": 179,
+    "skinDe": 6.54,
+    "skinDL": -1.27,
+    "skinAreaDe": 5,
+    "skinByColour": {
+     "greige": 59,
+     "light-smoked-topaz": 37,
+     "light-peach": 28,
+     "rose-gold": 16,
+     "smoked-topaz": 15,
+     "vintage-rose": 7,
+     "silk": 6,
+     "golden-shadow": 5,
+     "colorado-topaz": 3,
+     "light-siam": 2,
+     "padparadscha": 1
+    },
+    "skinRendered": {
+     "de": 4.69,
+     "dL": 3.71,
+     "dC": -2.05
+    }
+   },
+   {
+    "variant": "warm-1.5",
+    "stones": 3573,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 6.27,
+    "deRendered": 5.85,
+    "skin": 179,
+    "skinDe": 6.54,
+    "skinDL": -1.27,
+    "skinAreaDe": 5,
+    "skinByColour": {
+     "greige": 59,
+     "light-smoked-topaz": 37,
+     "light-peach": 28,
+     "rose-gold": 16,
+     "smoked-topaz": 15,
+     "vintage-rose": 7,
+     "silk": 6,
+     "golden-shadow": 5,
+     "colorado-topaz": 3,
+     "light-siam": 2,
+     "padparadscha": 1
+    },
+    "skinRendered": {
+     "de": 4.69,
+     "dL": 3.71,
+     "dC": -2.05
+    }
+   },
+   {
+    "variant": "warm-3",
+    "stones": 3573,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 0,
+    "transitions": {},
+    "changedInSkin": 0,
+    "deStone": 6.27,
+    "deRendered": 5.85,
+    "skin": 179,
+    "skinDe": 6.54,
+    "skinDL": -1.27,
+    "skinAreaDe": 5,
+    "skinByColour": {
+     "greige": 59,
+     "light-smoked-topaz": 37,
+     "light-peach": 28,
+     "rose-gold": 16,
+     "smoked-topaz": 15,
+     "vintage-rose": 7,
+     "silk": 6,
+     "golden-shadow": 5,
+     "colorado-topaz": 3,
+     "light-siam": 2,
+     "padparadscha": 1
+    },
+    "skinRendered": {
+     "de": 4.69,
+     "dL": 3.71,
+     "dC": -2.05
+    }
+   },
+   {
+    "variant": "mixed",
+    "stones": 3573,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 6,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 6
+    },
+    "changedInSkin": 5,
+    "deStone": 6.29,
+    "deRendered": 5.86,
+    "skin": 179,
+    "skinDe": 6.75,
+    "skinDL": -0.77,
+    "skinAreaDe": 5.08,
+    "skinByColour": {
+     "greige": 59,
+     "light-smoked-topaz": 37,
+     "light-peach": 28,
+     "rose-gold": 16,
+     "smoked-topaz": 10,
+     "colorado-topaz": 8,
+     "vintage-rose": 7,
+     "silk": 6,
+     "golden-shadow": 5,
+     "light-siam": 2,
+     "padparadscha": 1
+    },
+    "skinRendered": {
+     "de": 4.79,
+     "dL": 3.95,
+     "dC": -1.72
+    }
+   },
+   {
+    "variant": "warm-1.5-mixed",
+    "stones": 3573,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 6,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 6
+    },
+    "changedInSkin": 5,
+    "deStone": 6.29,
+    "deRendered": 5.86,
+    "skin": 179,
+    "skinDe": 6.75,
+    "skinDL": -0.77,
+    "skinAreaDe": 5.08,
+    "skinByColour": {
+     "greige": 59,
+     "light-smoked-topaz": 37,
+     "light-peach": 28,
+     "rose-gold": 16,
+     "smoked-topaz": 10,
+     "colorado-topaz": 8,
+     "vintage-rose": 7,
+     "silk": 6,
+     "golden-shadow": 5,
+     "light-siam": 2,
+     "padparadscha": 1
+    },
+    "skinRendered": {
+     "de": 4.79,
+     "dL": 3.95,
+     "dC": -1.72
+    }
+   },
+   {
+    "variant": "warm-3-mixed",
+    "stones": 3573,
+    "geometry": true,
+    "facePupils": true,
+    "changed": 6,
+    "transitions": {
+     "smoked-topaz → colorado-topaz": 6
+    },
+    "changedInSkin": 5,
+    "deStone": 6.29,
+    "deRendered": 5.86,
+    "skin": 179,
+    "skinDe": 6.75,
+    "skinDL": -0.77,
+    "skinAreaDe": 5.08,
+    "skinByColour": {
+     "greige": 59,
+     "light-smoked-topaz": 37,
+     "light-peach": 28,
+     "rose-gold": 16,
+     "smoked-topaz": 10,
+     "colorado-topaz": 8,
+     "vintage-rose": 7,
+     "silk": 6,
+     "golden-shadow": 5,
+     "light-siam": 2,
+     "padparadscha": 1
+    },
+    "skinRendered": {
+     "de": 4.79,
+     "dL": 3.95,
+     "dC": -1.72
+    }
+   }
+  ]
+ }
+}

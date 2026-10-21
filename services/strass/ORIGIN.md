@@ -159,3 +159,51 @@ pupils identical on all 21; only colours change.
 Effect (docs/IS-05c-results.md section 5): the people's eyes lose the iris rings; on the designs
 with skin or fur colours some SS4/SS6 stones change between skin colours; stone positions and
 sizes are unchanged on every design without a person's face.
+
+### IS-05d (21 Oct 2026, experiment): warm and mixed shadow rules, off everywhere
+
+- `strass_layout/rules.py`: new rules `warm_shadow` (default `False`), `warm_shadow_de` (default
+  1.5) and `mixed_shadow` (default `False`). They are off in `PROTOTYPE`, `BUILD_E` … `BUILD_I`
+  **and `DEFAULT`**, so the service, the equivalence test and every other test are unchanged.
+  Docstring note.
+- `strass_layout/faces.py`:
+  - `skin_nearest(D, C, lab, pal, warm_de=None)`: with `warm_de` (`rules.warm_shadow`), a stone
+    whose nearest skin colour is Smoked Topaz takes Colorado Topaz when that is at most `warm_de`
+    ΔE2000 further from its sampled colour;
+  - new `mixed_shadow(P, D, C, lab, pal, eyes, nb)`, `_rows(P, D)`, `_linear`, `_mix_lab` and
+    constants `SMOKED`, `COLORADO`, `MIX_PATTERNS`, `ROW_SLOPE = 0.5`: on SS4/SS6 Smoked and
+    Colorado Topaz stones outside 1.5 eye-zone radii, the share of Colorado Topaz (0, 1/3, 1/2, 2/3,
+    1; the two fills mixed in linear light) nearest the mean Lab of the stone and its skin-coloured
+    neighbours; for 1/3, 1/2, 2/3 the stone takes its place in the pattern `C S S`, `C S`, `C C S`
+    along its row (a chain of nearest right-hand neighbours within ROW_SLOPE of horizontal),
+    staggered from row to row;
+  - `finish_faces`: passes `warm_de`; runs `mixed_shadow` after `calm_skin` with
+    `rules.mixed_shadow`.
+- `strass_layout/pipeline.py`: the stone colours `skin_nearest` reads are also read when only
+  `rules.mixed_shadow` is on.
+- New test `tests/test_is05d.py` (the rules are off everywhere; the warm tie-break; rows on a grid;
+  each mix laid in its proportion; pure colours and eyes untouched; on the woman only the two
+  topazes change and stones, sizes, face and pupils are identical).
+- `scripts/is05d_runs.py` (IS diagnosis only): variants "warm-1.5", "warm-3", "mixed",
+  "warm-1.5-mixed", "warm-3-mixed".
+
+Effect (docs/IS-05d-results.md): only Smoked/Colorado Topaz colours change; stones, sizes, faces and
+pupils are identical on the six test designs. Recommended there: `warm_shadow` with
+`warm_shadow_de=3`; not applied.
+
+### IS-05d decision (21 Oct 2026): warm_shadow on in DEFAULT, 3 ΔE
+
+Alex's decision on docs/IS-05d-results.md (variant A, "warm-3"):
+
+- `strass_layout/rules.py`: `DEFAULT` has `warm_shadow=True`, `warm_shadow_de=3.0`. `PROTOTYPE` and
+  `BUILD_E` … `BUILD_I` keep it off, so the equivalence test against the prototype still holds.
+  `mixed_shadow` (variant B) stays off everywhere. Docstring note.
+- `tests/test_is05d.py`: the defaults test checks `warm_shadow` is on only in `DEFAULT` (3 ΔE) and
+  `mixed_shadow` off everywhere; the woman test compares `DEFAULT` with `warm_shadow` off.
+- `tests/test_build_j.py`: `DefaultAgainstBuildI` runs `DEFAULT` with `warm_shadow` off as well.
+- `scripts/is05d_runs.py`: "default" is now `DEFAULT` with `warm_shadow` off (the experiment's
+  baseline), "final" is `DEFAULT`; "mixed" keeps `warm_shadow` off.
+
+Effect on the 21 test designs (docs/IS-05d-results.md section 9): stones, sizes, coverage, faces and
+pupils identical; 11 designs change colour, almost all Smoked Topaz → Colorado Topaz (woman 75,
+giraffe-rule 97, dachshund-rule 65, leopard 33, einstein 17).
