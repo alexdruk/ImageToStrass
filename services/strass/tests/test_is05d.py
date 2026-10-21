@@ -1,5 +1,5 @@
 # IS: new file, not from Rhinestone-Studio.
-"""IS-05d (experiment): Rules.warm_shadow and Rules.mixed_shadow, off everywhere including DEFAULT."""
+"""IS-05d: Rules.warm_shadow (on in DEFAULT with 3 ΔE) and Rules.mixed_shadow (experiment, off everywhere)."""
 import dataclasses
 import unittest
 
@@ -25,9 +25,11 @@ def _mix(share):
 
 
 class Defaults(unittest.TestCase):
-    def test_the_rules_are_off_everywhere(self):
+    def test_warm_shadow_only_in_default_and_mixed_shadow_off(self):
+        self.assertTrue(DEFAULT.warm_shadow)
+        self.assertEqual(DEFAULT.warm_shadow_de, 3.0)
         for rules in ALL:
-            self.assertFalse(rules.warm_shadow)
+            self.assertEqual(rules.warm_shadow, rules is DEFAULT)
             self.assertFalse(rules.mixed_shadow)
 
 
@@ -42,8 +44,8 @@ class WarmShadow(unittest.TestCase):
         self.assertEqual(skin_nearest(D, C, PAL.lab[PAL.ids.index(SMOKED)][None], PAL, warm_de=3.0)[0], [SMOKED])
 
     def test_only_smoked_topaz_becomes_colorado_topaz(self):
-        on = support.layout_result("woman", dataclasses.replace(DEFAULT, warm_shadow=True, warm_shadow_de=3.0))
-        off = support.layout_result("woman", DEFAULT)
+        on = support.layout_result("woman", DEFAULT)
+        off = support.layout_result("woman", dataclasses.replace(DEFAULT, warm_shadow=False))
         self.assertEqual([s[:3] for s in on["stones"]], [s[:3] for s in off["stones"]])
         diff = {(a[3], b[3]) for a, b in zip(off["stones"], on["stones"]) if a[3] != b[3]}
         self.assertEqual(diff, {(SMOKED, COLORADO)})

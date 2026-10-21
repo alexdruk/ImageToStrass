@@ -32,9 +32,10 @@ SAMPLE_SHARE (60 %) of its radius, as sample_delivered does, instead of its whol
 most AI images takes in the dark gaps and turns warm shadow skin into Smoked Topaz. DEFAULT has it
 on; PROTOTYPE and the BUILD_* rules have it off.
 
-IS (IS-05d, experiment, off everywhere including DEFAULT): warm_shadow makes skin_nearest pick
-Colorado Topaz instead of Smoked Topaz when Smoked Topaz is the nearest skin colour and Colorado
-Topaz is at most warm_shadow_de ΔE2000 further away. mixed_shadow alternates Smoked Topaz and
+IS (IS-05d, not in RS): warm_shadow makes skin_nearest pick Colorado Topaz instead of Smoked Topaz
+when Smoked Topaz is the nearest skin colour and Colorado Topaz is at most warm_shadow_de ΔE2000
+further away. DEFAULT has it on with warm_shadow_de 3; PROTOTYPE and the BUILD_* rules have it off.
+IS (IS-05d, experiment, off everywhere including DEFAULT): mixed_shadow alternates Smoked Topaz and
 Colorado Topaz along the rows, in the proportion (1:2, 1:1 or 2:1) whose mix comes nearest the
 local sampled colour, on SS4/SS6 skin stones whose colour lies between the two
 (faces.mixed_shadow). The AI's shadow skin (about L* 33, chroma 43) lies between the two
@@ -84,4 +85,5 @@ DEFAULT = Rules(pupil_core_only=True, keep_chains=True, extra_colours=True, mean
                 pupil_inscribed=True, real_colours=True, more_colours=True, lively_eyes=True, skin_no_wine=True,
                 soft_outlines=False, calm_skin=True, skin_nearest=True, plausible_eyes=True,
                 sample_delivered=True,  # IS (IS-05b): soft_outlines off, sample_delivered on
-                skin_nearest_inner=True)  # IS (IS-05c): human_iris off, skin_nearest_inner on
+                skin_nearest_inner=True,  # IS (IS-05c): human_iris off, skin_nearest_inner on
+                warm_shadow=True, warm_shadow_de=3.0)  # IS (IS-05d)

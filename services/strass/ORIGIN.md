@@ -190,3 +190,20 @@ sizes are unchanged on every design without a person's face.
 Effect (docs/IS-05d-results.md): only Smoked/Colorado Topaz colours change; stones, sizes, faces and
 pupils are identical on the six test designs. Recommended there: `warm_shadow` with
 `warm_shadow_de=3`; not applied.
+
+### IS-05d decision (21 Oct 2026): warm_shadow on in DEFAULT, 3 ΔE
+
+Alex's decision on docs/IS-05d-results.md (variant A, "warm-3"):
+
+- `strass_layout/rules.py`: `DEFAULT` has `warm_shadow=True`, `warm_shadow_de=3.0`. `PROTOTYPE` and
+  `BUILD_E` … `BUILD_I` keep it off, so the equivalence test against the prototype still holds.
+  `mixed_shadow` (variant B) stays off everywhere. Docstring note.
+- `tests/test_is05d.py`: the defaults test checks `warm_shadow` is on only in `DEFAULT` (3 ΔE) and
+  `mixed_shadow` off everywhere; the woman test compares `DEFAULT` with `warm_shadow` off.
+- `tests/test_build_j.py`: `DefaultAgainstBuildI` runs `DEFAULT` with `warm_shadow` off as well.
+- `scripts/is05d_runs.py`: "default" is now `DEFAULT` with `warm_shadow` off (the experiment's
+  baseline), "final" is `DEFAULT`; "mixed" keeps `warm_shadow` off.
+
+Effect on the 21 test designs (docs/IS-05d-results.md section 9): stones, sizes, coverage, faces and
+pupils identical; 11 designs change colour, almost all Smoked Topaz → Colorado Topaz (woman 75,
+giraffe-rule 97, dachshund-rule 65, leopard 33, einstein 17).

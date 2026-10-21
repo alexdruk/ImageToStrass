@@ -11,7 +11,8 @@ catalogue lightness, near-white gaps 8 L* darker (section 8); renders and ZIP bu
 AI images archived without metadata (4.2); the section 12 test exists. Revised 21 Oct 2026 (IS-05c): no
 iris rings around a person's pupils and skin colours read from the inner 60 % of each stone (7.4); tinted
 view: every stone's fill reaches 0.6 mm beyond its edge, and a large Jet stone's light rim is as wide as
-an SS6 stone's (section 8).
+an SS6 stone's (section 8). Revised 21 Oct 2026 (IS-05d): a shadow skin stone takes Colorado Topaz
+when that is at most 3 ΔE further than Smoked Topaz (7.4).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -295,6 +296,11 @@ so the eyes looked like goggles); animals keep theirs. The new rule `skin_neares
 makes the skin step `skin_nearest` read each stone's colour from the inner 60 % of its radius, as the
 colours above are read, instead of its whole disc, which reached into the AI's dark gaps and turned warm
 shadow skin into Smoked Topaz. RS 38cd831 has `human_iris` on and reads the whole disc.
+
+Shadow skin (IS's strass copy, IS-05d, `docs/IS-05d-results.md`): with the rule `warm_shadow` (on in
+`DEFAULT`, `warm_shadow_de` 3), a skin stone whose nearest skin colour is Smoked Topaz takes Colorado
+Topaz when Colorado Topaz is at most 3 ΔE2000 further from its sampled colour. Only those near ties
+change; stones, sizes, faces and pupils do not. RS 38cd831 has no such rule.
 
 ### 7.5 Size (D1, D2)
 

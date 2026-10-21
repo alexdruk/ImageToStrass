@@ -1,6 +1,6 @@
 // IS-05d skin shadow experiment, images and numbers for docs/IS-05d-results.md, run by hand (no
 // provider or strass call):
-//   node tools/is05d-results.mjs <runs dir>
+//   node tools/is05d-results.mjs <runs dir> [--final]
 // <runs dir> holds services/strass/scripts/is05d_runs.py's layouts (<name>.<variant>.json). Images
 // go to docs/IS-05d-results/, numbers to docs/IS-05d-results/numbers.json:
 //   woman-face.jpg     rs-woman face and neck per variant: AI image, tinted default, tinted variant,
@@ -214,6 +214,36 @@ function windows(layout) {
   const eye = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
   const cheek = { x: x0, y: Math.max(...eyes.map((e) => e.y)) + 2 + Math.max(...eyes.map((e) => e.r - 4)), w: eye.w, h: 1.2 * eye.h };
   return { eye, cheek };
+}
+
+// ---- final DEFAULT (warm_shadow on, 3 ΔE): rs-woman face and neck --------------------------------
+// node tools/is05d-results.mjs <runs dir> --final, with <runs dir>/rs-woman.{default,final}.json:
+// AI image on white, the AI image's RGB as the service reads it (alpha ignored), tinted without
+// warm_shadow, tinted final DEFAULT and the final per-stone ΔE map, to woman-face-final.jpg.
+
+async function finalWoman() {
+  const ai = path.join(RS_IMG, "N2_woman.png");
+  const img = await decodeRgba(ai);
+  const before = load(path.join(RUNS, "rs-woman.default.json")), final = load(path.join(RUNS, "rs-woman.final.json"));
+  const s = final.report.mmPerPx;
+  const des = design(final);
+  const recs = stoneRecords(des, img);
+  const inFace = (q) => q.x >= WOMAN_FACE.x && q.x <= WOMAN_FACE.x + WOMAN_FACE.w && q.y >= WOMAN_FACE.y && q.y <= WOMAN_FACE.y + WOMAN_FACE.h;
+  const face = recs.filter((q) => q.ai && isSkinAi(q.ai) && inFace(q));
+  const rgb = await sharp(ai).removeAlpha().png().toBuffer();
+  const panels = [
+    { png: await aiWindow(ai, s, WOMAN_FACE, 8), label: "AI image on white" },
+    { png: await aiWindow(rgb, s, WOMAN_FACE, 8), label: "AI image RGB (as the service reads it)" },
+    { png: await tintedWindow(design(before), WOMAN_FACE, 8), label: "tinted · without warm_shadow" },
+    { png: await tintedWindow(des, WOMAN_FACE, 8), label: "tinted · final DEFAULT" },
+    { png: deMap(des, WOMAN_FACE, (i) => (recs[i].ai && isSkinAi(recs[i].ai) ? recs[i].de : null), 8), label: `ΔE · face skin ${r2(mean(face.map((q) => q.de)))}` }
+  ];
+  const changed = final.stones.filter((q, k) => q[3] !== before.stones[k][3]).length;
+  console.log(JSON.stringify({ file: await grid(panels, 5, 620, "woman-face-final.jpg"), changed, faceSkin: face.length, byColour: tally(face.map((q) => q.color)) }));
+}
+if (process.argv[3] === "--final") {
+  await finalWoman();
+  process.exit(0);
 }
 
 // ---- runs ---------------------------------------------------------------------------------------

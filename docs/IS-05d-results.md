@@ -1,7 +1,8 @@
 # IS-05d — skin shadow (experiment)
 
-21 Oct 2026, branch `is-05d-skin`, run on Alex's laptop (Apple Silicon). `DEFAULT` is **unchanged**;
-the new rules are off in every rule set. No provider call: everything is laid out from saved AI
+21 Oct 2026, branch `is-05d-skin`, run on Alex's laptop (Apple Silicon). Sections 1–8: the experiment,
+with `DEFAULT` unchanged and the new rules off in every rule set. **Follow-up (sections 9–13): Alex
+turned variant A on in `DEFAULT` with 3 ΔE**; B stays off everywhere. No provider call: everything is laid out from saved AI
 images (`services/strass/prototype/img/` and `tools/fixtures/is03b-ai/cat-rule-output.png`).
 
 Designs: rs-woman, rs-portrait, rs-einstein, rs-jesus (faces), rs-dog and cat-rule (controls).
@@ -235,3 +236,153 @@ Open, for Alex (not tried here):
 - `services/strass/strass_layout/pipeline.py`: reads the stone colours for `mixed_shadow` too.
 - `services/strass/tests/test_is05d.py` (new); `services/strass/scripts/is05d_runs.py` (new,
   diagnosis only); `tools/is05d-results.mjs` (new); `docs/IS-05d-results/`.
+
+---
+
+## 9. Follow-up: variant A on in `DEFAULT` (3 ΔE)
+
+Alex's decision: `DEFAULT` has `warm_shadow=True`, `warm_shadow_de=3.0`; `mixed_shadow` (B) stays off
+in every rule set; `PROTOTYPE` and `BUILD_*` are unchanged (`services/strass/ORIGIN.md`, "IS-05d
+decision"; spec 7.4). The runs below lay out all 21 test designs twice with the same detections:
+"final" (`DEFAULT`) and "default" (`DEFAULT` with `warm_shadow` off, i.e. the service before this
+change).
+
+```
+# layouts (services/strass)
+.venv/bin/python scripts/is05d_runs.py <runs> final,default <id>=<png> ...   # the 21 designs, ids as below
+# transparency (section 10), woman (section 12)
+node tools/is05d-transparency.mjs <runs>
+node tools/is05d-results.mjs <runs> --final
+```
+
+On all 21 designs, stones, sizes, coverage, violations (0), faces and pupils are identical to the
+service before the change. Only colours change, on 11 designs:
+
+| Design | Stones changed | What |
+| --- | --- | --- |
+| giraffe-rule | 97 | Smoked → Colorado Topaz |
+| rs-woman | 75 | Smoked → Colorado Topaz |
+| dachshund-rule | 65 | Smoked → Colorado Topaz |
+| rs-leopard | 33 | Smoked → Colorado Topaz |
+| rs-einstein | 17 | Smoked → Colorado Topaz |
+| dog-rule | 12 | Smoked → Colorado Topaz 11, Smoked → Light Smoked Topaz 1 |
+| dog-norule | 10 | Smoked → Colorado Topaz 9, Copper → Colorado Topaz 1 |
+| rs-cat | 7 | Smoked → Colorado Topaz 6, Smoked → Light Smoked Topaz 1 |
+| rs-lake | 5 | Smoked → Colorado Topaz |
+| rs-jesus | 2 | Smoked → Colorado Topaz |
+| rs-dog | 1 | Smoked → Colorado Topaz |
+| the other 10 | 0 | – |
+
+(The three changes that are not Smoked → Colorado Topaz are knock-on effects of the later skin steps,
+which see the new neighbour.)
+
+**Not seen in the experiment:** the giraffe and the dachshund were not among the IS-05d designs, and
+A acts on them more than on any control there. On the giraffe, part of the dark coat patches turn
+from Smoked to Colorado Topaz, so those patches are lighter and lower in contrast against the coat;
+on the dachshund the darker parts of the hip and ear get a little lighter. Left: before, right: final
+`DEFAULT`.
+
+![giraffe-rule before and after](IS-05d-results/final-giraffe-rule.jpg)
+
+![dachshund-rule before and after](IS-05d-results/final-dachshund-rule.jpg)
+
+## 10. Transparency inside the stones (21 AI images)
+
+For every delivered stone (after the SS16 cap and the overlap cleanup, final `DEFAULT`), every pixel
+of the inner 60 % of its radius in the AI image, counted by alpha (`tools/is05d-transparency.mjs`,
+numbers in `IS-05d-results/transparency.json`). "Partly" is alpha 1–254, split 1–127 / 128–239 /
+240–254; "deficit" is the mean of 1 − alpha/255 over those pixels (how much of a stone's colour the
+background replaces on average).
+
+| Design | Stones | Fully transparent % | Partly % (1–127 / 128–239 / 240–254) | Opaque % | Deficit % |
+| --- | --- | --- | --- | --- | --- |
+| dog-rule | 2039 | 0 | 99.9 (0 / 0.2 / 99.7) | 0 | 1.9 |
+| dog-norule | 2071 | 0 | 100 (0.1 / 1.3 / 98.6) | 0 | 2.9 |
+| cat-rule | 3573 | 0 | 100 (0 / 0.1 / 99.9) | 0 | 1.8 |
+| cat-norule | 3140 | 0 | 100 (0 / 0.3 / 99.7) | 0 | 1.3 |
+| mug-rule | 1751 | 0 | 100 (0 / 0 / 100) | 0 | 0.6 |
+| mug-norule | 2224 | 0 | 100 (0 / 0 / 100) | 0 | 0.7 |
+| giraffe-rule | 2286 | 0.1 | 99.9 (0.5 / 3.0 / 96.4) | 0 | 2.5 |
+| dachshund-rule | 1628 | 0 | 99.9 (1.1 / 23.6 / 75.2) | 0 | 6.1 |
+| car-rule | 3531 | 0 | 100 (0 / 0.5 / 99.5) | 0 | 1.4 |
+| rs-cat | 2150 | 0 | 100 (0.7 / 6.9 / 92.4) | 0 | 4.4 |
+| rs-dog | 1670 | 0 | 100 (0.2 / 3.3 / 96.5) | 0 | 2.6 |
+| rs-einstein | 3590 | 0 | 99.9 (0.2 / 16.8 / 82.9) | 0 | 4.8 |
+| rs-jesus | 3297 | 0 | 100 (0.2 / 15.2 / 84.6) | 0 | 4.7 |
+| rs-lake | 4089 | 0 | 100 (0.3 / 23.1 / 76.6) | 0 | 5.2 |
+| rs-leopard | 2433 | 0 | 99.9 (0.5 / 16.0 / 83.4) | 0 | 5.0 |
+| rs-logo | 833 | 0 | 99.8 (0.2 / 0.5 / 99.1) | 0.3 | 1.9 |
+| rs-parrot | 2542 | 0 | 100 (0.1 / 1.3 / 98.6) | 0 | 2.2 |
+| rs-portrait | 3990 | 0 | 100 (0.1 / 0.4 / 99.5) | 0 | 1.2 |
+| rs-rose | 1846 | 0 | 99.8 (0 / 1.1 / 98.7) | 0.2 | 2.4 |
+| rs-tulips | 2673 | 0 | 99.9 (0.1 / 5.5 / 94.3) | 0.1 | 3.6 |
+| rs-woman | 2613 | 0 | 100 (0.2 / 11.7 / 88.1) | 0 | 4.4 |
+
+Where the images come from:
+
+| Images | Pipeline | Prompt | Background setting |
+| --- | --- | --- | --- |
+| The 9 IS-03b fixtures (`tools/fixtures/is03b-ai/`) | **Current IS pipeline**: IS-03b, 18 Oct 2026 (`tools/measure-is03b.mjs`): IS background removal, model input crop, size auto | IS prompt version 2; `-rule` with the "about 60 stones across" sentence, `-norule` without it. Version 3 (production today) is version 2 without that sentence, so the 3 `-norule` images are what today's request produces | Request `background transparent` (spec 7.3), and the prompt's background rule (transparent, magenta only as a fallback), the same as today |
+| The 12 RS test images (`services/strass/prototype/img/N2_*.png`) | **Older RS test images**: made 5 Oct 2026 (C2PA timestamp) through the provider's API for the RS layout prototype, before RS prompt v3; square 1254 px | The RS research prompt "v2" (RS IMG-026, S10), not an IS or RS app prompt | Not recorded. The outputs are RGBA with transparent backgrounds |
+
+What it shows:
+
+- **Not a single stone pixel is fully opaque** (alpha 255) in any of the 21 images, and almost none is
+  fully transparent. The provider's "opaque" pixels sit at alpha 240–254 (on cat-rule mostly
+  249–252; on mug-rule all 253).
+- By the letter of the question every image is ~100 % "partly transparent", so the IS-03b fixtures
+  are far above 5 %. By what it does to colour, the transparency inside stones is small: the
+  background replaces 0.6–2.9 % of a stone's colour on 8 of the 9 fixtures, and 6.1 % on the
+  dachshund, the only fixture with a real share below alpha 240 (24.7 %). The older RS images are
+  more transparent (deficit up to 5.2 %, 12–24 % of pixels below 240 on the faces, lake and leopard).
+- The woman (IS-05d section 2): the 36 % fully transparent pixels found there lie in the **gaps**
+  between the stones, not in them. Inside her stones the deficit is 4.4 %, which on white is enough
+  to lift a dark shadow stone by about 3 L\* (IS-05d section 2: L\* 36.4 on white against 33.4 in
+  RGB); light stones move by less than 1 L\*. The rest of the difference Alex sees is the white
+  showing through the gaps (section 12).
+- The layout does not see any of this: the service reads RGB and ignores alpha, so the transparency
+  inside stones changes only how the AI image looks on white, never which stone is chosen.
+
+## 11. Step 3 (variant M): triggered, not run — no API key
+
+The IS-03b fixtures are above the 5 % threshold (100 % partly transparent by alpha < 255), so step 3
+applies. **It was not run**: the repository has no `.env` at all, so no provider key is set. No
+provider call was made and the production request is unchanged.
+
+To run it, put `OPENAI_API_KEY` (and the model and quality settings) in `.env` with `IS_FAKE` empty;
+step 3 then needs the 6 calls (dog, cat, mug × current request, variant M).
+
+What to expect, from section 10: since the service ignores alpha, variant M changes the layout only
+through whatever the provider draws differently when it is asked for an opaque magenta background;
+the alpha deficit itself (0.6–2.9 % on the fixtures, 6.1 % on the dachshund) never reached the
+layout. What M would fix is the mismatch between the AI image on white and the stones, up to about
+3–4 L\* on dark stones, and it cannot touch the transparent gaps, because IS turns the magenta back
+into transparency. Its risks are a magenta fringe on stone edges and magenta inside the subject.
+Recommendation: run the 6 calls only if the per-stone RGB itself is expected to change (darker or
+lighter stones drawn by the provider), not to fix transparency; the transparency inside stones is
+small and does not affect the layout.
+
+## 12. rs-woman face and neck with the final `DEFAULT`
+
+AI image on white (as Alex sees it), the AI image's RGB with alpha ignored (what the service reads),
+tinted without `warm_shadow`, tinted with the final `DEFAULT`, and the final per-stone ΔE map of the
+skin stones (colours as section 2). The final layout equals variant "A 3" of sections 2–4 exactly:
+75 stones Smoked → Colorado Topaz, face skin Colorado Topaz 559 / Smoked Topaz 204, face skin ΔE
+7.46.
+
+![rs-woman face and neck, final DEFAULT](IS-05d-results/woman-face-final.jpg)
+
+The RGB panel shows that the dark jaw and neck shadow is in the AI image the service reads; the
+tinted preview follows it. The patch is a little smaller at its edges with A, as expected (section 5).
+
+## 13. Follow-up tests
+
+- Strass service (`python -m unittest -v`, equivalence included, `caffeinate -i`): **109 tests, OK, none
+  skipped**, 4323 s; the equivalence test finds the package and the prototype identical on all 12 images.
+- `npm test`: 143 tests, all pass (the provider-leak test included).
+
+Files: `services/strass/strass_layout/rules.py` (`DEFAULT`), `services/strass/tests/test_is05d.py`,
+`services/strass/tests/test_build_j.py`, `services/strass/scripts/is05d_runs.py` ("final"; "default"
+is now `warm_shadow` off), `services/strass/ORIGIN.md`, `docs/IS-001-Spec.md` (7.4),
+`tools/is05d-transparency.mjs` (new), `tools/is05d-results.mjs` (`--final`), `docs/IS-05d-results/`
+(`transparency.json`, `woman-face-final.jpg`, `final-giraffe-rule.jpg`, `final-dachshund-rule.jpg`).

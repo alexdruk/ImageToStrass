@@ -1,7 +1,8 @@
 # IS: new file, not from Rhinestone-Studio.
 """IS-05d diagnosis runs (skin shadow): lays out saved AI images with DEFAULT and the shadow rules
 of IS-05d (Rules.warm_shadow, Rules.mixed_shadow). No provider call; nothing here is used by the
-service, and DEFAULT is not changed.
+service. Since IS-05d DEFAULT has warm_shadow on (3 ΔE); "default" here is the IS-05d experiment's
+default, i.e. DEFAULT with warm_shadow off, and "final" is DEFAULT as shipped.
 
     .venv/bin/python scripts/is05d_runs.py OUT_DIR VARIANTS NAME=PNG [NAME=PNG ...]
 
@@ -9,7 +10,8 @@ VARIANTS is a comma-separated list of names from VARIANTS below, or "shadow" for
 Output files as scripts/is05c_runs.py writes them (NAME.VARIANT.json, NAME.VARIANT.stages.json,
 NAME.det.npy).
 
-  default            the service as shipped
+  default            DEFAULT with warm_shadow off (the experiment's baseline)
+  final              DEFAULT as shipped (= warm-3)
   warm-1.5, warm-3   A: warm_shadow with warm_shadow_de 1.5 / 3
   mixed              B: mixed_shadow
   warm-1.5-mixed     C: A (1.5) and B together
@@ -26,10 +28,11 @@ import is05c_runs  # noqa: E402
 from strass_layout import DEFAULT  # noqa: E402
 
 SHADOW = {
-    "default": DEFAULT,
+    "default": dataclasses.replace(DEFAULT, warm_shadow=False),
+    "final": DEFAULT,
     "warm-1.5": dataclasses.replace(DEFAULT, warm_shadow=True, warm_shadow_de=1.5),
     "warm-3": dataclasses.replace(DEFAULT, warm_shadow=True, warm_shadow_de=3.0),
-    "mixed": dataclasses.replace(DEFAULT, mixed_shadow=True),
+    "mixed": dataclasses.replace(DEFAULT, warm_shadow=False, mixed_shadow=True),
     "warm-1.5-mixed": dataclasses.replace(DEFAULT, warm_shadow=True, warm_shadow_de=1.5, mixed_shadow=True),
     "warm-3-mixed": dataclasses.replace(DEFAULT, warm_shadow=True, warm_shadow_de=3.0, mixed_shadow=True),
 }
