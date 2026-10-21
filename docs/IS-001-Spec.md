@@ -8,7 +8,10 @@ two pupils may stay SS20; designs whose pupils are not one plausible pair get no
 view: stones keep their catalogue lightness, gaps 4 L* darker (section 8). Revised 20 Oct 2026 (IS-05b,
 second follow-up): stone colours read at the delivered stones (7.4); a stone's inner 60 % held to its
 catalogue lightness, near-white gaps 8 L* darker (section 8); renders and ZIP builds in a worker thread;
-AI images archived without metadata (4.2); the section 12 test exists.
+AI images archived without metadata (4.2); the section 12 test exists. Revised 21 Oct 2026 (IS-05c): no
+iris rings around a person's pupils and skin colours read from the inner 60 % of each stone (7.4); tinted
+view: every stone's fill reaches 0.6 mm beyond its edge, and a large Jet stone's light rim is as wide as
+an SS6 stone's (section 8).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -286,6 +289,13 @@ radius, after its ordered layout has moved it, instead of at the detection it ca
 adds to fill holes read their own pixels too. RS 38cd831 reads them at the detections and gives fill stones the nearest
 detection's or their neighbours' colour (`services/strass/ORIGIN.md`, `docs/IS-05b-results.md`).
 
+Eyes and skin (IS's strass copy, IS-05c, `docs/IS-05c-results.md`): `DEFAULT` has `human_iris` off, so a
+person's pupil gets no rings of SS4 iris stones (they took the AI's eye white and turned Grey and Silver,
+so the eyes looked like goggles); animals keep theirs. The new rule `skin_nearest_inner` (on in `DEFAULT`)
+makes the skin step `skin_nearest` read each stone's colour from the inner 60 % of its radius, as the
+colours above are read, instead of its whole disc, which reached into the AI's dark gaps and turned warm
+shadow skin into Smoked Topaz. RS 38cd831 has `human_iris` on and reads the whole disc.
+
 ### 7.5 Size (D1, D2)
 
 Natural size only. The design is the layout service's answer as it is: stone positions and
@@ -357,12 +367,18 @@ Definition (from the RS 30 Sep decision, sharpened here):
    L\* (its hue is kept), rounded to 8 bits so the step is never less than the rule's. Every gap is
    thus at least 4 L\* darker than its stone, the darkest (jet, L\* 6) included, and at least 8 on
    near-white fills, whose 4–5 L\* gaps were hard to see.
-4. A pixel is filled only if its distance to that stone's centre is at most **1.6 × the stone's
-   radius**. Beyond that (the design's outer edge and true holes) the background shows: white in
-   the app, transparent in the PNG file.
+4. A pixel is filled only if its distance to that stone's edge is at most **0.6 mm**, 0.6 × an
+   SS6 stone's radius, the same for every size (IS-05c; before, 1.6 × the stone's own radius, which
+   is the same for an SS6 stone but let an SS20 pupil claim a 1.4 mm ring of its dark gap colour, a
+   wide black octagon around the eye). Beyond that (the design's outer edge and true holes) the
+   background shows: white in the app, transparent in the PNG file.
 5. The stones are drawn on top with the RS faceted crystal renderer
    (`CrystalStoneRenderer.drawCrystalStone`, deterministic per-stone appearance; the RS file is
-   unchanged).
+   unchanged). The RS renderer strokes each stone's edge 0.09 radii wide in its catalogue stroke
+   colour, which for Jet is light grey, so a large Jet stone (a pupil) had a light ring 2.35 times
+   as wide as an SS6 one. A stone above SS6 whose stroke is lighter than its fill (only Jet) has its
+   edge redrawn by IS at an SS6 stone's width: the RS edge band is painted over, inside the stone
+   with its edge colour and outside with its gap colour, and the edge stroked again (IS-05c).
 6. Each drawn stone's lightness is brought to its catalogue fill's L\*, over the pixels whose
    centre lies inside its disc, in two zones. First the **inner 60 %** of the radius, where the
    renderer puts its highlight: its mean L\* is brought to within **4** of the fill's. Then the
@@ -383,7 +399,7 @@ images (mean ΔE2000 of 2 mm cells, the AI cell being the mean colour of its sto
 gaps are darkened the closer the picture, so the rule is the visibility limit of 4 L\*; a step
 growing with lightness was no better (4 + 0.05 per L\* above 80 is the best of the grid by 0.01),
 lightening the gaps of very dark stones was worse, and a reach of 1.7 or 1.8 radii gained less than
-0.1, so the reach stays 1.6. Mean cell ΔE over the 21 designs: 10.8 before (RS layouts, 85 % tint,
+0.1, so the reach stayed 1.6 (IS-05c then fixed it at an SS6 stone's 0.6 mm for every size). Mean cell ΔE over the 21 designs: 10.8 before (RS layouts, 85 % tint,
 stones as drawn), 8.7 after. The second follow-up (20 Oct 2026) held the inner 60 % of each stone to
 its catalogue lightness too (before, the highlight left mid-dark stones' centres 10–13 L\* light,
 while the whole stone averaged right) and set 8 L\* for near-white gaps at Alex's request
@@ -393,9 +409,9 @@ Implementation: Node with `@napi-rs/canvas` (Canvas 2D compatible, so the RS ren
 unchanged), `src/render/tinted.js` (`GAP_RULE`, `STONE_LIGHTNESS`). The renders run in a worker
 thread (`src/render/offthread.js`, `worker_threads`), so the server keeps answering polls and pages
 while one runs. Nearest-stone search: a pixel can only be filled when its
-nearest stone's edge is at most 0.6 × the largest radius away, so each stone writes its edge
-distance into the pixels within that reach and the smallest wins; this is exact for every pixel
-that can be filled. "Main stone" is the most common stone size. Two renders: preview (900 px long
+nearest stone's edge is at most 0.6 mm (`FILL_MARGIN_MM`) away, so each stone writes its edge
+distance into the pixels within that margin and the smallest wins; this is exact for every pixel
+that can be filled. The rim of step 5 is `drawStone` in the same file. "Main stone" is the most common stone size. Two renders: preview (900 px long
 side, white background, watermarked, sent to the browser) and full (2400 px long side, transparent,
 written to `attempt-<n>/tinted.png` in the "Preparing files" stage and put in the ZIP).
 
@@ -636,7 +652,8 @@ the rule.
 
 **IS-04 Tinted render and exports.** Section 8 and section 9.
 *Done when:* tinted render matches the definition on a unit fixture (pixel at 1.5 r gets 85 % of
-the nearest stone's fill, since IS-05b its gap colour; pixel at 1.7 r is background); all files open (SVG in a browser, PDF and
+the nearest stone's fill, since IS-05b its gap colour; pixel at 1.7 r is background; since IS-05c
+0.5 mm and 0.7 mm beyond the edge); all files open (SVG in a browser, PDF and
 AI via pdf.js with page count and page size, EPS by a structure check with its bounding box equal to
 the design size and one circle per stone, DXF via the RS DXF test approach, PNG size equals 300 dpi
 true size); ZIP contents match the table; the overlap cleanup (7.5) is measured on the rejected

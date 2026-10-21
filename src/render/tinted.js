@@ -1,7 +1,8 @@
 import { createCanvas } from "@napi-rs/canvas";
 import { getCrystalAppearance } from "../stones/CrystalAppearance.js";
-import { drawCrystalStone } from "../stones/CrystalStoneRenderer.js";
+import { adjustBrightness, drawCrystalStone } from "../stones/CrystalStoneRenderer.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
+import { getStoneSize } from "../stones/StoneSizes.js";
 
 // The tinted view (spec section 8, D4). It reads the final StoneLayout and never changes it.
 //   1. The canvas is the stones' box plus a margin of MARGIN_STONES main-stone diameters.
@@ -10,9 +11,10 @@ import { STONE_COLORS } from "../stones/StoneColors.js";
 //   3. that is the gap colour of the stone's catalogue fill (gapRgb: darker by a CIE L* step that
 //      grows with the fill's lightness, at least lightMinStep for near-white fills; lighter for
 //      very dark fills),
-//   4. but only if the pixel lies within FILL_REACH radii of that stone's centre; elsewhere the
-//      background shows (white in the app, transparent in the PNG file).
-//   5. The stones are drawn on top with the RS faceted crystal renderer,
+//   4. but only if the pixel lies within FILL_MARGIN_MM of that stone's edge, the same margin for
+//      every size; elsewhere the background shows (white in the app, transparent in the PNG file).
+//   5. The stones are drawn on top with the RS faceted crystal renderer (drawStone: a stone above
+//      SS6 with a rim lighter than its fill, i.e. a large Jet stone, gets an SS6 stone's rim width),
 //   6. then each stone's lightness is brought to its catalogue fill's L* in two zones (the pixels
 //      whose centre lies inside its disc): first the inner INNER_SHARE of the radius (where the
 //      renderer puts its highlight) to a mean within STONE_LIGHTNESS.inner, then the whole stone to
@@ -24,12 +26,16 @@ import { STONE_COLORS } from "../stones/StoneColors.js";
 //      tolerances is left as drawn.
 //
 // Nearest-stone search: a pixel can only be filled when its nearest stone's edge is at most
-// (FILL_REACH - 1) * r <= (FILL_REACH - 1) * rMax away, and any stone whose edge is farther than
-// that cannot fill it. So each stone writes its edge distance into the pixels within that reach
-// (keeping the smallest), which gives exactly the nearest stone of every pixel that can be filled.
+// FILL_MARGIN_MM away, and any stone whose edge is farther than that cannot fill it. So each stone
+// writes its edge distance into the pixels within that margin (keeping the smallest), which gives
+// exactly the nearest stone of every pixel that can be filled.
 
 export const MARGIN_STONES = 2;
-export const FILL_REACH = 1.6;
+// Step 4 (IS-05c): the fill margin beyond a stone's edge is the one an SS6 stone had with the old
+// reach of 1.6 radii, 0.6 x its 1 mm radius, for every size. With 1.6 radii a large pupil (SS20,
+// r 2.35 mm) claimed a 1.4 mm ring of its own dark gap colour and sat in a wide black octagon.
+export const SS6_RADIUS_MM = getStoneSize("ss6").diameterMm / 2;
+export const FILL_MARGIN_MM = 0.6 * SS6_RADIUS_MM;
 // Step 6 (IS-05b): the whole stone's mean L* within `whole` of the fill's, the inner zone's within
 // `inner` (aims; the spec allows 3 and 5, the rest is left for 8-bit rounding). inner: null keeps
 // only the whole-stone step (the renderer of the first IS-05b follow-up; tools only).
@@ -138,13 +144,11 @@ export function tintCanvasMm(stoneLayout) {
 // The nearest stone of every pixel that can be filled: owner (stone index or -1) and best (the
 // distance from the pixel centre to that stone's edge, px; negative inside the stone), and the
 // canvas scale (px per mm).
-// fillReach: FILL_REACH (tools may try others).
-export function nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale, fillReach = FILL_REACH }) {
+// fillMarginMm: FILL_MARGIN_MM (tools may try others).
+export function nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale, fillMarginMm = FILL_MARGIN_MM }) {
   const best = new Float32Array(widthPx * heightPx).fill(Infinity);
   const owner = new Int32Array(widthPx * heightPx).fill(-1);
-  let rMax = 0;
-  for (const s of stones) rMax = Math.max(rMax, s.sizeMm / 2);
-  const reach = (fillReach - 1) * rMax * scale;
+  const reach = fillMarginMm * scale;
 
   stones.forEach((s, i) => {
     const cx = (s.xMm - minXmm) * scale;
@@ -170,9 +174,14 @@ export function nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale
 
 // Steps 1-4: RGBA pixels of the tint at `scale` px per mm, the canvas starting at (minXmm, minYmm).
 // Background pixels are `background` ([r, g, b, a]). `near` is nearestStones() of the same canvas.
-export function tintPixels(stones, { minXmm, minYmm, widthPx, heightPx, scale, background, rule = GAP_RULE, near = null }) {
+// fillReach (tools only): the rule before IS-05c, filled up to fillReach radii from the centre;
+// `near` must then reach (fillReach - 1) * the largest radius.
+export function tintPixels(stones, {
+  minXmm, minYmm, widthPx, heightPx, scale, background, rule = GAP_RULE, near = null, fillMarginMm = FILL_MARGIN_MM, fillReach = null
+}) {
   const data = new Uint8ClampedArray(widthPx * heightPx * 4);
-  const { owner, best } = near || nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale });
+  const { owner, best } = near || nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale, fillMarginMm });
+  const margin = fillMarginMm * scale;
   const tints = new Map();
   const tintOf = (color) => {
     if (!tints.has(color)) tints.set(color, [...gapRgb(fillOf(color), rule), 255]);
@@ -180,9 +189,9 @@ export function tintPixels(stones, { minXmm, minYmm, widthPx, heightPx, scale, b
   };
   for (let p = 0; p < owner.length; p++) {
     const s = owner[p] >= 0 ? stones[owner[p]] : null;
-    // edge + r is the distance to the centre, in px; filled up to FILL_REACH * r.
-    const r = s ? (s.sizeMm / 2) * scale : 0;
-    data.set(s && best[p] + r <= FILL_REACH * r ? tintOf(s.color) : background, p * 4);
+    // best is the distance to the stone's edge, in px; filled up to the margin.
+    const filled = s && (fillReach ? best[p] <= (fillReach - 1) * (s.sizeMm / 2) * scale : best[p] <= margin);
+    data.set(filled ? tintOf(s.color) : background, p * 4);
   }
   return data;
 }
@@ -287,6 +296,51 @@ export function keepStoneLightness(data, stones, near, { whole = STONE_LIGHTNESS
   }
 }
 
+// Step 5: one stone, drawn by the RS renderer (CrystalStoneRenderer.js, unchanged). The RS renderer
+// strokes a stone's outer edge in its catalogue stroke colour, max(0.45 px, 0.09 r) wide. Jet's
+// stroke is light grey, so a large Jet stone (a pupil) had a light ring as wide, in mm, as its size
+// (SS20: 0.21 mm, SS6: 0.09 mm). IS-05c: a stone above SS6 whose stroke is lighter than its fill
+// gets the rim an SS6 stone has: the RS edge band is painted over (inside the stone with its edge
+// colour, the accent; outside with its gap colour) and the edge stroked again at an SS6 stone's
+// width. Every other stone is drawn as RS draws it.
+const TAU = Math.PI * 2;
+const RS_EDGE = { share: 0.09, minPx: 0.45 };
+const lightRim = new Map();
+function hasLightRim(color) {
+  if (!lightRim.has(color)) {
+    const c = STONE_COLORS[color] || STONE_COLORS.crystal;
+    lightRim.set(color, lightnessOfHex(c.stroke) > lightnessOfHex(c.fill));
+  }
+  return lightRim.get(color);
+}
+
+function drawStone(ctx, stone, x, y, r, scale, rule, ss6Rim = true) {
+  const appearance = getCrystalAppearance(stone);
+  drawCrystalStone(ctx, x, y, r, stone.color, appearance);
+  const r6 = SS6_RADIUS_MM * scale;
+  if (!ss6Rim || r <= r6 * (1 + 1e-9) || !hasLightRim(stone.color)) return;
+  const c = STONE_COLORS[stone.color] || STONE_COLORS.crystal;
+  const wide = Math.max(RS_EDGE.minPx, r * RS_EDGE.share), narrow = Math.max(RS_EDGE.minPx, r6 * RS_EDGE.share);
+  const band = (from, to) => {
+    ctx.beginPath();
+    ctx.arc(x, y, to, 0, TAU);
+    ctx.arc(x, y, from, 0, TAU, true);
+  };
+  ctx.save();
+  band(r - wide / 2 - 0.5, r);
+  ctx.fillStyle = adjustBrightness(c.accent, appearance.brightness);
+  ctx.fill();
+  band(r, r + wide / 2 + 0.5);
+  ctx.fillStyle = `rgb(${gapRgb(c.fill, rule).join(",")})`;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, TAU);
+  ctx.lineWidth = narrow;
+  ctx.strokeStyle = c.stroke;
+  ctx.stroke();
+  ctx.restore();
+}
+
 // The watermark of every preview the browser receives: "IS · PREVIEW · <code>", tiled diagonally.
 function drawWatermark(ctx, widthPx, heightPx, code) {
   const text = `IS · PREVIEW · ${code}`;
@@ -314,10 +368,12 @@ function drawWatermark(ctx, widthPx, heightPx, code) {
 
 // StoneLayout -> { png, widthPx, heightPx, scale } with the long side at longSidePx. background
 // "white" (the app) or "transparent" (the PNG file); watermark: the code to tile over it, or null.
-// rule and stoneLightness: the rules of steps 3 and 6 (tools only; the app always uses GAP_RULE and
-// STONE_LIGHTNESS).
+// rule and stoneLightness: the rules of steps 3 and 6; fillReach and ss6Rim: steps 4 and 5 before
+// IS-05c are { fillReach: 1.6, ss6Rim: false } (tools only; the app always uses GAP_RULE,
+// STONE_LIGHTNESS, FILL_MARGIN_MM and the SS6 rim).
 export function renderTinted(stoneLayout, {
-  longSidePx = FULL_LONG_SIDE_PX, background = "transparent", watermark = null, rule = GAP_RULE, stoneLightness = STONE_LIGHTNESS
+  longSidePx = FULL_LONG_SIDE_PX, background = "transparent", watermark = null, rule = GAP_RULE, stoneLightness = STONE_LIGHTNESS,
+  fillReach = null, ss6Rim = true
 } = {}) {
   if (!stoneLayout?.stones?.length) throw new TypeError("renderTinted requires a StoneLayout with stones.");
   const box = tintCanvasMm(stoneLayout);
@@ -325,19 +381,20 @@ export function renderTinted(stoneLayout, {
   const widthPx = Math.round(box.widthMm * scale);
   const heightPx = Math.round(box.heightMm * scale);
   const bg = background === "white" ? [255, 255, 255, 255] : [0, 0, 0, 0];
-  const geometry = { minXmm: box.minXmm, minYmm: box.minYmm, widthPx, heightPx, scale };
+  const fillMarginMm = fillReach ? (fillReach - 1) * Math.max(...stoneLayout.stones.map((s) => s.sizeMm / 2)) : FILL_MARGIN_MM;
+  const geometry = { minXmm: box.minXmm, minYmm: box.minYmm, widthPx, heightPx, scale, fillMarginMm };
   const near = nearestStones(stoneLayout.stones, geometry);
 
   const canvas = createCanvas(widthPx, heightPx);
   const ctx = canvas.getContext("2d");
   const tint = ctx.createImageData(widthPx, heightPx);
-  tint.data.set(tintPixels(stoneLayout.stones, { ...geometry, background: bg, rule, near }));
+  tint.data.set(tintPixels(stoneLayout.stones, { ...geometry, background: bg, rule, near, fillReach }));
   ctx.putImageData(tint, 0, 0);
 
   for (const stone of stoneLayout.stones) {
     const x = (stone.xMm - box.minXmm) * scale;
     const y = (stone.yMm - box.minYmm) * scale;
-    drawCrystalStone(ctx, x, y, (stone.sizeMm / 2) * scale, stone.color, getCrystalAppearance(stone));
+    drawStone(ctx, stone, x, y, (stone.sizeMm / 2) * scale, scale, rule, ss6Rim);
   }
   const drawn = ctx.getImageData(0, 0, widthPx, heightPx);
   keepStoneLightness(drawn.data, stoneLayout.stones, near, stoneLightness);
