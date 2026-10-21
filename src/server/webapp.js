@@ -3,22 +3,21 @@ import path from "node:path";
 import express from "express";
 import sharp from "sharp";
 import { normalizeCode } from "../db/codes.js";
-import { deliveryZipPath } from "../export/zip.js";
 import { DESIGNS_PER_CODE } from "../pipeline/design.js";
 import { attemptDir, uploadDir, writeCodeJson } from "../prep/archive.js";
 import { previewPng } from "../prep/prepare.js";
-import { buildDeliveryZipOffThread, renderPreviewOffThread } from "../render/offthread.js";
+import { renderPreviewOffThread } from "../render/offthread.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
 import { listAllStoneSizes } from "../stones/StoneSizes.js";
+import { isLocalRequest } from "./admin-access.js";
+import { DELIVERY_DAYS, deliveryExpiry } from "./delivery.js";
 
 // The web app's own routes (spec section 10): the screens' URLs, the session of a code, the two
 // views of a design (Original and the watermarked Tinted preview), "Use this design" and the
 // download page. Answers carry IS fields only; refusals are { error: <IS code> } (spec 12).
 
-export const DELIVERY_DAYS = 30;
-const DAY_MS = 24 * 60 * 60 * 1000;
+export { DELIVERY_DAYS };
 const PREVIEW_CACHE_SIZE = 24;
-const LOOPBACK = new Set(["127.0.0.1", "::1", "::ffff:127.0.0.1"]);
 
 // Every screen URL of the app; each answers with the one page (public/index.html).
 export const SCREEN_PATHS = /^\/(?:c\/[^/]+(?:\/prepare|\/working|\/done|\/result\/\d+)?|download|privacy|terms|contact)?\/?$/;
@@ -53,10 +52,11 @@ export function downloadState(row, now = Date.now()) {
   return { state: "unpaid" };
 }
 
-export function webappRoutes({ q, config, background, log = console }) {
+// delivery: createDelivery (delivery.js). poller: the Etsy poller, asked for a poll when the download
+// page sees an unpaid code (it polls at most once a minute however often it is asked).
+export function webappRoutes({ q, config, background, delivery, poller = null, log = console }) {
   const router = express.Router();
   const previews = new Map();
-  const zipBuilds = new Map();
 
   const codeRow = (req) => {
     const code = normalizeCode(req.params.code);
@@ -85,25 +85,6 @@ export function webappRoutes({ q, config, background, log = console }) {
     if (!last || last.settings.uploadId !== upload) return null;
     const { removeBackground, adjustments, mode } = last.settings;
     return { removeBackground, adjustments, mode };
-  }
-
-  // The delivered attempt (D6): the buyer's pick, else the latest done design.
-  function deliveredAttempt(row) {
-    if (row.selected_attempt) return row.selected_attempt;
-    const done = q.listAttempts(row.code).filter((a) => a.status === "done");
-    return done.length ? done[done.length - 1].n : null;
-  }
-
-  function buildZip(row) {
-    const { code } = row;
-    if (!zipBuilds.has(code)) {
-      const n = deliveredAttempt(row);
-      const build = n
-        ? buildDeliveryZipOffThread({ archiveDir: config.archiveDir, deliveryDir: config.deliveryDir, code, n })
-        : Promise.reject(new Error("no design to deliver"));
-      zipBuilds.set(code, build.finally(() => zipBuilds.delete(code)));
-    }
-    return zipBuilds.get(code);
   }
 
   router.get("/api/config", (_req, res) => {
@@ -217,7 +198,9 @@ export function webappRoutes({ q, config, background, log = console }) {
   });
 
   router.get("/api/download/:code", (req, res) => {
-    res.set("Cache-Control", "no-store").json(downloadState(codeRow(req)));
+    const state = downloadState(codeRow(req));
+    if (state.state === "unpaid") poller?.requestPoll();
+    res.set("Cache-Control", "no-store").json(state);
   });
 
   router.get("/api/download/:code/zip", async (req, res) => {
@@ -229,8 +212,8 @@ export function webappRoutes({ q, config, background, log = console }) {
     }
 
     try {
-      const file = deliveryZipPath(config.deliveryDir, row.code);
-      if (!existsSync(file)) await buildZip(row);
+      const file = delivery.zipPath(row.code);
+      if (!existsSync(file)) await delivery.buildZip(row);
       q.updateCode(row.code, { downloads: (row.downloads || 0) + 1 });
       q.logEvent("download", { code: row.code });
       res.set("Cache-Control", "no-store").download(file, `${row.code}.zip`);
@@ -240,13 +223,13 @@ export function webappRoutes({ q, config, background, log = console }) {
     }
   });
 
-  // Test only (IS-05, until the Etsy poller of IS-06 marks codes paid): sets a code's payment state.
-  // Guarded twice: the route exists only when IS_FAKE=1, and even then it answers only a request
-  // made on this Mac directly (loopback peer and no CF-Connecting-IP header, so nothing that came
-  // through the tunnel).
+  // Test only (IS_FAKE=1; real codes are marked paid by the Etsy poller or the admin page): sets a
+  // code's payment state. Guarded twice: the route exists only when IS_FAKE=1, and even then it
+  // answers only a request made on this Mac directly (isLocalRequest: nothing that came through the
+  // tunnel, and no ADMIN_TOKEN way in).
   if (config.fake) {
     router.post("/api/test/payment/:code", async (req, res) => {
-      if (!LOOPBACK.has(req.socket.remoteAddress) || req.get("cf-connecting-ip")) {
+      if (!isLocalRequest(req)) {
         res.status(404).json({ error: "not-found" });
         return;
       }
@@ -257,16 +240,16 @@ export function webappRoutes({ q, config, background, log = console }) {
         return;
       }
 
-      const now = new Date();
+      const now = new Date().toISOString();
       const fields = state === "paid"
-        ? { status: "paid", paid_at: now.toISOString(), delivery_expires_at: new Date(now.getTime() + DELIVERY_DAYS * DAY_MS).toISOString() }
+        ? { status: "paid", paid_at: now, delivery_expires_at: deliveryExpiry(now) }
         : { status: state };
       q.updateCode(row.code, fields);
       const updated = q.getCode(row.code);
       writeCodeJson(config.archiveDir, updated);
       q.logEvent("test-payment", { code: row.code, detail: { state } });
       // The ZIP is built when the code becomes paid (spec section 9).
-      if (state === "paid" && deliveredAttempt(updated)) await buildZip(updated).catch((error) => log.error(error.message));
+      if (state === "paid" && delivery.deliveredAttempt(updated)) await delivery.buildZip(updated).catch((error) => log.error(error.message));
       res.json({ code: row.code, ...downloadState(updated) });
     });
   }

@@ -8,6 +8,7 @@ import { openDatabase } from "../src/db/index.js";
 import { createQueries } from "../src/db/queries.js";
 import { createApp } from "../src/server/app.js";
 import { loadConfig } from "../src/server/config.js";
+import { etsyTestConfig, noEtsy } from "./etsy-mock.mjs";
 import { downloadState } from "../src/server/webapp.js";
 import { zipEntryNames } from "../src/export/zip.js";
 import { startFakeServer } from "./fake-server.mjs";
@@ -192,7 +193,7 @@ test("the payment switch does not exist without IS_FAKE=1", async () => {
   assert.equal(config.fake, false);
   const db = openDatabase(":memory:");
   const q = createQueries(db);
-  const app = createApp({ db, config, deps: { verifyTurnstile: async () => true, background: { start() {}, state: () => "none" } } });
+  const app = createApp({ db, config: { ...config, dataDir: root, etsy: etsyTestConfig(config.etsy, root) }, deps: { verifyTurnstile: async () => true, background: { start() {}, state: () => "none" }, request: noEtsy } });
   const server = app.listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
   try {

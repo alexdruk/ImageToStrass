@@ -1,0 +1,19 @@
+{
+  "shop_id": 41000001,
+  "shop_name": "ISTestShop",
+  "user_id": 900001,
+  "create_date": 1700000000,
+  "created_timestamp": 1700000000,
+  "title": "Rhinestone templates",
+  "currency_code": "USD",
+  "is_vacation": false,
+  "url": "https://www.etsy.com/shop/ISTestShop",
+  "listing_active_count": 2,
+  "digital_listing_count": 1,
+  "login_name": "istestshop",
+  "accepts_custom_requests": false,
+  "transaction_sold_count": 7,
+  "review_count": 0,
+  "review_average": null,
+  "is_using_structured_policies": true
+}

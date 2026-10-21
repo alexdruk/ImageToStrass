@@ -71,8 +71,18 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
   await screen("working", "location.pathname.endsWith('/working') && document.querySelector('#stages li.current')");
   await screen("result", `location.pathname.includes('/result/') && document.querySelectorAll('.pane img').length === 2 && ${imagesLoaded}`);
   const first = await path();
-  await page.click("[data-view=compare]");
-  await screen("result-compare", `document.querySelector('.compare-range') && ${imagesLoaded}`);
+  // Wide screens: Original and Tinted side by side, no tabs. Phone width: tabs, one view at a time.
+  const shown = "[...document.querySelectorAll('#viewer .view')].filter((v) => v.offsetParent).map((v) => v.id).join(',')";
+  const tabsShown = "!!document.querySelector('.view-tabs').offsetParent";
+  if (mobile) {
+    if (!(await page.eval(tabsShown)) || (await page.eval(shown)) !== "view-tinted") throw new Error("phone: the Tinted tab is not the one shown");
+    await page.click(".view-tabs [data-tab=original]");
+    await screen("result-original", `${JSON.stringify("view-original")} === ${shown} && ${imagesLoaded}`);
+    await page.click(".view-tabs [data-tab=tinted]");
+    await page.waitFor(`${shown} === "view-tinted"`);
+  } else if ((await page.eval(tabsShown)) || (await page.eval(shown)) !== "view-original,view-tinted") {
+    throw new Error("desktop: Original and Tinted are not side by side");
+  }
 
   // Try again: Prepare starts from the previous settings; Black & white this time.
   await page.click("#again");

@@ -1,0 +1,134 @@
+{
+  "receipt_id": 3800000001,
+  "receipt_type": 0,
+  "seller_user_id": 900001,
+  "seller_email": "seller@example.com",
+  "buyer_user_id": 700101,
+  "buyer_email": "buyer101@example.com",
+  "name": "Test Buyer One",
+  "first_line": "",
+  "second_line": null,
+  "city": "",
+  "state": null,
+  "zip": "",
+  "status": "Fully Refunded",
+  "formatted_address": "",
+  "country_iso": "US",
+  "payment_method": "cc",
+  "payment_email": "",
+  "message_from_seller": null,
+  "message_from_buyer": "",
+  "message_from_payment": null,
+  "is_paid": true,
+  "is_shipped": false,
+  "create_timestamp": 1792583100,
+  "created_timestamp": 1792583100,
+  "update_timestamp": 1792585800,
+  "updated_timestamp": 1792585800,
+  "is_gift": false,
+  "gift_message": "",
+  "gift_sender": "",
+  "grandtotal": {
+    "amount": 799,
+    "divisor": 100,
+    "currency_code": "USD"
+  },
+  "subtotal": {
+    "amount": 799,
+    "divisor": 100,
+    "currency_code": "USD"
+  },
+  "total_price": {
+    "amount": 799,
+    "divisor": 100,
+    "currency_code": "USD"
+  },
+  "total_shipping_cost": {
+    "amount": 0,
+    "divisor": 100,
+    "currency_code": "USD"
+  },
+  "total_tax_cost": {
+    "amount": 0,
+    "divisor": 100,
+    "currency_code": "USD"
+  },
+  "total_vat_cost": {
+    "amount": 0,
+    "divisor": 100,
+    "currency_code": "USD"
+  },
+  "discount_amt": {
+    "amount": 0,
+    "divisor": 100,
+    "currency_code": "USD"
+  },
+  "gift_wrap_price": {
+    "amount": 0,
+    "divisor": 100,
+    "currency_code": "USD"
+  },
+  "shipments": [],
+  "transactions": [
+    {
+      "transaction_id": 4900000001,
+      "title": "Any image to rhinestone template, digital download (SVG, PDF, AI, EPS, DXF, PNG)",
+      "description": "",
+      "seller_user_id": 900001,
+      "buyer_user_id": 700101,
+      "create_timestamp": 1792583100,
+      "created_timestamp": 1792583100,
+      "paid_timestamp": 1792583120,
+      "shipped_timestamp": null,
+      "quantity": 1,
+      "listing_image_id": 6100000001,
+      "receipt_id": 3800000001,
+      "is_digital": true,
+      "file_data": "",
+      "listing_id": 1850000001,
+      "transaction_type": "listing",
+      "product_id": 15000000001,
+      "sku": "",
+      "price": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "shipping_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "variations": [
+        {
+          "property_id": 54,
+          "value_id": null,
+          "formatted_name": "Personalization",
+          "formatted_value": "is 7k3q 9xpa"
+        }
+      ],
+      "product_data": [],
+      "shipping_profile_id": null,
+      "min_processing_days": null,
+      "max_processing_days": null,
+      "shipping_method": null,
+      "shipping_upgrade": null,
+      "expected_ship_date": 1792583100,
+      "buyer_coupon": 0,
+      "shop_coupon": 0
+    }
+  ],
+  "refunds": [
+    {
+      "amount": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "created_timestamp": 1792585790,
+      "reason": "Buyer canceled order",
+      "note_from_issuer": "Refund as requested",
+      "status": "Complete"
+    }
+  ]
+}

@@ -12,7 +12,9 @@ AI images archived without metadata (4.2); the section 12 test exists. Revised 2
 iris rings around a person's pupils and skin colours read from the inner 60 % of each stone (7.4); tinted
 view: every stone's fill reaches 0.6 mm beyond its edge, and a large Jet stone's light rim is as wide as
 an SS6 stone's (section 8). Revised 21 Oct 2026 (IS-05d): a shadow skin stone takes Colorado Topaz
-when that is at most 3 ΔE further than Smoked Topaz (7.4).
+when that is at most 3 ΔE further than Smoked Topaz (7.4). Revised 21 Oct 2026 (IS-06): Result screen
+without the compare slider, tabs at phone width (10); Etsy connect, poller, refunds and admin page
+as built (11.2–11.4).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -484,9 +486,11 @@ Screens (one URL each, history API):
    white; "Designs left: N of 3"; button **Create design**. No size field.
 3. **Working** `/c/<code>/working` — the four stage names with progress, queue position, "You can
    leave this page; your code is IS-XXXX-XXXX". Polls `GET /api/attempts/<code>/<n>` every 3 s.
-4. **Result** `/c/<code>/result/<n>` — Original | Tinted side by side (stacked on phones), with a
-   swipe/compare slider and zoom; the natural size W × H in mm and in, stone count, sizes and
-   colours used; buttons
+4. **Result** `/c/<code>/result/<n>` — Original | Tinted side by side on wide screens; at phone
+   width (640 px and less) two tabs, **Original | Tinted**, one view at a time, Tinted shown first
+   (IS-06: the compare slider is gone). Zoom on both views, which scroll together; the Original view
+   switches between the prepared image and the upload. The natural size W × H in mm and in, stone
+   count, sizes and colours used; buttons
    **Use this design** and **Try again** (disabled at 3). Earlier designs of this code are shown
    as thumbnails to switch between.
 5. **Your code** `/c/<code>/done` — big code with Copy, three numbered steps back to Etsy
@@ -522,24 +526,56 @@ No view shows a mask, AI image, overlay, 3D view, model name, prompt, stage timi
   `ETSY_REDIRECT_URI` to the same string, connect once. Refreshes need no redirect. After the domain
   exists, register `https://<domain>/oauth/callback` and reconnect once.
 - `/auth/etsy` and `/oauth/callback` are reachable only from localhost or with `ADMIN_TOKEN`.
+  "Localhost" means a request made on the Mac itself: loopback peer, no `CF-Connecting-IP` header
+  (cloudflared adds it to everything through the tunnel) and a loopback `Host`. `ADMIN_TOKEN` is
+  sent in the `x-admin-token` header. Anyone else gets the plain 404 of an unknown path.
+- `/oauth/callback` is where Etsy sends the browser back, through the tunnel, so it cannot carry the
+  header. It is also accepted with the `state` of an authorization an admin started at `/auth/etsy`
+  in the last 10 minutes (random, used once, bound to the PKCE verifier only the server holds)
+  (IS-06). After the token exchange it saves the shop (`data/etsy-shop.json`) for the poller.
+- The Etsy read routes kept from before IS (`/etsy/status`, `/etsy/listings`,
+  `/etsy/listings/<id>/personalization`) are admin-only too. The receipt routes (`/etsy/orders`,
+  superseded by the poller and the admin page) and the route that wrote a hard-coded test listing's
+  personalization were removed (IS-06).
+- Tokens stay in `data/etsy-tokens.enc` (AES-256-GCM with `TOKEN_ENCRYPTION_KEY`). Moving the
+  connection to another Mac = copying that file with the same key (`docs/IS-06-connect-shop.md`).
 
 ### 11.3 Poller
 
-- Every `ETSY_POLL_SECONDS` (default 180): `GET /v3/application/shops/{shop_id}/receipts` with
-  `was_paid=true`, `min_last_modified` = last run − 10 min, paginated.
+- Every `ETSY_POLL_SECONDS` (default 180), and once at start-up: `GET
+  /v3/application/shops/{shop_id}/receipts` with `was_paid=true`, `min_last_modified` = last run −
+  10 min, paginated (100 per page). "Last run" is the start of the last good run, kept in
+  `data/etsy-poller.json` with its time and counts (no buyer data), so a restart or a Mac that was
+  off catches up. With no good run yet it reads the last 30 days.
 - For each transaction whose `listing_id` is in `IS_ETSY_LISTING_IDS`: read the variation named
-  Personalization, extract every code (section 5), store in `etsy_orders`.
-- Code found and `open` → `paid`, `paid_at`, `delivery_expires_at = paid_at + 30 days`, build ZIP.
-- Code not found, or no code → `etsy_orders.matched_code = NULL`, shown on the admin page.
+  Personalization (Etsy property 54), extract every code (section 5), store in `etsy_orders`. Other
+  listings' transactions are not stored at all; with `IS_ETSY_LISTING_IDS` empty nothing is stored.
+- Code found and `open` → `paid`, `paid_at` (the transaction's Etsy paid time),
+  `delivery_expires_at = paid_at + 30 days`, `receipt_id`, `transaction_id`, build ZIP (render
+  worker, section 9). A code that is already paid, refunded or expired is not changed.
+- Code not found, or no code → `etsy_orders.matched_code = NULL`, shown on the admin page. Once a
+  transaction is matched (also by hand), its NULL row is removed and later polls keep the match.
 - Quantity > 1 with several codes → each code is matched.
-- Refund or cancellation on a matched receipt → `refunded`, download locked.
+- Refund or cancellation on a matched receipt (receipt status Canceled, Fully Refunded or Partially
+  Refunded, or any entry in its `refunds`) → `refunded`, download locked; `etsy_orders.status`
+  becomes `refunded`. This happens when the order turns refunded, not on every later poll, so a
+  manual unlock after a refund stands. The delivery ZIP stays until the nightly job.
 - The download page also triggers a poll (at most once per minute globally) when an unpaid code is
   entered.
+- Poll errors are kept (short, one line) for the admin page and logged once per new error.
 
 ### 11.4 Admin
 
 `/admin` (localhost only, or `ADMIN_TOKEN` header): today's designs, queue, failures, unmatched
 orders with a "match to code" action, manual unlock, poller status, disk use of `data/`.
+
+As built (IS-06): server-made HTML and forms, no script; the Etsy connection (shop, token age) with
+a **Connect Etsy** button (`/auth/etsy`); the poller (listings, last run and its counts, last error)
+with **Poll now**; matched orders. Designs show IS fields only (status, IS error code, mode, stones),
+never event details (section 12). Every form carries a token made at start-up, so another web page
+open on the Mac cannot post to it. Manual unlock makes the code `paid` and downloadable for 30 days
+from now (also after a refund) and builds its ZIP. "Match to code" gives an unmatched order a code,
+which then becomes paid (or refunded, if the order was).
 
 ## 12. Hiding the provider (requirement 6)
 
@@ -564,7 +600,9 @@ orders with a "match to code" action, manual unlock, poller status, disk use of 
 
 ## 13. Abuse and cost
 
-- Turnstile on upload and on Create design.
+- Turnstile on upload and on Create design. `tools/test-turnstile.mjs` checks the wiring with
+  Cloudflare's test keys (always-pass and always-fail secrets, always-pass and always-block site
+  keys) against the real Turnstile service; the real keys stay empty until launch (IS-06).
 - Per IP (hashed): 6 designs per 24 h. Global: `IS_DAILY_DESIGN_CAP` (default 100) → `busy`.
 - At most 3 counted designs per code (D5); new codes per IP: 5 per 24 h.
 - Queue limit 10 (section 7).

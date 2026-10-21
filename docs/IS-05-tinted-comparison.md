@@ -8,7 +8,9 @@ stone's edge, a large Jet stone's light rim as wide as an SS6 stone's), and each
 by today's strass service from its saved AI image (`services/strass/scripts/is05c_runs.py`, rules
 `DEFAULT`: soft outlines off, plausible pupils, the one plausible pair kept of more than two, colours
 read at the delivered stones, no iris rings around a person's pupils, skin colours read from the inner
-60 % of each stone).
+60 % of each stone). Re-rendered again for IS-06 (21 Oct 2026) with today's `DEFAULT`, which since
+IS-05d also has `warm_shadow` on (3 ΔE): stones, sizes and natural sizes are unchanged, only some skin
+colours differ (12 of the images).
 
 Each row shows four images side by side:
 

@@ -13,6 +13,7 @@ import { createBackgroundRemover } from "../src/prep/background.js";
 import { PNG_SIGNATURE, aiImageForArchive, pngChunks, stripPngMetadata } from "../src/prep/pngmeta.js";
 import { createApp } from "../src/server/app.js";
 import { loadConfig } from "../src/server/config.js";
+import { etsyTestConfig, noEtsy } from "./etsy-mock.mjs";
 import { buildPrompt } from "../src/pipeline/prompt.js";
 import { findLeaks, leakWords } from "./leak-words.mjs";
 
@@ -200,7 +201,7 @@ async function start({ env, pipelineDeps = {} }) {
   const q = createQueries(db);
   const background = createBackgroundRemover({ config: { ...config, fake: true }, log: quiet });
   const pipeline = createPipeline({ q, config, log: quiet, ...pipelineDeps });
-  const app = createApp({ db, config, deps: { verifyTurnstile: async () => true, background, pipeline, loadTokens: async () => null } });
+  const app = createApp({ db, config: { ...config, dataDir: root, etsy: etsyTestConfig(config.etsy, root) }, deps: { verifyTurnstile: async () => true, background, pipeline, loadTokens: async () => null, request: noEtsy } });
   const server = app.listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
   const url = `http://127.0.0.1:${server.address().port}`;

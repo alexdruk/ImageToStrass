@@ -148,22 +148,31 @@ function loadTurnstile() {
   return turnstileReady;
 }
 
-// Renders the check into box; returns () => the current token ("" when none or not configured).
+const TOKEN_WAIT_MS = 10000;
+
+// Renders the check into box. token() resolves to the current token, waiting up to TOKEN_WAIT_MS
+// for one while the check is still running ("" when none or not configured).
 function securityCheck(box) {
-  if (!config.turnstileSiteKey) return { token: () => "", reset() {} };
+  if (!config.turnstileSiteKey) return { token: async () => "", reset() {} };
   let token = "";
   let widget = null;
+  let waiting = [];
+  const settle = () => { for (const resolve of waiting) resolve(token); waiting = []; };
   loadTurnstile().then((ts) => {
     if (!box.isConnected) return;
     widget = ts.render(box, {
       sitekey: config.turnstileSiteKey,
-      callback: (t) => { token = t; },
-      "expired-callback": () => { token = ""; }
+      callback: (t) => { token = t; settle(); },
+      "expired-callback": () => { token = ""; },
+      "error-callback": () => { token = ""; settle(); }
     });
     onLeave(() => ts.remove(widget));
-  }).catch(() => {});
+  }).catch(settle);
   return {
-    token: () => token,
+    token: () => (token ? Promise.resolve(token) : new Promise((resolve) => {
+      waiting.push(resolve);
+      setTimeout(() => resolve(token), TOKEN_WAIT_MS);
+    })),
     reset() { token = ""; if (widget !== null) window.turnstile.reset(widget); }
   };
 }
@@ -304,16 +313,20 @@ async function uploadScreen() {
     title.style.display = "inline-flex";
     title.style.gap = "10px";
 
+    // A token passes the check once, so a second upload asks for a new one.
     const upload = async (code) => {
       const form = new FormData();
       form.append("consent", "1");
-      form.append("cf-turnstile-response", check.token());
+      form.append("cf-turnstile-response", await check.token());
       if (code) form.append("code", code);
       form.append("image", file, "upload");
       return api("/api/upload", { method: "POST", body: form });
     };
     let answer = await upload(useCode);
-    if (!answer.ok && answer.body.error === "limit" && useCode) answer = await upload(null);
+    if (!answer.ok && answer.body.error === "limit" && useCode) {
+      check.reset();
+      answer = await upload(null);
+    }
 
     if (!answer.ok) {
       drop.classList.remove("busy");
@@ -659,7 +672,7 @@ async function prepareScreen(code) {
       mode: state.mode,
       removeBackground: state.removeBackground && state.background === "ready",
       adjustments: state.adjustments,
-      "cf-turnstile-response": check.token()
+      "cf-turnstile-response": await check.token()
     });
     if (!ok) {
       create.textContent = "Create design";
@@ -772,10 +785,6 @@ async function resultScreen(code, nText) {
     <div class="viewer-bar">
       <div><h1>Design ${index} of ${config.designsPerCode}</h1>
         <p class="sub">${r.mode === "bw" ? "Black & white" : "Colour"} · shown as a watermarked preview</p></div>
-      <div class="segmented" role="group" aria-label="View">
-        <button type="button" data-view="side" aria-pressed="true">Side by side</button>
-        <button type="button" data-view="compare" aria-pressed="false">Compare</button>
-      </div>
     </div>
     <div class="result">
       <div>
@@ -835,18 +844,18 @@ async function resultScreen(code, nText) {
   });
   for (const img of panel.querySelectorAll(".thumb img")) noSave(img);
 
-  // The viewer: Original | Tinted side by side, or one pane with a compare slider; zoom on both.
+  // The viewer: Original | Tinted side by side; at phone width two tabs, one view at a time (the CSS
+  // shows the tabs and hides the other view). Zoom on both.
   const viewer = panel.querySelector("#viewer");
   const ZOOMS = [1, 1.5, 2, 3, 4];
-  const show = { mode: "side", source: "prepared", zoom: 0, split: 50 };
+  const show = { tab: "tinted", source: "prepared", zoom: 0 };
   const tintedImg = await loadImage(tinted).catch(() => null);
   const ratio = tintedImg ? tintedImg.naturalWidth / tintedImg.naturalHeight : 1;
 
-  function image(src, alt, cls = "") {
+  function image(src, alt) {
     const img = document.createElement("img");
     img.src = src;
     img.alt = alt;
-    if (cls) img.className = cls;
     noSave(img);
     return img;
   }
@@ -870,67 +879,53 @@ async function resultScreen(code, nText) {
   async function drawViewer() {
     const originalRatio = await ratioOf(show.source);
     viewer.replaceChildren();
-    if (show.mode === "side") {
-      viewer.className = "side";
-      const a = pane(originalRatio, image(original(show.source), "Your image"));
-      const b = pane(ratio, image(tinted, "Your design (tinted preview)"));
-      for (const [label, p] of [["Original", a], ["Tinted", b]]) {
-        const wrap = document.createElement("div");
-        wrap.className = "view";
-        wrap.innerHTML = `<div class="view-head"><span class="view-label">${label}</span></div>`;
-        wrap.append(p);
-        viewer.append(wrap);
-      }
-      // The two panes scroll together when zoomed (by share of their scroll range).
-      let syncing = false;
-      const sync = (from, to) => from.addEventListener("scroll", () => {
-        if (syncing) { syncing = false; return; }
-        syncing = true;
-        const share = (el, side) => (side === "x" ? el.scrollLeft / Math.max(1, el.scrollWidth - el.clientWidth) : el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight));
-        to.scrollLeft = share(from, "x") * (to.scrollWidth - to.clientWidth);
-        to.scrollTop = share(from, "y") * (to.scrollHeight - to.clientHeight);
+    viewer.className = "side";
+    viewer.dataset.tab = show.tab;
+    const tabs = document.createElement("div");
+    tabs.className = "view-tabs segmented";
+    tabs.setAttribute("role", "tablist");
+    tabs.setAttribute("aria-label", "View");
+    viewer.append(tabs);
+    const a = pane(originalRatio, image(original(show.source), "Your image"));
+    const b = pane(ratio, image(tinted, "Your design (tinted preview)"));
+    for (const [id, label, p] of [["original", "Original", a], ["tinted", "Tinted", b]]) {
+      const wrap = document.createElement("div");
+      wrap.className = `view ${id}`;
+      wrap.id = `view-${id}`;
+      wrap.setAttribute("role", "tabpanel");
+      wrap.innerHTML = `<div class="view-head"><span class="view-label">${label}</span></div>`;
+      wrap.append(p);
+      viewer.append(wrap);
+      const tab = Object.assign(document.createElement("button"), { type: "button", textContent: label });
+      tab.dataset.tab = id;
+      tab.setAttribute("role", "tab");
+      tab.setAttribute("aria-controls", wrap.id);
+      tab.setAttribute("aria-selected", String(id === show.tab));
+      tab.setAttribute("aria-pressed", String(id === show.tab));
+      tab.addEventListener("click", () => {
+        show.tab = id;
+        viewer.dataset.tab = id;
+        for (const t of tabs.children) {
+          t.setAttribute("aria-selected", String(t === tab));
+          t.setAttribute("aria-pressed", String(t === tab));
+        }
       });
-      sync(a, b);
-      sync(b, a);
-    } else {
-      viewer.className = "compare";
-      const p = pane(ratio, image(original(show.source), "Your image"), image(tinted, "Your design (tinted preview)", "top"));
-      const divider = document.createElement("div");
-      divider.className = "divider";
-      p.querySelector(".inner").append(divider);
-      p.style.setProperty("--split", `${show.split}%`);
-      const range = Object.assign(document.createElement("input"), { type: "range", min: 0, max: 100, value: show.split, className: "compare-range" });
-      range.setAttribute("aria-label", "Compare original and tinted");
-      range.addEventListener("input", () => { show.split = Number(range.value); p.style.setProperty("--split", `${show.split}%`); });
-      // Drag on the image itself moves the split too.
-      p.addEventListener("pointerdown", (e) => {
-        if (ZOOMS[show.zoom] > 1) return;
-        const set = (ev) => {
-          const b = p.getBoundingClientRect();
-          show.split = Math.round(Math.min(100, Math.max(0, ((ev.clientX - b.left) / b.width) * 100)));
-          range.value = show.split;
-          p.style.setProperty("--split", `${show.split}%`);
-        };
-        set(e);
-        p.setPointerCapture(e.pointerId);
-        p.addEventListener("pointermove", set);
-        p.addEventListener("pointerup", () => p.removeEventListener("pointermove", set), { once: true });
-      });
-      const labels = document.createElement("div");
-      labels.className = "compare-labels";
-      labels.innerHTML = "<span>Original</span><span>Tinted</span>";
-      viewer.append(p, range, labels);
+      tabs.append(tab);
     }
+    // The two panes scroll together when zoomed (by share of their scroll range).
+    let syncing = false;
+    const sync = (from, to) => from.addEventListener("scroll", () => {
+      if (syncing) { syncing = false; return; }
+      syncing = true;
+      const share = (el, side) => (side === "x" ? el.scrollLeft / Math.max(1, el.scrollWidth - el.clientWidth) : el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight));
+      to.scrollLeft = share(from, "x") * (to.scrollWidth - to.clientWidth);
+      to.scrollTop = share(from, "y") * (to.scrollHeight - to.clientHeight);
+    });
+    sync(a, b);
+    sync(b, a);
     panel.querySelector("#zoom-level").textContent = `${Math.round(ZOOMS[show.zoom] * 100)}%`;
     panel.querySelector("#zoom-out").disabled = show.zoom === 0;
     panel.querySelector("#zoom-in").disabled = show.zoom === ZOOMS.length - 1;
-  }
-  for (const b of panel.querySelectorAll("[data-view]")) {
-    b.addEventListener("click", () => {
-      show.mode = b.dataset.view;
-      for (const o of panel.querySelectorAll("[data-view]")) o.setAttribute("aria-pressed", String(o === b));
-      drawViewer();
-    });
   }
   for (const b of panel.querySelectorAll("[data-source]")) {
     b.addEventListener("click", () => {

@@ -10,6 +10,7 @@ import { createQueries } from "../src/db/queries.js";
 import { createBackgroundRemover } from "../src/prep/background.js";
 import { createApp } from "../src/server/app.js";
 import { loadConfig } from "../src/server/config.js";
+import { etsyTestConfig, noEtsy } from "./etsy-mock.mjs";
 import { MAX_UPLOAD_BYTES } from "../src/server/upload.js";
 
 const FIXTURES = new URL("./fixtures/upload/", import.meta.url).pathname;
@@ -32,7 +33,7 @@ async function start({ env = { IS_FAKE: "1" }, deps = {} } = {}) {
   };
   const db = openDatabase(":memory:");
   const background = deps.background || createBackgroundRemover({ config, fetch: deps.fetch, log: quiet });
-  const app = createApp({ db, config, deps: { verifyTurnstile: async () => true, background, ...deps } });
+  const app = createApp({ db, config: { ...config, dataDir: root, etsy: etsyTestConfig(config.etsy, root) }, deps: { verifyTurnstile: async () => true, background, request: noEtsy, ...deps } });
   const server = app.listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
 

@@ -5,6 +5,11 @@ function positive(value, fallback) {
   return value !== undefined && value !== "" && Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
+// Comma-separated Etsy listing ids -> numbers (anything else is ignored).
+function listingIds(value) {
+  return String(value || "").split(",").map((s) => s.trim()).filter((s) => /^\d+$/.test(s)).map(Number);
+}
+
 export function loadConfig(env = process.env) {
   return {
     port: Number(env.PORT || 3003),
@@ -12,6 +17,7 @@ export function loadConfig(env = process.env) {
     // IS_FAKE=1: no provider and no strass calls; the pipeline uses the fixture layout.
     fake: env.IS_FAKE === "1",
     strassServiceUrl: (env.STRASS_SERVICE_URL || "http://127.0.0.1:8000").replace(/\/+$/, ""),
+    dataDir: "data",
     dbFile: "data/is.sqlite",
     archiveDir: "data/archive",
     deliveryDir: "data/delivery",
@@ -20,6 +26,18 @@ export function loadConfig(env = process.env) {
     turnstileSecret: env.TURNSTILE_SECRET_KEY || "",
     turnstileSiteKey: env.TURNSTILE_SITE_KEY || "",
     listingUrl: env.IS_ETSY_LISTING_URL || "",
+    // /admin, /auth/etsy and the Etsy routes: this Mac only, or this token in the x-admin-token header.
+    adminToken: env.ADMIN_TOKEN || "",
+    // Etsy (spec section 11). The keystring and secret are read by src/etsy/ itself.
+    etsy: {
+      keystring: env.ETSY_KEYSTRING || "",
+      redirectUri: env.ETSY_REDIRECT_URI || "",
+      listingIds: listingIds(env.IS_ETSY_LISTING_IDS),
+      pollMs: positive(env.ETSY_POLL_SECONDS, 180) * 1000,
+      // The connected shop (id and name) and the poller's state; the tokens are in data/etsy-tokens.enc.
+      shopFile: "data/etsy-shop.json",
+      stateFile: "data/etsy-poller.json"
+    },
     // Design pipeline (spec section 7). The key is read here and passed only to the provider client.
     provider: {
       apiKey: env.OPENAI_API_KEY || "",
