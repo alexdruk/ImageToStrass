@@ -47,8 +47,11 @@ export async function saveTokens(tokens) {
   await fs.writeFile(
     TOKEN_FILE,
     JSON.stringify(payload, null, 2),
-    "utf8"
+    { encoding: "utf8", mode: 0o600 }
   );
+
+  // mode applies only when the file is created.
+  await fs.chmod(TOKEN_FILE, 0o600);
 }
 
 export async function loadTokens() {
