@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { openDatabase } from "../src/db/index.js";
 import { createApp } from "../src/server/app.js";
 import { loadConfig } from "../src/server/config.js";
+import { etsyTestConfig, noEtsy } from "./etsy-mock.mjs";
 
 const HOUR = 3600;
 
@@ -12,7 +13,7 @@ function freshTokens(ageHours) {
 }
 
 async function getHealth({ config, loadTokens, fetch, db = openDatabase(":memory:") }) {
-  const app = createApp({ db, config, deps: { loadTokens, fetch } });
+  const app = createApp({ db, config: { ...config, etsy: etsyTestConfig(config.etsy, "/nonexistent/is-test") }, deps: { loadTokens, fetch, request: noEtsy } });
   const server = app.listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
 

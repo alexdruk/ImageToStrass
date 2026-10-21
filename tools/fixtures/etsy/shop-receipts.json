@@ -1,0 +1,1028 @@
+{
+  "count": 8,
+  "results": [
+    {
+      "receipt_id": 3800000001,
+      "receipt_type": 0,
+      "seller_user_id": 900001,
+      "seller_email": "seller@example.com",
+      "buyer_user_id": 700101,
+      "buyer_email": "buyer101@example.com",
+      "name": "Test Buyer One",
+      "first_line": "",
+      "second_line": null,
+      "city": "",
+      "state": null,
+      "zip": "",
+      "status": "Paid",
+      "formatted_address": "",
+      "country_iso": "US",
+      "payment_method": "cc",
+      "payment_email": "",
+      "message_from_seller": null,
+      "message_from_buyer": "",
+      "message_from_payment": null,
+      "is_paid": true,
+      "is_shipped": false,
+      "create_timestamp": 1792583100,
+      "created_timestamp": 1792583100,
+      "update_timestamp": 1792583120,
+      "updated_timestamp": 1792583120,
+      "is_gift": false,
+      "gift_message": "",
+      "gift_sender": "",
+      "grandtotal": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "subtotal": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_price": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_shipping_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_tax_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_vat_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "discount_amt": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "gift_wrap_price": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "shipments": [],
+      "transactions": [
+        {
+          "transaction_id": 4900000001,
+          "title": "Any image to rhinestone template, digital download (SVG, PDF, AI, EPS, DXF, PNG)",
+          "description": "",
+          "seller_user_id": 900001,
+          "buyer_user_id": 700101,
+          "create_timestamp": 1792583100,
+          "created_timestamp": 1792583100,
+          "paid_timestamp": 1792583120,
+          "shipped_timestamp": null,
+          "quantity": 1,
+          "listing_image_id": 6100000001,
+          "receipt_id": 3800000001,
+          "is_digital": true,
+          "file_data": "",
+          "listing_id": 1850000001,
+          "transaction_type": "listing",
+          "product_id": 15000000001,
+          "sku": "",
+          "price": {
+            "amount": 799,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "shipping_cost": {
+            "amount": 0,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "variations": [
+            {
+              "property_id": 54,
+              "value_id": null,
+              "formatted_name": "Personalization",
+              "formatted_value": "is 7k3q 9xpa"
+            }
+          ],
+          "product_data": [],
+          "shipping_profile_id": null,
+          "min_processing_days": null,
+          "max_processing_days": null,
+          "shipping_method": null,
+          "shipping_upgrade": null,
+          "expected_ship_date": 1792583100,
+          "buyer_coupon": 0,
+          "shop_coupon": 0
+        }
+      ],
+      "refunds": []
+    },
+    {
+      "receipt_id": 3800000002,
+      "receipt_type": 0,
+      "seller_user_id": 900001,
+      "seller_email": "seller@example.com",
+      "buyer_user_id": 700102,
+      "buyer_email": "buyer102@example.com",
+      "name": "Test Buyer Two",
+      "first_line": "",
+      "second_line": null,
+      "city": "",
+      "state": null,
+      "zip": "",
+      "status": "Paid",
+      "formatted_address": "",
+      "country_iso": "US",
+      "payment_method": "cc",
+      "payment_email": "",
+      "message_from_seller": null,
+      "message_from_buyer": "",
+      "message_from_payment": null,
+      "is_paid": true,
+      "is_shipped": false,
+      "create_timestamp": 1792583160,
+      "created_timestamp": 1792583160,
+      "update_timestamp": 1792583180,
+      "updated_timestamp": 1792583180,
+      "is_gift": false,
+      "gift_message": "",
+      "gift_sender": "",
+      "grandtotal": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "subtotal": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_price": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_shipping_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_tax_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_vat_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "discount_amt": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "gift_wrap_price": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "shipments": [],
+      "transactions": [
+        {
+          "transaction_id": 4900000002,
+          "title": "Any image to rhinestone template, digital download (SVG, PDF, AI, EPS, DXF, PNG)",
+          "description": "",
+          "seller_user_id": 900001,
+          "buyer_user_id": 700102,
+          "create_timestamp": 1792583160,
+          "created_timestamp": 1792583160,
+          "paid_timestamp": 1792583180,
+          "shipped_timestamp": null,
+          "quantity": 1,
+          "listing_image_id": 6100000002,
+          "receipt_id": 3800000002,
+          "is_digital": true,
+          "file_data": "",
+          "listing_id": 1850000001,
+          "transaction_type": "listing",
+          "product_id": 15000000002,
+          "sku": "",
+          "price": {
+            "amount": 799,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "shipping_cost": {
+            "amount": 0,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "variations": [
+            {
+              "property_id": 54,
+              "value_id": null,
+              "formatted_name": "Personalization",
+              "formatted_value": "IS-ORIT-H8W2"
+            }
+          ],
+          "product_data": [],
+          "shipping_profile_id": null,
+          "min_processing_days": null,
+          "max_processing_days": null,
+          "shipping_method": null,
+          "shipping_upgrade": null,
+          "expected_ship_date": 1792583160,
+          "buyer_coupon": 0,
+          "shop_coupon": 0
+        }
+      ],
+      "refunds": []
+    },
+    {
+      "receipt_id": 3800000003,
+      "receipt_type": 0,
+      "seller_user_id": 900001,
+      "seller_email": "seller@example.com",
+      "buyer_user_id": 700103,
+      "buyer_email": "buyer103@example.com",
+      "name": "Test Buyer Three",
+      "first_line": "",
+      "second_line": null,
+      "city": "",
+      "state": null,
+      "zip": "",
+      "status": "Paid",
+      "formatted_address": "",
+      "country_iso": "US",
+      "payment_method": "cc",
+      "payment_email": "",
+      "message_from_seller": null,
+      "message_from_buyer": "",
+      "message_from_payment": null,
+      "is_paid": true,
+      "is_shipped": false,
+      "create_timestamp": 1792583220,
+      "created_timestamp": 1792583220,
+      "update_timestamp": 1792583240,
+      "updated_timestamp": 1792583240,
+      "is_gift": false,
+      "gift_message": "",
+      "gift_sender": "",
+      "grandtotal": {
+        "amount": 1598,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "subtotal": {
+        "amount": 1598,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_price": {
+        "amount": 1598,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_shipping_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_tax_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_vat_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "discount_amt": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "gift_wrap_price": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "shipments": [],
+      "transactions": [
+        {
+          "transaction_id": 4900000003,
+          "title": "Any image to rhinestone template, digital download (SVG, PDF, AI, EPS, DXF, PNG)",
+          "description": "",
+          "seller_user_id": 900001,
+          "buyer_user_id": 700103,
+          "create_timestamp": 1792583220,
+          "created_timestamp": 1792583220,
+          "paid_timestamp": 1792583240,
+          "shipped_timestamp": null,
+          "quantity": 2,
+          "listing_image_id": 6100000003,
+          "receipt_id": 3800000003,
+          "is_digital": true,
+          "file_data": "",
+          "listing_id": 1850000001,
+          "transaction_type": "listing",
+          "product_id": 15000000003,
+          "sku": "",
+          "price": {
+            "amount": 799,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "shipping_cost": {
+            "amount": 0,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "variations": [
+            {
+              "property_id": 54,
+              "value_id": null,
+              "formatted_name": "Personalization",
+              "formatted_value": "IS-C4DE-5FG6, is h7j8 k9mn"
+            }
+          ],
+          "product_data": [],
+          "shipping_profile_id": null,
+          "min_processing_days": null,
+          "max_processing_days": null,
+          "shipping_method": null,
+          "shipping_upgrade": null,
+          "expected_ship_date": 1792583220,
+          "buyer_coupon": 0,
+          "shop_coupon": 0
+        }
+      ],
+      "refunds": []
+    },
+    {
+      "receipt_id": 3800000004,
+      "receipt_type": 0,
+      "seller_user_id": 900001,
+      "seller_email": "seller@example.com",
+      "buyer_user_id": 700104,
+      "buyer_email": "buyer104@example.com",
+      "name": "Test Buyer Four",
+      "first_line": "",
+      "second_line": null,
+      "city": "",
+      "state": null,
+      "zip": "",
+      "status": "Paid",
+      "formatted_address": "",
+      "country_iso": "US",
+      "payment_method": "cc",
+      "payment_email": "",
+      "message_from_seller": null,
+      "message_from_buyer": "",
+      "message_from_payment": null,
+      "is_paid": true,
+      "is_shipped": false,
+      "create_timestamp": 1792583280,
+      "created_timestamp": 1792583280,
+      "update_timestamp": 1792583300,
+      "updated_timestamp": 1792583300,
+      "is_gift": false,
+      "gift_message": "",
+      "gift_sender": "",
+      "grandtotal": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "subtotal": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_price": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_shipping_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_tax_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_vat_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "discount_amt": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "gift_wrap_price": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "shipments": [],
+      "transactions": [
+        {
+          "transaction_id": 4900000004,
+          "title": "Any image to rhinestone template, digital download (SVG, PDF, AI, EPS, DXF, PNG)",
+          "description": "",
+          "seller_user_id": 900001,
+          "buyer_user_id": 700104,
+          "create_timestamp": 1792583280,
+          "created_timestamp": 1792583280,
+          "paid_timestamp": 1792583300,
+          "shipped_timestamp": null,
+          "quantity": 1,
+          "listing_image_id": 6100000004,
+          "receipt_id": 3800000004,
+          "is_digital": true,
+          "file_data": "",
+          "listing_id": 1850000001,
+          "transaction_type": "listing",
+          "product_id": 15000000004,
+          "sku": "",
+          "price": {
+            "amount": 799,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "shipping_cost": {
+            "amount": 0,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "variations": [
+            {
+              "property_id": 54,
+              "value_id": null,
+              "formatted_name": "Personalization",
+              "formatted_value": "Please make it sparkle!"
+            }
+          ],
+          "product_data": [],
+          "shipping_profile_id": null,
+          "min_processing_days": null,
+          "max_processing_days": null,
+          "shipping_method": null,
+          "shipping_upgrade": null,
+          "expected_ship_date": 1792583280,
+          "buyer_coupon": 0,
+          "shop_coupon": 0
+        }
+      ],
+      "refunds": []
+    },
+    {
+      "receipt_id": 3800000005,
+      "receipt_type": 0,
+      "seller_user_id": 900001,
+      "seller_email": "seller@example.com",
+      "buyer_user_id": 700105,
+      "buyer_email": "buyer105@example.com",
+      "name": "Test Buyer Five",
+      "first_line": "",
+      "second_line": null,
+      "city": "",
+      "state": null,
+      "zip": "",
+      "status": "Paid",
+      "formatted_address": "",
+      "country_iso": "US",
+      "payment_method": "cc",
+      "payment_email": "",
+      "message_from_seller": null,
+      "message_from_buyer": "",
+      "message_from_payment": null,
+      "is_paid": true,
+      "is_shipped": false,
+      "create_timestamp": 1792583340,
+      "created_timestamp": 1792583340,
+      "update_timestamp": 1792583360,
+      "updated_timestamp": 1792583360,
+      "is_gift": false,
+      "gift_message": "",
+      "gift_sender": "",
+      "grandtotal": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "subtotal": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_price": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_shipping_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_tax_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_vat_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "discount_amt": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "gift_wrap_price": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "shipments": [],
+      "transactions": [
+        {
+          "transaction_id": 4900000005,
+          "title": "Any image to rhinestone template, digital download (SVG, PDF, AI, EPS, DXF, PNG)",
+          "description": "",
+          "seller_user_id": 900001,
+          "buyer_user_id": 700105,
+          "create_timestamp": 1792583340,
+          "created_timestamp": 1792583340,
+          "paid_timestamp": 1792583360,
+          "shipped_timestamp": null,
+          "quantity": 1,
+          "listing_image_id": 6100000005,
+          "receipt_id": 3800000005,
+          "is_digital": true,
+          "file_data": "",
+          "listing_id": 1850000001,
+          "transaction_type": "listing",
+          "product_id": 15000000005,
+          "sku": "",
+          "price": {
+            "amount": 799,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "shipping_cost": {
+            "amount": 0,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "variations": [
+            {
+              "property_id": 54,
+              "value_id": null,
+              "formatted_name": "Personalization",
+              "formatted_value": "IS-ZZZZ-ZZZZ"
+            }
+          ],
+          "product_data": [],
+          "shipping_profile_id": null,
+          "min_processing_days": null,
+          "max_processing_days": null,
+          "shipping_method": null,
+          "shipping_upgrade": null,
+          "expected_ship_date": 1792583340,
+          "buyer_coupon": 0,
+          "shop_coupon": 0
+        }
+      ],
+      "refunds": []
+    },
+    {
+      "receipt_id": 3800000006,
+      "receipt_type": 0,
+      "seller_user_id": 900001,
+      "seller_email": "seller@example.com",
+      "buyer_user_id": 700106,
+      "buyer_email": "buyer106@example.com",
+      "name": "Test Buyer Six",
+      "first_line": "",
+      "second_line": null,
+      "city": "",
+      "state": null,
+      "zip": "",
+      "status": "Paid",
+      "formatted_address": "",
+      "country_iso": "US",
+      "payment_method": "cc",
+      "payment_email": "",
+      "message_from_seller": null,
+      "message_from_buyer": "",
+      "message_from_payment": null,
+      "is_paid": true,
+      "is_shipped": false,
+      "create_timestamp": 1792583400,
+      "created_timestamp": 1792583400,
+      "update_timestamp": 1792583420,
+      "updated_timestamp": 1792583420,
+      "is_gift": false,
+      "gift_message": "",
+      "gift_sender": "",
+      "grandtotal": {
+        "amount": 2049,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "subtotal": {
+        "amount": 2049,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_price": {
+        "amount": 2049,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_shipping_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_tax_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_vat_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "discount_amt": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "gift_wrap_price": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "shipments": [],
+      "transactions": [
+        {
+          "transaction_id": 4900000006,
+          "title": "Any image to rhinestone template, digital download (SVG, PDF, AI, EPS, DXF, PNG)",
+          "description": "",
+          "seller_user_id": 900001,
+          "buyer_user_id": 700106,
+          "create_timestamp": 1792583400,
+          "created_timestamp": 1792583400,
+          "paid_timestamp": 1792583420,
+          "shipped_timestamp": null,
+          "quantity": 1,
+          "listing_image_id": 6100000006,
+          "receipt_id": 3800000006,
+          "is_digital": true,
+          "file_data": "",
+          "listing_id": 1850000001,
+          "transaction_type": "listing",
+          "product_id": 15000000006,
+          "sku": "",
+          "price": {
+            "amount": 799,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "shipping_cost": {
+            "amount": 0,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "variations": [
+            {
+              "property_id": 54,
+              "value_id": null,
+              "formatted_name": "Personalization",
+              "formatted_value": "my code: IS 9ABC DEFG thanks"
+            }
+          ],
+          "product_data": [],
+          "shipping_profile_id": null,
+          "min_processing_days": null,
+          "max_processing_days": null,
+          "shipping_method": null,
+          "shipping_upgrade": null,
+          "expected_ship_date": 1792583400,
+          "buyer_coupon": 0,
+          "shop_coupon": 0
+        },
+        {
+          "transaction_id": 4900000007,
+          "title": "Rhinestone transfer, custom name",
+          "description": "",
+          "seller_user_id": 900001,
+          "buyer_user_id": 700106,
+          "create_timestamp": 1792583400,
+          "created_timestamp": 1792583400,
+          "paid_timestamp": 1792583420,
+          "shipped_timestamp": null,
+          "quantity": 1,
+          "listing_image_id": 6100000007,
+          "receipt_id": 3800000006,
+          "is_digital": false,
+          "file_data": "",
+          "listing_id": 1850000002,
+          "transaction_type": "listing",
+          "product_id": 15000000007,
+          "sku": "",
+          "price": {
+            "amount": 1250,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "shipping_cost": {
+            "amount": 0,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "variations": [
+            {
+              "property_id": 54,
+              "value_id": null,
+              "formatted_name": "Personalization",
+              "formatted_value": "Lily"
+            }
+          ],
+          "product_data": [],
+          "shipping_profile_id": null,
+          "min_processing_days": null,
+          "max_processing_days": null,
+          "shipping_method": null,
+          "shipping_upgrade": null,
+          "expected_ship_date": 1792583400,
+          "buyer_coupon": 0,
+          "shop_coupon": 0
+        }
+      ],
+      "refunds": []
+    },
+    {
+      "receipt_id": 3800000007,
+      "receipt_type": 0,
+      "seller_user_id": 900001,
+      "seller_email": "seller@example.com",
+      "buyer_user_id": 700107,
+      "buyer_email": "buyer107@example.com",
+      "name": "Test Buyer Seven",
+      "first_line": "",
+      "second_line": null,
+      "city": "",
+      "state": null,
+      "zip": "",
+      "status": "Paid",
+      "formatted_address": "",
+      "country_iso": "US",
+      "payment_method": "cc",
+      "payment_email": "",
+      "message_from_seller": null,
+      "message_from_buyer": "",
+      "message_from_payment": null,
+      "is_paid": true,
+      "is_shipped": false,
+      "create_timestamp": 1792583460,
+      "created_timestamp": 1792583460,
+      "update_timestamp": 1792583480,
+      "updated_timestamp": 1792583480,
+      "is_gift": false,
+      "gift_message": "",
+      "gift_sender": "",
+      "grandtotal": {
+        "amount": 1250,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "subtotal": {
+        "amount": 1250,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_price": {
+        "amount": 1250,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_shipping_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_tax_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_vat_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "discount_amt": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "gift_wrap_price": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "shipments": [],
+      "transactions": [
+        {
+          "transaction_id": 4900000008,
+          "title": "Rhinestone transfer, custom name",
+          "description": "",
+          "seller_user_id": 900001,
+          "buyer_user_id": 700107,
+          "create_timestamp": 1792583460,
+          "created_timestamp": 1792583460,
+          "paid_timestamp": 1792583480,
+          "shipped_timestamp": null,
+          "quantity": 1,
+          "listing_image_id": 6100000008,
+          "receipt_id": 3800000007,
+          "is_digital": false,
+          "file_data": "",
+          "listing_id": 1850000002,
+          "transaction_type": "listing",
+          "product_id": 15000000008,
+          "sku": "",
+          "price": {
+            "amount": 1250,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "shipping_cost": {
+            "amount": 0,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "variations": [
+            {
+              "property_id": 54,
+              "value_id": null,
+              "formatted_name": "Personalization",
+              "formatted_value": "IS-7K3Q-9XPA"
+            }
+          ],
+          "product_data": [],
+          "shipping_profile_id": null,
+          "min_processing_days": null,
+          "max_processing_days": null,
+          "shipping_method": null,
+          "shipping_upgrade": null,
+          "expected_ship_date": 1792583460,
+          "buyer_coupon": 0,
+          "shop_coupon": 0
+        }
+      ],
+      "refunds": []
+    },
+    {
+      "receipt_id": 3800000008,
+      "receipt_type": 0,
+      "seller_user_id": 900001,
+      "seller_email": "seller@example.com",
+      "buyer_user_id": 700108,
+      "buyer_email": "buyer108@example.com",
+      "name": "Test Buyer Eight",
+      "first_line": "",
+      "second_line": null,
+      "city": "",
+      "state": null,
+      "zip": "",
+      "status": "Payment Processing",
+      "formatted_address": "",
+      "country_iso": "US",
+      "payment_method": "cc",
+      "payment_email": "",
+      "message_from_seller": null,
+      "message_from_buyer": "",
+      "message_from_payment": null,
+      "is_paid": false,
+      "is_shipped": false,
+      "create_timestamp": 1792583520,
+      "created_timestamp": 1792583520,
+      "update_timestamp": 1792583540,
+      "updated_timestamp": 1792583540,
+      "is_gift": false,
+      "gift_message": "",
+      "gift_sender": "",
+      "grandtotal": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "subtotal": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_price": {
+        "amount": 799,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_shipping_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_tax_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "total_vat_cost": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "discount_amt": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "gift_wrap_price": {
+        "amount": 0,
+        "divisor": 100,
+        "currency_code": "USD"
+      },
+      "shipments": [],
+      "transactions": [
+        {
+          "transaction_id": 4900000009,
+          "title": "Any image to rhinestone template, digital download (SVG, PDF, AI, EPS, DXF, PNG)",
+          "description": "",
+          "seller_user_id": 900001,
+          "buyer_user_id": 700108,
+          "create_timestamp": 1792583520,
+          "created_timestamp": 1792583520,
+          "paid_timestamp": 1792583540,
+          "shipped_timestamp": null,
+          "quantity": 1,
+          "listing_image_id": 6100000009,
+          "receipt_id": 3800000008,
+          "is_digital": true,
+          "file_data": "",
+          "listing_id": 1850000001,
+          "transaction_type": "listing",
+          "product_id": 15000000009,
+          "sku": "",
+          "price": {
+            "amount": 799,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "shipping_cost": {
+            "amount": 0,
+            "divisor": 100,
+            "currency_code": "USD"
+          },
+          "variations": [
+            {
+              "property_id": 54,
+              "value_id": null,
+              "formatted_name": "Personalization",
+              "formatted_value": "IS-MNPQ-RST0"
+            }
+          ],
+          "product_data": [],
+          "shipping_profile_id": null,
+          "min_processing_days": null,
+          "max_processing_days": null,
+          "shipping_method": null,
+          "shipping_upgrade": null,
+          "expected_ship_date": 1792583520,
+          "buyer_coupon": 0,
+          "shop_coupon": 0
+        }
+      ],
+      "refunds": []
+    }
+  ]
+}

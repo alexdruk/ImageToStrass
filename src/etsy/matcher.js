@@ -1,0 +1,55 @@
+import { extractCodes } from "../db/codes.js";
+
+// Etsy receipts -> IS orders (spec section 11.3). Pure: no database, no network. A receipt is the
+// ShopReceipt of Etsy Open API v3 (getShopReceipts), each with its transactions and refunds.
+
+// Etsy's property id of the buyer's personalization text on a transaction's variations.
+export const PERSONALIZATION_PROPERTY_ID = 54;
+
+// Receipt states that lock the download (spec 11.3: refund or cancellation).
+const REFUNDED_STATES = new Set(["canceled", "cancelled", "fully refunded", "partially refunded"]);
+
+// The personalization text of a transaction: its variation named Personalization (Etsy's property
+// 54). "" when the buyer gave none.
+export function personalizationOf(transaction) {
+  return (transaction.variations || [])
+    .filter((v) => v.property_id === PERSONALIZATION_PROPERTY_ID || /^personali[sz]ation$/i.test(String(v.formatted_name || "").trim()))
+    .map((v) => String(v.formatted_value ?? ""))
+    .join("\n");
+}
+
+export function isRefunded(receipt) {
+  return REFUNDED_STATES.has(String(receipt.status || "").toLowerCase()) ||
+    (Array.isArray(receipt.refunds) && receipt.refunds.length > 0);
+}
+
+const isoOf = (seconds) => (Number.isFinite(seconds) && seconds > 0 ? new Date(seconds * 1000).toISOString() : null);
+
+// One order per transaction of a listing in listingIds:
+// { receipt_id, transaction_id, listing_id, personalization, codes, paid_at, status: paid | refunded }.
+// Other listings of the shop are left out entirely. Codes are normalised (spec section 5).
+export function ordersFromReceipts(receipts, listingIds) {
+  const wanted = new Set(listingIds.map(Number));
+  const orders = [];
+
+  for (const receipt of receipts) {
+    if (receipt.is_paid === false) continue;
+    const status = isRefunded(receipt) ? "refunded" : "paid";
+
+    for (const transaction of receipt.transactions || []) {
+      if (!wanted.has(Number(transaction.listing_id))) continue;
+      const personalization = personalizationOf(transaction);
+      orders.push({
+        receipt_id: receipt.receipt_id,
+        transaction_id: transaction.transaction_id,
+        listing_id: transaction.listing_id,
+        personalization,
+        codes: extractCodes(personalization),
+        paid_at: isoOf(transaction.paid_timestamp) ?? isoOf(receipt.created_timestamp ?? receipt.create_timestamp),
+        status
+      });
+    }
+  }
+
+  return orders;
+}

@@ -85,6 +85,17 @@ export function createQueries(db) {
     listUnmatchedOrders: db.prepare(
       "SELECT rowid AS id, * FROM etsy_orders WHERE matched_code IS NULL ORDER BY seen_at DESC"
     ),
+    getEtsyOrderById: db.prepare("SELECT rowid AS id, * FROM etsy_orders WHERE rowid = ?"),
+    listTransactionOrders: db.prepare(
+      "SELECT rowid AS id, * FROM etsy_orders WHERE transaction_id = ? ORDER BY rowid"
+    ),
+    deleteUnmatchedOrder: db.prepare("DELETE FROM etsy_orders WHERE transaction_id = ? AND matched_code IS NULL"),
+    setOrderCode: db.prepare("UPDATE etsy_orders SET matched_code = ? WHERE rowid = ? AND matched_code IS NULL"),
+    listRecentOrders: db.prepare("SELECT rowid AS id, * FROM etsy_orders ORDER BY seen_at DESC, rowid DESC LIMIT ?"),
+    listAttemptsSince: db.prepare("SELECT * FROM attempts WHERE created_at >= ? ORDER BY created_at DESC, code, n"),
+    listRecentFailures: db.prepare(
+      "SELECT * FROM attempts WHERE status IN ('failed', 'declined') ORDER BY finished_at DESC LIMIT ?"
+    ),
     insertEvent: db.prepare("INSERT INTO events (at, code, kind, detail) VALUES (?, ?, ?, ?)"),
     listEvents: db.prepare("SELECT * FROM events WHERE code = ? ORDER BY at, rowid")
   };
@@ -168,7 +179,18 @@ export function createQueries(db) {
       return statements.getEtsyOrder.get(values.transaction_id, values.matched_code);
     },
 
+    getEtsyOrder: (transactionId, code) => statements.getEtsyOrder.get(transactionId, code ?? null) ?? null,
+    getEtsyOrderById: (id) => statements.getEtsyOrderById.get(id) ?? null,
     listUnmatchedOrders: () => statements.listUnmatchedOrders.all(),
+    listTransactionOrders: (transactionId) => statements.listTransactionOrders.all(transactionId),
+    // Once a transaction is matched to a code, its "no code" row goes.
+    deleteUnmatchedOrder: (transactionId) => statements.deleteUnmatchedOrder.run(transactionId).changes,
+    // Admin "match to code": the unmatched row id gets the code. False when it was matched already.
+    setOrderCode: (id, code) => statements.setOrderCode.run(code, id).changes === 1,
+    listRecentOrders: (limit = 50) => statements.listRecentOrders.all(limit),
+    // Admin page: designs created since an ISO time, newest first; the latest failures.
+    listAttemptsSince: (iso) => statements.listAttemptsSince.all(iso).map(parseAttempt),
+    listRecentFailures: (limit = 20) => statements.listRecentFailures.all(limit).map(parseAttempt),
 
     logEvent(kind, { code = null, detail = null } = {}) {
       const text = detail === null || typeof detail === "string" ? detail : JSON.stringify(detail);

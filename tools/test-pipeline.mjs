@@ -10,6 +10,7 @@ import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import { createBackgroundRemover } from "../src/prep/background.js";
 import { createApp } from "../src/server/app.js";
 import { loadConfig } from "../src/server/config.js";
+import { etsyTestConfig, noEtsy } from "./etsy-mock.mjs";
 
 // The design pipeline end to end (spec section 7, D5): IS_FAKE=1 through HTTP, and the re-run,
 // declined and failed paths with a scripted provider and layout.
@@ -39,7 +40,7 @@ async function start({ env = { IS_FAKE: "1" }, pipelineDeps = null } = {}) {
   // The cut-out is always the fake one (a copy of work.png); only the pipeline runs in real mode.
   const background = createBackgroundRemover({ config: { ...config, fake: true }, log: quiet });
   const pipeline = createPipeline({ q, config, log: quiet, ...(pipelineDeps || {}) });
-  const app = createApp({ db, config, deps: { verifyTurnstile: async () => true, background, pipeline } });
+  const app = createApp({ db, config: { ...config, dataDir: root, etsy: etsyTestConfig(config.etsy, root) }, deps: { verifyTurnstile: async () => true, background, pipeline, request: noEtsy } });
   const server = app.listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
   const url = `http://127.0.0.1:${server.address().port}`;

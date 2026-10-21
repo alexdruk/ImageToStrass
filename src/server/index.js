@@ -9,6 +9,8 @@ const app = createApp({ db, config });
 
 // Designs that were queued when the server stopped are queued again (spec section 7).
 app.locals.pipeline.recover();
+// Etsy receipts -> paid codes (spec section 11.3), now and every ETSY_POLL_SECONDS.
+app.locals.poller.start();
 
 if (!config.turnstileSecret) {
   console.warn("TURNSTILE_SECRET_KEY is not set: uploads are not checked by Turnstile.");
