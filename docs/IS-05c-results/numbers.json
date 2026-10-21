@@ -3496,5 +3496,742 @@
     "smokedTopaz": 35
    }
   ]
+ },
+ "after": {
+  "eyes": {
+   "rs-woman": {
+    "rows": {
+     "before": {
+      "eyeStones": 57,
+      "byClass": {
+       "dark": 25,
+       "colour": 20,
+       "white": 6,
+       "grey": 6
+      },
+      "byColour": {
+       "smoked-topaz": 16,
+       "jet": 9,
+       "colorado-topaz": 6,
+       "grey": 6,
+       "crystal-clear": 5,
+       "golden-shadow": 4,
+       "light-smoked-topaz": 4,
+       "rose-gold": 3,
+       "greige": 2,
+       "silver": 1,
+       "silk": 1
+      },
+      "deStone": 15.69,
+      "deRendered": 17.41,
+      "darkShare": 27.93
+     },
+     "after": {
+      "eyeStones": 59,
+      "byClass": {
+       "colour": 31,
+       "dark": 20,
+       "white": 8
+      },
+      "byColour": {
+       "colorado-topaz": 14,
+       "silk": 14,
+       "jet": 11,
+       "smoked-topaz": 9,
+       "crystal-clear": 8,
+       "rose-gold": 2,
+       "light-peach": 1
+      },
+      "deStone": 9.37,
+      "deRendered": 11.41,
+      "darkShare": 28.11
+     },
+     "ai": {
+      "darkShare": 23.5
+     }
+    },
+    "file": "after-eyes-rs-woman.jpg"
+   },
+   "rs-portrait": {
+    "rows": {
+     "before": {
+      "eyeStones": 53,
+      "byClass": {
+       "grey": 21,
+       "white": 15,
+       "dark": 15,
+       "colour": 2
+      },
+      "byColour": {
+       "grey": 17,
+       "jet": 13,
+       "silver": 11,
+       "crystal-clear": 4,
+       "graphite": 3,
+       "hematite": 2,
+       "greige": 2,
+       "jet-hematite": 1
+      },
+      "deStone": 14.17,
+      "deRendered": 14.8,
+      "darkShare": 26.1
+     },
+     "after": {
+      "eyeStones": 49,
+      "byClass": {
+       "white": 23,
+       "dark": 16,
+       "grey": 10
+      },
+      "byColour": {
+       "silver": 19,
+       "jet": 11,
+       "grey": 7,
+       "hematite": 5,
+       "crystal-clear": 4,
+       "graphite": 2,
+       "jet-hematite": 1
+      },
+      "deStone": 10.45,
+      "deRendered": 11.32,
+      "darkShare": 25.47
+     },
+     "ai": {
+      "darkShare": 48.51
+     }
+    },
+    "file": "after-eyes-rs-portrait.jpg"
+   },
+   "rs-einstein": {
+    "rows": {
+     "before": {
+      "eyeStones": 64,
+      "byClass": {
+       "dark": 37,
+       "colour": 21,
+       "white": 6
+      },
+      "byColour": {
+       "smoked-topaz": 33,
+       "colorado-topaz": 16,
+       "copper": 5,
+       "jet": 4,
+       "crystal-clear": 4,
+       "silver": 2
+      },
+      "deStone": 13.99,
+      "deRendered": 17.05,
+      "darkShare": 21.27
+     },
+     "after": {
+      "eyeStones": 64,
+      "byClass": {
+       "dark": 40,
+       "colour": 21,
+       "white": 3
+      },
+      "byColour": {
+       "smoked-topaz": 38,
+       "colorado-topaz": 11,
+       "copper": 7,
+       "rose-gold": 3,
+       "crystal-clear": 3,
+       "jet": 2
+      },
+      "deStone": 12.5,
+      "deRendered": 16.38,
+      "darkShare": 25.28
+     },
+     "ai": {
+      "darkShare": 16.66
+     }
+    },
+    "file": "after-eyes-rs-einstein.jpg"
+   },
+   "rs-jesus": {
+    "rows": {
+     "before": {
+      "eyeStones": 34,
+      "byClass": {
+       "colour": 18,
+       "dark": 12,
+       "white": 2,
+       "grey": 2
+      },
+      "byColour": {
+       "silk": 7,
+       "jet": 6,
+       "hematite": 5,
+       "greige": 4,
+       "golden-shadow": 3,
+       "crystal-clear": 2,
+       "light-smoked-topaz": 2,
+       "grey": 2,
+       "colorado-topaz": 1,
+       "copper": 1,
+       "smoked-topaz": 1
+      },
+      "deStone": 14.79,
+      "deRendered": 14.35,
+      "darkShare": 28.36
+     },
+     "after": {
+      "eyeStones": 34,
+      "byClass": {
+       "colour": 18,
+       "dark": 12,
+       "white": 2,
+       "grey": 2
+      },
+      "byColour": {
+       "silk": 8,
+       "jet": 6,
+       "hematite": 5,
+       "greige": 4,
+       "light-smoked-topaz": 3,
+       "crystal-clear": 2,
+       "grey": 2,
+       "golden-shadow": 2,
+       "colorado-topaz": 1,
+       "smoked-topaz": 1
+      },
+      "deStone": 14.38,
+      "deRendered": 13.94,
+      "darkShare": 29.58
+     },
+     "ai": {
+      "darkShare": 17.69
+     }
+    },
+    "file": "after-eyes-rs-jesus.jpg"
+   },
+   "rs-dog": {
+    "rows": {
+     "before": {
+      "eyeStones": 77,
+      "byClass": {
+       "colour": 49,
+       "dark": 10,
+       "white": 9,
+       "grey": 9
+      },
+      "byColour": {
+       "copper": 15,
+       "colorado-topaz": 12,
+       "greige": 9,
+       "grey": 9,
+       "smoked-topaz": 8,
+       "light-smoked-topaz": 8,
+       "silver": 6,
+       "crystal-clear": 3,
+       "jet": 2,
+       "light-colorado": 1,
+       "golden-shadow": 1,
+       "rose-gold": 1,
+       "vintage-rose": 1,
+       "light-topaz": 1
+      },
+      "deStone": 16.81,
+      "deRendered": 18.7,
+      "darkShare": 14.63
+     },
+     "after": {
+      "eyeStones": 77,
+      "byClass": {
+       "colour": 47,
+       "dark": 12,
+       "white": 9,
+       "grey": 9
+      },
+      "byColour": {
+       "copper": 14,
+       "smoked-topaz": 10,
+       "greige": 9,
+       "grey": 9,
+       "light-smoked-topaz": 9,
+       "silver": 6,
+       "colorado-topaz": 6,
+       "light-colorado": 5,
+       "crystal-clear": 3,
+       "jet": 2,
+       "golden-shadow": 2,
+       "light-peach": 1,
+       "light-topaz": 1
+      },
+      "deStone": 16.18,
+      "deRendered": 18.24,
+      "darkShare": 15.69
+     },
+     "ai": {
+      "darkShare": 21.13
+     }
+    },
+    "file": "after-eyes-rs-dog.jpg"
+   },
+   "cat-rule": {
+    "rows": {
+     "before": {
+      "eyeStones": 72,
+      "byClass": {
+       "colour": 36,
+       "dark": 23,
+       "white": 9,
+       "grey": 4
+      },
+      "byColour": {
+       "peridot": 16,
+       "hematite": 12,
+       "jet": 11,
+       "erinite": 9,
+       "crystal-clear": 6,
+       "fern-green": 5,
+       "khaki": 3,
+       "silver": 3,
+       "emerald": 2,
+       "grey": 2,
+       "chrysolite": 1,
+       "black-diamond": 1,
+       "jet-hematite": 1
+      },
+      "deStone": 15.61,
+      "deRendered": 15.12,
+      "darkShare": 23.63
+     },
+     "after": {
+      "eyeStones": 72,
+      "byClass": {
+       "colour": 36,
+       "dark": 23,
+       "white": 9,
+       "grey": 4
+      },
+      "byColour": {
+       "peridot": 16,
+       "hematite": 12,
+       "jet": 11,
+       "erinite": 9,
+       "crystal-clear": 6,
+       "fern-green": 5,
+       "khaki": 3,
+       "silver": 3,
+       "emerald": 2,
+       "grey": 2,
+       "chrysolite": 1,
+       "black-diamond": 1,
+       "jet-hematite": 1
+      },
+      "deStone": 15.61,
+      "deRendered": 15.12,
+      "darkShare": 24.52
+     },
+     "ai": {
+      "darkShare": 27.77
+     }
+    },
+    "file": "after-eyes-cat-rule.jpg"
+   }
+  },
+  "designs": [
+   {
+    "id": "dog-rule",
+    "face": "human",
+    "stones": 2039,
+    "geometry": false,
+    "facePupils": true,
+    "colourChanges": 1177,
+    "deStone": [
+     7.58,
+     7.46
+    ],
+    "deRendered": [
+     9.83,
+     9.85
+    ],
+    "rendererPx": 0.28,
+    "ss4": 86,
+    "aboveSs6": 2
+   },
+   {
+    "id": "dog-norule",
+    "face": "human",
+    "stones": 2071,
+    "geometry": false,
+    "facePupils": true,
+    "colourChanges": 1077,
+    "deStone": [
+     6.9,
+     6.76
+    ],
+    "deRendered": [
+     9.28,
+     9.38
+    ],
+    "rendererPx": 0.25,
+    "ss4": 63,
+    "aboveSs6": 2
+   },
+   {
+    "id": "cat-rule",
+    "face": "animal",
+    "stones": 3573,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 45,
+    "deStone": [
+     6.29,
+     6.27
+    ],
+    "deRendered": [
+     5.86,
+     5.85
+    ],
+    "rendererPx": 0.27,
+    "ss4": 302,
+    "aboveSs6": 2
+   },
+   {
+    "id": "cat-norule",
+    "face": "animal",
+    "stones": 3140,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 130,
+    "deStone": [
+     7.59,
+     7.46
+    ],
+    "deRendered": [
+     6.94,
+     6.87
+    ],
+    "rendererPx": 0.34,
+    "ss4": 380,
+    "aboveSs6": 2
+   },
+   {
+    "id": "mug-rule",
+    "face": "animal",
+    "stones": 1751,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 0,
+    "deStone": [
+     3.22,
+     3.22
+    ],
+    "deRendered": [
+     3.87,
+     3.87
+    ],
+    "rendererPx": 0.01,
+    "ss4": 70,
+    "aboveSs6": 0
+   },
+   {
+    "id": "mug-norule",
+    "face": "animal",
+    "stones": 2224,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 0,
+    "deStone": [
+     3.35,
+     3.35
+    ],
+    "deRendered": [
+     4.64,
+     4.64
+    ],
+    "rendererPx": 0.01,
+    "ss4": 105,
+    "aboveSs6": 0
+   },
+   {
+    "id": "giraffe-rule",
+    "face": "animal",
+    "stones": 2286,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 94,
+    "deStone": [
+     10.93,
+     10.85
+    ],
+    "deRendered": [
+     11.98,
+     11.94
+    ],
+    "rendererPx": 0.29,
+    "ss4": 339,
+    "aboveSs6": 2
+   },
+   {
+    "id": "dachshund-rule",
+    "face": "animal",
+    "stones": 1628,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 48,
+    "deStone": [
+     9.04,
+     9.02
+    ],
+    "deRendered": [
+     13.45,
+     13.49
+    ],
+    "rendererPx": 0.28,
+    "ss4": 174,
+    "aboveSs6": 2
+   },
+   {
+    "id": "car-rule",
+    "face": null,
+    "stones": 3531,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 0,
+    "deStone": [
+     6.89,
+     6.89
+    ],
+    "deRendered": [
+     7.32,
+     7.32
+    ],
+    "rendererPx": 0.09,
+    "ss4": 255,
+    "aboveSs6": 0
+   },
+   {
+    "id": "rs-cat",
+    "face": "animal",
+    "stones": 2150,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 40,
+    "deStone": [
+     5.4,
+     5.39
+    ],
+    "deRendered": [
+     6.81,
+     6.76
+    ],
+    "rendererPx": 0.49,
+    "ss4": 347,
+    "aboveSs6": 2
+   },
+   {
+    "id": "rs-dog",
+    "face": "animal",
+    "stones": 1670,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 57,
+    "deStone": [
+     4.21,
+     4.17
+    ],
+    "deRendered": [
+     4.99,
+     4.95
+    ],
+    "rendererPx": 0.3,
+    "ss4": 140,
+    "aboveSs6": 2
+   },
+   {
+    "id": "rs-einstein",
+    "face": "human",
+    "stones": 3590,
+    "geometry": false,
+    "facePupils": true,
+    "colourChanges": 2251,
+    "deStone": [
+     7.01,
+     6.87
+    ],
+    "deRendered": [
+     9.67,
+     9.74
+    ],
+    "rendererPx": 0.23,
+    "ss4": 336,
+    "aboveSs6": 2
+   },
+   {
+    "id": "rs-jesus",
+    "face": "animal",
+    "stones": 3297,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 285,
+    "deStone": [
+     5.83,
+     5.47
+    ],
+    "deRendered": [
+     7.13,
+     7.25
+    ],
+    "rendererPx": 0.14,
+    "ss4": 416,
+    "aboveSs6": 1
+   },
+   {
+    "id": "rs-lake",
+    "face": "human",
+    "stones": 4089,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 36,
+    "deStone": [
+     8.3,
+     8.29
+    ],
+    "deRendered": [
+     10.27,
+     10.27
+    ],
+    "rendererPx": 0.02,
+    "ss4": 162,
+    "aboveSs6": 0
+   },
+   {
+    "id": "rs-leopard",
+    "face": "animal",
+    "stones": 2433,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 42,
+    "deStone": [
+     5.58,
+     5.53
+    ],
+    "deRendered": [
+     6.68,
+     6.65
+    ],
+    "rendererPx": 0.29,
+    "ss4": 225,
+    "aboveSs6": 2
+   },
+   {
+    "id": "rs-logo",
+    "face": "animal",
+    "stones": 833,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 0,
+    "deStone": [
+     3.42,
+     3.42
+    ],
+    "deRendered": [
+     4.18,
+     4.18
+    ],
+    "rendererPx": 0.01,
+    "ss4": 9,
+    "aboveSs6": 0
+   },
+   {
+    "id": "rs-parrot",
+    "face": "animal",
+    "stones": 2542,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 3,
+    "deStone": [
+     8.99,
+     8.97
+    ],
+    "deRendered": [
+     11.68,
+     11.67
+    ],
+    "rendererPx": 0.1,
+    "ss4": 234,
+    "aboveSs6": 1
+   },
+   {
+    "id": "rs-portrait",
+    "face": "human",
+    "stones": 3990,
+    "geometry": false,
+    "facePupils": true,
+    "colourChanges": 1515,
+    "deStone": [
+     6.72,
+     6.42
+    ],
+    "deRendered": [
+     6,
+     5.78
+    ],
+    "rendererPx": 0.18,
+    "ss4": 404,
+    "aboveSs6": 2
+   },
+   {
+    "id": "rs-rose",
+    "face": "animal",
+    "stones": 1846,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 0,
+    "deStone": [
+     7.98,
+     7.98
+    ],
+    "deRendered": [
+     13.49,
+     13.49
+    ],
+    "rendererPx": 0.01,
+    "ss4": 157,
+    "aboveSs6": 0
+   },
+   {
+    "id": "rs-tulips",
+    "face": "animal",
+    "stones": 2673,
+    "geometry": true,
+    "facePupils": true,
+    "colourChanges": 0,
+    "deStone": [
+     9.34,
+     9.34
+    ],
+    "deRendered": [
+     13.4,
+     13.4
+    ],
+    "rendererPx": 0.01,
+    "ss4": 126,
+    "aboveSs6": 0
+   },
+   {
+    "id": "rs-woman",
+    "face": "human",
+    "stones": 2613,
+    "geometry": false,
+    "facePupils": true,
+    "colourChanges": 844,
+    "deStone": [
+     7.01,
+     6.48
+    ],
+    "deRendered": [
+     9.84,
+     9.81
+    ],
+    "rendererPx": 0.27,
+    "ss4": 203,
+    "aboveSs6": 2
+   }
+  ],
+  "womanFile": "after-skin-woman.jpg"
  }
 }

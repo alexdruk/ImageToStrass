@@ -11,6 +11,12 @@ OUT_DIR/NAME.VARIANT.stages.json (per stone of the answer, the colour id after e
 as scripts/is05b_runs.py records them; "start" is the first pick plus the eye and fill stones).
 Detections are cached in OUT_DIR/NAME.det.npy.
 
+IS05C_BASE=before makes every variant relative to the IS-05b DEFAULT (human_iris on,
+skin_nearest_inner off), as the runs of docs/IS-05c-results.md sections 1-3 were made; by default
+they are relative to today's DEFAULT.
+
+  before                      the IS-05b DEFAULT (human_iris on, skin_nearest_inner off)
+
 Eye variants (relative to DEFAULT):
   default                     the service as shipped
   eye-no-<rule>               one eye rule off (EYE_RULES)
@@ -26,6 +32,7 @@ Skin variants:
   skin-rules-off              SKIN_RULES off and the three unflagged steps skipped
   skin-nearest-inner          skin_nearest reads each stone's inner 60 % (ordered.SAMPLE_SHARE) instead
                               of its whole disc, which on most AI images takes in the dark gaps
+                              (Rules.skin_nearest_inner, IS-05c)
   skin-nearest-inner-kl2      as skin-nearest-inner, and its ΔE2000 weighs lightness half (kL = 2)
 """
 import dataclasses
@@ -40,7 +47,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 
-from strass_layout import DEFAULT, faces, load_models, ordered, pipeline, post  # noqa: E402
+from strass_layout import DEFAULT, faces, load_models, pipeline, post  # noqa: E402
 from strass_layout.pipeline import finish_layout, layout_frame  # noqa: E402
 from is05b_runs import STAGES, Recorder, _key  # noqa: E402
 
@@ -49,22 +56,26 @@ SKIN_RULES = ["skin_nearest", "calm_skin", "skin_no_wine"]
 STEPS = ["family_fix", "distinct", "darkdots"]
 
 
+BEFORE = dataclasses.replace(DEFAULT, human_iris=True, skin_nearest_inner=False)
+BASE = BEFORE if os.environ.get("IS05C_BASE") == "before" else DEFAULT
+
+
 def _off(**kw):
-    return dataclasses.replace(DEFAULT, **kw)
+    return dataclasses.replace(BASE, **kw)
 
 
 # name -> (rules, patches); patches name the unflagged steps to skip or replace (see _patched).
-VARIANTS = {"default": (DEFAULT, ())}
+VARIANTS = {"default": (BASE, ()), "before": (BEFORE, ())}
 VARIANTS.update({"eye-no-" + r.replace("_", "-"): (_off(**{r: False}), ()) for r in EYE_RULES})
 VARIANTS["eye-rules-off"] = (_off(**{r: False for r in EYE_RULES}), ())
-VARIANTS["eye-no-lashes"] = (DEFAULT, ("lashes",))
-VARIANTS["eye-skip"] = (DEFAULT, ("skip_eyes",))
+VARIANTS["eye-no-lashes"] = (BASE, ("lashes",))
+VARIANTS["eye-skip"] = (BASE, ("skip_eyes",))
 VARIANTS.update({"skin-no-" + r.replace("_", "-"): (_off(**{r: False}), ()) for r in SKIN_RULES})
 VARIANTS["skin-soft-outlines-on"] = (_off(soft_outlines=True), ())
-VARIANTS.update({"skin-no-" + p.replace("_", "-"): (DEFAULT, (p,)) for p in STEPS})
+VARIANTS.update({"skin-no-" + p.replace("_", "-"): (BASE, (p,)) for p in STEPS})
 VARIANTS["skin-rules-off"] = (_off(**{r: False for r in SKIN_RULES}), tuple(STEPS))
-VARIANTS["skin-nearest-inner"] = (DEFAULT, ("nearest_inner",))
-VARIANTS["skin-nearest-inner-kl2"] = (DEFAULT, ("nearest_inner", "nearest_kl2"))
+VARIANTS["skin-nearest-inner"] = (_off(skin_nearest_inner=True), ())
+VARIANTS["skin-nearest-inner-kl2"] = (_off(skin_nearest_inner=True), ("nearest_kl2",))
 GROUPS = {"eyes": ["default"] + [k for k in VARIANTS if k.startswith("eye-")],
           "skin": ["default"] + [k for k in VARIANTS if k.startswith("skin-")]}
 
@@ -78,7 +89,7 @@ class _Patched:
     def __enter__(self):
         self.saved = {"plaus": post._plausible_pupils, "ss4": post.SS4, "family": post.family_fix,
                       "distinct": pipeline.distinct_tones, "clean": post.darkdots.clean,
-                      "colours": pipeline.stone_colours, "de": faces.deltaE_ciede2000}
+                      "de": faces.deltaE_ciede2000}
         p = self.patches
         if "skip_eyes" in p:
             # the non-face path of post_process: no pupil, no eye box, no eye stone, face None
@@ -92,10 +103,6 @@ class _Patched:
             pipeline.distinct_tones = lambda rgb, a, s, P, D, C, *args, **kw: list(C)
         if "darkdots" in p:
             post.darkdots.clean = lambda P, D, C, *a, **k: (list(C), 0)
-        if "nearest_inner" in p:
-            # pipeline.py calls stone_colours once, for skin_nearest's Lab (radius 0.5 D, whole disc)
-            orig = self.saved["colours"]
-            pipeline.stone_colours = lambda rgb, a, det, mean=False: orig(rgb, a, det * np.array([1, 1, ordered.SAMPLE_SHARE, 1]), mean)
         if "nearest_kl2" in p:
             # faces.py calls deltaE_ciede2000 in skin_nearest and calm_skin; only skin_nearest passes arrays
             de = self.saved["de"]
@@ -108,7 +115,6 @@ class _Patched:
         post.family_fix = self.saved["family"]
         pipeline.distinct_tones = self.saved["distinct"]
         post.darkdots.clean = self.saved["clean"]
-        pipeline.stone_colours = self.saved["colours"]
         faces.deltaE_ciede2000 = self.saved["de"]
 
 

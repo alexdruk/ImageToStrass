@@ -8,7 +8,7 @@
 // The IS-03b AI images are the fixtures in tools/fixtures/is03b-ai; the RS AI images are the RS
 // test images. Each design is the delivered one (cleanedLayout: the size cap and the overlap
 // cleanup) of the strass /layout answer: <runs dir>/<run>.default.json of
-// services/strass/scripts/is05b_runs.py (today's service rules) when given, else the saved
+// services/strass/scripts/is05b_runs.py or is05c_runs.py (today's service rules) when given, else the saved
 // fixture (RS 38cd831 rules). Plain and tinted share one canvas (the tinted canvas: stones'
 // box + 2 main-stone margins) at the same px per mm; the original is shown at the same height.
 import { createCanvas } from "@napi-rs/canvas";
@@ -138,12 +138,14 @@ const lines = [
   "# IS-05 tinted comparison",
   "",
   "Docs only. Made by `node tools/tinted-comparison.mjs <runs dir>` with no provider call. Re-rendered",
-  "for the IS-05b second follow-up (20 Oct 2026) with the final settings: the tinted renderer of spec",
-  "section 8 (each stone within 2 L* of its catalogue colour and its inner 60 % within 4, gaps 4 L*",
-  "darker than the fill, a little more above L* 80, and 8 L* on near-white fills above L* 85), and each",
-  "design laid out again by today's strass service from its saved AI image",
-  "(`services/strass/scripts/is05b_runs.py`, rules `DEFAULT`: soft outlines off, plausible pupils, the",
-  "one plausible pair kept of more than two, colours read at the delivered stones).",
+  "for IS-05c (21 Oct 2026) with the settings of that build: the tinted renderer of spec section 8 (each",
+  "stone within 2 L* of its catalogue colour and its inner 60 % within 4, gaps 4 L* darker than the fill,",
+  "a little more above L* 80, and 8 L* on near-white fills above L* 85, filled up to 0.6 mm beyond every",
+  "stone's edge, a large Jet stone's light rim as wide as an SS6 stone's), and each design laid out again",
+  "by today's strass service from its saved AI image (`services/strass/scripts/is05c_runs.py`, rules",
+  "`DEFAULT`: soft outlines off, plausible pupils, the one plausible pair kept of more than two, colours",
+  "read at the delivered stones, no iris rings around a person's pupils, skin colours read from the inner",
+  "60 % of each stone).",
   "",
   "Each row shows four images side by side:",
   "",

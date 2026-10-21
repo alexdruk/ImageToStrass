@@ -7,6 +7,8 @@ Build J acceptance figures.
 IS (IS-05b): DEFAULT has soft_outlines off, so it is compared with BUILD_I with soft_outlines off.
 IS (IS-05b): DEFAULT's sample_delivered recolours stones everywhere, so DefaultAgainstBuildI runs
 DEFAULT with it off (test_is05b.SampleDelivered checks that it changes only colours).
+IS (IS-05c): DEFAULT has human_iris off and skin_nearest_inner on; DefaultAgainstBuildI runs DEFAULT with
+human_iris on and skin_nearest_inner off (tests/test_is05c.py checks both).
 """
 import dataclasses
 import unittest
@@ -52,7 +54,8 @@ class DefaultAgainstBuildI(unittest.TestCase):
         for name in IMAGES:
             with self.subTest(image=name):
                 i = support.layout_result(name, dataclasses.replace(BUILD_I, soft_outlines=False))  # IS (IS-05b)
-                j = support.layout_result(name, dataclasses.replace(DEFAULT, sample_delivered=False))  # IS (IS-05b)
+                j = support.layout_result(name, dataclasses.replace(DEFAULT, sample_delivered=False, human_iris=True,  # IS (IS-05b, IS-05c)
+                                                                   skin_nearest_inner=False))
                 ri, rj = i["report"], j["report"]
                 self.assertEqual(rj["violations"], 0)
                 self.assertGreaterEqual(rj["minGapMm"], MIN_GAP_MM)

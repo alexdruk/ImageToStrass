@@ -14,7 +14,7 @@ import { buildDeliveryZip, deliveryZipPath, designFiles, writeZip, zipEntryNames
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import {
-  FILL_REACH, GAP_RULE, INNER_SHARE, gapRgb, lightnessOfHex, renderFull, renderPreview, renderTinted, tintCanvasMm
+  FILL_MARGIN_MM, GAP_RULE, INNER_SHARE, gapRgb, lightnessOfHex, renderFull, renderPreview, renderTinted, tintCanvasMm
 } from "../src/render/tinted.js";
 import { srgbToLab } from "./colour-diff.mjs";
 import { Stone } from "../src/stones/Stone.js";
@@ -64,7 +64,7 @@ async function pixelsOf(render) {
   };
 }
 
-test("tinted render: 1.5 r gets the gap colour of the nearest stone's fill, 1.7 r is background", async () => {
+test("tinted render: 0.5 mm beyond a stone's edge gets the gap colour of its fill, 0.7 mm is background", async () => {
   const full = renderTinted(UNIT, { longSidePx: 2400, background: "transparent" });
   const white = renderTinted(UNIT, { longSidePx: 2400, background: "white" });
   assert.ok(full.scale > 50, "pixels well below 0.05 r");
@@ -72,21 +72,25 @@ test("tinted render: 1.5 r gets the gap colour of the nearest stone's fill, 1.7 
   const pw = await pixelsOf(white);
   const dist = (p, s) => Math.hypot(p.at[0] - s.xMm, p.at[1] - s.yMm) / (s.sizeMm / 2);
 
+  // IS-05c: the same margin beyond the edge for every size, the one an SS6 stone had at 1.6 r
+  // (0.6 x 1 mm); the SS16 stone A (r 2 mm) used to be filled up to 1.2 mm beyond its edge.
+  assert.equal(FILL_MARGIN_MM, 0.6);
   for (const s of UNIT.stones) {
     // Straight up from each stone, away from the others.
-    const at15 = px(s.xMm, s.yMm - 1.5 * s.sizeMm / 2);
-    assert.ok(Math.abs(dist(at15, s) - 1.5) < 0.05, `${s.color} sample at ${dist(at15, s)} r`);
-    assert.deepEqual(at15.rgba, [...rgbOf(s.color), 255], `${s.color} at 1.5 r`);
-    const at17 = px(s.xMm, s.yMm - 1.7 * s.sizeMm / 2);
-    assert.ok(Math.abs(dist(at17, s) - 1.7) < 0.05);
-    assert.equal(at17.rgba[3], 0, `${s.color} at 1.7 r: transparent in the PNG file`);
-    assert.deepEqual(pw(s.xMm, s.yMm - 1.7 * s.sizeMm / 2).rgba, [255, 255, 255, 255], `${s.color} at 1.7 r: white in the app`);
+    const edge = (p) => dist(p, s) * s.sizeMm / 2 - s.sizeMm / 2;
+    const in05 = px(s.xMm, s.yMm - s.sizeMm / 2 - 0.5);
+    assert.ok(Math.abs(edge(in05) - 0.5) < 0.03, `${s.color} sample at ${edge(in05)} mm`);
+    assert.deepEqual(in05.rgba, [...rgbOf(s.color), 255], `${s.color} at 0.5 mm`);
+    const out07 = px(s.xMm, s.yMm - s.sizeMm / 2 - 0.7);
+    assert.ok(Math.abs(edge(out07) - 0.7) < 0.03);
+    assert.equal(out07.rgba[3], 0, `${s.color} at 0.7 mm: transparent in the PNG file`);
+    assert.deepEqual(pw(s.xMm, s.yMm - s.sizeMm / 2 - 0.7).rgba, [255, 255, 255, 255], `${s.color} at 0.7 mm: white in the app`);
   }
-  assert.equal(FILL_REACH, 1.6);
+  // A at 1.5 r (1 mm beyond its edge) was filled before IS-05c; now it is background.
+  assert.equal(px(10, 10 - 3).rgba[3], 0);
 
   // Nearest by edge, not by centre: 2.9 mm right of A is 0.9 mm from A's edge and 0.7 mm from B's,
-  // so it belongs to B, and at 1.7 r_B from B's centre it is background although it is only
-  // 1.45 r_A from A's centre.
+  // so it belongs to B, and 0.7 mm from B's edge it is background.
   assert.equal(px(12.9, 10).rgba[3], 0);
 });
 
@@ -140,6 +144,35 @@ test("tinted render: every stone within 3 L* of its catalogue colour, its inner 
       assert.ok(spread >= 5, `${id} at ${pxPerMm} px/mm: facet spread ${spread.toFixed(1)}`);
     }
   }
+});
+
+test("tinted render: a large Jet stone's light rim is as wide as an SS6 Jet stone's (IS-05c)", async () => {
+  // Light pixels (L* > 35) within 0.4 mm of the edge, per px of circumference, at 30 px per mm.
+  // RS draws the rim 0.09 r wide: an SS20 Jet stone had 2.2 times the SS6 width; IS draws it at the
+  // SS6 width. The stone's lightness rule (step 6) still holds.
+  const pxPerMm = 30;
+  const rim = {};
+  for (const d of [2, 2.8, 4, 4.7]) {
+    const sl = new StoneLayout({ layerId: "design", sourceMode: "is", stones: [stone(10, 10, d, "jet", 0)] });
+    const box = tintCanvasMm(sl);
+    const render = renderTinted(sl, { longSidePx: Math.round(Math.max(box.widthMm, box.heightMm) * pxPerMm), background: "white" });
+    const { data, info } = await sharp(render.png).raw().toBuffer({ resolveWithObject: true });
+    const c = (10 - box.minXmm) * render.scale, R = (d / 2) * render.scale;
+    let light = 0, sum = 0, n = 0;
+    for (let y = 0; y < info.height; y++) for (let x = 0; x < info.width; x++) {
+      const r = Math.hypot(x + 0.5 - c, y + 0.5 - c);
+      const p = (y * info.width + x) * info.channels;
+      const l = srgbToLab([data[p], data[p + 1], data[p + 2]])[0];
+      if (Math.abs(r - R) <= 0.4 * render.scale && l > 35) light++;
+      if (r <= R) { sum += l; n++; }
+    }
+    rim[d] = light / (2 * Math.PI * R);
+    assert.ok(Math.abs(sum / n - lightnessOfHex(STONE_COLORS.jet.fill)) <= 3, `jet ${d} mm: stone L* ${(sum / n).toFixed(1)}`);
+  }
+  for (const d of [2.8, 4, 4.7]) assert.ok(Math.abs(rim[d] - rim[2]) <= 0.25 * rim[2], `jet ${d} mm rim ${rim[d].toFixed(2)} px, SS6 ${rim[2].toFixed(2)} px`);
+  // Any other colour is drawn as RS draws it: only Jet's rim is lighter than its fill.
+  const lighter = Object.entries(STONE_COLORS).filter(([, c]) => lightnessOfHex(c.stroke) > lightnessOfHex(c.fill)).map(([id]) => id);
+  assert.deepEqual(lighter, ["jet"]);
 });
 
 test("tinted render: full 2400 px transparent, preview 900 px white with the watermark", async () => {

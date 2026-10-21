@@ -22,7 +22,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import {
-  FILL_REACH, GAP_RULE, gapRgb, keepStoneLightness, lightnessOfHex, nearestStones, renderTinted, tintCanvasMm
+  GAP_RULE, gapRgb, keepStoneLightness, lightnessOfHex, nearestStones, renderTinted, tintCanvasMm
 } from "../src/render/tinted.js";
 import { getCrystalAppearance } from "../src/stones/CrystalAppearance.js";
 import { drawCrystalStone } from "../src/stones/CrystalStoneRenderer.js";
@@ -36,6 +36,10 @@ const MIN_FILLED = 0.9;
 const MIN_AI = 0.2;
 const STONE_SHARE = 0.8;
 export const BEFORE_BRIGHTNESS = 0.85; // spec section 8 step 3 before IS-05b
+// Spec section 8 step 4 before IS-05c: filled up to 1.6 radii from the centre (IS-05c: a fixed
+// margin beyond the edge, FILL_MARGIN_MM). The nearest-stone search must then reach (1.6 - 1) rMax.
+export const FILL_REACH = 1.6;
+const reachMarginMm = (stones, fillReach) => (fillReach - 1) * Math.max(...stones.map((s) => s.sizeMm / 2));
 
 const fillOf = (color) => (STONE_COLORS[color] || STONE_COLORS.crystal).fill;
 const hexRgb = (hex) => [0, 2, 4].map((i) => parseInt(hex.replace("#", "").slice(i, i + 2), 16));
@@ -47,7 +51,7 @@ export function renderTintedBefore(stoneLayout, { longSidePx, background = "tran
   const box = tintCanvasMm(stoneLayout);
   const scale = longSidePx / Math.max(box.widthMm, box.heightMm);
   const widthPx = Math.round(box.widthMm * scale), heightPx = Math.round(box.heightMm * scale);
-  const geometry = { minXmm: box.minXmm, minYmm: box.minYmm, widthPx, heightPx, scale };
+  const geometry = { minXmm: box.minXmm, minYmm: box.minYmm, widthPx, heightPx, scale, fillMarginMm: reachMarginMm(stoneLayout.stones, FILL_REACH) };
   const { owner, best } = nearestStones(stoneLayout.stones, geometry);
   const bg = background === "white" ? [255, 255, 255, 255] : [0, 0, 0, 0];
   const canvas = createCanvas(widthPx, heightPx);
@@ -116,7 +120,7 @@ async function aiCells(layout, aiFile, stoneLayout, box, shift, grid, asDrawn = 
 function cellModel(stoneLayout, box, grid, { fillReach = FILL_REACH, keepLightness = true } = {}) {
   const scale = PX_PER_MM;
   const widthPx = Math.round(box.widthMm * scale), heightPx = Math.round(box.heightMm * scale);
-  const geometry = { minXmm: box.minXmm, minYmm: box.minYmm, widthPx, heightPx, scale, fillReach };
+  const geometry = { minXmm: box.minXmm, minYmm: box.minYmm, widthPx, heightPx, scale, fillMarginMm: reachMarginMm(stoneLayout.stones, fillReach) };
   const near = nearestStones(stoneLayout.stones, geometry);
   const canvas = createCanvas(widthPx, heightPx);
   const ctx = canvas.getContext("2d");

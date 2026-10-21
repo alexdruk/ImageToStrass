@@ -6,6 +6,9 @@ prototype's own format, order and frame coordinates. layout() adds the IMG-026
 steps on top: the S1 crop to the stones' bounding box, the S2 report recomputed
 from the returned list, the S3 gap check on the rounded numbers and the S4
 catalogue id check.
+
+IS (IS-05c): with Rules.skin_nearest_inner the colours skin_nearest reads are taken from the inner
+ordered.SAMPLE_SHARE of each stone's radius instead of its whole disc.
 """
 import numpy as np
 
@@ -17,7 +20,7 @@ from .errors import CatalogueMismatch, NoStones
 from .geometry import FrameState, holes, violations
 from .imageio import decode_png
 from .models import load_models
-from .ordered import ordered_layout
+from .ordered import SAMPLE_SHARE, ordered_layout
 from .post import SIZE_KEYS, post_process
 from .rules import DEFAULT
 from .timing import Stopwatch
@@ -49,7 +52,9 @@ def layout_frame(png_bytes, target_pitch_mm=2.1, models=None, rules=DEFAULT):
     D = np.array([q["d"] for q in stones])
     C = [q["color"] for q in stones]
     colours = distinct_tones(px.rgb, px.a, first["s"], P, D, C, palette(rules), rules.mean_colour)
-    lab = stone_colours(px.rgb, px.a, np.stack([P[:, 1] / first["s"], P[:, 0] / first["s"], 0.5 * D / first["s"], np.zeros(len(P))], 1), True) if rules.skin_nearest else None
+    # IS (IS-05c): with rules.skin_nearest_inner, skin_nearest reads the inner SAMPLE_SHARE of each stone.
+    share = SAMPLE_SHARE if rules.skin_nearest_inner else 1.0
+    lab = stone_colours(px.rgb, px.a, np.stack([P[:, 1] / first["s"], P[:, 0] / first["s"], share * 0.5 * D / first["s"], np.zeros(len(P))], 1), True) if rules.skin_nearest else None
     colours = finish_faces(P, D, colours, palette(rules), info["face"], info["eyeZones"], rules, lab)
     for q, c in zip(stones, colours):
         q["color"] = c

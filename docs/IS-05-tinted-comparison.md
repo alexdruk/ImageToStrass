@@ -1,12 +1,14 @@
 # IS-05 tinted comparison
 
 Docs only. Made by `node tools/tinted-comparison.mjs <runs dir>` with no provider call. Re-rendered
-for the IS-05b second follow-up (20 Oct 2026) with the final settings: the tinted renderer of spec
-section 8 (each stone within 2 L* of its catalogue colour and its inner 60 % within 4, gaps 4 L*
-darker than the fill, a little more above L* 80, and 8 L* on near-white fills above L* 85), and each
-design laid out again by today's strass service from its saved AI image
-(`services/strass/scripts/is05b_runs.py`, rules `DEFAULT`: soft outlines off, plausible pupils, the
-one plausible pair kept of more than two, colours read at the delivered stones).
+for IS-05c (21 Oct 2026) with the settings of that build: the tinted renderer of spec section 8 (each
+stone within 2 L* of its catalogue colour and its inner 60 % within 4, gaps 4 L* darker than the fill,
+a little more above L* 80, and 8 L* on near-white fills above L* 85, filled up to 0.6 mm beyond every
+stone's edge, a large Jet stone's light rim as wide as an SS6 stone's), and each design laid out again
+by today's strass service from its saved AI image (`services/strass/scripts/is05c_runs.py`, rules
+`DEFAULT`: soft outlines off, plausible pupils, the one plausible pair kept of more than two, colours
+read at the delivered stones, no iris rings around a person's pupils, skin colours read from the inner
+60 % of each stone).
 
 Each row shows four images side by side:
 
@@ -31,13 +33,13 @@ Under each row: stone count, stones per size, and the natural size.
 
 ![dog-rule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/dog-rule.jpg)
 
-2049 stones (SS6 1933, SS4 114, SS20 2) · 83.8 × 200.8 mm (3.30 × 7.91 in)
+2039 stones (SS6 1951, SS4 86, SS20 2) · 83.8 × 200.8 mm (3.30 × 7.91 in)
 
 ### dog-norule
 
 ![dog-norule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/dog-norule.jpg)
 
-2092 stones (SS6 1973, SS4 117, SS20 2) · 87.0 × 203.1 mm (3.43 × 8.00 in)
+2071 stones (SS6 2006, SS4 63, SS20 2) · 87.0 × 203.1 mm (3.43 × 8.00 in)
 
 ### cat-rule
 
@@ -49,7 +51,7 @@ Under each row: stone count, stones per size, and the natural size.
 
 ![cat-norule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/cat-norule.jpg)
 
-3141 stones (SS6 2758, SS4 381, SS20 2) · 158.4 × 120.8 mm (6.23 × 4.76 in)
+3140 stones (SS6 2758, SS4 380, SS20 2) · 158.4 × 120.8 mm (6.23 × 4.76 in)
 
 ### mug-rule
 
@@ -61,7 +63,7 @@ Under each row: stone count, stones per size, and the natural size.
 
 ![mug-norule: original, AI image, plain stones, tinted](IS-05-tinted-comparison/mug-norule.jpg)
 
-2224 stones (SS6 2120, SS4 104) · 146.5 × 109.6 mm (5.77 × 4.32 in)
+2224 stones (SS6 2119, SS4 105) · 146.5 × 109.6 mm (5.77 × 4.32 in)
 
 ### giraffe-rule
 
@@ -95,19 +97,19 @@ Under each row: stone count, stones per size, and the natural size.
 
 ![rs-dog: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-dog.jpg)
 
-1671 stones (SS6 1528, SS4 141, SS20 2) · 96.6 × 160.6 mm (3.80 × 6.32 in)
+1670 stones (SS6 1528, SS4 140, SS20 2) · 96.6 × 160.6 mm (3.80 × 6.32 in)
 
 ### rs-einstein
 
 ![rs-einstein: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-einstein.jpg)
 
-3591 stones (SS6 3231, SS4 358, SS20 2) · 150.2 × 143.2 mm (5.91 × 5.64 in)
+3590 stones (SS6 3252, SS4 336, SS20 2) · 150.2 × 143.2 mm (5.91 × 5.64 in)
 
 ### rs-jesus
 
 ![rs-jesus: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-jesus.jpg)
 
-3298 stones (SS6 2880, SS4 417, SS16 1) · 145.8 × 163.9 mm (5.74 × 6.45 in)
+3297 stones (SS6 2880, SS4 416, SS16 1) · 145.8 × 163.9 mm (5.74 × 6.45 in)
 
 ### rs-lake
 
@@ -119,7 +121,7 @@ Under each row: stone count, stones per size, and the natural size.
 
 ![rs-leopard: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-leopard.jpg)
 
-2431 stones (SS6 2205, SS4 224, SS20 2) · 117.2 × 153.7 mm (4.62 × 6.05 in)
+2433 stones (SS6 2206, SS4 225, SS20 2) · 117.3 × 153.7 mm (4.62 × 6.05 in)
 
 ### rs-logo
 
@@ -137,7 +139,7 @@ Under each row: stone count, stones per size, and the natural size.
 
 ![rs-portrait: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-portrait.jpg)
 
-3995 stones (SS6 3572, SS4 421, SS10 2) · 149.5 × 166.0 mm (5.89 × 6.54 in)
+3990 stones (SS6 3584, SS4 404, SS10 2) · 149.5 × 166.0 mm (5.89 × 6.53 in)
 
 ### rs-rose
 
@@ -155,7 +157,7 @@ Under each row: stone count, stones per size, and the natural size.
 
 ![rs-woman: original, AI image, plain stones, tinted](IS-05-tinted-comparison/rs-woman.jpg)
 
-2612 stones (SS6 2392, SS4 218, SS20 2) · 143.9 × 146.7 mm (5.67 × 5.78 in)
+2613 stones (SS6 2408, SS4 203, SS20 2) · 143.9 × 146.7 mm (5.67 × 5.78 in)
 
 ## Eye area up close
 

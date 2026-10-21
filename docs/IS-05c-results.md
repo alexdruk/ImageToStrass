@@ -1,7 +1,9 @@
 # IS-05c — eyes and skin (experiment)
 
-20 Oct 2026, branch `is-05c-eyes`, run on Alex's laptop (Apple Silicon, macOS 26). **Experiment
-only: `DEFAULT` is not changed.** No provider call: everything is laid out from saved AI images
+20 Oct 2026, branch `is-05c-eyes`, run on Alex's laptop (Apple Silicon, macOS 26). Sections 0–4
+are the experiment, with `DEFAULT` unchanged. **Section 5** (21 Oct 2026) applies Alex's decisions:
+`human_iris` off, the new rule `skin_nearest_inner`, and the tinted renderer's fill margin and Jet
+rim. No provider call: everything is laid out from saved AI images
 (the RS test images in `services/strass/prototype/img/` and `tools/fixtures/is03b-ai/cat-rule-output.png`).
 Variants are compared with each other on this laptop only.
 
@@ -10,13 +12,19 @@ Designs: rs-woman, rs-portrait, rs-einstein, rs-jesus (faces), rs-dog and cat-ru
 How to reproduce:
 
 ```
-# layouts with rule variants (services/strass); "eyes" and "skin" are the two variant groups
-.venv/bin/python scripts/is05c_runs.py <runs> eyes,skin,skin-nearest-inner,skin-nearest-inner-kl2 \
+# sections 1-3: layouts with rule variants (services/strass); "eyes" and "skin" are the two variant
+# groups; IS05C_BASE=before makes them relative to the IS-05b DEFAULT, as these runs were made
+IS05C_BASE=before .venv/bin/python scripts/is05c_runs.py <runs> eyes,skin,skin-nearest-inner,skin-nearest-inner-kl2 \
   woman=prototype/img/N2_woman.png portrait=prototype/img/N2_portrait.png \
   einstein=prototype/img/N2_einstein.png jesus=prototype/img/N2_jesus.png dog=prototype/img/N2_dog.png \
   cat=../../tools/fixtures/is03b-ai/cat-rule-output.png
 # images and numbers (docs/IS-05c-results/, numbers.json); IS05C_PARTS=eyes,skin,rs picks the parts
 node tools/is05c-results.mjs <runs>
+# section 5: "before" (the IS-05b DEFAULT) and "default" layouts of the 21 designs, under the run names
+# of tools/is05b-measure.mjs (dog = dog-rule, cat = cat-rule, woman = rs-woman, rs-dog, ...)
+.venv/bin/python scripts/is05c_runs.py <runs2> before,default dog=../../tools/fixtures/is03b-ai/dog-rule-output.png ...
+IS05C_PARTS=after node tools/is05c-results.mjs <runs2>
+node tools/tinted-comparison.mjs <runs2>
 ```
 
 ## Summary
@@ -461,3 +469,153 @@ stone (RS reads colours at the detections, so the same dark-gap effect applies t
   `scripts/is05b_runs.py`'s colour-step recorder. Nothing in the service changed.
 - `tools/is05c-results.mjs` (new): the images and `docs/IS-05c-results/numbers.json`.
 - `docs/IS-05c-results/`: the images and numbers.
+
+## 5. Alex's decisions applied (21 Oct 2026)
+
+### 5.1 What changed
+
+1. **Eyes** (`services/strass`, IS's copy): `DEFAULT` has `human_iris=False`. A person's pupil gets
+   no SS4 iris rings; animals keep theirs. Recorded in `services/strass/ORIGIN.md`.
+2. **Skin** (`services/strass`): new rule `skin_nearest_inner`, on in `DEFAULT`, off in `PROTOTYPE`
+   and `BUILD_E` … `BUILD_I`: `skin_nearest` reads each stone's colour from the inner 60 % of its
+   radius (`ordered.SAMPLE_SHARE`) instead of its whole disc (`strass_layout/pipeline.py`). Recorded
+   in `ORIGIN.md`.
+3. **Tinted renderer** (`src/render/tinted.js`, spec section 8 steps 4 and 5):
+   - fill reach: a pixel is filled up to **0.6 mm beyond its nearest stone's edge**
+     (`FILL_MARGIN_MM`, 0.6 × an SS6 stone's 1 mm radius) for every size, instead of 1.6 × the
+     stone's own radius. Same as before for SS6; an SS20 pupil's fill ring goes from 1.41 mm to
+     0.6 mm, an SS16's from 1.2 to 0.6, an SS4's from 0.45 to 0.6 mm.
+   - Jet rim: the light ring is the RS renderer's "crisp outer edge", stroked 0.09 radii wide in
+     Jet's catalogue stroke colour `#d9d9d9` (RS code, `CrystalStoneRenderer.js`, unchanged). The IS
+     wrapper `drawStone` redraws it for a stone above SS6 whose stroke is lighter than its fill
+     (only Jet in the catalogue): the RS edge band is painted over (inside with the stone's edge
+     colour, outside with its gap colour) and the edge stroked again at an SS6 stone's width.
+     Measured at 30 px/mm, light pixels within 0.4 mm of the edge per px of circumference: SS6
+     2.9 px; SS10, SS16, SS20 before 3.9, 5.5, 6.4 px, now 2.8–2.9 px. The stone's mean L\* is
+     unchanged (8.3).
+   - With `{ fillReach: 1.6, ss6Rim: false }` (tools only) `renderTinted` gives the renderer before
+     IS-05c bit for bit (checked on three designs); the "before" images and numbers below use it.
+   - Spec section 8 (steps 4 and 5, the implementation note), 7.4 and the header updated.
+
+### 5.2 Eyes, before and after
+
+"Before" is the IS-05b `DEFAULT` layout drawn by the renderer before IS-05c; "after" is today's
+`DEFAULT` drawn by today's renderer. Same eye area as section 1.2; ΔE per stone is between the AI
+colour under each stone and (fill) its catalogue fill or (rendered) the rendered stone's inner 60 %;
+the last column is the share of the eye area's pixels darker than L\* 20 (the AI image's in
+brackets).
+
+| Design | Eye-area stones | dark / white / grey / colour | ΔE per stone (fill) | ΔE per stone (rendered) | Pixels darker than L\* 20 (AI) |
+| --- | --- | --- | --- | --- | --- |
+| woman | 57 → 59 | 25 / 6 / 6 / 20 → 20 / 8 / 0 / 31 | 15.69 → 9.37 | 17.41 → 11.41 | 27.93 → 28.11 % (23.5 %) |
+| portrait | 53 → 49 | 15 / 15 / 21 / 2 → 16 / 23 / 10 / 0 | 14.17 → 10.45 | 14.8 → 11.32 | 26.1 → 25.47 % (48.51 %) |
+| einstein | 64 → 64 | 37 / 6 / 0 / 21 → 40 / 3 / 0 / 21 | 13.99 → 12.5 | 17.05 → 16.38 | 21.27 → 25.28 % (16.66 %) |
+| jesus | 34 → 34 | 12 / 2 / 2 / 18 → 12 / 2 / 2 / 18 | 14.79 → 14.38 | 14.35 → 13.94 | 28.36 → 29.58 % (17.69 %) |
+| rs-dog (control) | 77 → 77 | 10 / 9 / 9 / 49 → 12 / 9 / 9 / 47 | 16.81 → 16.18 | 18.7 → 18.24 | 14.63 → 15.69 % (21.13 %) |
+| cat-rule (control) | 72 → 72 | 23 / 9 / 4 / 36 → 23 / 9 / 4 / 36 | 15.61 → 15.61 | 15.12 → 15.12 | 23.63 → 24.52 % (27.77 %) |
+
+The dark-pixel share hardly moves on the woman: the black octagon is gone, but its pixels now show
+the lash stones and their own gaps instead. On the portrait the AI's eye area is half dark (its iris
+is dark grey), so the share stays below the AI's. The ΔE columns are the better measure here.
+
+Still open on the portrait: the AI draws a grey iris ring around each pupil; without the iris rings
+its stones are the layout's own, and they come out as Silver and Crystal more than Grey, so the iris
+reads lighter than the AI's. That is the first-pick question of IS-05b (section 3, "Portrait"), not
+an eye rule.
+
+#### woman
+
+![woman eyes before and after](IS-05c-results/after-eyes-rs-woman.jpg)
+
+#### portrait
+
+![portrait eyes before and after](IS-05c-results/after-eyes-rs-portrait.jpg)
+
+#### einstein
+
+![einstein eyes before and after](IS-05c-results/after-eyes-rs-einstein.jpg)
+
+#### jesus
+
+![jesus eyes before and after](IS-05c-results/after-eyes-rs-jesus.jpg)
+
+#### rs-dog (control)
+
+![rs-dog eyes before and after](IS-05c-results/after-eyes-rs-dog.jpg)
+
+#### cat-rule (control)
+
+![cat eyes before and after](IS-05c-results/after-eyes-cat-rule.jpg)
+
+### 5.3 rs-woman face and neck
+
+![rs-woman face and neck: AI image, tinted before, tinted after](IS-05c-results/after-skin-woman.jpg)
+
+The shadow patches are smaller (Smoked Topaz on the woman 594 → 518 stones in the whole design,
+`tests/test_is05c.py`), but they remain: the AI's shadow brown lies between two catalogue colours
+(section 2.4). Removing them needs the catalogue or dithering decision of section 2.4.
+
+### 5.4 Every design: what changed
+
+The 21 designs of the IS-05 comparison, "before" against "after". "Positions and sizes": the
+stone list without colours, compared stone for stone. "Colour changes": stones whose colour differs
+(only meaningful when the positions are the same). "Render pixels changed by the renderer alone":
+today's layout drawn by both renderers at 900 px, share of pixels that differ.
+
+| Design | Face | Stones | Positions and sizes | Colour changes | ΔE per stone (fill) | ΔE per stone (rendered) | Render pixels changed by the renderer alone | SS4 / above SS6 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| dog-rule | human | 2039 | **changed** | (list shifted) | 7.58 → 7.46 | 9.83 → 9.85 | 0.28 % | 86 / 2 |
+| dog-norule | human | 2071 | **changed** | (list shifted) | 6.9 → 6.76 | 9.28 → 9.38 | 0.25 % | 63 / 2 |
+| cat-rule | animal | 3573 | same | 45 | 6.29 → 6.27 | 5.86 → 5.85 | 0.27 % | 302 / 2 |
+| cat-norule | animal | 3140 | same | 130 | 7.59 → 7.46 | 6.94 → 6.87 | 0.34 % | 380 / 2 |
+| mug-rule | animal | 1751 | same | 0 | 3.22 → 3.22 | 3.87 → 3.87 | 0.01 % | 70 / 0 |
+| mug-norule | animal | 2224 | same | 0 | 3.35 → 3.35 | 4.64 → 4.64 | 0.01 % | 105 / 0 |
+| giraffe-rule | animal | 2286 | same | 94 | 10.93 → 10.85 | 11.98 → 11.94 | 0.29 % | 339 / 2 |
+| dachshund-rule | animal | 1628 | same | 48 | 9.04 → 9.02 | 13.45 → 13.49 | 0.28 % | 174 / 2 |
+| car-rule | none | 3531 | same | 0 | 6.89 → 6.89 | 7.32 → 7.32 | 0.09 % | 255 / 0 |
+| rs-cat | animal | 2150 | same | 40 | 5.4 → 5.39 | 6.81 → 6.76 | 0.49 % | 347 / 2 |
+| rs-dog | animal | 1670 | same | 57 | 4.21 → 4.17 | 4.99 → 4.95 | 0.3 % | 140 / 2 |
+| rs-einstein | human | 3590 | **changed** | (list shifted) | 7.01 → 6.87 | 9.67 → 9.74 | 0.23 % | 336 / 2 |
+| rs-jesus | animal | 3297 | same | 285 | 5.83 → 5.47 | 7.13 → 7.25 | 0.14 % | 416 / 1 |
+| rs-lake | human | 4089 | same | 36 | 8.3 → 8.29 | 10.27 → 10.27 | 0.02 % | 162 / 0 |
+| rs-leopard | animal | 2433 | same | 42 | 5.58 → 5.53 | 6.68 → 6.65 | 0.29 % | 225 / 2 |
+| rs-logo | animal | 833 | same | 0 | 3.42 → 3.42 | 4.18 → 4.18 | 0.01 % | 9 / 0 |
+| rs-parrot | animal | 2542 | same | 3 | 8.99 → 8.97 | 11.68 → 11.67 | 0.1 % | 234 / 1 |
+| rs-portrait | human | 3990 | **changed** | (list shifted) | 6.72 → 6.42 | 6 → 5.78 | 0.18 % | 404 / 2 |
+| rs-rose | animal | 1846 | same | 0 | 7.98 → 7.98 | 13.49 → 13.49 | 0.01 % | 157 / 0 |
+| rs-tulips | animal | 2673 | same | 0 | 9.34 → 9.34 | 13.4 → 13.4 | 0.01 % | 126 / 0 |
+| rs-woman | human | 2613 | **changed** | (list shifted) | 7.01 → 6.48 | 9.84 → 9.81 | 0.27 % | 203 / 2 |
+| **mean of 21** | | | | | 6.74 → 6.65 | 8.44 → 8.44 | | |
+
+- **Positions change only where a person's face is found**: rs-woman, rs-portrait, rs-einstein,
+  and the two IS-03b dogs (dog-rule, dog-norule), which dlib takes for a human face (known since
+  IS-05b, section 3) and which therefore lose their iris rings too. rs-lake is also "human" but has
+  no pupils, so nothing changes there. Face and pupils are the same on all 21.
+- **The controls are not unchanged in colour**: rs-dog (57 stones), cat-rule (45), and the other
+  animals with fur in skin colours change some SS4/SS6 stones between skin colours through
+  `skin_nearest_inner`, as section 2.3 measured (all within the skin colours, checked by
+  `tests/test_is05c.py` on the dog). Their positions and sizes are identical. Designs without skin
+  colours (mug, car, logo, rose, tulips) are identical stone for stone.
+- **The renderer alone** changes 0.01–0.5 % of a render's pixels: around stones above SS6 (pupils,
+  SS10/SS16) and, slightly, around SS4 stones, whose fill margin grows from 0.45 to 0.6 mm.
+- Per-stone ΔE (fill) improves or stays on all 21 (mean 6.74 → 6.65; woman 7.01 → 6.48, jesus
+  5.83 → 5.47, portrait 6.72 → 6.42). Rendered ΔE is the same on average (8.44); it rises by at
+  most 0.12 on five designs (jesus +0.12, dog-norule +0.10, einstein +0.07, dachshund +0.04, dog-rule +0.02).
+
+[`IS-05-tinted-comparison.md`](IS-05-tinted-comparison.md) is re-rendered with today's layouts and
+renderer.
+
+### 5.5 Tests
+
+- `node --test tools/test-exports.mjs`: the unit fixture now checks 0.5 mm (filled) and 0.7 mm
+  (background) beyond every stone's edge and that the SS16 stone's old 1.5 r point is background; new
+  test: a Jet stone of SS10, SS16 and SS20 has a light rim within 25 % of an SS6 one's and keeps its
+  lightness, and Jet is the only colour with a rim lighter than its fill.
+- Strass: new `tests/test_is05c.py` (defaults; woman and portrait lose iris stones, 19 → 10 and
+  21 → 8; cat and dog identical with `human_iris` on or off; `skin_nearest_inner` changes only skin
+  colours on woman and dog, and the woman's Smoked Topaz 594 → 518); `tests/test_build_j.py` runs
+  `DEFAULT` with the two IS-05c rules reverted.
+- Full strass suite (`python -m unittest -v`): **102 tests, OK**, none skipped (4245 s); the
+  equivalence test finds package and prototype identical on all 12 images. `npm test`: 143 tests, all
+  pass.
+

@@ -131,3 +131,31 @@ service matches against `fill` (`DEFAULT` → `PLUS_REAL_SKIN`, real colours), a
 
 Effect on the 21 test designs (docs/IS-05b-results.md section 7): stone positions, sizes, faces and
 pupils identical on all 21; only colours change.
+
+### IS-05c (21 Oct 2026): no human iris rings, skin_nearest reads the inner part of each stone
+
+- `strass_layout/rules.py`: `DEFAULT` has `human_iris=False` (RS 38cd831 ships it on; `BUILD_F` …
+  `BUILD_I` keep it on). Its SS4 rings around a person's pupil, coloured from the AI's eye white,
+  snapped to Grey and Silver and made the eyes look like goggles; off, the AI's own stones stay
+  around the pupil. Animals keep their iris rings (`build_eye_copy` gives them rings whatever the
+  rule says). Docstring note.
+- `strass_layout/rules.py`: new rule `skin_nearest_inner` (default `False`, so `PROTOTYPE` and
+  `BUILD_E` … `BUILD_I` are unchanged and the equivalence test against the prototype still holds);
+  `DEFAULT` sets it `True`. Docstring note.
+- `strass_layout/pipeline.py`: with `rules.skin_nearest_inner`, the Lab colours `skin_nearest`
+  reads are taken from the inner `ordered.SAMPLE_SHARE` (60 %) of each stone's radius instead of its
+  whole disc (radius 0.5 D). The whole disc reaches into the AI's gaps, which most AI images paint
+  dark: on the RS woman `skin_nearest` turned 90 warm shadow stones into Smoked Topaz. Only skin
+  colours change; stones, sizes, faces and pupils do not. Docstring note.
+- `tests/test_build_j.py`: `DefaultAgainstBuildI` runs `DEFAULT` with `human_iris` on and
+  `skin_nearest_inner` off as well (it checks that build J changes only skin colours relative to
+  build I).
+- New test `tests/test_is05c.py` (the rules' defaults; people lose the iris rings, cat and dog are
+  unchanged; `skin_nearest_inner` changes only skin colours on woman and dog, and gives the woman
+  less Smoked Topaz).
+- `scripts/is05c_runs.py` (IS diagnosis only): variants "before" (the IS-05b `DEFAULT`) and
+  `IS05C_BASE=before`; "skin-nearest-inner" uses the rule.
+
+Effect (docs/IS-05c-results.md section 5): the people's eyes lose the iris rings; on the designs
+with skin or fur colours some SS4/SS6 stones change between skin colours; stone positions and
+sizes are unchanged on every design without a person's face.

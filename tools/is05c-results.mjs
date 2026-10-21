@@ -10,6 +10,11 @@
 //          that makes them darker, and per skin variant the face and neck (AI, tinted, ΔE map);
 //   rs     Rhinestone Studio's own outputs (prototype/expected and the RS 38cd831 service layouts
 //          in tools/fixtures/layouts): eye close-ups next to the AI image.
+//   after  section 5 (Alex's decisions): <runs dir> holds the "before" (the IS-05b DEFAULT) and
+//          "default" (today's) layouts of the 21 designs under the run names of is05b-measure.mjs;
+//          before = "before" layout + the renderer before IS-05c, after = "default" + today's.
+//          Eye close-ups and eye-area numbers for the six designs, the woman's face and neck,
+//          per-stone ΔE of the 21 designs, and what changed on each design.
 import { createCanvas } from "@napi-rs/canvas";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -19,8 +24,8 @@ import { renderTinted, tintCanvasMm } from "../src/render/tinted.js";
 import { getCrystalAppearance } from "../src/stones/CrystalAppearance.js";
 import { drawCrystalStone } from "../src/stones/CrystalStoneRenderer.js";
 import { StoneLayout } from "../src/stones/StoneLayout.js";
-import { deltaE2000, discLab, mean } from "./colour-diff.mjs";
-import { CAT_LAB, SAMPLE_SHARE, decodeRgba, delivered, nearestCatalogue } from "./is05b-measure.mjs";
+import { deltaE2000, discLab, mean, srgbToLab } from "./colour-diff.mjs";
+import { ALL_DESIGNS, CAT_LAB, SAMPLE_SHARE, decodeRgba, delivered, measure, nearestCatalogue, summary } from "./is05b-measure.mjs";
 import { renderTintedBefore } from "./is05b-tint.mjs";
 
 const ROOT = new URL("../", import.meta.url).pathname;
@@ -28,6 +33,8 @@ const OUT = path.join(ROOT, "docs/IS-05c-results");
 const RUNS = process.argv[2];
 if (!RUNS) throw new Error("usage: node tools/is05c-results.mjs <runs dir>");
 const PARTS = (process.env.IS05C_PARTS || "eyes,skin,rs").split(",");
+// The renderer before IS-05c (spec section 8 steps 4 and 5 as of IS-05b).
+const renderBefore = (sl, o) => renderTinted(sl, { ...o, fillReach: 1.6, ss6Rim: false });
 const GAP = 10, LABEL_H = 34, PX_PER_MM = 30;
 mkdirSync(OUT, { recursive: true });
 
@@ -405,7 +412,105 @@ async function rsPart() {
   numbers.rs = out;
 }
 
+// ---- section 5: the decisions applied ------------------------------------------------------------
+
+const AFTER_IDS = ["rs-woman", "rs-portrait", "rs-einstein", "rs-jesus", "rs-dog", "cat-rule"];
+const FACES = new Set(["rs-woman", "rs-portrait", "rs-einstein"]);
+
+// Share of an eye area's pixels (inside the eye circles) darker than L* 20, on an RGBA image whose
+// pixel (0, 0) is at frame mm (x0, y0) and `scale` px per mm; transparent pixels count as white.
+function darkShare(img, x0, y0, scale, eyes) {
+  let dark = 0, n = 0;
+  for (const e of eyes) {
+    for (let y = Math.floor((e.y - e.r - y0) * scale); y <= (e.y + e.r - y0) * scale; y++) {
+      for (let x = Math.floor((e.x - e.r - x0) * scale); x <= (e.x + e.r - x0) * scale; x++) {
+        if (x < 0 || y < 0 || x >= img.width || y >= img.height) continue;
+        if (Math.hypot((x + 0.5) / scale + x0 - e.x, (y + 0.5) / scale + y0 - e.y) > e.r) continue;
+        const p = (y * img.width + x) * 4, a = img.data[p + 3] / 255;
+        const rgb = [0, 1, 2].map((k) => img.data[p + k] * a + 255 * (1 - a));
+        dark += srgbToLab(rgb)[0] < 20;
+        n++;
+      }
+    }
+  }
+  return n ? dark / n : null;
+}
+
+async function afterPart() {
+  const byId = Object.fromEntries(ALL_DESIGNS.map((d) => [d.id, d]));
+  const runOf = (d, v) => load(path.join(RUNS, `${d.run}.${v}.json`));
+  const out = { eyes: {}, designs: [] };
+
+  // Eyes: before and after, AI image | plain | tinted, and the eye-area numbers.
+  for (const id of AFTER_IDS) {
+    const d = byId[id];
+    const lb = runOf(d, "before"), la = runOf(d, "default");
+    const area = eyeArea(la);
+    const img = await decodeRgba(d.ai);
+    const aiPng = await aiWindow(d.ai, la.report.mmPerPx, area.win);
+    const aiImg = await decodeRgba(aiPng);
+    const panels = [];
+    const rows = {};
+    for (const [tag, layout, render] of [["before", lb, renderBefore], ["after", la, renderTinted]]) {
+      const des = design(layout);
+      const { plain, tinted } = await windowRenders(des, area.win, render);
+      panels.push({ png: aiPng, label: `AI image · ${tag}` }, { png: plain, label: "plain" }, { png: tinted, label: `tinted · ${tag}` });
+      const recs = stoneRecords(des, img).filter((q) => q.ai && inEyes(area.eyes, q.x, q.y));
+      const m = await measure(layout, img, render);
+      const off = layout.report.offsetMm;
+      const inArea = m.filter((r) => inEyes(area.eyes, r.x + off[0], r.y + off[1]));
+      rows[tag] = {
+        eyeStones: recs.length, byClass: tally(recs.map((q) => classOf(CAT_LAB[q.color]))), byColour: tally(recs.map((q) => q.color)),
+        deStone: r2(mean(inArea.map((r) => r.deB))), deRendered: r2(mean(inArea.map((r) => r.deC))),
+        darkShare: r2(100 * darkShare(await decodeRgba(tinted), area.win.x, area.win.y, PX_PER_MM, area.eyes))
+      };
+    }
+    rows.ai = { darkShare: r2(100 * darkShare(aiImg, area.win.x, area.win.y, PX_PER_MM, area.eyes)) };
+    out.eyes[id] = { rows, file: await grid(panels, 3, 300, `after-eyes-${id}.jpg`) };
+    console.log("after eyes", id, JSON.stringify(rows));
+  }
+
+  // The woman's face and neck: AI image, tinted before, tinted after.
+  {
+    const d = byId["rs-woman"];
+    const ai = await aiWindow(d.ai, runOf(d, "default").report.mmPerPx, WOMAN_FACE, 8);
+    const panels = [{ png: ai, label: "AI image" }];
+    for (const [tag, v, render] of [["before", "before", renderBefore], ["after", "default", renderTinted]]) {
+      const { tinted } = await windowRenders(design(runOf(d, v)), WOMAN_FACE, render, 8);
+      panels.push({ png: tinted, label: `tinted · ${tag}` });
+    }
+    out.womanFile = await grid(panels, 3, 620, "after-skin-woman.jpg");
+  }
+
+  // Every design: what changed in the layout, and per-stone ΔE before and after.
+  for (const d of ALL_DESIGNS) {
+    const lb = runOf(d, "before"), la = runOf(d, "default");
+    const geo = (l) => JSON.stringify(l.stones.map((q) => q.slice(0, 3)));
+    const same = (k) => JSON.stringify(lb.report[k]) === JSON.stringify(la.report[k]);
+    const img = await decodeRgba(d.ai);
+    const sb = summary(await measure(lb, img, renderBefore));
+    const sa = summary(await measure(la, img, renderTinted));
+    // The renderer alone: the "default" layout drawn by both renderers, share of changed pixels.
+    const { stoneLayout } = delivered(la);
+    const [pb, pa] = await Promise.all([renderBefore, renderTinted].map(async (r) => decodeRgba(r(stoneLayout, { longSidePx: 900, background: "white" }).png)));
+    let changedPx = 0;
+    for (let p = 0; p < pa.data.length; p += 4) changedPx += pa.data[p] !== pb.data[p] || pa.data[p + 1] !== pb.data[p + 1] || pa.data[p + 2] !== pb.data[p + 2];
+    const sizes = tally(stonesOfLayout(la).map((s) => s.d));
+    const row = {
+      id: d.id, face: la.report.face, stones: la.stones.length, geometry: geo(lb) === geo(la),
+      facePupils: same("face") && same("pupilsMm") && same("pupilsAtMm"),
+      colourChanges: la.stones.filter((q, i) => lb.stones[i] && q[3] !== lb.stones[i][3]).length,
+      deStone: [r2(sb.b.mean), r2(sa.b.mean)], deRendered: [r2(sb.c.mean), r2(sa.c.mean)],
+      rendererPx: r2((100 * changedPx) / (pa.data.length / 4)), ss4: sizes[1.5] || 0, aboveSs6: Object.entries(sizes).filter(([k]) => +k > 2).reduce((a, [, n]) => a + n, 0)
+    };
+    out.designs.push(row);
+    console.log("after design", JSON.stringify(row));
+  }
+  numbers.after = out;
+}
+
 if (PARTS.includes("eyes")) await eyesPart();
 if (PARTS.includes("skin")) await skinPart();
 if (PARTS.includes("rs")) await rsPart();
+if (PARTS.includes("after")) await afterPart();
 writeFileSync(numbersFile, JSON.stringify(numbers, null, 1));
