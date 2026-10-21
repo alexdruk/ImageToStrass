@@ -31,6 +31,14 @@ IS (IS-05c, not in RS): skin_nearest_inner makes skin_nearest read each stone's 
 SAMPLE_SHARE (60 %) of its radius, as sample_delivered does, instead of its whole disc, which on
 most AI images takes in the dark gaps and turns warm shadow skin into Smoked Topaz. DEFAULT has it
 on; PROTOTYPE and the BUILD_* rules have it off.
+
+IS (IS-05d, experiment, off everywhere including DEFAULT): warm_shadow makes skin_nearest pick
+Colorado Topaz instead of Smoked Topaz when Smoked Topaz is the nearest skin colour and Colorado
+Topaz is at most warm_shadow_de ΔE2000 further away. mixed_shadow alternates Smoked Topaz and
+Colorado Topaz along the rows, in the proportion (1:2, 1:1 or 2:1) whose mix comes nearest the
+local sampled colour, on SS4/SS6 skin stones whose colour lies between the two
+(faces.mixed_shadow). The AI's shadow skin (about L* 33, chroma 43) lies between the two
+(docs/IS-05c-results.md section 2.2 in the IS repository).
 """
 from dataclasses import dataclass
 
@@ -57,6 +65,9 @@ class Rules:
     plausible_eyes: bool = False
     sample_delivered: bool = False
     skin_nearest_inner: bool = False
+    warm_shadow: bool = False
+    warm_shadow_de: float = 1.5
+    mixed_shadow: bool = False
 
 
 PROTOTYPE = Rules(pupil_core_only=False, keep_chains=False)

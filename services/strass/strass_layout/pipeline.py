@@ -9,6 +9,8 @@ catalogue id check.
 
 IS (IS-05c): with Rules.skin_nearest_inner the colours skin_nearest reads are taken from the inner
 ordered.SAMPLE_SHARE of each stone's radius instead of its whole disc.
+
+IS (IS-05d): Rules.mixed_shadow reads the same colours (faces.mixed_shadow).
 """
 import numpy as np
 
@@ -54,7 +56,7 @@ def layout_frame(png_bytes, target_pitch_mm=2.1, models=None, rules=DEFAULT):
     colours = distinct_tones(px.rgb, px.a, first["s"], P, D, C, palette(rules), rules.mean_colour)
     # IS (IS-05c): with rules.skin_nearest_inner, skin_nearest reads the inner SAMPLE_SHARE of each stone.
     share = SAMPLE_SHARE if rules.skin_nearest_inner else 1.0
-    lab = stone_colours(px.rgb, px.a, np.stack([P[:, 1] / first["s"], P[:, 0] / first["s"], share * 0.5 * D / first["s"], np.zeros(len(P))], 1), True) if rules.skin_nearest else None
+    lab = stone_colours(px.rgb, px.a, np.stack([P[:, 1] / first["s"], P[:, 0] / first["s"], share * 0.5 * D / first["s"], np.zeros(len(P))], 1), True) if rules.skin_nearest or rules.mixed_shadow else None
     colours = finish_faces(P, D, colours, palette(rules), info["face"], info["eyeZones"], rules, lab)
     for q, c in zip(stones, colours):
         q["color"] = c
