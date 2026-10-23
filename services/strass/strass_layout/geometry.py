@@ -179,14 +179,52 @@ def resolve_idx(P, D, A, score, minor):
     return P, D, A, idx
 
 
-def fill(state, P, D, mask, s, ppmm=20, sizes=(SS6, SS4)):
+def mask_cover(mask, P, d, s):
+    """IS (exp-holes): the share of each disc's pixels inside mask (cover_frac on a given mask)."""
+    h, w = mask.shape
+    out = np.zeros(len(P))
+    for k, ((x, y), dd) in enumerate(zip(P, np.broadcast_to(d, (len(P),)))):
+        r = dd / 2 / s
+        cx, cy = x / s, y / s
+        y0, y1 = int(max(0, cy - r)), int(min(h, cy + r + 1))
+        x0, x1 = int(max(0, cx - r)), int(min(w, cx + r + 1))
+        if y1 <= y0 or x1 <= x0:
+            continue
+        yy, xx = np.mgrid[y0:y1, x0:x1]
+        m = np.hypot(yy - cy, xx - cx) <= r
+        out[k] = mask[y0:y1, x0:x1][m].mean() if m.any() else 0
+    return out
+
+
+def _exact_keep(P, D, newP, newD):
+    """IS (exp-holes): the new stones whose rim gap to every stone, and to the new stones kept before
+    them, is at least GAP."""
+    keep = np.zeros(len(newP), bool)
+    allP, allD = list(map(tuple, P)), list(D)
+    t = cKDTree(P) if len(P) else None
+    reach = (float(D.max()) if len(D) else SS6) + SS6
+    for k, (p, d) in enumerate(zip(newP, newD)):
+        near = t.query_ball_point(p, reach) if t is not None else []
+        gaps = [np.hypot(*(np.asarray(p) - P[j])) - (d + D[j]) / 2 for j in near]
+        gaps += [np.hypot(p[0] - q[0], p[1] - q[1]) - (d + e) / 2 for q, e in zip(allP[len(P):], allD[len(P):])]
+        if not gaps or min(gaps) >= GAP - 1e-9:
+            keep[k] = True
+            allP.append(tuple(p))
+            allD.append(d)
+    return keep
+
+
+def fill(state, P, D, mask, s, ppmm=20, sizes=(SS6, SS4), extra=0.05, exact=False, cover_mask=False):
+    """IS (exp-holes): extra is the margin beyond GAP the fill keeps from every stone (RS: 0.05 mm);
+    exact keeps only the new stones whose exact rim gap is at least GAP; cover_mask measures the
+    0.7 cover on mask instead of the closed alpha. The defaults are RS 38cd831's fill."""
     h, w = mask.shape
     Wm, Hm = w * s, h * s
     Wp, Hp = int(np.ceil(Wm * ppmm)), int(np.ceil(Hm * ppmm))
     M = cv2.resize(mask.astype(np.uint8), (Wp, Hp), interpolation=cv2.INTER_NEAREST).astype(bool)
     occ = np.zeros((Hp, Wp), np.uint8)
     for (x, y), d in zip(P, D):
-        cv2.circle(occ, (int(round(x * ppmm)), int(round(y * ppmm))), int(round((d / 2 + GAP + 0.05) * ppmm)), 1, -1)
+        cv2.circle(occ, (int(round(x * ppmm)), int(round(y * ppmm))), int(round((d / 2 + GAP + extra) * ppmm)), 1, -1)
     free = M & (occ == 0)
     newP, newD = [], []
     for d in sizes:
@@ -200,7 +238,7 @@ def fill(state, P, D, mask, s, ppmm=20, sizes=(SS6, SS4)):
             y, x = yx
             newP.append((x / ppmm, y / ppmm))
             newD.append(d)
-            rr = int(np.ceil((r + GAP + 0.05) * ppmm))
+            rr = int(np.ceil((r + GAP + extra) * ppmm))
             cv2.circle(occ, (x, y), rr, 1, -1)
             y0, y1 = max(0, y - 3 * rr), min(Hp, y + 3 * rr + 1)
             x0, x1 = max(0, x - 3 * rr), min(Wp, x + 3 * rr + 1)
@@ -214,8 +252,12 @@ def fill(state, P, D, mask, s, ppmm=20, sizes=(SS6, SS4)):
     newP = np.array(newP).reshape(-1, 2)
     newD = np.array(newD)
     if len(newP):
-        ok = (cover_frac(state, newP, newD, s) >= 0.7) & openai_room(state, newP, s)
+        cover = mask_cover(mask, newP, newD, s) if cover_mask else cover_frac(state, newP, newD, s)
+        ok = (cover >= 0.7) & openai_room(state, newP, s)
         newP, newD = newP[ok], newD[ok]
+    if exact and len(newP):
+        keep = _exact_keep(np.asarray(P).reshape(-1, 2), np.asarray(D), newP, newD)
+        newP, newD = newP[keep], newD[keep]
     return newP, newD
 
 

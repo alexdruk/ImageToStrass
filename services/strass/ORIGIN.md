@@ -207,3 +207,29 @@ Alex's decision on docs/IS-05d-results.md (variant A, "warm-3"):
 Effect on the 21 test designs (docs/IS-05d-results.md section 9): stones, sizes, coverage, faces and
 pupils identical; 11 designs change colour, almost all Smoked Topaz → Colorado Topaz (woman 75,
 giraffe-rule 97, dachshund-rule 65, leopard 33, einstein 17).
+
+### exp-holes (23 Oct 2026, experiment): exact and mask-cover fills, off everywhere
+
+The exp-holes diagnosis (docs/exp-holes.md) found that most holes (a spot in the subject where an
+SS6 or SS4 stone fits with 0.1 mm to every stone) are spots the fills after the eye stage do not
+place: they keep 0.15 mm from every stone (GAP + 0.05 mm raster margin), and they decline spots
+whose disc is less than 70 % covered by the closed alpha.
+
+- `strass_layout/rules.py`: new rules `fill_exact` and `fill_cover_mask` (default `False`). They
+  are off in `PROTOTYPE`, `BUILD_E` … `BUILD_I` **and `DEFAULT`**, so the service, the equivalence
+  test and every other test are unchanged. Docstring note.
+- `strass_layout/geometry.py`:
+  - `fill(..., extra=0.05, exact=False, cover_mask=False)`: `extra` is the margin beyond `GAP` the
+    raster keeps (RS: 0.05 mm, the defaults are RS 38cd831's fill); with `exact`, only the new
+    stones whose exact rim gap to every stone, and to the new stones kept before them, is at least
+    `GAP` are returned; with `cover_mask`, the 0.7 cover is measured on the `mask` the fill fills
+    instead of the closed alpha (`cover_frac`);
+  - new `mask_cover(mask, P, d, s)` and `_exact_keep(P, D, newP, newD)`.
+- `strass_layout/post.py`: the three fills after the eye stage pass `extra=0` and `exact` with
+  `rules.fill_exact`, and `cover_mask` with `rules.fill_cover_mask`. The ordered layout's own fill
+  (`ordered.py`) is unchanged: its stones go through `resolve_idx`, which keeps 0.12 mm anyway.
+- New test `tests/test_exp_holes.py` (the rules are off everywhere; `_exact_keep`, `mask_cover`; on
+  the woman the fills only add stones and no gap is below 0.1 mm).
+- New script `scripts/holes_trace.py` (IS diagnosis only): lays out saved AI images and records
+  which stage dropped, deleted or declined a stone; variants "default", "fill-exact",
+  "fill-cover-mask", "fill-both".

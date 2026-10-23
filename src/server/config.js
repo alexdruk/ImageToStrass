@@ -46,6 +46,9 @@ export function loadConfig(env = process.env) {
       timeoutMs: positive(env.PROVIDER_TIMEOUT_SECONDS, 300) * 1000
     },
     layoutTimeoutMs: positive(env.LAYOUT_TIMEOUT_SECONDS, 180) * 1000,
-    bwThreshold: positive(env.BW_THRESHOLD, 55)
+    bwThreshold: positive(env.BW_THRESHOLD, 55),
+    // IS_FILL_HOLES=1 (experiment exp-holes, docs/exp-holes.md; off by default): fill the holes after
+    // the overlap cleanup.
+    fillHoles: env.IS_FILL_HOLES === "1"
   };
 }

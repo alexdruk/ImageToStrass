@@ -1,3 +1,4 @@
+import { fillHoles } from "./holes.js";
 import { MIN_GAP_MM, capStoneSizes, checkGaps, pupilCentres, stonesOfLayout, toStoneLayout } from "./tiers.js";
 
 // Overlap cleanup (spec section 7.5), after the SS16 cap: for every pair of stones whose rim gap
@@ -10,6 +11,10 @@ import { MIN_GAP_MM, capStoneSizes, checkGaps, pupilCentres, stonesOfLayout, toS
 // Coverage after the cleanup: the service's coverage (share of subject-mask pixels under a stone)
 // scaled by the area under the delivered stones over the area under the service's stones, both
 // rasterised on the service's grid (COVERAGE_PX_PER_MM). It includes the cap's shrinking.
+//
+// Hole fill (experiment exp-holes, off unless cleanedLayout is given the AI image; docs/exp-holes.md):
+// after the cleanup every hole in the subject gets a stone, SS6 first and then SS4, with the 0.1 mm
+// gap to all stones, coloured from the AI image (holes.js). The gap check then runs as before.
 
 export const NEIGHBOUR_GAP_MM = 0.5;
 export const COVERAGE_PX_PER_MM = 10;
@@ -96,17 +101,21 @@ function boxOf(stones) {
 }
 
 // layout service answer -> the design's stones at natural size after the SS16 cap and the cleanup:
-// { stoneLayout, gaps, capped, removed, removedShare, coverageBefore, coverage }. removedShare is
-// removed over the stones before the cleanup; coverageBefore is the service's own coverage.
-export function cleanedLayout(layout) {
+// { stoneLayout, gaps, capped, removed, removedShare, coverageBefore, coverage, filled }. removedShare
+// is removed over the stones before the cleanup; coverageBefore is the service's own coverage.
+// fillHolesIn: the AI image ({ data, width, height }, RGBA) to fill the holes from (exp-holes), or
+// null (production); filled is the number of stones it added.
+export function cleanedLayout(layout, { fillHolesIn = null } = {}) {
   const measured = stonesOfLayout(layout);
   if (measured.length === 0) throw new Error("The layout has no stones.");
   const { stones: capped, capped: cappedCount } = capStoneSizes(measured, pupilCentres(layout));
   const { stones: kept, removed } = removeCloseStones(capped);
+  const filled = fillHolesIn ? fillHoles(kept, fillHolesIn, layout.report) : null;
+  const delivered = filled ? filled.stones : kept;
   const box = boxOf(measured);
   const coverageBefore = Number(layout.report?.coverage);
-  const coverage = coverageBefore * areaUnder(kept, box) / areaUnder(measured, box);
-  const { stoneLayout, stones } = toStoneLayout(kept, 1);
+  const coverage = coverageBefore * areaUnder(delivered, box) / areaUnder(measured, box);
+  const { stoneLayout, stones } = toStoneLayout(delivered, 1);
   return {
     stoneLayout,
     gaps: checkGaps(stones),
@@ -114,6 +123,7 @@ export function cleanedLayout(layout) {
     removed: removed.length,
     removedShare: removed.length / capped.length,
     coverageBefore,
-    coverage
+    coverage,
+    filled: filled ? filled.added.length : 0
   };
 }

@@ -40,6 +40,11 @@ Colorado Topaz along the rows, in the proportion (1:2, 1:1 or 2:1) whose mix com
 local sampled colour, on SS4/SS6 skin stones whose colour lies between the two
 (faces.mixed_shadow). The AI's shadow skin (about L* 33, chroma 43) lies between the two
 (docs/IS-05c-results.md section 2.2 in the IS repository).
+
+IS (exp-holes, experiment, off everywhere including DEFAULT): fill_exact makes the fills after the
+eye stage keep GAP (0.1 mm) from every stone, checked exactly, instead of GAP + 0.05 mm on the
+raster; fill_cover_mask makes them measure the 0.7 cover on the strict subject mask they fill
+instead of the closed alpha (geometry.fill). docs/exp-holes.md in the IS repository.
 """
 from dataclasses import dataclass
 
@@ -69,6 +74,8 @@ class Rules:
     warm_shadow: bool = False
     warm_shadow_de: float = 1.5
     mixed_shadow: bool = False
+    fill_exact: bool = False
+    fill_cover_mask: bool = False
 
 
 PROTOTYPE = Rules(pupil_core_only=False, keep_chains=False)

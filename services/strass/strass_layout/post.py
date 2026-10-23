@@ -250,7 +250,9 @@ def post_process(px, det, state, first, models, clock, rules=DEFAULT):
     clock.lap("eyes")
 
     for _ in range(3):
-        fP, fD = fill(state, P, D, mask, s)
+        # IS (exp-holes): Rules.fill_exact and Rules.fill_cover_mask (off in DEFAULT).
+        fP, fD = fill(state, P, D, mask, s, extra=0.0 if rules.fill_exact else 0.05, exact=rules.fill_exact,
+                      cover_mask=rules.fill_cover_mask)
         if not len(fP):
             break
         P = np.concatenate([P, fP])

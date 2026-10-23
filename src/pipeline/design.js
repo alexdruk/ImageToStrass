@@ -164,6 +164,11 @@ export function designResult(stoneLayout, { coverage, settings, outputPx }) {
   };
 }
 
+async function rgbaOf(png) {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  return { data, width: info.width, height: info.height };
+}
+
 function originalIn(dir) {
   const name = readdirSync(dir).find((f) => f.startsWith("original."));
   return name ? path.join(dir, name) : null;
@@ -255,7 +260,8 @@ export function createPipeline({
       }
       storeNew(dir, "layout.json", `${JSON.stringify(placed.layout)}\n`);
       // Natural size: SS16 cap and overlap cleanup (7.5), then acceptance (7.4) on the result.
-      const natural = cleanedLayout(placed.layout);
+      // config.fillHoles (experiment exp-holes, off by default): the holes are filled after the cleanup.
+      const natural = cleanedLayout(placed.layout, config.fillHoles ? { fillHolesIn: await rgbaOf(aiPng) } : {});
       const check = acceptLayout(natural);
       if (!check.ok) return rerunOrFail(code, n, settings, check, outputPx);
       const stoneLayout = settings.mode === "bw"
@@ -266,7 +272,7 @@ export function createPipeline({
       storeNew(dir, "stones.json", `${JSON.stringify(stoneLayout.toJSON())}\n`);
       storeNew(dir, "tinted.png", await renderFullOffThread(stoneLayout));
       const result = designResult(stoneLayout, { coverage: check.coverage, settings, outputPx });
-      finish(code, n, "done", { counts: 1, result }, { stones: result.stones, capped: natural.capped, removed: natural.removed });
+      finish(code, n, "done", { counts: 1, result }, { stones: result.stones, capped: natural.capped, removed: natural.removed, ...(config.fillHoles ? { filled: natural.filled } : {}) });
     } catch (error) {
       log.error(`Design ${id} failed: ${error.stack || error.message}`);
       fail(code, n, "error");
