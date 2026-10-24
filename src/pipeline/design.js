@@ -269,7 +269,7 @@ export function createPipeline({
       const check = acceptLayout(natural);
       if (!check.ok) return rerunOrFail(code, n, settings, check, outputPx);
       const stoneLayout = settings.mode === "bw"
-        ? mapBlackAndWhiteFromImage(natural.stoneLayout, ai, { ...placed.layout.report, originMm: natural.originMm }, config.bwThreshold, natural.voted, { fromDiscs: config.bwFromDiscs })
+        ? mapBlackAndWhiteFromImage(natural.stoneLayout, ai, { ...placed.layout.report, originMm: natural.originMm }, config.bwThreshold, natural.voted)
         : natural.stoneLayout;
 
       stage("files");
