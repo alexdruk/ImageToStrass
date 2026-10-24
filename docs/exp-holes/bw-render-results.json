@@ -1,0 +1,930 @@
+[
+  {
+    "name": "car-rule",
+    "stones": 3548,
+    "discs": 3285,
+    "changed": 10,
+    "toCrystal": 9,
+    "toJet": 1,
+    "jetAmongCrystal": {
+      "today": 220,
+      "fixed": 224
+    },
+    "jetShare": {
+      "today": 0.499,
+      "fixed": 0.497
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "car-rule-whole.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "car-rule-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "car-rule-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "car-rule-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "car-rule-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "cat-norule",
+    "stones": 3148,
+    "discs": 3119,
+    "changed": 26,
+    "toCrystal": 24,
+    "toJet": 2,
+    "jetAmongCrystal": {
+      "today": 287,
+      "fixed": 287
+    },
+    "jetShare": {
+      "today": 0.241,
+      "fixed": 0.234
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "cat-norule-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "cat-norule-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "cat-norule-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "cat-norule-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "cat-norule-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "cat-norule-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "cat-rule",
+    "stones": 3579,
+    "discs": 3549,
+    "changed": 21,
+    "toCrystal": 14,
+    "toJet": 7,
+    "jetAmongCrystal": {
+      "today": 342,
+      "fixed": 340
+    },
+    "jetShare": {
+      "today": 0.268,
+      "fixed": 0.266
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "cat-rule-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "cat-rule-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "cat-rule-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "cat-rule-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "cat-rule-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "cat-rule-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "dachshund-rule",
+    "stones": 1633,
+    "discs": 1610,
+    "changed": 41,
+    "toCrystal": 1,
+    "toJet": 40,
+    "jetAmongCrystal": {
+      "today": 39,
+      "fixed": 20
+    },
+    "jetShare": {
+      "today": 0.823,
+      "fixed": 0.847
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "dachshund-rule-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "dachshund-rule-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "dachshund-rule-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "dachshund-rule-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "dachshund-rule-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "dachshund-rule-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "dog-norule",
+    "stones": 2084,
+    "discs": 2063,
+    "changed": 9,
+    "toCrystal": 5,
+    "toJet": 4,
+    "jetAmongCrystal": {
+      "today": 200,
+      "fixed": 198
+    },
+    "jetShare": {
+      "today": 0.344,
+      "fixed": 0.343
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "dog-norule-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "dog-norule-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "dog-norule-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "dog-norule-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "dog-norule-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "dog-norule-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "dog-rule",
+    "stones": 2050,
+    "discs": 2031,
+    "changed": 9,
+    "toCrystal": 7,
+    "toJet": 2,
+    "jetAmongCrystal": {
+      "today": 228,
+      "fixed": 229
+    },
+    "jetShare": {
+      "today": 0.357,
+      "fixed": 0.354
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "dog-rule-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "dog-rule-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "dog-rule-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "dog-rule-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "dog-rule-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "dog-rule-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "giraffe-rule",
+    "stones": 2327,
+    "discs": 2020,
+    "changed": 36,
+    "toCrystal": 19,
+    "toJet": 17,
+    "jetAmongCrystal": {
+      "today": 309,
+      "fixed": 298
+    },
+    "jetShare": {
+      "today": 0.477,
+      "fixed": 0.477
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "giraffe-rule-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "giraffe-rule-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "giraffe-rule-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "giraffe-rule-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "giraffe-rule-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "giraffe-rule-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "mug-norule",
+    "stones": 2224,
+    "discs": 2226,
+    "changed": 0,
+    "toCrystal": 0,
+    "toJet": 0,
+    "jetAmongCrystal": {
+      "today": 157,
+      "fixed": 157
+    },
+    "jetShare": {
+      "today": 0.213,
+      "fixed": 0.213
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "mug-norule-whole.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "mug-norule-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "mug-norule-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "mug-norule-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "mug-norule-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "mug-rule",
+    "stones": 1751,
+    "discs": 1751,
+    "changed": 11,
+    "toCrystal": 9,
+    "toJet": 2,
+    "jetAmongCrystal": {
+      "today": 38,
+      "fixed": 35
+    },
+    "jetShare": {
+      "today": 0.025,
+      "fixed": 0.021
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "mug-rule-whole.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "mug-rule-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "mug-rule-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "mug-rule-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "mug-rule-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-cat",
+    "stones": 2162,
+    "discs": 2215,
+    "changed": 24,
+    "toCrystal": 4,
+    "toJet": 20,
+    "jetAmongCrystal": {
+      "today": 109,
+      "fixed": 108
+    },
+    "jetShare": {
+      "today": 0.479,
+      "fixed": 0.487
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-cat-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "rs-cat-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "rs-cat-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "rs-cat-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "rs-cat-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "rs-cat-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-dog",
+    "stones": 1683,
+    "discs": 1674,
+    "changed": 20,
+    "toCrystal": 3,
+    "toJet": 17,
+    "jetAmongCrystal": {
+      "today": 149,
+      "fixed": 140
+    },
+    "jetShare": {
+      "today": 0.308,
+      "fixed": 0.316
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-dog-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "rs-dog-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "rs-dog-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "rs-dog-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "rs-dog-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "rs-dog-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-einstein",
+    "stones": 3594,
+    "discs": 3612,
+    "changed": 5,
+    "toCrystal": 1,
+    "toJet": 4,
+    "jetAmongCrystal": {
+      "today": 298,
+      "fixed": 296
+    },
+    "jetShare": {
+      "today": 0.588,
+      "fixed": 0.589
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-einstein-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "rs-einstein-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "rs-einstein-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "rs-einstein-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "rs-einstein-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "rs-einstein-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-jesus",
+    "stones": 3307,
+    "discs": 3333,
+    "changed": 13,
+    "toCrystal": 7,
+    "toJet": 6,
+    "jetAmongCrystal": {
+      "today": 194,
+      "fixed": 196
+    },
+    "jetShare": {
+      "today": 0.666,
+      "fixed": 0.666
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-jesus-whole.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "rs-jesus-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "rs-jesus-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "rs-jesus-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "rs-jesus-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-lake",
+    "stones": 4100,
+    "discs": 4097,
+    "changed": 8,
+    "toCrystal": 4,
+    "toJet": 4,
+    "jetAmongCrystal": {
+      "today": 310,
+      "fixed": 312
+    },
+    "jetShare": {
+      "today": 0.546,
+      "fixed": 0.546
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-lake-whole.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "rs-lake-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "rs-lake-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "rs-lake-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "rs-lake-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-leopard",
+    "stones": 2436,
+    "discs": 2433,
+    "changed": 14,
+    "toCrystal": 2,
+    "toJet": 12,
+    "jetAmongCrystal": {
+      "today": 420,
+      "fixed": 411
+    },
+    "jetShare": {
+      "today": 0.518,
+      "fixed": 0.523
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-leopard-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "rs-leopard-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "rs-leopard-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "rs-leopard-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "rs-leopard-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "rs-leopard-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-logo",
+    "stones": 833,
+    "discs": 833,
+    "changed": 0,
+    "toCrystal": 0,
+    "toJet": 0,
+    "jetAmongCrystal": {
+      "today": 0,
+      "fixed": 0
+    },
+    "jetShare": {
+      "today": 0.851,
+      "fixed": 0.851
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-logo-whole.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-parrot",
+    "stones": 2552,
+    "discs": 2496,
+    "changed": 14,
+    "toCrystal": 11,
+    "toJet": 3,
+    "jetAmongCrystal": {
+      "today": 144,
+      "fixed": 142
+    },
+    "jetShare": {
+      "today": 0.413,
+      "fixed": 0.41
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-parrot-whole.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "rs-parrot-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "rs-parrot-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "rs-parrot-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "rs-parrot-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-portrait",
+    "stones": 4045,
+    "discs": 3653,
+    "changed": 16,
+    "toCrystal": 13,
+    "toJet": 3,
+    "jetAmongCrystal": {
+      "today": 126,
+      "fixed": 134
+    },
+    "jetShare": {
+      "today": 0.441,
+      "fixed": 0.438
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-portrait-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "rs-portrait-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "rs-portrait-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "rs-portrait-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "rs-portrait-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "rs-portrait-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-rose",
+    "stones": 1846,
+    "discs": 1849,
+    "changed": 6,
+    "toCrystal": 1,
+    "toJet": 5,
+    "jetAmongCrystal": {
+      "today": 1,
+      "fixed": 1
+    },
+    "jetShare": {
+      "today": 0.941,
+      "fixed": 0.944
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-rose-whole.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "rs-rose-1.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-tulips",
+    "stones": 2675,
+    "discs": 2677,
+    "changed": 13,
+    "toCrystal": 7,
+    "toJet": 6,
+    "jetAmongCrystal": {
+      "today": 195,
+      "fixed": 185
+    },
+    "jetShare": {
+      "today": 0.407,
+      "fixed": 0.407
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-tulips-whole.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "rs-tulips-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "rs-tulips-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "rs-tulips-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "rs-tulips-4.jpg"
+      }
+    ]
+  },
+  {
+    "name": "rs-woman",
+    "stones": 2627,
+    "discs": 2629,
+    "changed": 4,
+    "toCrystal": 2,
+    "toJet": 2,
+    "jetAmongCrystal": {
+      "today": 73,
+      "fixed": 74
+    },
+    "jetShare": {
+      "today": 0.749,
+      "fixed": 0.749
+    },
+    "files": [
+      {
+        "tag": "whole",
+        "label": "whole design",
+        "file": "rs-woman-whole.jpg"
+      },
+      {
+        "tag": "face",
+        "label": "face",
+        "file": "rs-woman-face.jpg"
+      },
+      {
+        "tag": "1",
+        "label": "close-up 1",
+        "file": "rs-woman-1.jpg"
+      },
+      {
+        "tag": "2",
+        "label": "close-up 2",
+        "file": "rs-woman-2.jpg"
+      },
+      {
+        "tag": "3",
+        "label": "close-up 3",
+        "file": "rs-woman-3.jpg"
+      },
+      {
+        "tag": "4",
+        "label": "close-up 4",
+        "file": "rs-woman-4.jpg"
+      }
+    ]
+  }
+]

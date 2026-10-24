@@ -16,7 +16,10 @@ when that is at most 3 ΔE further than Smoked Topaz (7.4). Revised 21 Oct 2026 
 without the compare slider, tabs at phone width (10); Etsy connect, poller, refunds and admin page
 as built (11.2–11.4). Revised 24 Oct 2026 (exp-holes): hole fill after the overlap cleanup (7.5);
 black & white read from the AI image (7.6). Revised 24 Oct 2026 (exp-holes, dark spots): filled
-stones take their neighbours' colour (7.5, 7.6).
+stones take their neighbours' colour (7.5, 7.6). Revised 24 Oct 2026 (exp-holes, B&W render): the
+tinted view's gap rule for black & white designs is a setting, today's by default (section 8,
+`BW_GAP`); behind `IS_BW_FROM_DISCS=1` (off) a B&W stone takes the colour of the AI stone disc it
+overlaps most (7.6, `report.discsAtMm`).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -390,6 +393,14 @@ that put the service's colour snapping (skin and chroma rules, the eye stage's c
 AI's Jet/Crystal drawing and the result (`docs/exp-holes.md`, section 6, also on the choice of the
 threshold).
 
+With `IS_BW_FROM_DISCS=1` (off by default; exp-holes, `docs/exp-holes.md` section 10) a stone that is
+read takes the Jet or Crystal of the AI stone disc it overlaps most (by area), the disc read as above
+at its own centre and diameter, instead of the pixels at its delivered position; a stone that
+overlaps no disc, and every stone of a layout without discs, is read as above. The discs are the
+service's `report.discsAtMm` (`[x, y, d]` in the stones' mm): every stone the service detected in
+the AI image except the tiny ones, shadows, painted gap dots and interstitial dots. The layout moves
+stones off the AI's discs, some onto its dark gap paint, where they read Jet among Crystal.
+
 ### 7.7 Result
 
 `stones.json` (StoneLayout in mm, origin top-left), the tinted render (section 8), and
@@ -415,13 +426,22 @@ Definition (from the RS 30 Sep decision, sharpened here):
    is the same for an SS6 stone but let an SS20 pupil claim a 1.4 mm ring of its dark gap colour, a
    wide black octagon around the eye). Beyond that (the design's outer edge and true holes) the
    background shows: white in the app, transparent in the PNG file.
+   Black & white designs (exp-holes, `docs/exp-holes.md` section 10) fill those pixels by the
+   setting `BW_GAP`: `nearest` (the default) as steps 2–3; `crystal`: as `nearest`, but where the
+   second-nearest stone's edge is within 0.6 mm too and its colour differs, the gap colour of the
+   lighter of the two, so a Jet stone among Crystal stones gets Crystal's light gap and the dark
+   gap shows only between Jet stones (a Jet stone with no other stone within reach keeps its own);
+   `white` and `black`: the fabric, `#ffffff` and `#111111`. The colour designs keep steps 2–3. The
+   AI draws mid-tones in B&W as Jet and Crystal stones side by side; with `nearest` each Jet stone
+   among Crystal sits in a black octagon of its own gap colour and reads larger than it is.
 5. The stones are drawn on top with the RS faceted crystal renderer
    (`CrystalStoneRenderer.drawCrystalStone`, deterministic per-stone appearance; the RS file is
    unchanged). The RS renderer strokes each stone's edge 0.09 radii wide in its catalogue stroke
    colour, which for Jet is light grey, so a large Jet stone (a pupil) had a light ring 2.35 times
    as wide as an SS6 one. A stone above SS6 whose stroke is lighter than its fill (only Jet) has its
    edge redrawn by IS at an SS6 stone's width: the RS edge band is painted over, inside the stone
-   with its edge colour and outside with its gap colour, and the edge stroked again (IS-05c).
+   with its edge colour and outside with its gap colour (the fabric with `BW_GAP` `white` or
+   `black`), and the edge stroked again (IS-05c).
 6. Each drawn stone's lightness is brought to its catalogue fill's L\*, over the pixels whose
    centre lies inside its disc, in two zones. First the **inner 60 %** of the radius, where the
    renderer puts its highlight: its mean L\* is brought to within **4** of the fill's. Then the
@@ -449,7 +469,8 @@ while the whole stone averaged right) and set 8 L\* for near-white gaps at Alex'
 (`docs/IS-05b-results.md` section 7).
 
 Implementation: Node with `@napi-rs/canvas` (Canvas 2D compatible, so the RS renderer runs
-unchanged), `src/render/tinted.js` (`GAP_RULE`, `STONE_LIGHTNESS`). The renders run in a worker
+unchanged), `src/render/tinted.js` (`GAP_RULE`, `STONE_LIGHTNESS`, `BW_GAPS`). `BW_GAP` applies when a
+render is made: the full render when the design is made, the preview when the browser asks for it. The renders run in a worker
 thread (`src/render/offthread.js`, `worker_threads`), so the server keeps answering polls and pages
 while one runs. Nearest-stone search: a pixel can only be filled when its
 nearest stone's edge is at most 0.6 mm (`FILL_MARGIN_MM`) away, so each stone writes its edge
@@ -772,6 +793,8 @@ LAYOUT_TIMEOUT_SECONDS=180
 BW_THRESHOLD=55
 IS_FILL_HOLES=1                  # 0 = no hole fill (7.5)
 IS_SERVICE_FILL_NEIGHBOURS=0     # 1 = the service's fill stones take their neighbours' colour (7.5)
+BW_GAP=nearest                   # B&W tinted gaps: nearest, crystal, white or black (8)
+IS_BW_FROM_DISCS=0               # 1 = a B&W stone takes the colour of the AI stone disc it overlaps most (7.6)
 IS_DAILY_DESIGN_CAP=100
 IS_DESIGNS_PER_IP_PER_DAY=6
 TURNSTILE_SITE_KEY=

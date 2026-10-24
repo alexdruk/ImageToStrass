@@ -200,8 +200,8 @@ export function plainPng(layout, view, ppmm, rings = []) {
   return canvas.toBuffer("image/png");
 }
 
-// The tinted render of the stones near a view, cropped to it.
-export async function tintedPng(layout, view, ppmm) {
+// The tinted render of the stones near a view, cropped to it. options: renderTinted's (bwGap).
+export async function tintedPng(layout, view, ppmm, options = {}) {
   const near = layout.stones.filter((s) => s.xMm > view.x0 - 4 && s.xMm < view.x0 + view.w + 4 && s.yMm > view.y0 - 4 && s.yMm < view.y0 + view.h + 4);
   if (!near.length) return plainPng(asLayout([], "colour"), view, ppmm);
   const sub = new StoneLayout({ layerId: "design", sourceMode: "is", stones: near });
@@ -209,7 +209,7 @@ export async function tintedPng(layout, view, ppmm) {
   const main = 2;
   const minX = box.minXmm - 2 * main, minY = box.minYmm - 2 * main;
   const span = Math.max(box.widthMm, box.heightMm) + 4 * main;
-  const { png, scale } = renderTinted(sub, { longSidePx: Math.round(span * ppmm), background: "white" });
+  const { png, scale } = renderTinted(sub, { ...options, longSidePx: Math.round(span * ppmm), background: "white" });
   const meta = await sharp(png).metadata();
   const left = Math.round((view.x0 - minX) * scale), top = Math.round((view.y0 - minY) * scale);
   const W = Math.round(view.w * scale), H = Math.round(view.h * scale);

@@ -1,0 +1,1870 @@
+[
+  {
+    "name": "car-rule",
+    "stones": 3548,
+    "jet": 1772,
+    "marked": 220,
+    "allCrystal": 23,
+    "byClass": {
+      "a": 192,
+      "b": 28,
+      "c": 0
+    },
+    "reasonsC": {},
+    "byOrigin": {
+      "AI stone": {
+        "a": 192,
+        "b": 0,
+        "c": 0
+      },
+      "service fill": {
+        "a": 0,
+        "b": 28,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 24,
+    "medianMoveMm": {
+      "a": 0.08,
+      "b": 2.02,
+      "c": null,
+      "crystalBaseline": 0.03
+    },
+    "gapMm2": {
+      "blackGap": 3524,
+      "blackNextCrystal": 511.8,
+      "byOwner": {
+        "a": 150.8,
+        "b": 24.5,
+        "c": 0,
+        "edge": 336.5
+      },
+      "onMarkedStones": {
+        "a": 594.7,
+        "b": 64.6,
+        "c": 0
+      }
+    },
+    "closeups": [
+      {
+        "file": "car-rule-1.jpg",
+        "xMm": 26.5,
+        "yMm": 54,
+        "blackFromMarkedMm2": 8.3,
+        "counts": {
+          "a": 7,
+          "b": 2,
+          "c": 0
+        }
+      },
+      {
+        "file": "car-rule-2.jpg",
+        "xMm": 24,
+        "yMm": 64,
+        "blackFromMarkedMm2": 6.5,
+        "counts": {
+          "a": 3,
+          "b": 3,
+          "c": 0
+        }
+      },
+      {
+        "file": "car-rule-3.jpg",
+        "xMm": 169,
+        "yMm": 21.5,
+        "blackFromMarkedMm2": 5.4,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "car-rule-4.jpg",
+        "xMm": 186.5,
+        "yMm": 64,
+        "blackFromMarkedMm2": 5.2,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "cat-norule",
+    "stones": 3148,
+    "jet": 759,
+    "marked": 287,
+    "allCrystal": 62,
+    "byClass": {
+      "a": 272,
+      "b": 7,
+      "c": 8
+    },
+    "reasonsC": {
+      "on a light AI stone": 7,
+      "mixed": 1
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 271,
+        "b": 3,
+        "c": 8
+      },
+      "service fill": {
+        "a": 1,
+        "b": 4,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 6,
+    "medianMoveMm": {
+      "a": 0.07,
+      "b": 1.89,
+      "c": 0.16,
+      "crystalBaseline": 0.02
+    },
+    "gapMm2": {
+      "blackGap": 1462.4,
+      "blackNextCrystal": 493.4,
+      "byOwner": {
+        "a": 260.9,
+        "b": 6,
+        "c": 6.4,
+        "edge": 220
+      },
+      "onMarkedStones": {
+        "a": 829,
+        "b": 13.8,
+        "c": 14.1
+      }
+    },
+    "closeups": [
+      {
+        "file": "cat-norule-1.jpg",
+        "xMm": 64,
+        "yMm": 86.5,
+        "blackFromMarkedMm2": 9.4,
+        "counts": {
+          "a": 10,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "cat-norule-2.jpg",
+        "xMm": 4,
+        "yMm": 74,
+        "blackFromMarkedMm2": 6.8,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "cat-norule-3.jpg",
+        "xMm": 36.5,
+        "yMm": 91.5,
+        "blackFromMarkedMm2": 6.7,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 1
+        }
+      },
+      {
+        "file": "cat-norule-4.jpg",
+        "xMm": 26.5,
+        "yMm": 96.5,
+        "blackFromMarkedMm2": 6.7,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "cat-rule",
+    "stones": 3579,
+    "jet": 960,
+    "marked": 342,
+    "allCrystal": 80,
+    "byClass": {
+      "a": 325,
+      "b": 9,
+      "c": 8
+    },
+    "reasonsC": {
+      "on a light AI stone": 7,
+      "mixed": 1
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 325,
+        "b": 3,
+        "c": 8
+      },
+      "service fill": {
+        "a": 0,
+        "b": 6,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 8,
+    "medianMoveMm": {
+      "a": 0.04,
+      "b": 2.06,
+      "c": 0.32,
+      "crystalBaseline": 0.04
+    },
+    "gapMm2": {
+      "blackGap": 1852.6,
+      "blackNextCrystal": 536.1,
+      "byOwner": {
+        "a": 295.5,
+        "b": 7.6,
+        "c": 6.8,
+        "edge": 226.3
+      },
+      "onMarkedStones": {
+        "a": 988.4,
+        "b": 21.5,
+        "c": 21
+      }
+    },
+    "closeups": [
+      {
+        "file": "cat-rule-1.jpg",
+        "xMm": 134,
+        "yMm": 29,
+        "blackFromMarkedMm2": 7.4,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "cat-rule-2.jpg",
+        "xMm": 71.5,
+        "yMm": 86.5,
+        "blackFromMarkedMm2": 7,
+        "counts": {
+          "a": 8,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "cat-rule-3.jpg",
+        "xMm": 126.5,
+        "yMm": 99,
+        "blackFromMarkedMm2": 7,
+        "counts": {
+          "a": 8,
+          "b": 1,
+          "c": 0
+        }
+      },
+      {
+        "file": "cat-rule-4.jpg",
+        "xMm": 36.5,
+        "yMm": 66.5,
+        "blackFromMarkedMm2": 6.2,
+        "counts": {
+          "a": 4,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "dachshund-rule",
+    "stones": 1633,
+    "jet": 1344,
+    "marked": 39,
+    "allCrystal": 3,
+    "byClass": {
+      "a": 39,
+      "b": 0,
+      "c": 0
+    },
+    "reasonsC": {},
+    "byOrigin": {
+      "AI stone": {
+        "a": 36,
+        "b": 0,
+        "c": 0
+      },
+      "service fill": {
+        "a": 3,
+        "b": 0,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 0,
+    "medianMoveMm": {
+      "a": 0.14,
+      "b": null,
+      "c": null,
+      "crystalBaseline": 0.08
+    },
+    "gapMm2": {
+      "blackGap": 2372.3,
+      "blackNextCrystal": 146.1,
+      "byOwner": {
+        "a": 34.1,
+        "b": 0,
+        "c": 0,
+        "edge": 112
+      },
+      "onMarkedStones": {
+        "a": 131.6,
+        "b": 0,
+        "c": 0
+      }
+    },
+    "closeups": [
+      {
+        "file": "dachshund-rule-1.jpg",
+        "xMm": 39,
+        "yMm": 16.5,
+        "blackFromMarkedMm2": 6.2,
+        "counts": {
+          "a": 8,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "dachshund-rule-2.jpg",
+        "xMm": 16.5,
+        "yMm": 16.5,
+        "blackFromMarkedMm2": 5.4,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "dachshund-rule-3.jpg",
+        "xMm": 59,
+        "yMm": 59,
+        "blackFromMarkedMm2": 5.2,
+        "counts": {
+          "a": 5,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "dachshund-rule-4.jpg",
+        "xMm": 29,
+        "yMm": 11.5,
+        "blackFromMarkedMm2": 2.8,
+        "counts": {
+          "a": 3,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "dog-norule",
+    "stones": 2084,
+    "jet": 716,
+    "marked": 200,
+    "allCrystal": 59,
+    "byClass": {
+      "a": 192,
+      "b": 5,
+      "c": 3
+    },
+    "reasonsC": {
+      "on a light AI stone": 3
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 190,
+        "b": 0,
+        "c": 3
+      },
+      "service fill": {
+        "a": 2,
+        "b": 5,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 5,
+    "medianMoveMm": {
+      "a": 0.04,
+      "b": 1.9,
+      "c": 0.33,
+      "crystalBaseline": 0.04
+    },
+    "gapMm2": {
+      "blackGap": 1628.8,
+      "blackNextCrystal": 355.2,
+      "byOwner": {
+        "a": 137.8,
+        "b": 3.5,
+        "c": 3.8,
+        "edge": 210.1
+      },
+      "onMarkedStones": {
+        "a": 597.8,
+        "b": 8.8,
+        "c": 9.5
+      }
+    },
+    "closeups": [
+      {
+        "file": "dog-norule-1.jpg",
+        "xMm": 41.5,
+        "yMm": 161.5,
+        "blackFromMarkedMm2": 5.3,
+        "counts": {
+          "a": 4,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "dog-norule-2.jpg",
+        "xMm": 29,
+        "yMm": 66.5,
+        "blackFromMarkedMm2": 5.3,
+        "counts": {
+          "a": 6,
+          "b": 1,
+          "c": 0
+        }
+      },
+      {
+        "file": "dog-norule-3.jpg",
+        "xMm": 64,
+        "yMm": 29,
+        "blackFromMarkedMm2": 5,
+        "counts": {
+          "a": 5,
+          "b": 1,
+          "c": 0
+        }
+      },
+      {
+        "file": "dog-norule-4.jpg",
+        "xMm": 26.5,
+        "yMm": 191.5,
+        "blackFromMarkedMm2": 4.5,
+        "counts": {
+          "a": 5,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "dog-rule",
+    "stones": 2050,
+    "jet": 731,
+    "marked": 228,
+    "allCrystal": 78,
+    "byClass": {
+      "a": 223,
+      "b": 3,
+      "c": 2
+    },
+    "reasonsC": {
+      "on a light AI stone": 2
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 219,
+        "b": 0,
+        "c": 2
+      },
+      "service fill": {
+        "a": 4,
+        "b": 3,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 2,
+    "medianMoveMm": {
+      "a": 0.05,
+      "b": 1.89,
+      "c": 0.2,
+      "crystalBaseline": 0.01
+    },
+    "gapMm2": {
+      "blackGap": 1624.3,
+      "blackNextCrystal": 365.4,
+      "byOwner": {
+        "a": 150.9,
+        "b": 2.6,
+        "c": 2.3,
+        "edge": 209.6
+      },
+      "onMarkedStones": {
+        "a": 691.3,
+        "b": 5.3,
+        "c": 6.3
+      }
+    },
+    "closeups": [
+      {
+        "file": "dog-rule-1.jpg",
+        "xMm": 4,
+        "yMm": 136.5,
+        "blackFromMarkedMm2": 5.6,
+        "counts": {
+          "a": 9,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "dog-rule-2.jpg",
+        "xMm": 46.5,
+        "yMm": 159,
+        "blackFromMarkedMm2": 4.8,
+        "counts": {
+          "a": 5,
+          "b": 0,
+          "c": 1
+        }
+      },
+      {
+        "file": "dog-rule-3.jpg",
+        "xMm": 41.5,
+        "yMm": 66.5,
+        "blackFromMarkedMm2": 4.8,
+        "counts": {
+          "a": 5,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "dog-rule-4.jpg",
+        "xMm": 44,
+        "yMm": 114,
+        "blackFromMarkedMm2": 4.6,
+        "counts": {
+          "a": 3,
+          "b": 1,
+          "c": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "giraffe-rule",
+    "stones": 2327,
+    "jet": 1111,
+    "marked": 309,
+    "allCrystal": 133,
+    "byClass": {
+      "a": 275,
+      "b": 29,
+      "c": 5
+    },
+    "reasonsC": {
+      "on a light AI stone": 3,
+      "mixed": 1,
+      "transparent": 1
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 275,
+        "b": 3,
+        "c": 3
+      },
+      "service fill": {
+        "a": 0,
+        "b": 26,
+        "c": 1
+      },
+      "IS fill": {
+        "a": 0,
+        "b": 0,
+        "c": 1
+      }
+    },
+    "bOnLightDiscNearest": 21,
+    "medianMoveMm": {
+      "a": 0.09,
+      "b": 1.92,
+      "c": 0.35,
+      "crystalBaseline": 0.07
+    },
+    "gapMm2": {
+      "blackGap": 2630.2,
+      "blackNextCrystal": 563.9,
+      "byOwner": {
+        "a": 227,
+        "b": 26.3,
+        "c": 4.1,
+        "edge": 306.5
+      },
+      "onMarkedStones": {
+        "a": 849.4,
+        "b": 60.7,
+        "c": 11.6
+      }
+    },
+    "closeups": [
+      {
+        "file": "giraffe-rule-1.jpg",
+        "xMm": 21.5,
+        "yMm": 171.5,
+        "blackFromMarkedMm2": 7.4,
+        "counts": {
+          "a": 6,
+          "b": 1,
+          "c": 0
+        }
+      },
+      {
+        "file": "giraffe-rule-2.jpg",
+        "xMm": 29,
+        "yMm": 269,
+        "blackFromMarkedMm2": 6.5,
+        "counts": {
+          "a": 8,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "giraffe-rule-3.jpg",
+        "xMm": 29,
+        "yMm": 254,
+        "blackFromMarkedMm2": 6.2,
+        "counts": {
+          "a": 8,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "giraffe-rule-4.jpg",
+        "xMm": 56.5,
+        "yMm": 264,
+        "blackFromMarkedMm2": 6.2,
+        "counts": {
+          "a": 8,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "mug-norule",
+    "stones": 2224,
+    "jet": 473,
+    "marked": 157,
+    "allCrystal": 21,
+    "byClass": {
+      "a": 157,
+      "b": 0,
+      "c": 0
+    },
+    "reasonsC": {},
+    "byOrigin": {
+      "AI stone": {
+        "a": 157,
+        "b": 0,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 0,
+    "medianMoveMm": {
+      "a": 0.06,
+      "b": null,
+      "c": null,
+      "crystalBaseline": 0.02
+    },
+    "gapMm2": {
+      "blackGap": 928.2,
+      "blackNextCrystal": 297,
+      "byOwner": {
+        "a": 139.2,
+        "b": 0,
+        "c": 0,
+        "edge": 157.8
+      },
+      "onMarkedStones": {
+        "a": 474.1,
+        "b": 0,
+        "c": 0
+      }
+    },
+    "closeups": [
+      {
+        "file": "mug-norule-1.jpg",
+        "xMm": 49,
+        "yMm": 84,
+        "blackFromMarkedMm2": 6.7,
+        "counts": {
+          "a": 5,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "mug-norule-2.jpg",
+        "xMm": 36.5,
+        "yMm": 39,
+        "blackFromMarkedMm2": 6.3,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "mug-norule-3.jpg",
+        "xMm": 71.5,
+        "yMm": 94,
+        "blackFromMarkedMm2": 6,
+        "counts": {
+          "a": 4,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "mug-norule-4.jpg",
+        "xMm": 51.5,
+        "yMm": 69,
+        "blackFromMarkedMm2": 5.6,
+        "counts": {
+          "a": 4,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "mug-rule",
+    "stones": 1751,
+    "jet": 43,
+    "marked": 38,
+    "allCrystal": 24,
+    "byClass": {
+      "a": 31,
+      "b": 0,
+      "c": 7
+    },
+    "reasonsC": {
+      "on a light AI stone": 7
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 31,
+        "b": 0,
+        "c": 7
+      }
+    },
+    "bOnLightDiscNearest": 0,
+    "medianMoveMm": {
+      "a": 0.04,
+      "b": null,
+      "c": 0.25,
+      "crystalBaseline": 0.02
+    },
+    "gapMm2": {
+      "blackGap": 70.9,
+      "blackNextCrystal": 47.6,
+      "byOwner": {
+        "a": 36.6,
+        "b": 0,
+        "c": 7.5,
+        "edge": 3.5
+      },
+      "onMarkedStones": {
+        "a": 97.4,
+        "b": 0,
+        "c": 20.6
+      }
+    },
+    "closeups": [
+      {
+        "file": "mug-rule-1.jpg",
+        "xMm": 119,
+        "yMm": 16.5,
+        "blackFromMarkedMm2": 6,
+        "counts": {
+          "a": 4,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "mug-rule-2.jpg",
+        "xMm": 46.5,
+        "yMm": 9,
+        "blackFromMarkedMm2": 4.7,
+        "counts": {
+          "a": 4,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "mug-rule-3.jpg",
+        "xMm": 109,
+        "yMm": 14,
+        "blackFromMarkedMm2": 4.4,
+        "counts": {
+          "a": 3,
+          "b": 0,
+          "c": 1
+        }
+      },
+      {
+        "file": "mug-rule-4.jpg",
+        "xMm": 29,
+        "yMm": 59,
+        "blackFromMarkedMm2": 3.8,
+        "counts": {
+          "a": 3,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "rs-cat",
+    "stones": 2162,
+    "jet": 1036,
+    "marked": 109,
+    "allCrystal": 13,
+    "byClass": {
+      "a": 105,
+      "b": 1,
+      "c": 3
+    },
+    "reasonsC": {
+      "on a light AI stone": 2,
+      "mixed": 1
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 105,
+        "b": 1,
+        "c": 3
+      }
+    },
+    "bOnLightDiscNearest": 0,
+    "medianMoveMm": {
+      "a": 0.05,
+      "b": 1.77,
+      "c": 0.53,
+      "crystalBaseline": 0.04
+    },
+    "gapMm2": {
+      "blackGap": 2008.7,
+      "blackNextCrystal": 376,
+      "byOwner": {
+        "a": 88.7,
+        "b": 1.8,
+        "c": 1.8,
+        "edge": 283.7
+      },
+      "onMarkedStones": {
+        "a": 330.5,
+        "b": 17.4,
+        "c": 6.7
+      }
+    },
+    "closeups": [
+      {
+        "file": "rs-cat-1.jpg",
+        "xMm": 59,
+        "yMm": 71.5,
+        "blackFromMarkedMm2": 6,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-cat-2.jpg",
+        "xMm": 79,
+        "yMm": 34,
+        "blackFromMarkedMm2": 5.6,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-cat-3.jpg",
+        "xMm": 29,
+        "yMm": 71.5,
+        "blackFromMarkedMm2": 5.6,
+        "counts": {
+          "a": 8,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-cat-4.jpg",
+        "xMm": 79,
+        "yMm": 79,
+        "blackFromMarkedMm2": 5.2,
+        "counts": {
+          "a": 8,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "rs-dog",
+    "stones": 1683,
+    "jet": 518,
+    "marked": 149,
+    "allCrystal": 61,
+    "byClass": {
+      "a": 141,
+      "b": 2,
+      "c": 6
+    },
+    "reasonsC": {
+      "mixed": 5,
+      "on a light AI stone": 1
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 138,
+        "b": 2,
+        "c": 6
+      },
+      "service fill": {
+        "a": 3,
+        "b": 0,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 0,
+    "medianMoveMm": {
+      "a": 0.05,
+      "b": 1.17,
+      "c": 0.85,
+      "crystalBaseline": 0.01
+    },
+    "gapMm2": {
+      "blackGap": 1311.5,
+      "blackNextCrystal": 250.8,
+      "byOwner": {
+        "a": 104.9,
+        "b": 1.5,
+        "c": 4.6,
+        "edge": 139.8
+      },
+      "onMarkedStones": {
+        "a": 433.2,
+        "b": 3.5,
+        "c": 10.6
+      }
+    },
+    "closeups": [
+      {
+        "file": "rs-dog-1.jpg",
+        "xMm": 9,
+        "yMm": 21.5,
+        "blackFromMarkedMm2": 6.9,
+        "counts": {
+          "a": 5,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-dog-2.jpg",
+        "xMm": 41.5,
+        "yMm": 149,
+        "blackFromMarkedMm2": 5.5,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-dog-3.jpg",
+        "xMm": 51.5,
+        "yMm": 136.5,
+        "blackFromMarkedMm2": 5.4,
+        "counts": {
+          "a": 5,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-dog-4.jpg",
+        "xMm": 24,
+        "yMm": 59,
+        "blackFromMarkedMm2": 5.3,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "rs-einstein",
+    "stones": 3594,
+    "jet": 2114,
+    "marked": 298,
+    "allCrystal": 10,
+    "byClass": {
+      "a": 297,
+      "b": 0,
+      "c": 1
+    },
+    "reasonsC": {
+      "mixed": 1
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 297,
+        "b": 0,
+        "c": 1
+      }
+    },
+    "bOnLightDiscNearest": 0,
+    "medianMoveMm": {
+      "a": 0.07,
+      "b": null,
+      "c": 0.8,
+      "crystalBaseline": 0.06
+    },
+    "gapMm2": {
+      "blackGap": 3739.8,
+      "blackNextCrystal": 641.9,
+      "byOwner": {
+        "a": 248,
+        "b": 0,
+        "c": 1.3,
+        "edge": 392.6
+      },
+      "onMarkedStones": {
+        "a": 904.1,
+        "b": 0,
+        "c": 17.4
+      }
+    },
+    "closeups": [
+      {
+        "file": "rs-einstein-1.jpg",
+        "xMm": 31.5,
+        "yMm": 81.5,
+        "blackFromMarkedMm2": 8.6,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-einstein-2.jpg",
+        "xMm": 101.5,
+        "yMm": 44,
+        "blackFromMarkedMm2": 7.8,
+        "counts": {
+          "a": 8,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-einstein-3.jpg",
+        "xMm": 124,
+        "yMm": 41.5,
+        "blackFromMarkedMm2": 6.6,
+        "counts": {
+          "a": 9,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-einstein-4.jpg",
+        "xMm": 44,
+        "yMm": 69,
+        "blackFromMarkedMm2": 6.2,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "rs-jesus",
+    "stones": 3307,
+    "jet": 2202,
+    "marked": 194,
+    "allCrystal": 19,
+    "byClass": {
+      "a": 190,
+      "b": 1,
+      "c": 3
+    },
+    "reasonsC": {
+      "on a light AI stone": 3
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 189,
+        "b": 0,
+        "c": 3
+      },
+      "service fill": {
+        "a": 1,
+        "b": 1,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 1,
+    "medianMoveMm": {
+      "a": 0.07,
+      "b": 1.97,
+      "c": 0.14,
+      "crystalBaseline": 0.07
+    },
+    "gapMm2": {
+      "blackGap": 4672.8,
+      "blackNextCrystal": 543.8,
+      "byOwner": {
+        "a": 151.7,
+        "b": 0.9,
+        "c": 3.8,
+        "edge": 387.4
+      },
+      "onMarkedStones": {
+        "a": 554.5,
+        "b": 1.8,
+        "c": 17.5
+      }
+    },
+    "closeups": [
+      {
+        "file": "rs-jesus-1.jpg",
+        "xMm": 21.5,
+        "yMm": 141.5,
+        "blackFromMarkedMm2": 7.8,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-jesus-2.jpg",
+        "xMm": 89,
+        "yMm": 61.5,
+        "blackFromMarkedMm2": 6,
+        "counts": {
+          "a": 8,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-jesus-3.jpg",
+        "xMm": 109,
+        "yMm": 46.5,
+        "blackFromMarkedMm2": 5.7,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-jesus-4.jpg",
+        "xMm": 94,
+        "yMm": 14,
+        "blackFromMarkedMm2": 5.3,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "rs-lake",
+    "stones": 4100,
+    "jet": 2240,
+    "marked": 310,
+    "allCrystal": 57,
+    "byClass": {
+      "a": 309,
+      "b": 0,
+      "c": 1
+    },
+    "reasonsC": {
+      "on a light AI stone": 1
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 309,
+        "b": 0,
+        "c": 1
+      }
+    },
+    "bOnLightDiscNearest": 0,
+    "medianMoveMm": {
+      "a": 0.06,
+      "b": null,
+      "c": 0.12,
+      "crystalBaseline": 0.05
+    },
+    "gapMm2": {
+      "blackGap": 4159.5,
+      "blackNextCrystal": 782.9,
+      "byOwner": {
+        "a": 274.1,
+        "b": 0,
+        "c": 0.7,
+        "edge": 508.2
+      },
+      "onMarkedStones": {
+        "a": 950.4,
+        "b": 0,
+        "c": 1.8
+      }
+    },
+    "closeups": [
+      {
+        "file": "rs-lake-1.jpg",
+        "xMm": 19,
+        "yMm": 99,
+        "blackFromMarkedMm2": 8.7,
+        "counts": {
+          "a": 9,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-lake-2.jpg",
+        "xMm": 11.5,
+        "yMm": 126.5,
+        "blackFromMarkedMm2": 8.6,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-lake-3.jpg",
+        "xMm": 109,
+        "yMm": 51.5,
+        "blackFromMarkedMm2": 7.2,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-lake-4.jpg",
+        "xMm": 111.5,
+        "yMm": 111.5,
+        "blackFromMarkedMm2": 6.5,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "rs-leopard",
+    "stones": 2436,
+    "jet": 1263,
+    "marked": 420,
+    "allCrystal": 132,
+    "byClass": {
+      "a": 417,
+      "b": 1,
+      "c": 2
+    },
+    "reasonsC": {
+      "mixed": 2
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 415,
+        "b": 0,
+        "c": 2
+      },
+      "service fill": {
+        "a": 2,
+        "b": 1,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 1,
+    "medianMoveMm": {
+      "a": 0.06,
+      "b": 1.41,
+      "c": 0.95,
+      "crystalBaseline": 0.05
+    },
+    "gapMm2": {
+      "blackGap": 2544.9,
+      "blackNextCrystal": 773.8,
+      "byOwner": {
+        "a": 404.5,
+        "b": 1.3,
+        "c": 1.7,
+        "edge": 366.4
+      },
+      "onMarkedStones": {
+        "a": 1274.3,
+        "b": 1.8,
+        "c": 3.6
+      }
+    },
+    "closeups": [
+      {
+        "file": "rs-leopard-1.jpg",
+        "xMm": 64,
+        "yMm": 26.5,
+        "blackFromMarkedMm2": 11.5,
+        "counts": {
+          "a": 9,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-leopard-2.jpg",
+        "xMm": 49,
+        "yMm": 41.5,
+        "blackFromMarkedMm2": 10.2,
+        "counts": {
+          "a": 10,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-leopard-3.jpg",
+        "xMm": 79,
+        "yMm": 41.5,
+        "blackFromMarkedMm2": 9.9,
+        "counts": {
+          "a": 10,
+          "b": 1,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-leopard-4.jpg",
+        "xMm": 51.5,
+        "yMm": 139,
+        "blackFromMarkedMm2": 9.7,
+        "counts": {
+          "a": 9,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "rs-logo",
+    "stones": 833,
+    "jet": 709,
+    "marked": 0,
+    "allCrystal": 0,
+    "byClass": {
+      "a": 0,
+      "b": 0,
+      "c": 0
+    },
+    "reasonsC": {},
+    "byOrigin": {},
+    "bOnLightDiscNearest": 0,
+    "medianMoveMm": {
+      "a": null,
+      "b": null,
+      "c": null,
+      "crystalBaseline": 0.12
+    },
+    "gapMm2": {
+      "blackGap": 1840.6,
+      "blackNextCrystal": 1.3,
+      "byOwner": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "edge": 1.3
+      },
+      "onMarkedStones": {
+        "a": 0,
+        "b": 0,
+        "c": 0
+      }
+    },
+    "closeups": []
+  },
+  {
+    "name": "rs-parrot",
+    "stones": 2552,
+    "jet": 1054,
+    "marked": 144,
+    "allCrystal": 36,
+    "byClass": {
+      "a": 131,
+      "b": 13,
+      "c": 0
+    },
+    "reasonsC": {},
+    "byOrigin": {
+      "AI stone": {
+        "a": 131,
+        "b": 2,
+        "c": 0
+      },
+      "service fill": {
+        "a": 0,
+        "b": 11,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 11,
+    "medianMoveMm": {
+      "a": 0.08,
+      "b": 1.87,
+      "c": null,
+      "crystalBaseline": 0.03
+    },
+    "gapMm2": {
+      "blackGap": 2113.9,
+      "blackNextCrystal": 404.1,
+      "byOwner": {
+        "a": 117.4,
+        "b": 14,
+        "c": 0,
+        "edge": 272.7
+      },
+      "onMarkedStones": {
+        "a": 378.5,
+        "b": 35.4,
+        "c": 0
+      }
+    },
+    "closeups": [
+      {
+        "file": "rs-parrot-1.jpg",
+        "xMm": 59,
+        "yMm": 39,
+        "blackFromMarkedMm2": 7.7,
+        "counts": {
+          "a": 8,
+          "b": 1,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-parrot-2.jpg",
+        "xMm": 69,
+        "yMm": 29,
+        "blackFromMarkedMm2": 6.9,
+        "counts": {
+          "a": 8,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-parrot-3.jpg",
+        "xMm": 19,
+        "yMm": 89,
+        "blackFromMarkedMm2": 5.5,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-parrot-4.jpg",
+        "xMm": 76.5,
+        "yMm": 39,
+        "blackFromMarkedMm2": 5.2,
+        "counts": {
+          "a": 4,
+          "b": 1,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "rs-portrait",
+    "stones": 4045,
+    "jet": 1783,
+    "marked": 126,
+    "allCrystal": 21,
+    "byClass": {
+      "a": 109,
+      "b": 14,
+      "c": 3
+    },
+    "reasonsC": {
+      "on a light AI stone": 3
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 108,
+        "b": 0,
+        "c": 3
+      },
+      "service fill": {
+        "a": 1,
+        "b": 14,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 4,
+    "medianMoveMm": {
+      "a": 0.1,
+      "b": 1.97,
+      "c": 0.15,
+      "crystalBaseline": 0
+    },
+    "gapMm2": {
+      "blackGap": 3500.8,
+      "blackNextCrystal": 316.3,
+      "byOwner": {
+        "a": 88.7,
+        "b": 10.7,
+        "c": 2.9,
+        "edge": 214.1
+      },
+      "onMarkedStones": {
+        "a": 294.4,
+        "b": 30.2,
+        "c": 8.1
+      }
+    },
+    "closeups": [
+      {
+        "file": "rs-portrait-1.jpg",
+        "xMm": 124,
+        "yMm": 69,
+        "blackFromMarkedMm2": 5.2,
+        "counts": {
+          "a": 7,
+          "b": 1,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-portrait-2.jpg",
+        "xMm": 109,
+        "yMm": 81.5,
+        "blackFromMarkedMm2": 5.2,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-portrait-3.jpg",
+        "xMm": 69,
+        "yMm": 71.5,
+        "blackFromMarkedMm2": 5,
+        "counts": {
+          "a": 3,
+          "b": 1,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-portrait-4.jpg",
+        "xMm": 109,
+        "yMm": 106.5,
+        "blackFromMarkedMm2": 4.3,
+        "counts": {
+          "a": 3,
+          "b": 1,
+          "c": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "rs-rose",
+    "stones": 1846,
+    "jet": 1738,
+    "marked": 1,
+    "allCrystal": 0,
+    "byClass": {
+      "a": 1,
+      "b": 0,
+      "c": 0
+    },
+    "reasonsC": {},
+    "byOrigin": {
+      "AI stone": {
+        "a": 1,
+        "b": 0,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 0,
+    "medianMoveMm": {
+      "a": 0,
+      "b": null,
+      "c": null,
+      "crystalBaseline": 0.05
+    },
+    "gapMm2": {
+      "blackGap": 2945.6,
+      "blackNextCrystal": 56.1,
+      "byOwner": {
+        "a": 0.8,
+        "b": 0,
+        "c": 0,
+        "edge": 55.4
+      },
+      "onMarkedStones": {
+        "a": 3.1,
+        "b": 0,
+        "c": 0
+      }
+    },
+    "closeups": [
+      {
+        "file": "rs-rose-1.jpg",
+        "xMm": 71.5,
+        "yMm": 84,
+        "blackFromMarkedMm2": 0.8,
+        "counts": {
+          "a": 1,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "rs-tulips",
+    "stones": 2675,
+    "jet": 1090,
+    "marked": 195,
+    "allCrystal": 12,
+    "byClass": {
+      "a": 191,
+      "b": 0,
+      "c": 4
+    },
+    "reasonsC": {
+      "on a light AI stone": 4
+    },
+    "byOrigin": {
+      "AI stone": {
+        "a": 191,
+        "b": 0,
+        "c": 4
+      }
+    },
+    "bOnLightDiscNearest": 0,
+    "medianMoveMm": {
+      "a": 0.07,
+      "b": null,
+      "c": 0.28,
+      "crystalBaseline": 0.02
+    },
+    "gapMm2": {
+      "blackGap": 2082.9,
+      "blackNextCrystal": 456.2,
+      "byOwner": {
+        "a": 163.4,
+        "b": 0,
+        "c": 3.8,
+        "edge": 289
+      },
+      "onMarkedStones": {
+        "a": 594.4,
+        "b": 0,
+        "c": 11.2
+      }
+    },
+    "closeups": [
+      {
+        "file": "rs-tulips-1.jpg",
+        "xMm": 14,
+        "yMm": 124,
+        "blackFromMarkedMm2": 9.9,
+        "counts": {
+          "a": 10,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-tulips-2.jpg",
+        "xMm": 19,
+        "yMm": 114,
+        "blackFromMarkedMm2": 8.6,
+        "counts": {
+          "a": 9,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-tulips-3.jpg",
+        "xMm": 24,
+        "yMm": 89,
+        "blackFromMarkedMm2": 8.1,
+        "counts": {
+          "a": 8,
+          "b": 0,
+          "c": 1
+        }
+      },
+      {
+        "file": "rs-tulips-4.jpg",
+        "xMm": 74,
+        "yMm": 79,
+        "blackFromMarkedMm2": 7.8,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "rs-woman",
+    "stones": 2627,
+    "jet": 1967,
+    "marked": 73,
+    "allCrystal": 7,
+    "byClass": {
+      "a": 73,
+      "b": 0,
+      "c": 0
+    },
+    "reasonsC": {},
+    "byOrigin": {
+      "AI stone": {
+        "a": 72,
+        "b": 0,
+        "c": 0
+      },
+      "service fill": {
+        "a": 1,
+        "b": 0,
+        "c": 0
+      }
+    },
+    "bOnLightDiscNearest": 0,
+    "medianMoveMm": {
+      "a": 0.1,
+      "b": null,
+      "c": null,
+      "crystalBaseline": 0.05
+    },
+    "gapMm2": {
+      "blackGap": 3332.5,
+      "blackNextCrystal": 213.3,
+      "byOwner": {
+        "a": 54.7,
+        "b": 0,
+        "c": 0,
+        "edge": 158.7
+      },
+      "onMarkedStones": {
+        "a": 203.1,
+        "b": 0,
+        "c": 0
+      }
+    },
+    "closeups": [
+      {
+        "file": "rs-woman-1.jpg",
+        "xMm": 49,
+        "yMm": 61.5,
+        "blackFromMarkedMm2": 6.4,
+        "counts": {
+          "a": 7,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-woman-2.jpg",
+        "xMm": 91.5,
+        "yMm": 109,
+        "blackFromMarkedMm2": 4.1,
+        "counts": {
+          "a": 4,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-woman-3.jpg",
+        "xMm": 89,
+        "yMm": 126.5,
+        "blackFromMarkedMm2": 4.1,
+        "counts": {
+          "a": 4,
+          "b": 0,
+          "c": 0
+        }
+      },
+      {
+        "file": "rs-woman-4.jpg",
+        "xMm": 99,
+        "yMm": 119,
+        "blackFromMarkedMm2": 4,
+        "counts": {
+          "a": 6,
+          "b": 0,
+          "c": 0
+        }
+      }
+    ]
+  }
+]

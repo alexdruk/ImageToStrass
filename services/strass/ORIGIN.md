@@ -274,3 +274,18 @@ colour changes.
   `report.fillAtMm` (`[x, y]` per stone, cropped mm like the stones).
 - `tests/test_contract.py`: `fillAtMm` added to `REPORT_KEYS`; `README.md`: the new key.
 - `scripts/holes_trace.py` records the same stones independently (`serviceFill`); they agree.
+
+### exp-holes B&W (24 Oct 2026): report.discsAtMm
+
+IS can read a black & white stone's colour from the AI stone disc it overlaps most instead of the
+pixels under its delivered position (IS spec 7.6, `IS_BW_FROM_DISCS=1`, off; the rule is IS code,
+`src/pipeline/bw.js`). The `/layout` answer did not hold the detections, so the report gains a key;
+no stone, size or colour changes.
+
+- `strass_layout/ordered.py`: the result's `"discs"`, `[x, y, d]` (frame mm) of every detection but
+  the tiny ones, shadows, painted gap dots and interstitial dots (one inside a big stone counts).
+- `strass_layout/pipeline.py`: `layout_frame` passes `discsAtMm` in the frame; `finish_layout` adds
+  `report.discsAtMm` (cropped mm like the stones).
+- `tests/test_contract.py`: `discsAtMm` added to `REPORT_KEYS`; `README.md`: the new key.
+- `scripts/holes_trace.py` records the same detections with their verdicts; the discs are the
+  verdicts kept, tiled, rows-deleted, duplicate, inside-big and outside-mask.

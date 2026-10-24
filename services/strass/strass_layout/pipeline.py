@@ -14,6 +14,8 @@ IS (IS-05d): Rules.mixed_shadow reads the same colours (faces.mixed_shadow).
 
 IS (exp-holes): report.fillAtMm, the centres of the stones the service's fills placed (cropped mm,
 as the stones).
+
+IS (exp-holes, B&W): report.discsAtMm, the AI's stone discs [x, y, d] (ordered.py "discs", cropped mm).
 """
 import numpy as np
 
@@ -74,6 +76,7 @@ def layout_frame(png_bytes, target_pitch_mm=2.1, models=None, rules=DEFAULT):
         "pupilsMm": info["pupilsMm"],
         "pupilsAtMm": info["pupilsAtMm"],
         "fillAtMm": info["fillAtMm"],
+        "discsAtMm": first["discs"],
     }
     return {"stones": stones, "frame": frame, "stagesMs": clock.stages(), "ms": clock.total()}
 
@@ -128,6 +131,7 @@ def finish_layout(result):
         "pupilsMm": frame["pupilsMm"],
         "pupilsAtMm": [[round(x - off_x, 3), round(y - off_y, 3)] for x, y in frame["pupilsAtMm"]],
         "fillAtMm": [[round(x - off_x, 3), round(y - off_y, 3)] for x, y in frame["fillAtMm"]],
+        "discsAtMm": [[round(x - off_x, 3), round(y - off_y, 3), d] for x, y, d in frame["discsAtMm"]],
         "frameMm": round(frame["widthMm"], 3),
         "offsetMm": [off_x, off_y],
         "mmPerPx": round(s, 6),

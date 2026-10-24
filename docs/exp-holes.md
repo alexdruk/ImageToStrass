@@ -15,6 +15,12 @@ the B&W designs. The cause was fill stones reading the AI's gap paint; now every
 adds takes its neighbours' colour (replacing the 6 ΔE step of the first decision), and the service's
 own fill stones can do the same behind `IS_SERVICE_FILL_NEIGHBOURS=1` (off).
 
+B&W render (24 Oct, section 10): most of the dark spots left are Jet stones the AI drew (its
+mid-tones are Jet and Crystal side by side), drawn larger by the tinted view's dark gap. The gap rule
+of B&W designs is now a setting (`BW_GAP`, today's rule by default, spec 8), and a stone can take its
+colour from the AI stone disc it overlaps most (`IS_BW_FROM_DISCS=1`, off, spec 7.6; the service
+reports the discs as `report.discsAtMm`). Alex chooses.
+
 Designs measured here: the 9 CC0 AI images of IS-03b (`tools/fixtures/is03b-ai/`) and the 12 RS
 test images (`services/strass/prototype/img/`), each laid out again with `DEFAULT` (no provider
 call). The private portraits were measured the same way (colour and B&W); their pictures, numbers
@@ -23,9 +29,12 @@ and reports stay in `data/private-portraits/` (`holes.html`, `bw.html`) and are 
 Reproduce: `services/strass/scripts/holes_trace.py OUT default NAME=PNG ...` (layouts and stage
 traces), then `node tools/exp-holes.mjs data/exp-holes/manifest.json docs/exp-holes` and `node
 tools/exp-bw.mjs data/exp-holes/manifest.json docs/exp-holes` and `node tools/exp-spots.mjs
-data/exp-holes/manifest.json docs/exp-holes both`. The pictures in
+data/exp-holes/manifest.json docs/exp-holes both` and `node tools/exp-bw-diagnosis.mjs
+data/exp-holes/manifest.json OUT OUT/diagnosis.html` and `node tools/exp-bw-render.mjs
+data/exp-holes/manifest.json OUT/diagnosis.json OUT2`. The pictures in
 [`docs/exp-holes/`](exp-holes/) were then reduced to 1200 px wide (JPEG quality 60);
-`results.json`, `bw-results.json` and `spots-results.json` there hold every number below.
+`results.json`, `bw-results.json`, `spots-results.json`, `bw-diagnosis.json` and
+`bw-render-results.json` there hold every number below.
 
 ## 1. What a hole is
 
@@ -244,6 +253,10 @@ equivalence test against the prototype holds.
 - `BW_THRESHOLD` (default 55).
 - `IS_SERVICE_FILL_NEIGHBOURS` (default off; `1` gives the service's fill stones their neighbours'
   colour, section 9).
+- `BW_GAP` (default `nearest`, today's tinted gaps; `crystal`, `white`, `black` for B&W designs,
+  section 10).
+- `IS_BW_FROM_DISCS` (default off; `1` reads a B&W stone from the AI stone disc it overlaps most,
+  section 10).
 - Fake mode (`IS_FAKE=1`) uses `src/pipeline/fake/ai.png`, the fake layout's own stones drawn as
   flat discs (`tools/make-fake-ai.mjs`), so the fill and black & white read the image the layout
   came from.
@@ -359,3 +372,55 @@ pipeline's B&W design (orange: drawn by the AI). For example the giraffe
 ([B&W](exp-holes/rs-portrait-bw-spots.jpg)) and the car ([B&W](exp-holes/car-rule-bw-spots.jpg)).
 
 ![Giraffe, B&W spots before and after](exp-holes/giraffe-rule-bw-spots.jpg)
+
+## 10. Black & white: what the dark spots are, and the render
+
+**Diagnosis** (`tools/exp-bw-diagnosis.mjs`; nothing changed). On each design as the pipeline makes
+it in B&W, every Jet stone with at least 2 neighbours within 0.5 mm, more than half of them Crystal,
+was classified by the AI pixels the pipeline read for it (the inner 60 % of its disc), split by the
+service's detections into pixels on an AI stone disc and gap paint: (a) at least half on dark AI
+stone discs, the AI drew a dark stone there; (b) at least half on gap paint and that paint darker
+than the threshold, a stone the layout moved onto the AI's dark gap paint; (c) other. Then the
+tinted view's gap pixels that are black from a Jet stone while the next stone within reach is
+Crystal, by that Jet stone's class ("edge": a Jet stone that is not marked, the border of a dark
+area).
+
+| designs | marked Jet stones | (a) dark AI stone | (b) dark gap paint | (c) other | black gap next to Crystal | from (a) | from (b) | from edge |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 21 CC0 and RS, laid out in B&W | 3839 | 3670 (96 %) | 113 (3 %) | 56 (1 %) | 8133 mm² | 38 % | 1 % | 60 % |
+| 12 private B&W portraits | 10 261 | 9649 (94 %) | 526 (5 %) | 86 (1 %) | 14 575 mm² | 59 % | 4 % | 37 % |
+
+So the spots are real Jet stones: the AI draws mid-tones (skin, hair, background) as Jet and Crystal
+stones side by side, often a checkerboard, and the plain view shows them too. What makes them dark
+spots is the tinted view: each Jet stone fills its side of the gap with Jet's near-black gap colour,
+out to 0.6 mm, so a Jet stone among Crystal sits in a black octagon and neighbouring ones merge into
+black patches. Stones the layout moved onto the gap paint, (b), are a few per cent.
+
+**The render** (spec 8, step 4; `BW_GAP`, B&W designs only; the colour designs are unchanged):
+
+- `nearest` (default): today's rule.
+- `crystal` (A): where the two nearest stones within reach differ, the gap of the lighter (Crystal's
+  light grey); dark only between Jet stones. A Jet stone among Crystal shows at its true size; the
+  dark areas stay solid.
+- `white` (B) and `black` (C): every gap shows the fabric. B shows each Jet stone as a dot on white,
+  closest to the stones themselves; C the reverse, the light areas get black gaps.
+
+**The disc fix** (spec 7.6; `IS_BW_FROM_DISCS=1`, off): a stone read from the AI takes the colour of
+the AI stone disc it overlaps most, not the pixels at its position; a stone on no disc is read as
+before. The service now reports its stone detections as `report.discsAtMm`
+(`services/strass/ORIGIN.md`); on car-rule they are exactly the trace's detections with a stone
+verdict, which the tools use for the layouts made before. On the 21 designs it changes 300 of 54 204
+stones (143 to Crystal, 157 to Jet) and Jet among Crystal goes from 3839 to 3787. On the private
+portraits it changes 868 of 65 371 stones and Jet among Crystal goes from 10 261 to 9978, nearly all
+in one design; in the design whose AI image is grey stones on dark gap paint it makes more (609 →
+656): its stones turning Crystal sit in dark areas. Requiring at least half of the stone on the disc
+is no better. The fix touches the 5 % it was meant for and leaves the rest of the spots as they are.
+
+Pictures (`tools/exp-bw-render.mjs`, the disc fix on): AI image | today | A | B | C, for the whole
+design, the face and the diagnosis's 4 close-ups; the private ones and every CC0 and RS design are in
+`data/private-portraits/bw-render.html`. For example the RS woman ([face](exp-holes/rs-woman-bw-gaps-face.jpg),
+[whole](exp-holes/rs-woman-bw-gaps-whole.jpg)) and close-ups of the RS portrait, the car, the cat and
+the giraffe ([1](exp-holes/rs-portrait-bw-gaps-1.jpg), [2](exp-holes/car-rule-bw-gaps-1.jpg),
+[3](exp-holes/cat-rule-bw-gaps-1.jpg), [4](exp-holes/giraffe-rule-bw-gaps-1.jpg)).
+
+![RS woman, face: AI image, today, A, B, C](exp-holes/rs-woman-bw-gaps-face.jpg)

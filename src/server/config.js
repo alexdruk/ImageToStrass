@@ -1,5 +1,7 @@
 // Settings from the environment (spec section 18). Read once at start-up.
 
+import { BW_GAPS } from "../render/bw-gaps.js";
+
 function positive(value, fallback) {
   const n = Number(value);
   return value !== undefined && value !== "" && Number.isFinite(n) && n > 0 ? n : fallback;
@@ -51,6 +53,11 @@ export function loadConfig(env = process.env) {
     fillHoles: env.IS_FILL_HOLES !== "0",
     // The service's own fill stones take their neighbours' colour too (spec 7.5; off unless
     // IS_SERVICE_FILL_NEIGHBOURS=1).
-    serviceFillNeighbours: env.IS_SERVICE_FILL_NEIGHBOURS === "1"
+    serviceFillNeighbours: env.IS_SERVICE_FILL_NEIGHBOURS === "1",
+    // Black & white (exp-holes): the tinted view's gap rule (spec 8, step 4; tinted.js BW_GAPS,
+    // "nearest" unless BW_GAP names another), and each stone read from the AI stone disc it overlaps
+    // most (spec 7.6; off unless IS_BW_FROM_DISCS=1).
+    bwGap: BW_GAPS.includes(env.BW_GAP) ? env.BW_GAP : "nearest",
+    bwFromDiscs: env.IS_BW_FROM_DISCS === "1"
   };
 }

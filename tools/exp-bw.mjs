@@ -77,7 +77,7 @@ function otsu(values) {
   return at;
 }
 
-function faceBox(report) {
+export function faceBox(report) {
   const p = report?.pupilsAtMm;
   if (report?.face == null || !Array.isArray(p) || p.length !== 2) return null;
   const cx = (p[0][0] + p[1][0]) / 2, cy = (p[0][1] + p[1][1]) / 2;

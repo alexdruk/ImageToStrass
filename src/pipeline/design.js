@@ -269,12 +269,12 @@ export function createPipeline({
       const check = acceptLayout(natural);
       if (!check.ok) return rerunOrFail(code, n, settings, check, outputPx);
       const stoneLayout = settings.mode === "bw"
-        ? mapBlackAndWhiteFromImage(natural.stoneLayout, ai, { ...placed.layout.report, originMm: natural.originMm }, config.bwThreshold, natural.voted)
+        ? mapBlackAndWhiteFromImage(natural.stoneLayout, ai, { ...placed.layout.report, originMm: natural.originMm }, config.bwThreshold, natural.voted, { fromDiscs: config.bwFromDiscs })
         : natural.stoneLayout;
 
       stage("files");
       storeNew(dir, "stones.json", `${JSON.stringify(stoneLayout.toJSON())}\n`);
-      storeNew(dir, "tinted.png", await renderFullOffThread(stoneLayout));
+      storeNew(dir, "tinted.png", await renderFullOffThread(stoneLayout, { bwGap: settings.mode === "bw" ? config.bwGap : null }));
       const result = designResult(stoneLayout, { coverage: check.coverage, settings, outputPx });
       finish(code, n, "done", { counts: 1, result }, { stones: result.stones, capped: natural.capped, removed: natural.removed, filled: natural.filled, serviceVoted: natural.serviceVoted });
     } catch (error) {

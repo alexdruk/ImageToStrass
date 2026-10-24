@@ -72,7 +72,7 @@ answers 200 with the layout:
 { "version": 1, "widthMm": 103.0, "heightMm": 130.8,
   "stones": [[x, y, "ss6", "jet"], ...],
   "report": { "stones", "bySize", "colours", "minGapMm", "violations", "coverage",
-              "largestEmptyCircleMm", "face", "pupilsMm", "pupilsAtMm", "fillAtMm", "frameMm", "offsetMm",
+              "largestEmptyCircleMm", "face", "pupilsMm", "pupilsAtMm", "fillAtMm", "discsAtMm", "frameMm", "offsetMm",
               "mmPerPx", "stagesMs": { "detect", "layout", "eyes", "colour", "check" }, "ms" } }
 ```
 
@@ -83,6 +83,10 @@ far apart for the subject); the eye stage is then skipped and `pupilsMm` is empt
 
 IS (exp-holes): `fillAtMm` is the centre `[x, y]` of each delivered stone that the service's fills
 placed (not drawn by the AI), in the stones' coordinates.
+
+IS (exp-holes, B&W): `discsAtMm` is `[x, y, d]` of each stone the AI drew, as detected (every
+detection but the tiny ones, shadows, painted gap dots and interstitial dots), in the stones'
+coordinates; IS reads a B&W stone's colour from the disc it overlaps most with `IS_BW_FROM_DISCS=1`.
 
 Stone coordinates are centres in mm from the top-left corner of the stones' bounding box (S1).
 Size ids are `ss4 ss6 ss10 ss16 ss20 ss30` (1.5, 2.0, 2.8, 4.0, 4.7, 6.4 mm).

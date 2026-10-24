@@ -3,6 +3,7 @@ import { getCrystalAppearance } from "../stones/CrystalAppearance.js";
 import { adjustBrightness, drawCrystalStone } from "../stones/CrystalStoneRenderer.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
 import { getStoneSize } from "../stones/StoneSizes.js";
+import { BW_GAPS } from "./bw-gaps.js";
 
 // The tinted view (spec section 8, D4). It reads the final StoneLayout and never changes it.
 //   1. The canvas is the stones' box plus a margin of MARGIN_STONES main-stone diameters.
@@ -13,6 +14,12 @@ import { getStoneSize } from "../stones/StoneSizes.js";
 //      very dark fills),
 //   4. but only if the pixel lies within FILL_MARGIN_MM of that stone's edge, the same margin for
 //      every size; elsewhere the background shows (white in the app, transparent in the PNG file).
+//      Black & white designs (exp-holes; bwGap, the BW_GAP setting) fill those pixels by one of
+//      BW_GAPS: "nearest" steps 2-3 as for colour (the default); "crystal" as "nearest", but where
+//      the second-nearest stone's edge is within the margin too and its colour differs, the gap of
+//      the lighter of the two (Crystal's next to Jet: dark only between Jet stones); "white" and
+//      "black" the fabric (WHITE_FABRIC, BLACK_FABRIC). A large Jet stone's outer rim band (step 5)
+//      takes the fabric colour too.
 //   5. The stones are drawn on top with the RS faceted crystal renderer (drawStone: a stone above
 //      SS6 with a rim lighter than its fill, i.e. a large Jet stone, gets an SS6 stone's rim width),
 //   6. then each stone's lightness is brought to its catalogue fill's L* in two zones (the pixels
@@ -48,6 +55,10 @@ export const RAMP_SHARE = 0.2;
 // lightAbove (near-white fills, whose gaps were hard to see); a fill darker than darkBelow is
 // lightened by minStep instead.
 export const GAP_RULE = Object.freeze({ minStep: 4, slope: 0.05, fromL: 80, darkBelow: 0, lightAbove: 85, lightMinStep: 8 });
+// Step 4, black & white designs: the gap rules of bwGap, and the fabric colours of "white" and "black".
+export { BW_GAPS };
+export const WHITE_FABRIC = Object.freeze([255, 255, 255]);
+export const BLACK_FABRIC = Object.freeze([17, 17, 17]);
 export const PREVIEW_LONG_SIDE_PX = 900;
 export const FULL_LONG_SIDE_PX = 2400;
 export const WATERMARK_OPACITY = 0.18;
@@ -143,11 +154,14 @@ export function tintCanvasMm(stoneLayout) {
 
 // The nearest stone of every pixel that can be filled: owner (stone index or -1) and best (the
 // distance from the pixel centre to that stone's edge, px; negative inside the stone), and the
-// canvas scale (px per mm).
+// canvas scale (px per mm). With second, also owner2 and best2: the second-nearest stone within the
+// margin (bwGap "crystal").
 // fillMarginMm: FILL_MARGIN_MM (tools may try others).
-export function nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale, fillMarginMm = FILL_MARGIN_MM }) {
+export function nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale, fillMarginMm = FILL_MARGIN_MM, second = false }) {
   const best = new Float32Array(widthPx * heightPx).fill(Infinity);
   const owner = new Int32Array(widthPx * heightPx).fill(-1);
+  const best2 = second ? new Float32Array(widthPx * heightPx).fill(Infinity) : null;
+  const owner2 = second ? new Int32Array(widthPx * heightPx).fill(-1) : null;
   const reach = fillMarginMm * scale;
 
   stones.forEach((s, i) => {
@@ -162,36 +176,52 @@ export function nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale
       for (let x = x0; x <= x1; x++) {
         const edge = Math.hypot(x + 0.5 - cx, dy) - r;
         const p = y * widthPx + x;
-        if (edge <= reach && edge < best[p]) {
+        if (edge > reach) continue;
+        if (edge < best[p]) {
+          if (second) {
+            best2[p] = best[p];
+            owner2[p] = owner[p];
+          }
           best[p] = edge;
           owner[p] = i;
+        } else if (second && edge < best2[p]) {
+          best2[p] = edge;
+          owner2[p] = i;
         }
       }
     }
   });
-  return { owner, best, scale };
+  return second ? { owner, best, owner2, best2, scale } : { owner, best, scale };
 }
 
 // Steps 1-4: RGBA pixels of the tint at `scale` px per mm, the canvas starting at (minXmm, minYmm).
 // Background pixels are `background` ([r, g, b, a]). `near` is nearestStones() of the same canvas.
 // fillReach (tools only): the rule before IS-05c, filled up to fillReach radii from the centre;
-// `near` must then reach (fillReach - 1) * the largest radius.
+// `near` must then reach (fillReach - 1) * the largest radius. bwGap: one of BW_GAPS, for black &
+// white designs only ("crystal" needs `near` with second).
 export function tintPixels(stones, {
-  minXmm, minYmm, widthPx, heightPx, scale, background, rule = GAP_RULE, near = null, fillMarginMm = FILL_MARGIN_MM, fillReach = null
+  minXmm, minYmm, widthPx, heightPx, scale, background, rule = GAP_RULE, near = null, fillMarginMm = FILL_MARGIN_MM, fillReach = null,
+  bwGap = "nearest"
 }) {
   const data = new Uint8ClampedArray(widthPx * heightPx * 4);
-  const { owner, best } = near || nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale, fillMarginMm });
+  const { owner, best, owner2, best2 } = near || nearestStones(stones, { minXmm, minYmm, widthPx, heightPx, scale, fillMarginMm, second: bwGap === "crystal" });
   const margin = fillMarginMm * scale;
   const tints = new Map();
   const tintOf = (color) => {
     if (!tints.has(color)) tints.set(color, [...gapRgb(fillOf(color), rule), 255]);
     return tints.get(color);
   };
+  const fabric = bwGap === "white" ? [...WHITE_FABRIC, 255] : bwGap === "black" ? [...BLACK_FABRIC, 255] : null;
+  const lighter = (a, b) => (lightnessOfHex(fillOf(a)) >= lightnessOfHex(fillOf(b)) ? a : b);
   for (let p = 0; p < owner.length; p++) {
     const s = owner[p] >= 0 ? stones[owner[p]] : null;
     // best is the distance to the stone's edge, in px; filled up to the margin.
     const filled = s && (fillReach ? best[p] <= (fillReach - 1) * (s.sizeMm / 2) * scale : best[p] <= margin);
-    data.set(filled ? tintOf(s.color) : background, p * 4);
+    if (!filled) data.set(background, p * 4);
+    else if (fabric) data.set(fabric, p * 4);
+    else if (bwGap === "crystal" && owner2[p] >= 0 && best2[p] <= margin && stones[owner2[p]].color !== s.color) {
+      data.set(tintOf(lighter(s.color, stones[owner2[p]].color)), p * 4);
+    } else data.set(tintOf(s.color), p * 4);
   }
   return data;
 }
@@ -314,7 +344,8 @@ function hasLightRim(color) {
   return lightRim.get(color);
 }
 
-function drawStone(ctx, stone, x, y, r, scale, rule, ss6Rim = true) {
+// outsideRgb: the colour of the band outside the edge (the gap colour, or the fabric of bwGap).
+function drawStone(ctx, stone, x, y, r, scale, rule, ss6Rim = true, outsideRgb = null) {
   const appearance = getCrystalAppearance(stone);
   drawCrystalStone(ctx, x, y, r, stone.color, appearance);
   const r6 = SS6_RADIUS_MM * scale;
@@ -331,7 +362,7 @@ function drawStone(ctx, stone, x, y, r, scale, rule, ss6Rim = true) {
   ctx.fillStyle = adjustBrightness(c.accent, appearance.brightness);
   ctx.fill();
   band(r, r + wide / 2 + 0.5);
-  ctx.fillStyle = `rgb(${gapRgb(c.fill, rule).join(",")})`;
+  ctx.fillStyle = `rgb(${(outsideRgb || gapRgb(c.fill, rule)).join(",")})`;
   ctx.fill();
   ctx.beginPath();
   ctx.arc(x, y, r, 0, TAU);
@@ -370,12 +401,15 @@ function drawWatermark(ctx, widthPx, heightPx, code) {
 // "white" (the app) or "transparent" (the PNG file); watermark: the code to tile over it, or null.
 // rule and stoneLightness: the rules of steps 3 and 6; fillReach and ss6Rim: steps 4 and 5 before
 // IS-05c are { fillReach: 1.6, ss6Rim: false } (tools only; the app always uses GAP_RULE,
-// STONE_LIGHTNESS, FILL_MARGIN_MM and the SS6 rim).
+// STONE_LIGHTNESS, FILL_MARGIN_MM and the SS6 rim). bwGap: the gap rule of a black & white design
+// (step 4, BW_GAPS); null or "nearest" for colour designs.
 export function renderTinted(stoneLayout, {
   longSidePx = FULL_LONG_SIDE_PX, background = "transparent", watermark = null, rule = GAP_RULE, stoneLightness = STONE_LIGHTNESS,
-  fillReach = null, ss6Rim = true
+  fillReach = null, ss6Rim = true, bwGap = null
 } = {}) {
   if (!stoneLayout?.stones?.length) throw new TypeError("renderTinted requires a StoneLayout with stones.");
+  const gapMode = bwGap ?? "nearest";
+  if (!BW_GAPS.includes(gapMode)) throw new RangeError(`bwGap must be one of ${BW_GAPS.join(", ")}.`);
   const box = tintCanvasMm(stoneLayout);
   const scale = longSidePx / Math.max(box.widthMm, box.heightMm);
   const widthPx = Math.round(box.widthMm * scale);
@@ -383,18 +417,19 @@ export function renderTinted(stoneLayout, {
   const bg = background === "white" ? [255, 255, 255, 255] : [0, 0, 0, 0];
   const fillMarginMm = fillReach ? (fillReach - 1) * Math.max(...stoneLayout.stones.map((s) => s.sizeMm / 2)) : FILL_MARGIN_MM;
   const geometry = { minXmm: box.minXmm, minYmm: box.minYmm, widthPx, heightPx, scale, fillMarginMm };
-  const near = nearestStones(stoneLayout.stones, geometry);
+  const near = nearestStones(stoneLayout.stones, { ...geometry, second: gapMode === "crystal" });
 
   const canvas = createCanvas(widthPx, heightPx);
   const ctx = canvas.getContext("2d");
   const tint = ctx.createImageData(widthPx, heightPx);
-  tint.data.set(tintPixels(stoneLayout.stones, { ...geometry, background: bg, rule, near, fillReach }));
+  tint.data.set(tintPixels(stoneLayout.stones, { ...geometry, background: bg, rule, near, fillReach, bwGap: gapMode }));
   ctx.putImageData(tint, 0, 0);
 
+  const outsideRgb = gapMode === "white" ? WHITE_FABRIC : gapMode === "black" ? BLACK_FABRIC : null;
   for (const stone of stoneLayout.stones) {
     const x = (stone.xMm - box.minXmm) * scale;
     const y = (stone.yMm - box.minYmm) * scale;
-    drawStone(ctx, stone, x, y, (stone.sizeMm / 2) * scale, scale, rule, ss6Rim);
+    drawStone(ctx, stone, x, y, (stone.sizeMm / 2) * scale, scale, rule, ss6Rim, outsideRgb);
   }
   const drawn = ctx.getImageData(0, 0, widthPx, heightPx);
   keepStoneLightness(drawn.data, stoneLayout.stones, near, stoneLightness);
@@ -404,6 +439,6 @@ export function renderTinted(stoneLayout, {
 }
 
 // The two renders of section 8: the full one (archive and ZIP, transparent) and the preview the
-// browser gets (white, watermarked with the code).
-export const renderFull = (stoneLayout) => renderTinted(stoneLayout, { longSidePx: FULL_LONG_SIDE_PX, background: "transparent" });
-export const renderPreview = (stoneLayout, code) => renderTinted(stoneLayout, { longSidePx: PREVIEW_LONG_SIDE_PX, background: "white", watermark: code });
+// browser gets (white, watermarked with the code). bwGap: as renderTinted (black & white designs).
+export const renderFull = (stoneLayout, { bwGap = null } = {}) => renderTinted(stoneLayout, { longSidePx: FULL_LONG_SIDE_PX, background: "transparent", bwGap });
+export const renderPreview = (stoneLayout, code, { bwGap = null } = {}) => renderTinted(stoneLayout, { longSidePx: PREVIEW_LONG_SIDE_PX, background: "white", watermark: code, bwGap });

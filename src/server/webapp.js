@@ -143,7 +143,7 @@ export function webappRoutes({ q, config, background, delivery, poller = null, l
       if (!previews.has(key)) {
         const file = path.join(attemptDir(config.archiveDir, row.code, attempt.n), "stones.json");
         const layout = JSON.parse(readFileSync(file, "utf8"));
-        const render = renderPreviewOffThread(layout, row.code);
+        const render = renderPreviewOffThread(layout, row.code, { bwGap: attempt.result?.mode === "bw" ? config.bwGap : null });
         previews.set(key, render);
         render.catch(() => previews.delete(key));
         if (previews.size > PREVIEW_CACHE_SIZE) previews.delete(previews.keys().next().value);
