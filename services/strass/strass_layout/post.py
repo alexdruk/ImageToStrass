@@ -17,6 +17,9 @@ stones' centres (frame mm), in the order of info["pupilsMm"].
 
 IS (IS-05b): with Rules.sample_delivered a stone added by the fill here takes the catalogue colour
 of its own pixels (ordered.delivered_lab) instead of its neighbours' most common colour.
+
+IS (exp-holes): info["fillAtMm"] holds the centres (frame mm) of the delivered stones that a fill
+placed, the ordered layout's or these; report only, no stone changes.
 """
 from collections import Counter
 
@@ -125,6 +128,8 @@ def post_process(px, det, state, first, models, clock, rules=DEFAULT):
     mask = strict_mask(a, first["mask"])
     main_px = 2 * np.median(det[det[:, 2] >= np.median(det[:, 2]), 2])
     P, D, C = first["P"], first["D"], list(first["ids"])
+    # IS (exp-holes): the fill stones' centres (the ordered layout's and the fills below), by key.
+    fill_keys = {(round(float(x), 3), round(float(y), 3)) for (x, y) in P[first["fill"]]} if "fill" in first else set()
     keep = D <= 2.0
     P, D, C = P[keep], D[keep], [c for c, k in zip(C, keep) if k]
 
@@ -250,9 +255,12 @@ def post_process(px, det, state, first, models, clock, rules=DEFAULT):
     clock.lap("eyes")
 
     for _ in range(3):
-        fP, fD = fill(state, P, D, mask, s)
+        # IS (exp-holes): Rules.fill_exact and Rules.fill_cover_mask (off in DEFAULT).
+        fP, fD = fill(state, P, D, mask, s, extra=0.0 if rules.fill_exact else 0.05, exact=rules.fill_exact,
+                      cover_mask=rules.fill_cover_mask)
         if not len(fP):
             break
+        fill_keys |= {(round(float(x), 3), round(float(y), 3)) for (x, y) in fP}
         P = np.concatenate([P, fP])
         D = np.concatenate([D, fD])
         C = C + [None] * len(fP)
@@ -305,5 +313,6 @@ def post_process(px, det, state, first, models, clock, rules=DEFAULT):
               for (x, y), d, c in zip(P, D, C)]
     clock.lap("check")
     face = None if no_face else "human" if boxes is not None else "animal"
-    info = {"mask": mask, "face": face, "pupilsMm": pupils, "pupilsAtMm": pupils_at, "eyeZones": zones}
+    fill_at = [[q["x"], q["y"]] for q in stones if (q["x"], q["y"]) in fill_keys]
+    info = {"mask": mask, "face": face, "pupilsMm": pupils, "pupilsAtMm": pupils_at, "eyeZones": zones, "fillAtMm": fill_at}
     return stones, info

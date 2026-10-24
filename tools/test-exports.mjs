@@ -14,7 +14,7 @@ import { buildDeliveryZip, deliveryZipPath, designFiles, writeZip, zipEntryNames
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import {
-  FILL_MARGIN_MM, GAP_RULE, INNER_SHARE, gapRgb, lightnessOfHex, renderFull, renderPreview, renderTinted, tintCanvasMm
+  BLACK_FABRIC, BW_GAPS, FILL_MARGIN_MM, GAP_RULE, INNER_SHARE, WHITE_FABRIC, gapRgb, lightnessOfHex, renderFull, renderPreview, renderTinted, tintCanvasMm
 } from "../src/render/tinted.js";
 import { srgbToLab } from "./colour-diff.mjs";
 import { Stone } from "../src/stones/Stone.js";
@@ -173,6 +173,42 @@ test("tinted render: a large Jet stone's light rim is as wide as an SS6 Jet ston
   // Any other colour is drawn as RS draws it: only Jet's rim is lighter than its fill.
   const lighter = Object.entries(STONE_COLORS).filter(([, c]) => lightnessOfHex(c.stroke) > lightnessOfHex(c.fill)).map(([id]) => id);
   assert.deepEqual(lighter, ["jet"]);
+});
+
+test("tinted render, black & white: the gap rules of BW_GAP (nearest, crystal, white, black)", async () => {
+  // Jet at x 10 and Crystal at x 12.4 (SS6, 0.4 mm apart); two Jet at x 20 and 22.4; Jet alone at 40.
+  const bw = new StoneLayout({
+    layerId: "design", sourceMode: "is",
+    stones: [stone(10, 10, 2, "jet", 0), stone(12.4, 10, 2, "crystal-clear", 1), stone(20, 10, 2, "jet", 2), stone(22.4, 10, 2, "jet", 3), stone(40, 10, 2, "jet", 4)]
+  });
+  const box = tintCanvasMm(bw);
+  const at = async (bwGap) => {
+    const render = renderTinted(bw, { longSidePx: Math.round(Math.max(box.widthMm, box.heightMm) * 40), background: "transparent", bwGap });
+    const { data, info } = await sharp(render.png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    return (xMm, yMm) => {
+      const i = (Math.floor((yMm - box.minYmm) * render.scale) * info.width + Math.floor((xMm - box.minXmm) * render.scale)) * 4;
+      return [...data.subarray(i, i + 4)];
+    };
+  };
+  const jetGap = [...rgbOf("jet"), 255], crystalGap = [...rgbOf("crystal-clear"), 255];
+  // Between Jet and Crystal, 0.15 mm from Jet's edge (its nearest stone); between two Jet (0.39 mm from
+  // both edges); 0.3 mm above
+  // the lone Jet stone; 0.8 mm above it (beyond the margin).
+  const spots = [[11.15, 10], [21.2, 9.3], [40, 8.7], [40, 8.2]];
+  const want = {
+    nearest: [jetGap, jetGap, jetGap, [0, 0, 0, 0]],
+    crystal: [crystalGap, jetGap, jetGap, [0, 0, 0, 0]],
+    white: [[...WHITE_FABRIC, 255], [...WHITE_FABRIC, 255], [...WHITE_FABRIC, 255], [0, 0, 0, 0]],
+    black: [[...BLACK_FABRIC, 255], [...BLACK_FABRIC, 255], [...BLACK_FABRIC, 255], [0, 0, 0, 0]]
+  };
+  assert.deepEqual([...BW_GAPS], Object.keys(want));
+  for (const mode of BW_GAPS) {
+    const px = await at(mode);
+    assert.deepEqual(spots.map(([x, y]) => px(x, y)), want[mode], mode);
+  }
+  // Colour designs (no bwGap) keep today's rule, the same as "nearest".
+  assert.ok(renderTinted(bw, { longSidePx: 400 }).png.equals(renderTinted(bw, { longSidePx: 400, bwGap: "nearest" }).png));
+  assert.throws(() => renderTinted(bw, { bwGap: "grey" }), RangeError);
 });
 
 test("tinted render: full 2400 px transparent, preview 900 px white with the watermark", async () => {

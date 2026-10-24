@@ -7,8 +7,8 @@ import { renderFull, renderPreview } from "./tinted.js";
 // { id, ok, value } or { id, ok: false, error } (the message only; the caller logs it on the server).
 
 const JOBS = {
-  full: ({ layout }) => renderFull(StoneLayout.fromJSON(layout)).png,
-  preview: ({ layout, code }) => renderPreview(StoneLayout.fromJSON(layout), code).png,
+  full: ({ layout, bwGap }) => renderFull(StoneLayout.fromJSON(layout), { bwGap }).png,
+  preview: ({ layout, code, bwGap }) => renderPreview(StoneLayout.fromJSON(layout), code, { bwGap }).png,
   zip: (options) => buildDeliveryZip(options)
 };
 

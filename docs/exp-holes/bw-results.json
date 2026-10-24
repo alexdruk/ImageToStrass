@@ -1,0 +1,1304 @@
+[
+  {
+    "name": "car-rule",
+    "stones": {
+      "old": 3531,
+      "new": 3548
+    },
+    "jetShare": {
+      "old": 0.5129,
+      "new": 0.4994
+    },
+    "changedOfKept": 64,
+    "lone": {
+      "old": 0.0055,
+      "oldFace": null
+    },
+    "otsu": 50.5,
+    "face": false,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.4566,
+        "lone": 0.0088,
+        "loneFace": null
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.476,
+        "lone": 0.007,
+        "loneFace": null
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.4845,
+        "lone": 0.0064,
+        "loneFace": null
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.4994,
+        "lone": 0.0067,
+        "loneFace": null
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.5183,
+        "lone": 0.0052,
+        "loneFace": null
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.5361,
+        "lone": 0.0064,
+        "loneFace": null
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.5643,
+        "lone": 0.0085,
+        "loneFace": null
+      }
+    ]
+  },
+  {
+    "name": "cat-norule",
+    "stones": {
+      "old": 3140,
+      "new": 3148
+    },
+    "jetShare": {
+      "old": 0.2666,
+      "new": 0.2411
+    },
+    "changedOfKept": 142,
+    "lone": {
+      "old": 0.0307,
+      "oldFace": 0.0251
+    },
+    "otsu": 64.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.0966,
+        "lone": 0.0121,
+        "loneFace": 0.0128
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.1414,
+        "lone": 0.0174,
+        "loneFace": 0.0183
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.1941,
+        "lone": 0.0228,
+        "loneFace": 0.0205
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.2411,
+        "lone": 0.0253,
+        "loneFace": 0.0216
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.2859,
+        "lone": 0.0288,
+        "loneFace": 0.0244
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.3345,
+        "lone": 0.0345,
+        "loneFace": 0.0255
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.3996,
+        "lone": 0.0324,
+        "loneFace": 0.0222
+      }
+    ]
+  },
+  {
+    "name": "cat-rule",
+    "stones": {
+      "old": 3573,
+      "new": 3579
+    },
+    "jetShare": {
+      "old": 0.3616,
+      "new": 0.2682
+    },
+    "changedOfKept": 347,
+    "lone": {
+      "old": 0.0215,
+      "oldFace": 0.0202
+    },
+    "otsu": 65.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.1447,
+        "lone": 0.0121,
+        "loneFace": 0.0123
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.1799,
+        "lone": 0.0118,
+        "loneFace": 0.0146
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.2146,
+        "lone": 0.0162,
+        "loneFace": 0.0174
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.2682,
+        "lone": 0.0218,
+        "loneFace": 0.0219
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.3507,
+        "lone": 0.0227,
+        "loneFace": 0.0215
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.4233,
+        "lone": 0.0185,
+        "loneFace": 0.0219
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.4867,
+        "lone": 0.0177,
+        "loneFace": 0.0187
+      }
+    ]
+  },
+  {
+    "name": "dachshund-rule",
+    "stones": {
+      "old": 1628,
+      "new": 1633
+    },
+    "jetShare": {
+      "old": 0.9011,
+      "new": 0.823
+    },
+    "changedOfKept": 129,
+    "lone": {
+      "old": 0.0076,
+      "oldFace": 0.0119
+    },
+    "otsu": 41.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.5658,
+        "lone": 0.0044,
+        "loneFace": 0.0074
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.6558,
+        "lone": 0.0057,
+        "loneFace": 0.0104
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.7551,
+        "lone": 0.0063,
+        "loneFace": 0.0104
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.823,
+        "lone": 0.0069,
+        "loneFace": 0.0148
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.8604,
+        "lone": 0.0107,
+        "loneFace": 0.0193
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.8812,
+        "lone": 0.0113,
+        "loneFace": 0.0178
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.9106,
+        "lone": 0.0183,
+        "loneFace": 0.0296
+      }
+    ]
+  },
+  {
+    "name": "dog-norule",
+    "stones": {
+      "old": 2071,
+      "new": 2084
+    },
+    "jetShare": {
+      "old": 0.4867,
+      "new": 0.3436
+    },
+    "changedOfKept": 311,
+    "lone": {
+      "old": 0.016,
+      "oldFace": 0.021
+    },
+    "otsu": 48.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.2769,
+        "lone": 0.0062,
+        "loneFace": 0.0084
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.2937,
+        "lone": 0.0085,
+        "loneFace": 0.0101
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.3143,
+        "lone": 0.0079,
+        "loneFace": 0.0084
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.3436,
+        "lone": 0.013,
+        "loneFace": 0.0218
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.4213,
+        "lone": 0.0135,
+        "loneFace": 0.0201
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.5192,
+        "lone": 0.013,
+        "loneFace": 0.0151
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.5931,
+        "lone": 0.013,
+        "loneFace": 0.0185
+      }
+    ]
+  },
+  {
+    "name": "dog-rule",
+    "stones": {
+      "old": 2039,
+      "new": 2050
+    },
+    "jetShare": {
+      "old": 0.4399,
+      "new": 0.3566
+    },
+    "changedOfKept": 188,
+    "lone": {
+      "old": 0.0163,
+      "oldFace": 0.0146
+    },
+    "otsu": 47.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.2766,
+        "lone": 0.0089,
+        "loneFace": 0.0127
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.3141,
+        "lone": 0.0106,
+        "loneFace": 0.0127
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.3307,
+        "lone": 0.0089,
+        "loneFace": 0.0099
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.3566,
+        "lone": 0.0089,
+        "loneFace": 0.0099
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.4185,
+        "lone": 0.0106,
+        "loneFace": 0.0085
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.5059,
+        "lone": 0.0217,
+        "loneFace": 0.017
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.6351,
+        "lone": 0.0145,
+        "loneFace": 0.0127
+      }
+    ]
+  },
+  {
+    "name": "giraffe-rule",
+    "stones": {
+      "old": 2286,
+      "new": 2327
+    },
+    "jetShare": {
+      "old": 0.4869,
+      "new": 0.4774
+    },
+    "changedOfKept": 32,
+    "lone": {
+      "old": 0.0617,
+      "oldFace": 0.0567
+    },
+    "otsu": 56.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.4379,
+        "lone": 0.0589,
+        "loneFace": 0.0345
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.4585,
+        "lone": 0.0569,
+        "loneFace": 0.0345
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.4688,
+        "lone": 0.0582,
+        "loneFace": 0.0383
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.4774,
+        "lone": 0.0589,
+        "loneFace": 0.0383
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.4847,
+        "lone": 0.0596,
+        "loneFace": 0.046
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.4976,
+        "lone": 0.0643,
+        "loneFace": 0.0536
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.5277,
+        "lone": 0.1004,
+        "loneFace": 0.0536
+      }
+    ]
+  },
+  {
+    "name": "mug-norule",
+    "stones": {
+      "old": 2224,
+      "new": 2224
+    },
+    "jetShare": {
+      "old": 0.2158,
+      "new": 0.2127
+    },
+    "changedOfKept": 9,
+    "lone": {
+      "old": 0.0082,
+      "oldFace": null
+    },
+    "otsu": 69.5,
+    "face": false,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.0049,
+        "lone": 0.005,
+        "loneFace": null
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.1358,
+        "lone": 0.0342,
+        "loneFace": null
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.2118,
+        "lone": 0.0082,
+        "loneFace": null
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.2127,
+        "lone": 0.0078,
+        "loneFace": null
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.2149,
+        "lone": 0.0082,
+        "loneFace": null
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.2163,
+        "lone": 0.0082,
+        "loneFace": null
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.219,
+        "lone": 0.0068,
+        "loneFace": null
+      }
+    ]
+  },
+  {
+    "name": "mug-rule",
+    "stones": {
+      "old": 1751,
+      "new": 1751
+    },
+    "jetShare": {
+      "old": 0.1274,
+      "new": 0.0246
+    },
+    "changedOfKept": 180,
+    "lone": {
+      "old": 0.0006,
+      "oldFace": null
+    },
+    "otsu": 81.5,
+    "face": false,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0,
+        "lone": 0,
+        "loneFace": null
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.0011,
+        "lone": 0,
+        "loneFace": null
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.0011,
+        "lone": 0,
+        "loneFace": null
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.0246,
+        "lone": 0.0144,
+        "loneFace": null
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.1245,
+        "lone": 0.0006,
+        "loneFace": null
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.1325,
+        "lone": 0.0017,
+        "loneFace": null
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.1336,
+        "lone": 0.0017,
+        "loneFace": null
+      }
+    ]
+  },
+  {
+    "name": "rs-cat",
+    "stones": {
+      "old": 2150,
+      "new": 2162
+    },
+    "jetShare": {
+      "old": 0.533,
+      "new": 0.4792
+    },
+    "changedOfKept": 128,
+    "lone": {
+      "old": 0.0209,
+      "oldFace": 0.0215
+    },
+    "otsu": 55.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.3816,
+        "lone": 0.0155,
+        "loneFace": 0.0159
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.401,
+        "lone": 0.0176,
+        "loneFace": 0.0181
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.4352,
+        "lone": 0.0202,
+        "loneFace": 0.0208
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.4792,
+        "lone": 0.0212,
+        "loneFace": 0.0219
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.5282,
+        "lone": 0.0238,
+        "loneFace": 0.0246
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.6055,
+        "lone": 0.0223,
+        "loneFace": 0.0219
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.6374,
+        "lone": 0.0274,
+        "loneFace": 0.0285
+      }
+    ]
+  },
+  {
+    "name": "rs-dog",
+    "stones": {
+      "old": 1670,
+      "new": 1683
+    },
+    "jetShare": {
+      "old": 0.3389,
+      "new": 0.3078
+    },
+    "changedOfKept": 77,
+    "lone": {
+      "old": 0.0133,
+      "oldFace": 0.0106
+    },
+    "otsu": 58.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.2941,
+        "lone": 0.0153,
+        "loneFace": 0.019
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.2971,
+        "lone": 0.0161,
+        "loneFace": 0.0207
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.3018,
+        "lone": 0.0161,
+        "loneFace": 0.0207
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.3078,
+        "lone": 0.0153,
+        "loneFace": 0.019
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.3185,
+        "lone": 0.0153,
+        "loneFace": 0.019
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.3589,
+        "lone": 0.0146,
+        "loneFace": 0.0207
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.4112,
+        "lone": 0.0146,
+        "loneFace": 0.0155
+      }
+    ]
+  },
+  {
+    "name": "rs-einstein",
+    "stones": {
+      "old": 3590,
+      "new": 3594
+    },
+    "jetShare": {
+      "old": 0.6281,
+      "new": 0.5882
+    },
+    "changedOfKept": 144,
+    "lone": {
+      "old": 0.0061,
+      "oldFace": 0.0058
+    },
+    "otsu": 53.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.4385,
+        "lone": 0.0061,
+        "loneFace": 0.0083
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.4855,
+        "lone": 0.0099,
+        "loneFace": 0.0109
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.5445,
+        "lone": 0.0084,
+        "loneFace": 0.0115
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.5882,
+        "lone": 0.0067,
+        "loneFace": 0.007
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.6227,
+        "lone": 0.0064,
+        "loneFace": 0.007
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.6711,
+        "lone": 0.0084,
+        "loneFace": 0.0109
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.7198,
+        "lone": 0.0052,
+        "loneFace": 0.0051
+      }
+    ]
+  },
+  {
+    "name": "rs-jesus",
+    "stones": {
+      "old": 3297,
+      "new": 3307
+    },
+    "jetShare": {
+      "old": 0.6879,
+      "new": 0.6659
+    },
+    "changedOfKept": 77,
+    "lone": {
+      "old": 0.0174,
+      "oldFace": null
+    },
+    "otsu": 46.5,
+    "face": false,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.6468,
+        "lone": 0.0199,
+        "loneFace": null
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.6565,
+        "lone": 0.0207,
+        "loneFace": null
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.6616,
+        "lone": 0.0184,
+        "loneFace": null
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.6659,
+        "lone": 0.0173,
+        "loneFace": null
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.6786,
+        "lone": 0.0165,
+        "loneFace": null
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.7687,
+        "lone": 0.0288,
+        "loneFace": null
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.8276,
+        "lone": 0.015,
+        "loneFace": null
+      }
+    ]
+  },
+  {
+    "name": "rs-lake",
+    "stones": {
+      "old": 4089,
+      "new": 4100
+    },
+    "jetShare": {
+      "old": 0.6317,
+      "new": 0.5463
+    },
+    "changedOfKept": 347,
+    "lone": {
+      "old": 0.0234,
+      "oldFace": null
+    },
+    "otsu": 59.5,
+    "face": false,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.3802,
+        "lone": 0.011,
+        "loneFace": null
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.4395,
+        "lone": 0.0146,
+        "loneFace": null
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.4978,
+        "lone": 0.0186,
+        "loneFace": null
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.5463,
+        "lone": 0.0227,
+        "loneFace": null
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.5868,
+        "lone": 0.0238,
+        "loneFace": null
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.62,
+        "lone": 0.0251,
+        "loneFace": null
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.6395,
+        "lone": 0.0233,
+        "loneFace": null
+      }
+    ]
+  },
+  {
+    "name": "rs-leopard",
+    "stones": {
+      "old": 2433,
+      "new": 2436
+    },
+    "jetShare": {
+      "old": 0.5298,
+      "new": 0.5185
+    },
+    "changedOfKept": 26,
+    "lone": {
+      "old": 0.0645,
+      "oldFace": 0.0789
+    },
+    "otsu": 50.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.4893,
+        "lone": 0.0653,
+        "loneFace": 0.0776
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.514,
+        "lone": 0.0676,
+        "loneFace": 0.0839
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.516,
+        "lone": 0.0662,
+        "loneFace": 0.0812
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.5185,
+        "lone": 0.0653,
+        "loneFace": 0.0794
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.5218,
+        "lone": 0.0653,
+        "loneFace": 0.0794
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.5259,
+        "lone": 0.0653,
+        "loneFace": 0.0794
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.5279,
+        "lone": 0.0648,
+        "loneFace": 0.0785
+      }
+    ]
+  },
+  {
+    "name": "rs-logo",
+    "stones": {
+      "old": 833,
+      "new": 833
+    },
+    "jetShare": {
+      "old": 0.8511,
+      "new": 0.8511
+    },
+    "changedOfKept": 0,
+    "lone": {
+      "old": 0,
+      "oldFace": null
+    },
+    "otsu": 31.5,
+    "face": false,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.8511,
+        "lone": 0,
+        "loneFace": null
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.8511,
+        "lone": 0,
+        "loneFace": null
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.8511,
+        "lone": 0,
+        "loneFace": null
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.8511,
+        "lone": 0,
+        "loneFace": null
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.8511,
+        "lone": 0,
+        "loneFace": null
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.8511,
+        "lone": 0,
+        "loneFace": null
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.8511,
+        "lone": 0,
+        "loneFace": null
+      }
+    ]
+  },
+  {
+    "name": "rs-parrot",
+    "stones": {
+      "old": 2542,
+      "new": 2552
+    },
+    "jetShare": {
+      "old": 0.4902,
+      "new": 0.413
+    },
+    "changedOfKept": 208,
+    "lone": {
+      "old": 0.021,
+      "oldFace": null
+    },
+    "otsu": 52.5,
+    "face": false,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.2982,
+        "lone": 0.0137,
+        "loneFace": null
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.3566,
+        "lone": 0.0155,
+        "loneFace": null
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.3922,
+        "lone": 0.0155,
+        "loneFace": null
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.413,
+        "lone": 0.0177,
+        "loneFace": null
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.4506,
+        "lone": 0.0217,
+        "loneFace": null
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.5313,
+        "lone": 0.0252,
+        "loneFace": null
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.6266,
+        "lone": 0.0208,
+        "loneFace": null
+      }
+    ]
+  },
+  {
+    "name": "rs-portrait",
+    "stones": {
+      "old": 3990,
+      "new": 4045
+    },
+    "jetShare": {
+      "old": 0.4323,
+      "new": 0.4408
+    },
+    "changedOfKept": 146,
+    "lone": {
+      "old": 0.015,
+      "oldFace": 0.0109
+    },
+    "otsu": 52.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.3251,
+        "lone": 0.0112,
+        "loneFace": 0.0086
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.3666,
+        "lone": 0.0125,
+        "loneFace": 0.0099
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.4035,
+        "lone": 0.0128,
+        "loneFace": 0.0104
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.4408,
+        "lone": 0.0114,
+        "loneFace": 0.0086
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.4756,
+        "lone": 0.0074,
+        "loneFace": 0.0095
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.5189,
+        "lone": 0.009,
+        "loneFace": 0.0099
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.5577,
+        "lone": 0.0045,
+        "loneFace": 0.0052
+      }
+    ]
+  },
+  {
+    "name": "rs-rose",
+    "stones": {
+      "old": 1846,
+      "new": 1846
+    },
+    "jetShare": {
+      "old": 0.9447,
+      "new": 0.9415
+    },
+    "changedOfKept": 6,
+    "lone": {
+      "old": 0.0006,
+      "oldFace": null
+    },
+    "otsu": 42.5,
+    "face": false,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.4789,
+        "lone": 0.005,
+        "loneFace": null
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.5525,
+        "lone": 0.005,
+        "loneFace": null
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.584,
+        "lone": 0.0045,
+        "loneFace": null
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.9415,
+        "lone": 0.0039,
+        "loneFace": null
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.9442,
+        "lone": 0.0011,
+        "loneFace": null
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.9447,
+        "lone": 0.0006,
+        "loneFace": null
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.9621,
+        "lone": 0.0028,
+        "loneFace": null
+      }
+    ]
+  },
+  {
+    "name": "rs-tulips",
+    "stones": {
+      "old": 2673,
+      "new": 2675
+    },
+    "jetShare": {
+      "old": 0.5436,
+      "new": 0.4075
+    },
+    "changedOfKept": 378,
+    "lone": {
+      "old": 0.0081,
+      "oldFace": null
+    },
+    "otsu": 60.5,
+    "face": false,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.2905,
+        "lone": 0.0065,
+        "loneFace": null
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.3118,
+        "lone": 0.0093,
+        "loneFace": null
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.3428,
+        "lone": 0.0089,
+        "loneFace": null
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.4075,
+        "lone": 0.0169,
+        "loneFace": null
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.5492,
+        "lone": 0.0097,
+        "loneFace": null
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.5521,
+        "lone": 0.0077,
+        "loneFace": null
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.5626,
+        "lone": 0.0077,
+        "loneFace": null
+      }
+    ]
+  },
+  {
+    "name": "rs-woman",
+    "stones": {
+      "old": 2613,
+      "new": 2627
+    },
+    "jetShare": {
+      "old": 0.7681,
+      "new": 0.7488
+    },
+    "changedOfKept": 54,
+    "lone": {
+      "old": 0.0024,
+      "oldFace": 0.0031
+    },
+    "otsu": 37.5,
+    "face": true,
+    "study": [
+      {
+        "threshold": 40,
+        "jetShare": 0.5135,
+        "lone": 0.0055,
+        "loneFace": 0.0135
+      },
+      {
+        "threshold": 45,
+        "jetShare": 0.6494,
+        "lone": 0.0059,
+        "loneFace": 0.009
+      },
+      {
+        "threshold": 50,
+        "jetShare": 0.7137,
+        "lone": 0.0043,
+        "loneFace": 0.0045
+      },
+      {
+        "threshold": 55,
+        "jetShare": 0.7488,
+        "lone": 0.0031,
+        "loneFace": 0.003
+      },
+      {
+        "threshold": 60,
+        "jetShare": 0.7636,
+        "lone": 0.0035,
+        "loneFace": 0.0045
+      },
+      {
+        "threshold": 65,
+        "jetShare": 0.7895,
+        "lone": 0.0035,
+        "loneFace": 0.0045
+      },
+      {
+        "threshold": 70,
+        "jetShare": 0.8249,
+        "lone": 0.0028,
+        "loneFace": 0.003
+      }
+    ]
+  }
+]

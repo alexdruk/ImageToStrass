@@ -1,3 +1,4 @@
+import { fillHoles, neighbourVote } from "./holes.js";
 import { MIN_GAP_MM, capStoneSizes, checkGaps, pupilCentres, stonesOfLayout, toStoneLayout } from "./tiers.js";
 
 // Overlap cleanup (spec section 7.5), after the SS16 cap: for every pair of stones whose rim gap
@@ -10,6 +11,13 @@ import { MIN_GAP_MM, capStoneSizes, checkGaps, pupilCentres, stonesOfLayout, toS
 // Coverage after the cleanup: the service's coverage (share of subject-mask pixels under a stone)
 // scaled by the area under the delivered stones over the area under the service's stones, both
 // rasterised on the service's grid (COVERAGE_PX_PER_MM). It includes the cap's shrinking.
+//
+// Hole fill (spec 7.5, exp-holes; when cleanedLayout is given the AI image, which the pipeline does
+// unless IS_FILL_HOLES=0): after the cleanup every hole in the subject gets a stone, SS6 first and
+// then SS4, with the 0.1 mm gap to all stones, in its neighbours' colour (holes.neighbourVote). With
+// serviceFillNeighbours (IS_SERVICE_FILL_NEIGHBOURS=1, off by default) the stones the service's own
+// fills placed (report.fillAtMm) take their neighbours' colour too, in the same vote. The gap check
+// then runs as before.
 
 export const NEIGHBOUR_GAP_MM = 0.5;
 export const COVERAGE_PX_PER_MM = 10;
@@ -96,17 +104,36 @@ function boxOf(stones) {
 }
 
 // layout service answer -> the design's stones at natural size after the SS16 cap and the cleanup:
-// { stoneLayout, gaps, capped, removed, removedShare, coverageBefore, coverage }. removedShare is
-// removed over the stones before the cleanup; coverageBefore is the service's own coverage.
-export function cleanedLayout(layout) {
+// { stoneLayout, gaps, capped, removed, removedShare, coverageBefore, coverage, filled, voted,
+// serviceVoted, originMm }. removedShare is removed over the stones before the cleanup;
+// coverageBefore is the service's own coverage. fillHolesIn: the AI image ({ data, width, height },
+// RGBA) to fill the holes from, or null for no fill; filled is the number of stones it added.
+// voted: the indices (in stoneLayout's order) of the stones whose colour the neighbour vote decides,
+// the filled ones and with serviceFillNeighbours the service's fill stones (serviceVoted of them);
+// black & white decides them by the same vote (bw.js). originMm: where the StoneLayout's origin lies
+// in the layout's mm.
+export function cleanedLayout(layout, { fillHolesIn = null, serviceFillNeighbours = false } = {}) {
   const measured = stonesOfLayout(layout);
   if (measured.length === 0) throw new Error("The layout has no stones.");
   const { stones: capped, capped: cappedCount } = capStoneSizes(measured, pupilCentres(layout));
   const { stones: kept, removed } = removeCloseStones(capped);
+  const filled = fillHolesIn ? fillHoles(kept, fillHolesIn, layout.report, { colours: "pixels" }) : null;
+  let delivered = filled ? filled.stones : kept;
+  const voted = new Set(delivered.map((_, i) => i).filter((i) => i >= kept.length));
+  let serviceVoted = 0;
+  if (serviceFillNeighbours && Array.isArray(layout.report?.fillAtMm)) {
+    const key = (x, y) => `${Math.round(x * 1000)},${Math.round(y * 1000)}`;
+    const service = new Set(layout.report.fillAtMm.map(([x, y]) => key(x, y)));
+    kept.forEach((st, i) => { if (service.has(key(st.x, st.y))) { voted.add(i); serviceVoted++; } });
+  }
+  if (voted.size) {
+    const colours = neighbourVote(delivered, voted, (st) => st.color);
+    delivered = delivered.map((st, i) => (colours.has(i) ? { ...st, color: colours.get(i) } : st));
+  }
   const box = boxOf(measured);
   const coverageBefore = Number(layout.report?.coverage);
-  const coverage = coverageBefore * areaUnder(kept, box) / areaUnder(measured, box);
-  const { stoneLayout, stones } = toStoneLayout(kept, 1);
+  const coverage = coverageBefore * areaUnder(delivered, box) / areaUnder(measured, box);
+  const { stoneLayout, stones, originMm } = toStoneLayout(delivered, 1);
   return {
     stoneLayout,
     gaps: checkGaps(stones),
@@ -114,6 +141,10 @@ export function cleanedLayout(layout) {
     removed: removed.length,
     removedShare: removed.length / capped.length,
     coverageBefore,
-    coverage
+    coverage,
+    filled: filled ? filled.added.length : 0,
+    voted: [...voted].sort((a, b) => a - b),
+    serviceVoted,
+    originMm
   };
 }

@@ -122,7 +122,8 @@ export function checkGaps(stones) {
   return { ok: overlaps === 0 && belowMinGap === 0, overlaps, belowMinGap, minGapMm };
 }
 
-// Plain { x, y, d, color } stones scaled by r -> StoneLayout with its footprint box at the origin.
+// Plain { x, y, d, color } stones scaled by r -> StoneLayout with its footprint box at the origin;
+// originMm is where that origin was in the given stones' mm ([minX, minY] of the box).
 export function toStoneLayout(stones, r) {
   const box = footprint(stones, r);
   const placed = stones.map((s, index) => new Stone({
@@ -133,7 +134,7 @@ export function toStoneLayout(stones, r) {
     layerId: LAYER_ID,
     index
   }));
-  return { stoneLayout: new StoneLayout({ layerId: LAYER_ID, sourceMode: "is", stones: placed }), stones: placed };
+  return { stoneLayout: new StoneLayout({ layerId: LAYER_ID, sourceMode: "is", stones: placed }), stones: placed, originMm: [box.minX, box.minY] };
 }
 
 // The centres [x, y] of the stones that may stay SS20: the pupils the layout service reports

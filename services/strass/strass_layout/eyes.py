@@ -4,6 +4,8 @@
 find_pupils is pupils2.find: dark, round, highlighted blobs that look like pupils.
 build_eye_copy is the prototype's EYE_MODE=copy eye: one pupil stone, one SS4
 crystal catch-light beside it and, for animals, two SS4 iris rings.
+
+IS (exp-holes): _find_inscribed's window ends at the image's edge.
 """
 import cv2
 import numpy as np
@@ -55,7 +57,9 @@ def _find_inscribed(px, s, main_px, existing):
             if any(np.hypot(x - c["x"], y - c["y"]) < 2 * main_px for c in list(existing) + out):
                 continue
             y0, x0 = max(0, y - int(r)), max(0, x - int(r))
-            yy, xx = np.mgrid[y0:y + int(r) + 1, x0:x + int(r) + 1]
+            # IS (exp-holes): the window ends at the image's edge (a dark disc cut by the border has
+            # its distance peak near the edge; RS indexed past the last row or column).
+            yy, xx = np.mgrid[y0:min(L.shape[0], y + int(r) + 1), x0:min(L.shape[1], x + int(r) + 1)]
             inside = np.hypot(yy - y, xx - x) <= r
             h = hl[yy, xx] & inside
             n_in = inside.sum()

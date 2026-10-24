@@ -53,14 +53,15 @@ function run(kind, args) {
 const toBuffer = (bytes) => Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 const layoutJson = (stoneLayout) => (stoneLayout instanceof StoneLayout ? stoneLayout.toJSON() : stoneLayout);
 
-// The full render (2400 px, transparent) of a StoneLayout -> PNG Buffer.
-export async function renderFullOffThread(stoneLayout) {
-  return toBuffer(await run("full", { layout: layoutJson(stoneLayout) }));
+// The full render (2400 px, transparent) of a StoneLayout -> PNG Buffer. bwGap: the gap rule of a
+// black & white design (tinted.js BW_GAPS), null for colour.
+export async function renderFullOffThread(stoneLayout, { bwGap = null } = {}) {
+  return toBuffer(await run("full", { layout: layoutJson(stoneLayout), bwGap }));
 }
 
 // The browser's preview (900 px, white, watermarked with the code) -> PNG Buffer.
-export async function renderPreviewOffThread(stoneLayout, code) {
-  return toBuffer(await run("preview", { layout: layoutJson(stoneLayout), code }));
+export async function renderPreviewOffThread(stoneLayout, code, { bwGap = null } = {}) {
+  return toBuffer(await run("preview", { layout: layoutJson(stoneLayout), code, bwGap }));
 }
 
 // buildDeliveryZip({ archiveDir, deliveryDir, code, n }) in the worker -> the ZIP's path.

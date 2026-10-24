@@ -207,3 +207,85 @@ Alex's decision on docs/IS-05d-results.md (variant A, "warm-3"):
 Effect on the 21 test designs (docs/IS-05d-results.md section 9): stones, sizes, coverage, faces and
 pupils identical; 11 designs change colour, almost all Smoked Topaz → Colorado Topaz (woman 75,
 giraffe-rule 97, dachshund-rule 65, leopard 33, einstein 17).
+
+### exp-holes (23 Oct 2026, experiment): exact and mask-cover fills, off everywhere
+
+The exp-holes diagnosis (docs/exp-holes.md) found that most holes (a spot in the subject where an
+SS6 or SS4 stone fits with 0.1 mm to every stone) are spots the fills after the eye stage do not
+place: they keep 0.15 mm from every stone (GAP + 0.05 mm raster margin), and they decline spots
+whose disc is less than 70 % covered by the closed alpha.
+
+- `strass_layout/rules.py`: new rules `fill_exact` and `fill_cover_mask` (default `False`). They
+  are off in `PROTOTYPE`, `BUILD_E` … `BUILD_I` **and `DEFAULT`**, so the service, the equivalence
+  test and every other test are unchanged. Docstring note.
+- `strass_layout/geometry.py`:
+  - `fill(..., extra=0.05, exact=False, cover_mask=False)`: `extra` is the margin beyond `GAP` the
+    raster keeps (RS: 0.05 mm, the defaults are RS 38cd831's fill); with `exact`, only the new
+    stones whose exact rim gap to every stone, and to the new stones kept before them, is at least
+    `GAP` are returned; with `cover_mask`, the 0.7 cover is measured on the `mask` the fill fills
+    instead of the closed alpha (`cover_frac`);
+  - new `mask_cover(mask, P, d, s)` and `_exact_keep(P, D, newP, newD)`.
+- `strass_layout/post.py`: the three fills after the eye stage pass `extra=0` and `exact` with
+  `rules.fill_exact`, and `cover_mask` with `rules.fill_cover_mask`. The ordered layout's own fill
+  (`ordered.py`) is unchanged: its stones go through `resolve_idx`, which keeps 0.12 mm anyway.
+- New test `tests/test_exp_holes.py` (the rules are off everywhere; `_exact_keep`, `mask_cover`; on
+  the woman the fills only add stones and no gap is below 0.1 mm).
+- New script `scripts/holes_trace.py` (IS diagnosis only): lays out saved AI images and records
+  which stage dropped, deleted or declined a stone; variants "default", "fill-exact",
+  "fill-cover-mask", "fill-both".
+
+### exp-holes follow-up (24 Oct 2026): no crash on a stone beyond the image's edge
+
+An AI image whose subject touches the image's edge crashed the layout with `IndexError: index -1 is
+out of bounds for axis 0 with size 0 (at colour.py:96)`. The fill (`geometry.fill`) places stones on
+a grid that reaches half a pixel past the last pixel centre, and `legalise` can push them further,
+so delivered stones can lie past the image's last row. With
+`sample_delivered` (`ordered.delivered_lab`, IS-05b) their colours are read by `stone_colours`, whose
+median rule then had no pixel within its radius and took the quantile of an empty array. (RS
+38cd831 reads colours at the detections only, which lie inside the image, so this path is IS's.)
+
+- `strass_layout/colour.py`: `stone_colours` reads the nearest pixel of the image for a stone with
+  no pixel within its radius, and for a stone whose whole window lies outside the image (where the
+  window itself was empty). A stone with pixels is read as before, so the equivalence test and
+  every layout that did not crash are unchanged. Docstring note.
+- `strass_layout/eyes.py` (RS bug): with the colour stage fixed, the same image crashed next in
+  `_find_inscribed` (`pupil_inscribed`, build G): `IndexError: index … is out of bounds for axis 0`.
+  A dark region cut by the image's border has its distance-transform peak near the edge, and the
+  window around it was clamped at 0 but not at the image's size. The window now ends at the image's
+  edge; a window inside the image is unchanged, so no layout that did not crash changes. Docstring
+  note.
+- `tests/test_exp_holes.py`: `StoneBeyondTheEdge` reproduces the colour crash with a 20 x 30 px
+  synthetic image (an SS4 stone 2.1 px past the last row, and a disc wholly outside the image);
+  `DarkDiscAtTheEdge` reproduces the pupil crash with an 80 x 60 px image (a dark disc with a
+  highlight, centred on the last row).
+
+### exp-holes dark spots (24 Oct 2026): report.fillAtMm
+
+IS gives the stones the service's fills placed their neighbours' colour when
+`IS_SERVICE_FILL_NEIGHBOURS=1` (IS spec 7.5; the rule is IS code, `src/pipeline/cleanup.js`). The
+`/layout` answer did not say which stones those are, so the report gains a key; no stone, size or
+colour changes.
+
+- `strass_layout/ordered.py`: the result's `"fill"` marks the stones the ordered layout's fill placed
+  (the second `resolve_idx`'s survivors past the rows).
+- `strass_layout/post.py`: `info["fillAtMm"]`, the centres (frame mm) of the delivered stones that
+  the ordered layout's fill or the fills after the eyes placed.
+- `strass_layout/pipeline.py`: `layout_frame` passes `fillAtMm` in the frame; `finish_layout` adds
+  `report.fillAtMm` (`[x, y]` per stone, cropped mm like the stones).
+- `tests/test_contract.py`: `fillAtMm` added to `REPORT_KEYS`; `README.md`: the new key.
+- `scripts/holes_trace.py` records the same stones independently (`serviceFill`); they agree.
+
+### exp-holes B&W (24 Oct 2026): report.discsAtMm
+
+IS can read a black & white stone's colour from the AI stone disc it overlaps most instead of the
+pixels under its delivered position (IS spec 7.6, `IS_BW_FROM_DISCS=1`, off; the rule is IS code,
+`src/pipeline/bw.js`). The `/layout` answer did not hold the detections, so the report gains a key;
+no stone, size or colour changes.
+
+- `strass_layout/ordered.py`: the result's `"discs"`, `[x, y, d]` (frame mm) of every detection but
+  the tiny ones, shadows, painted gap dots and interstitial dots (one inside a big stone counts).
+- `strass_layout/pipeline.py`: `layout_frame` passes `discsAtMm` in the frame; `finish_layout` adds
+  `report.discsAtMm` (cropped mm like the stones).
+- `tests/test_contract.py`: `discsAtMm` added to `REPORT_KEYS`; `README.md`: the new key.
+- `scripts/holes_trace.py` records the same detections with their verdicts; the discs are the
+  verdicts kept, tiled, rows-deleted, duplicate, inside-big and outside-mask.
