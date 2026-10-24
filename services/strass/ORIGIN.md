@@ -47,7 +47,9 @@ Changes made for IS:
 - `scripts/setup_mac.sh`: downloads the background model into `models/rembg/`.
 - `README.md`: an IS note at the top and the new endpoint.
 - New files (not from RS): `strass_layout/background.py`, `tests/test_background.py`,
-  `tests/fixtures/photos/` (CC0 photos, see `SOURCES.md` there), this file.
+  `tests/fixtures/photos/` (CC0 photos, see `SOURCES.md` there), this file;
+  `scripts/face_landmarks.py` (exp-faces experiment, MediaPipe in its own `.venv-faces`; not used by
+  the service).
 
 ## Divergences from RS 38cd831 in the layout code (to port back)
 

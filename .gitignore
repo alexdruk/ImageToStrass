@@ -7,4 +7,7 @@ data/*
 services/strass/.venv/
 services/strass/models/shape_predictor_68_face_landmarks.dat
 services/strass/models/rembg/
+# exp-faces: the landmark experiment's own environment and model (scripts/face_landmarks.py)
+services/strass/.venv-faces/
+services/strass/models/mediapipe/
 __pycache__/
