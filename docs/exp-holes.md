@@ -1,22 +1,25 @@
-# exp-holes — holes in the designs (experiment)
+# exp-holes — holes in the designs, and black & white read from the AI image
 
-Status: experiment, 23 Oct 2026, branch `exp-holes`. `DEFAULT` and the production path are
-unchanged; every fix is behind a flag that is off by default:
+Status: 24 Oct 2026, branch `exp-holes`. First round (23 Oct): experiment, everything behind flags.
+Alex's decisions on it (24 Oct), now built:
 
-- IS hole fill: `IS_FILL_HOLES=1` (`config.fillHoles`; `cleanedLayout(layout, { fillHolesIn })` in
-  `src/pipeline/cleanup.js`, the search and fill in `src/pipeline/holes.js`);
-- strass copy: rules `fill_exact` and `fill_cover_mask` (off in every rule set, `DEFAULT` included;
-  `services/strass/ORIGIN.md`).
+1. The IS hole fill is on in production (`IS_FILL_HOLES=0` turns it off), with a neighbour step for
+   filled stones (section 5). Spec 7.5. The strass rules `fill_exact` and `fill_cover_mask` stay off
+   everywhere.
+2. Black & white reads every delivered stone from the AI image (section 6). Spec 7.6.
+3. Two crashes on AI images whose subject touches the image's edge are fixed in IS's strass copy
+   (section 7, `services/strass/ORIGIN.md`).
 
 Designs measured here: the 9 CC0 AI images of IS-03b (`tools/fixtures/is03b-ai/`) and the 12 RS
-test images (`services/strass/prototype/img/`), each laid out again today with `DEFAULT` (no
-provider call). The private portraits were measured the same way (colour and B&W); their results
-stay in `data/private-portraits/holes.html` and are not part of this file.
+test images (`services/strass/prototype/img/`), each laid out again with `DEFAULT` (no provider
+call). The private portraits were measured the same way (colour and B&W); their pictures, numbers
+and reports stay in `data/private-portraits/` (`holes.html`, `bw.html`) and are not part of this file.
 
-Reproduce: `services/strass/scripts/holes_trace.py` (layouts and stage traces), then
-`node tools/exp-holes.mjs data/exp-holes/manifest.json data/exp-holes/out`. The pictures below are
-written to `data/exp-holes/out/` (git-ignored, regenerate to view), and `data/exp-holes/index.html`
-shows them all.
+Reproduce: `services/strass/scripts/holes_trace.py OUT default NAME=PNG ...` (layouts and stage
+traces), then `node tools/exp-holes.mjs data/exp-holes/manifest.json docs/exp-holes` and `node
+tools/exp-bw.mjs data/exp-holes/manifest.json docs/exp-holes`. The pictures in
+[`docs/exp-holes/`](exp-holes/) were then reduced to 1400 px wide (JPEG quality 66);
+`results.json` and `bw-results.json` there hold every number below.
 
 ## 1. What a hole is
 
@@ -30,14 +33,13 @@ A spot inside the subject where an SS6 stone, or failing that an SS4 stone, fits
 - **Fits**: the whole stone inside the subject (measured on a 20 px/mm grid in the layout's mm) and
   a rim gap of at least 0.1 mm to every stone of the design (exact, not rasterised).
 - **Counted** greedily on the design after the SS16 cap and the overlap cleanup (7.5): the free
-  spot farthest from everything first, SS6 while one fits, then SS4. The count of SS6 holes is
-  the number of SS6 stones that would fit, and so on.
+  spot farthest from everything first, SS6 while one fits, then SS4.
 - **Hole area**: the holes' disc area over the subject area. **Largest empty circle**: the largest
   circle inside the subject that touches no stone (no gap kept).
 
-## 2. Holes before and after the IS fill
+## 2. Holes before and after the fill
 
-| design | stones | SS6 holes | SS4 holes | hole area | largest empty mm | holes, IS fill | after, mm | causes | fill_exact | fill-both | coverage before / after |
+| design | stones | SS6 holes | SS4 holes | hole area | largest empty mm | holes, fill | after, mm | causes | fill_exact | fill-both | coverage before / after |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | --- | ---: | ---: | --- |
 | car-rule | 3531 | 0 | 17 | 0.17 % | 2.18 | 17 → 0 | 1.70 | check 1, fill-margin 16 | 3 | 3 | 0.626 / 0.628 |
 | cat-norule | 3140 | 0 | 8 | 0.10 % | 2.02 | 8 → 0 | 1.69 | eyes 2, rows 5, fill-margin 1 | 2 | 2 | 0.645 / 0.646 |
@@ -62,18 +64,27 @@ A spot inside the subject where an SS6 stone, or failing that an SS4 stone, fits
 | rs-woman | 2613 | 3 | 11 | 0.24 % | 2.59 | 14 → 0 | 1.70 | eyes 8, rows 4, fill-margin 2 | 12 | 12 | 0.671 / 0.674 |
 
 "fill_exact" and "fill-both": the holes left by the strass rules of section 4 alone (before any IS
-fill). Coverage is the acceptance coverage of 7.5 on the production design and with the IS fill.
+fill). Coverage is the acceptance coverage of 7.5 without and with the fill.
 
 Totals: 235 holes on 21 designs (18 SS6, 217 SS4), at most 0.65 % of a subject's area; the largest
 empty circle is 1.4–3.1 mm before and at most 1.70 mm after (an SS4 stone with its two gaps does not
-fit in that). With the IS fill every design has **0 holes**, stays accepted (7.4), the IS gap check
+fit in that). With the fill every design has **0 holes**, stays accepted (7.4), the IS gap check
 finds 0 violations (smallest gap 0.100 mm), the natural size is unchanged on all 21 (the filled
-holes are inside the old footprint), and the coverage rises by up to 0.006.
+holes are inside the old footprint), and the coverage rises by up to 0.006. The private portraits,
+colour and B&W, give the same picture: no hole left, every design accepted.
 
-Pictures per design (`data/exp-holes/out/`): `NAME-views.jpg` plain before (holes ringed) | plain
-after | tinted before | tinted after; `NAME-closeups.jpg` the three worst hole groups, AI image |
-plain before | tinted before | tinted after. Worth a look: `rs-portrait` (hair), `giraffe-rule`
-(spots), `rs-woman` and `dog-norule` (eyes).
+Pictures per design in [`docs/exp-holes/`](exp-holes/): `NAME-views.jpg` (plain before, holes
+ringed | plain after | tinted before | tinted after) and `NAME-closeups.jpg` (the three worst hole
+groups: AI image | plain before | tinted before | tinted after). For example:
+
+- RS portrait, the most holes (hair): [views](exp-holes/rs-portrait-views.jpg),
+  [close-ups](exp-holes/rs-portrait-closeups.jpg)
+- giraffe (spots): [views](exp-holes/giraffe-rule-views.jpg),
+  [close-ups](exp-holes/giraffe-rule-closeups.jpg)
+- RS woman and dog-norule (eyes): [woman](exp-holes/rs-woman-closeups.jpg),
+  [dog](exp-holes/dog-norule-closeups.jpg)
+
+![RS portrait, close-ups](exp-holes/rs-portrait-closeups.jpg)
 
 ## 3. Why the holes are there
 
@@ -93,28 +104,26 @@ layout stone for stone and records each stage's decisions):
 | not-detected | the AI drew a stone there that no detector found | 0 | 0 % |
 | ai-empty | the AI drew no stone there | 0 | 0 % |
 
-So **one stage, the service's fill after the eye stage, accounts for 51 %** (fill-margin and
-fill-declined); the eye stage (people's pupils, where the iris rings were switched off in IS-05c,
-and animals' eyes) and the ordered layout's filters make up the rest. Detection and the IS cleanup
-cause none. The private portraits show the same picture, with the fill stage's share higher and
-fill-declined (cover below 0.7 on the closed alpha) much larger on some B&W designs.
+One stage, the service's fill after the eye stage, accounts for 51 % (fill-margin and
+fill-declined); the eye stage and the ordered layout's filters make up the rest. Detection and the
+IS cleanup cause none. The private portraits show the same order, with fill-declined much larger on
+some B&W designs.
 
 ## 4. The fixes tried
 
-**A. IS hole fill** (`src/pipeline/holes.js`, flag `IS_FILL_HOLES=1`). After the overlap cleanup,
-the holes of section 1 are filled: SS6 first, then SS4, each with at least 0.1 mm to every stone
-(exact check), only where the whole stone is inside the subject. Each new stone's colour is read
-from the AI image as the service reads its own fill stones (`sample_delivered`): the mean CIE Lab of
-the opaque pixels within the inner 60 % of its radius, snapped to the catalogue by the service's
-`snap_colours` rules (palette `PLUS_REAL_SKIN`). The JavaScript port gives the same colour id as the
-service's Python on 450 of 450 random spots (Lab within 0.0001). Then the normal IS gap check and
-acceptance run. In B&W mode the new stones are mapped to Jet / Crystal with the others (7.6).
-Cost: about 0.5 s per design.
+**A. IS hole fill** (`src/pipeline/holes.js`; adopted, spec 7.5). After the overlap cleanup the
+holes of section 1 are filled: SS6 first, then SS4, each with at least 0.1 mm to every stone (exact
+check), only where the whole stone is inside the subject. Each new stone's colour is read from the
+AI image as the service reads its own fill stones (`sample_delivered`): the mean CIE Lab of the
+opaque pixels within the inner 60 % of its radius, snapped to the catalogue by the service's
+`snap_colours` rules (palette `PLUS_REAL_SKIN`); the JavaScript port gives the same colour id as the
+service's Python on 450 of 450 random spots (Lab within 0.0001). Then the neighbour step (section 5),
+the IS gap check and acceptance. About 0.5 s per design.
 
-**B. Service fill rules** (strass copy, `fill_exact` and `fill_cover_mask`, off in `DEFAULT`). The
-fills after the eye stage keep 0.1 mm from every stone, checked exactly, instead of 0.15 mm on the
-raster (`fill_exact`); and measure their 0.7 cover on the strict subject mask they fill instead of
-the closed alpha (`fill_cover_mask`). "fill-both" is both.
+**B. Service fill rules** (strass copy, `fill_exact` and `fill_cover_mask`; not adopted, off in
+every rule set). The fills after the eye stage keep 0.1 mm from every stone, checked exactly,
+instead of 0.15 mm on the raster (`fill_exact`), and measure their 0.7 cover on the strict subject
+mask they fill instead of the closed alpha (`fill_cover_mask`); "fill-both" is both.
 
 | service rules | stones | holes left | SS6 holes left | largest empty, max mm | accepted |
 | --- | ---: | ---: | ---: | ---: | --- |
@@ -122,26 +131,118 @@ the closed alpha (`fill_cover_mask`). "fill-both" is both.
 | `fill_exact` | 54 095 | 126 | 19 | 3.14 | 21 / 21 |
 | fill-both | 54 109 | 114 | 18 | 2.84 | 21 / 21 |
 
-B removes about half of the holes (all of the margin ones it can reach; the eye and rows holes are
-not its stage) and changes nothing else on these designs: no gap violations, faces and pupils as
-before. With the IS fill on top, B and `DEFAULT` both end at 0 holes.
+B removes about half of the holes and nothing else changes (faces, pupils and violations identical
+on every layout); the eye and rows holes are not its stage. A reaches 0 on its own, keeps the strass
+copy's layout at the RS rules, and was chosen.
 
-## 5. Recommendation
+## 5. Neighbour step for filled stones
 
-Adopt **A, the IS hole fill**, by switching `IS_FILL_HOLES` on (or making it the default in
-`cleanedLayout`'s caller), and keep the strass rules of B off.
+Rule (spec 7.5): a filled stone whose colour none of its neighbours (rim gap below 0.5 mm) uses
+takes the neighbours' most common colour (on a tie the catalogue's first) when that colour's
+catalogue fill is within 6 ΔE2000 of the colour sampled at the spot. Decided on the colours before
+the step, so the order of the stones does not matter.
 
-- A is complete: 0 holes on every design, against half for B. Most holes come from three
-  different service stages (fill, eyes, rows), and A covers all of them in one place.
-- A is IS code, after the service, so the strass copy stays at RS rules for its layout and RS fixes
-  still port by diff; B changes `geometry.fill`, which RS shares with its own pipeline.
-- The risk is small and measured: SS4/SS6 stones only, only inside the subject, 0.1 mm gaps kept,
-  natural size unchanged, acceptance unchanged on all 21 designs and on the private portraits.
-- What A does not do: its stones skip the service's later colour stages (dark-dot and family
-  clean-up, skin nearest, warm shadow). In the close-ups that is mostly invisible; at a few colour
-  boundaries a mixed spot snaps to an in-between colour (an olive stone on the giraffe's mane line).
-  If that matters, B (fill-both) plus A gives the same 0 holes with about half of the new stones
-  coloured by the service's full colour stages.
+On the 21 designs: of the 235 filled stones, 83 have a colour none of their neighbours uses, and
+**none changes**: the neighbours' most common colour is 6.0 to 79 ΔE from the colour the AI image
+shows at the spot (quartiles 14, 23 and 38 ΔE; 4 within 8 ΔE, 8 within 10). In the close-ups a lone
+filled stone sits mostly on a boundary between two colour areas, where the sampled colour is a mix
+rather than a neighbour's colour slightly off. On the private portraits the
+step changed a handful of stones (`data/private-portraits/holes.html`).
 
-Not changed by this experiment: the spec, `DEFAULT`, the production path. Adopting A changes spec
-7.5 (a hole-fill step after the cleanup); that is Alex's decision.
+The giraffe ([neighbours close-up](exp-holes/giraffe-rule-neighbours.jpg)), 21 of whose 41 filled
+stones are lone: the olive stones on the mane's edge lie between Jet and gold (41–44 ΔE from Jet,
+the neighbours' colour), a Copper stone 33 ΔE from its neighbours' Smoked Topaz; with 6 ΔE all stay. Left to right:
+AI image | plain without the step | plain with it | tinted without | tinted with; the filled stones
+in question are ringed.
+
+![Giraffe, neighbour step](exp-holes/giraffe-rule-neighbours.jpg)
+
+`NAME-neighbours.jpg` exists for every design with lone filled stones (17 of 21).
+
+## 6. Black & white read from the AI image
+
+Rule (spec 7.6): after the fill, every delivered stone, filled ones included, takes its lightness
+from the AI image itself: the mean CIE L\* of the pixels composited on white within the inner 60 %
+of its radius (at least 2 px). Below `BW_THRESHOLD` (default 55) Jet, otherwise Crystal. Before,
+the service's catalogue colour was mapped by its fill's L\*, so the service's colour snapping (skin
+and chroma rules, the eye stage's colours, the dark-dot clean-up) stood between the AI's drawing and
+the result.
+
+In production the B&W design is laid out from an AI image drawn with the B&W prompt (Jet and
+Crystal only). The CC0 and RS AI images are colour images, so on them the rule splits each colour
+area by its lightness, which is the harder case (mid-tone greens and browns); the private B&W images,
+drawn with the B&W prompt, are almost two-tone. Old against new on the 21 designs at 55:
+
+| design | Otsu L\* | Jet share old → new | stones changed | lone, old | lone at 45 / 55 / 65 (%) |
+| --- | ---: | --- | ---: | ---: | --- |
+| car-rule | 50.5 | 51.3 % → 50.0 % | 64 | 0.5 % | 0.7 / 0.7 / 0.6 |
+| cat-norule | 64.5 | 26.7 % → 24.1 % | 142 | 2.5 % | 1.8 / 2.2 / 2.5 |
+| cat-rule | 65.5 | 36.2 % → 26.8 % | 347 | 2.0 % | 1.4 / 2.2 / 2.2 |
+| dachshund-rule | 41.5 | 90.1 % → 82.2 % | 129 | 1.2 % | 1.0 / 1.3 / 1.8 |
+| dog-norule | 48.5 | 48.7 % → 34.4 % | 311 | 2.1 % | 1.0 / 2.2 / 1.7 |
+| dog-rule | 47.5 | 44.0 % → 35.8 % | 188 | 1.5 % | 1.3 / 1.0 / 1.7 |
+| giraffe-rule | 56.5 | 48.7 % → 48.0 % | 32 | 5.7 % | 3.8 / 5.0 / 6.1 |
+| mug-norule | 69.5 | 21.6 % → 21.3 % | 9 | 0.8 % | 3.4 / 0.8 / 0.8 |
+| mug-rule | 81.5 | 12.7 % → 2.5 % | 180 | 0.1 % | 0.0 / 1.4 / 0.2 |
+| rs-cat | 55.5 | 53.3 % → 47.8 % | 128 | 2.1 % | 1.8 / 2.2 / 2.2 |
+| rs-dog | 58.5 | 33.9 % → 30.7 % | 77 | 1.1 % | 2.1 / 1.9 / 2.1 |
+| rs-einstein | 53.5 | 62.8 % → 58.8 % | 144 | 0.6 % | 1.1 / 0.7 / 1.1 |
+| rs-jesus | 46.5 | 68.8 % → 66.4 % | 77 | 1.7 % | 2.2 / 1.9 / 3.0 |
+| rs-lake | 59.5 | 63.2 % → 54.6 % | 347 | 2.3 % | 1.5 / 2.3 / 2.5 |
+| rs-leopard | 50.5 | 53.0 % → 51.8 % | 26 | 7.9 % | 8.4 / 7.9 / 7.9 |
+| rs-logo | 31.5 | 85.1 % → 85.1 % | 0 | 0.0 % | 0.0 / 0.0 / 0.0 |
+| rs-parrot | 52.5 | 49.0 % → 41.4 % | 208 | 2.1 % | 1.6 / 1.8 / 2.6 |
+| rs-portrait | 52.5 | 43.2 % → 43.8 % | 146 | 1.1 % | 1.1 / 0.9 / 1.1 |
+| rs-rose | 42.5 | 94.5 % → 94.2 % | 6 | 0.1 % | 0.5 / 0.4 / 0.1 |
+| rs-tulips | 60.5 | 54.4 % → 40.8 % | 378 | 0.8 % | 1.0 / 1.7 / 0.8 |
+| rs-woman | 37.5 | 76.8 % → 75.0 % | 54 | 0.3 % | 1.1 / 0.3 / 0.3 |
+
+- **Stones changed**: stones of the old design (no fill) whose Jet/Crystal differs in the new one.
+- **Lone**: the speckle, a Jet stone with no Jet neighbour within 0.5 mm (or Crystal without a
+  Crystal one), among stones with at least 3 neighbours; in the face box (from the two pupils: 1.6
+  pupil distances to each side, 1.2 above and 2.2 below their midpoint) for the 12 designs with a
+  face, else over the whole design.
+- **Otsu L\***: the natural break between the image's dark and light stones.
+
+The new rule is darker where the service's skin and fur colours were dark catalogue colours over
+mid-tone AI pixels (dogs, cats, tulips) and keeps what the AI drew otherwise. Speckle stays about
+where it was (faces 2.3 % old, 2.3 % new at 55).
+
+Threshold: over the 12 faces, the speckle is 2.0 % at 40, 2.2 % at 45 and 50, 2.3 % at 55, 2.5 % at
+60, 2.6 % at 65 and 2.4 % at 70: a little cleaner below 55, but the differences are a few stones
+per face. On the private B&W portraits (drawn with the B&W prompt) the same holds: 45–50 is slightly
+cleaner than 55 in the faces, from 60 up single Jet stones start to appear on cheeks, and each
+image's natural break lies around 50; the difference between 50 and 55 is small. The default stays
+55; 50 is the value to try if faces look speckled (`BW_THRESHOLD=50`).
+
+Pictures: `NAME-bw.jpg` (AI image | plain old | tinted old | plain new | tinted new) for every
+design, `NAME-bw-faces.jpg` (the face: AI image | old | new at 45, 50, 55, 60, 65) for the 12 with a
+face. For example [RS woman](exp-holes/rs-woman-bw.jpg) and its
+[face](exp-holes/rs-woman-bw-faces.jpg), [RS tulips](exp-holes/rs-tulips-bw.jpg), the
+[dog-norule face](exp-holes/dog-norule-bw-faces.jpg).
+
+![RS woman, black and white old and new](exp-holes/rs-woman-bw.jpg)
+
+## 7. Two crashes at the image's edge (strass copy)
+
+An AI image whose subject touches the image's edge crashed the layout service twice in a row, both
+fixed in IS's strass copy and recorded in `services/strass/ORIGIN.md`, each with a test on a small
+synthetic image (`tests/test_exp_holes.py`):
+
+1. Colour stage (`colour.py`, `IndexError` on an empty quantile): the service's fill reaches half a
+   pixel past the last pixel centre and `legalise` can push stones further, so delivered stones
+   can lie beyond the image; `sample_delivered` (IS-05b) then read a disc with no pixel. Such a
+   stone now reads the nearest pixel.
+2. Pupil finder (`eyes.py`, `_find_inscribed`, an RS bug): the window around a dark disc cut by the
+   border was clamped at 0 but not at the image's size. It now ends at the edge.
+
+A stone or disc inside the image is read as before, so no layout that did not crash changes; the
+equivalence test against the prototype holds.
+
+## 8. Settings
+
+- `IS_FILL_HOLES` (default on; `0` turns the hole fill off).
+- `BW_THRESHOLD` (default 55).
+- Fake mode (`IS_FAKE=1`) uses `src/pipeline/fake/ai.png`, the fake layout's own stones drawn as
+  flat discs (`tools/make-fake-ai.mjs`), so the fill and black & white read the image the layout
+  came from.

@@ -8,9 +8,8 @@ import { preparePng } from "../prep/prepare.js";
 import { renderFullOffThread } from "../render/offthread.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
 import { findStoneSizeByDiameterMm } from "../stones/StoneSizes.js";
-import { mapBlackAndWhite } from "./bw.js";
+import { mapBlackAndWhiteFromImage } from "./bw.js";
 import { cleanedLayout } from "./cleanup.js";
-import { FAKE_REDRAW_DATA_URL } from "./fake/FakeRedrawProvider.js";
 import { callLayoutService } from "./layout.js";
 import { DEFAULT_TIMERS, createProvider } from "./provider.js";
 import { QUEUE_LIMIT, createQueue } from "./queue.js";
@@ -45,7 +44,9 @@ export const MAX_REMOVED_SHARE = 0.03;
 const IMAGE_REFUSALS = ["no-stones", "no-alpha"];
 
 const ACTIVE = new Set(["queued", "running"]);
-const FAKE_PNG = Buffer.from(FAKE_REDRAW_DATA_URL.split(",")[1], "base64");
+// IS_FAKE=1: the fake layout's own stones as its AI image (tools/make-fake-ai.mjs), so the hole fill
+// and black & white read the image the layout came from.
+const FAKE_PNG = readFileSync(new URL("./fake/ai.png", import.meta.url));
 const FAKE_LAYOUT = JSON.parse(readFileSync(new URL("./fake/layout.json", import.meta.url), "utf8"));
 
 export class DesignRefused extends Error {
@@ -259,20 +260,22 @@ export function createPipeline({
         return fail(code, n, placed.error.code);
       }
       storeNew(dir, "layout.json", `${JSON.stringify(placed.layout)}\n`);
-      // Natural size: SS16 cap and overlap cleanup (7.5), then acceptance (7.4) on the result.
-      // config.fillHoles (experiment exp-holes, off by default): the holes are filled after the cleanup.
-      const natural = cleanedLayout(placed.layout, config.fillHoles ? { fillHolesIn: await rgbaOf(aiPng) } : {});
+      // Natural size: SS16 cap, overlap cleanup and hole fill (7.5; config.fillHoles, off with
+      // IS_FILL_HOLES=0), then acceptance (7.4) on the result. Black & white reads every delivered
+      // stone's lightness from the AI image (7.6).
+      const ai = await rgbaOf(aiPng);
+      const natural = cleanedLayout(placed.layout, config.fillHoles ? { fillHolesIn: ai } : {});
       const check = acceptLayout(natural);
       if (!check.ok) return rerunOrFail(code, n, settings, check, outputPx);
       const stoneLayout = settings.mode === "bw"
-        ? mapBlackAndWhite(natural.stoneLayout, config.bwThreshold)
+        ? mapBlackAndWhiteFromImage(natural.stoneLayout, ai, { ...placed.layout.report, originMm: natural.originMm }, config.bwThreshold)
         : natural.stoneLayout;
 
       stage("files");
       storeNew(dir, "stones.json", `${JSON.stringify(stoneLayout.toJSON())}\n`);
       storeNew(dir, "tinted.png", await renderFullOffThread(stoneLayout));
       const result = designResult(stoneLayout, { coverage: check.coverage, settings, outputPx });
-      finish(code, n, "done", { counts: 1, result }, { stones: result.stones, capped: natural.capped, removed: natural.removed, ...(config.fillHoles ? { filled: natural.filled } : {}) });
+      finish(code, n, "done", { counts: 1, result }, { stones: result.stones, capped: natural.capped, removed: natural.removed, filled: natural.filled, recoloured: natural.recoloured });
     } catch (error) {
       log.error(`Design ${id} failed: ${error.stack || error.message}`);
       fail(code, n, "error");

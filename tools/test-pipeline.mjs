@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import sharp from "sharp";
 import { openDatabase } from "../src/db/index.js";
 import { createQueries } from "../src/db/queries.js";
 import { createPipeline } from "../src/pipeline/design.js";
@@ -20,8 +21,12 @@ const PHOTO = readFileSync(path.join(FIXTURES, "upload", "photo.png"));
 const GOOD_LAYOUT = JSON.parse(readFileSync(new URL("../src/pipeline/fake/layout.json", import.meta.url), "utf8"));
 // RS's fake layout: 193 stones, below the 300-stone acceptance minimum.
 const SMALL_LAYOUT = JSON.parse(readFileSync(new URL("../src/pipeline/fake/fake-layout.json", import.meta.url), "utf8"));
-const PNG = Buffer.from("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8cfc0f01f0005000201a5d6c2bd0000000049454e44ae426082", "hex");
-const NATURAL = cleanedLayout(GOOD_LAYOUT).stoneLayout;
+// A transparent 1 x 1 PNG (the pipeline decodes the AI image for the hole fill and black & white).
+const PNG = Buffer.from("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000970485973000003e8000003e801b57b526b0000000d494441540899636060606000000005000187a14ed40000000049454e44ae426082", "hex");
+// The fake design: the fake layout after the cap, the cleanup and the hole fill from the fake AI image.
+const FAKE_AI = await sharp(new URL("../src/pipeline/fake/ai.png", import.meta.url).pathname).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+  .then(({ data, info }) => ({ data, width: info.width, height: info.height }));
+const NATURAL = cleanedLayout(GOOD_LAYOUT, { fillHolesIn: FAKE_AI }).stoneLayout;
 const round1 = (v) => Math.round(v * 10) / 10;
 const quiet = { error() {}, warn() {}, log() {} };
 const LEAK = /openai|gpt|dall|prompt|sunburst/i;
@@ -97,7 +102,8 @@ test("fake mode: Create design runs end to end and writes the archive", async ()
     assert.equal(done.body.status, "done");
     assert.equal(done.body.designsLeft, 2);
     const result = done.body.result;
-    assert.equal(result.stones, GOOD_LAYOUT.stones.length);
+    assert.equal(result.stones, NATURAL.count);
+    assert.ok(NATURAL.count > GOOD_LAYOUT.stones.length, "the fake design has filled holes");
     // Natural size only (7.5), in mm and in.
     assert.deepEqual([result.widthMm, result.heightMm], [round1(NATURAL.widthMm), round1(NATURAL.heightMm)]);
     assert.equal(result.widthIn, Math.round(NATURAL.widthMm / 25.4 * 100) / 100);

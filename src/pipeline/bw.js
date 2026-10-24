@@ -1,11 +1,15 @@
 import { Stone } from "../stones/Stone.js";
 import { StoneLayout } from "../stones/StoneLayout.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
+import { lightnessOnWhite } from "./holes.js";
 
-// Black & white mapping (spec section 7.6, D3), run after the natural layout. Every stone colour is mapped by
-// the CIE L* of its catalogue fill: L* < threshold -> Jet, otherwise Crystal. "Crystal" is the
-// catalogue colour named Crystal (id crystal-clear, #f5f5f5), the one the prompt's Appendix A and
-// the catch-light rule name; id "crystal" is Crystal AB.
+// Black & white (spec section 7.6, D3), run on the delivered stones (after the cap, the cleanup and
+// the hole fill). mapBlackAndWhiteFromImage, what the pipeline uses: each stone's lightness is read
+// from the AI image itself, the mean CIE L* of its inner 60 % composited on white
+// (holes.lightnessOnWhite): L* < threshold -> Jet, otherwise Crystal. The service's colours are not
+// used. mapBlackAndWhite (before exp-holes; tools only) maps each stone's catalogue colour by the L*
+// of its fill instead. "Crystal" is the catalogue colour named Crystal (id crystal-clear, #f5f5f5),
+// the one the prompt's Appendix A and the catch-light rule name; id "crystal" is Crystal AB.
 
 export const DEFAULT_BW_THRESHOLD = 55;
 export const BW_DARK = "jet";
@@ -39,6 +43,25 @@ export function mapBlackAndWhite(layout, threshold = DEFAULT_BW_THRESHOLD) {
     stones: layout.stones.map((s) => new Stone({
       xMm: s.xMm, yMm: s.yMm, sizeMm: s.sizeMm, layerId: s.layerId, index: s.index, metadata: s.metadata,
       color: bwColour(s.color, threshold)
+    }))
+  });
+}
+
+// A new StoneLayout with every stone Jet or Crystal by the AI image's lightness under it. frame: {
+// mmPerPx, offsetMm } of the layout's report and originMm (cleanedLayout): AI pixel = (stone mm +
+// originMm + offsetMm) / mmPerPx. Positions and sizes are unchanged. A frame without mmPerPx or
+// offsetMm (every /layout answer has them) falls back to mapBlackAndWhite.
+export function mapBlackAndWhiteFromImage(layout, ai, { mmPerPx, offsetMm, originMm }, threshold = DEFAULT_BW_THRESHOLD) {
+  const s = Number(mmPerPx);
+  if (!(s > 0) || !Array.isArray(offsetMm) || !Array.isArray(originMm)) return mapBlackAndWhite(layout, threshold);
+  return new StoneLayout({
+    layerId: layout.layerId,
+    sourceMode: layout.sourceMode,
+    stones: layout.stones.map((st) => new Stone({
+      xMm: st.xMm, yMm: st.yMm, sizeMm: st.sizeMm, layerId: st.layerId, index: st.index, metadata: st.metadata,
+      color: lightnessOnWhite(ai, (st.xMm + originMm[0] + offsetMm[0]) / s, (st.yMm + originMm[1] + offsetMm[1]) / s, st.sizeMm, s) < threshold
+        ? BW_DARK
+        : BW_LIGHT
     }))
   });
 }

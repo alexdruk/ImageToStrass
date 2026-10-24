@@ -14,7 +14,8 @@ view: every stone's fill reaches 0.6 mm beyond its edge, and a large Jet stone's
 an SS6 stone's (section 8). Revised 21 Oct 2026 (IS-05d): a shadow skin stone takes Colorado Topaz
 when that is at most 3 ΔE further than Smoked Topaz (7.4). Revised 21 Oct 2026 (IS-06): Result screen
 without the compare slider, tabs at phone width (10); Etsy connect, poller, refunds and admin page
-as built (11.2–11.4).
+as built (11.2–11.4). Revised 24 Oct 2026 (exp-holes): hole fill after the overlap cleanup (7.5);
+black & white read from the AI image (7.6).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -333,9 +334,28 @@ stones), and on equal neighbours the later one in the layout. Pairs are taken wo
 pair with a stone already removed is skipped. The footprint box is that of the stones left. The
 number of removed stones goes to the design's event log (server only).
 
+Hole fill (`src/pipeline/holes.js`, exp-holes, `docs/exp-holes.md`), after the cleanup; on unless
+`IS_FILL_HOLES=0`. A hole is a spot inside the subject where an SS6 stone, or failing that an SS4
+stone, fits with at least 0.1 mm to every stone. The subject is the AI image's alpha (alpha ≥ 128)
+closed with a disc of 1 mm across, and every enclosed transparent area of at most two SS6 stones'
+area (6.3 mm²) filled. The holes are filled greedily, the free spot farthest from everything first,
+SS6 while one fits, then SS4; the whole stone lies inside the subject (measured at 20 px per mm)
+and its rim gap to every stone is at least 0.1 mm (exact). Each filled stone's colour is read from
+the AI image as the service reads its own fill stones (7.4, `sample_delivered`): the mean CIE Lab of
+the opaque pixels within the inner 60 % of its radius, snapped to the catalogue by the service's
+rules (palette `PLUS_REAL_SKIN`). Then the neighbour step, for filled stones only: a filled stone
+whose colour none of its neighbours (rim gap below 0.5 mm) uses takes the neighbours' most common
+colour (on a tie the catalogue's first) when that colour's catalogue fill is within 6 ΔE2000 of the
+colour sampled at the spot; the decisions are made on the colours before the step. The numbers of
+filled and recoloured stones go to the design's event log (server only). Holes come mostly from the
+service's fill after the eye stage (it keeps 0.15 mm from every stone), the eye stage and the
+ordered layout's filters; on the 21 CC0 and RS test designs the fill took 235 holes to none, all 21
+stay accepted and their natural size is unchanged. The strass copy's rules `fill_exact` and
+`fill_cover_mask` (the same holes fixed in the service's fill) stay off everywhere.
+
 Coverage after the cleanup: the service's `coverage` (the share of subject-mask pixels under a
-stone) times the area under the delivered stones over the area under the service's stones, both
-rasterised at the service's 10 px per mm. It includes the cap's shrinking.
+stone) times the area under the delivered stones (filled stones included) over the area under the
+service's stones, both rasterised at the service's 10 px per mm. It includes the cap's shrinking.
 
 The IS gap check (`findOverlappingStonePairs` from StoneLayout.js and a min-gap check of 0.1 mm)
 then runs on the cleaned layout, and acceptance (7.4) uses its result. The rejected IS-03b car (148
@@ -351,9 +371,14 @@ a longest side below the natural size is refused.
 
 ### 7.6 Black & white mapping (D3)
 
-After 7.5, every stone colour is mapped by its catalogue fill's CIE L*: `L* < BW_THRESHOLD`
-(default 55) → `jet`, otherwise → `crystal`. Pupils and outlines (dark) become Jet, the catch-light
-becomes Crystal. The threshold is a setting; IS-03 checks it on the test images.
+After 7.5, every delivered stone (filled stones included) is read from the AI image itself, not
+from the service's colour: the mean CIE L\* of the image's pixels composited on white within the
+inner 60 % of the stone's radius (at least 2 px), at the stone's delivered position. `L* <
+BW_THRESHOLD` (a setting, default 55) → `jet`, otherwise → Crystal (`crystal-clear`). Positions and
+sizes are unchanged. `mapBlackAndWhiteFromImage` in `src/pipeline/bw.js`. Before exp-holes each stone's
+catalogue colour was mapped by its fill's L\*; that put the service's colour snapping (skin and
+chroma rules, the eye stage's colours) between the AI's Jet/Crystal drawing and the result
+(`docs/exp-holes.md`, section 6, also on the choice of the threshold).
 
 ### 7.7 Result
 
@@ -735,6 +760,7 @@ STRASS_SERVICE_URL=http://127.0.0.1:8000
 REMBG_MODEL=birefnet-general
 LAYOUT_TIMEOUT_SECONDS=180
 BW_THRESHOLD=55
+IS_FILL_HOLES=1                  # 0 = no hole fill (7.5)
 IS_DAILY_DESIGN_CAP=100
 IS_DESIGNS_PER_IP_PER_DAY=6
 TURNSTILE_SITE_KEY=

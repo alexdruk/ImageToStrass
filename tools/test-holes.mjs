@@ -1,13 +1,17 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { mapBlackAndWhiteFromImage } from "../src/pipeline/bw.js";
 import { cleanedLayout } from "../src/pipeline/cleanup.js";
-import { CLOSE_MM, fillHoles, findHoles, snapColour, squaredEdt, subjectMask } from "../src/pipeline/holes.js";
+import { CLOSE_MM, fillHoles, findHoles, lightnessOnWhite, snapColour, squaredEdt, subjectMask } from "../src/pipeline/holes.js";
 import { checkGaps, toStoneLayout } from "../src/pipeline/tiers.js";
+import { loadConfig } from "../src/server/config.js";
+import { STONE_COLORS } from "../src/stones/StoneColors.js";
 
-// Hole fill (experiment exp-holes, docs/exp-holes.md; off in production): the distance transform,
-// the subject mask, the hole search and fill on a synthetic AI image, the colour snapping against
-// the strass service's own answers, and cleanedLayout unchanged without the AI image.
+// Hole fill (spec 7.5, docs/exp-holes.md): the distance transform, the subject mask, the hole search
+// and fill on a synthetic AI image, the neighbour step, the colour snapping against the strass
+// service's own answers, cleanedLayout without the AI image, the setting; and black & white read
+// from the AI image (7.6).
 
 // A synthetic AI image: opaque inside a disc of radius R px around the centre, one flat colour,
 // mmPerPx 0.1. Stones on a hexagonal grid of pitch 2.2 mm (SS6, gap 0.2 mm) inside the disc.
@@ -37,6 +41,7 @@ function hexStones(size, radiusPx, skip = () => false) {
   return out;
 }
 const report = { mmPerPx: S, offsetMm: [0, 0] };
+const rgbOf = (id) => [1, 3, 5].map((i) => parseInt(STONE_COLORS[id].fill.slice(i, i + 2), 16));
 
 test("holes: squaredEdt is the exact squared distance", () => {
   const w = 17, h = 11;
@@ -108,10 +113,60 @@ test("holes: colours snap as the strass service snaps them", () => {
   for (const [id, lab] of cases) assert.equal(snapColour(lab), id, JSON.stringify(lab));
 });
 
-test("holes: cleanedLayout without the AI image is unchanged and fills nothing", () => {
+test("holes: cleanedLayout without the AI image fills nothing; a report without the frame neither", () => {
   const layout = JSON.parse(readFileSync(new URL("./fixtures/layouts/woman.json", import.meta.url), "utf8"));
   const plain = cleanedLayout(layout);
   assert.equal(plain.filled, 0);
   const again = cleanedLayout(layout, {});
   assert.deepEqual(again.stoneLayout.toJSON(), plain.stoneLayout.toJSON());
+  const frameless = { ...layout, report: { ...layout.report, mmPerPx: undefined } };
+  assert.equal(cleanedLayout(frameless, { fillHolesIn: image(10, 4) }).filled, 0);
+});
+
+test("holes: the neighbour step gives a lone filled stone its neighbours' colour within 6 ΔE", () => {
+  const size = 400, R = 180;
+  // The AI painted Amethyst; the stones around the hole are Fuchsia (5.6 ΔE from Amethyst).
+  const ai = image(size, R, rgbOf("amethyst"));
+  const holed = hexStones(size, R, (x, y) => Math.hypot(x - 20, y - 20) < 1).map((st) => ({ ...st, color: "fuchsia" }));
+  const plain = fillHoles(holed, ai, report, { neighbours: false });
+  const centre = (r) => r.added.find((st) => Math.hypot(st.x - 20, st.y - 20) < 1);
+  assert.equal(centre(plain).color, "amethyst");
+  const stepped = fillHoles(holed, ai, report);
+  assert.equal(centre(stepped).color, "fuchsia");
+  assert.ok(stepped.recoloured >= 1);
+  // Jet painted, Crystal around: far more than 6 ΔE, the filled stone stays Jet.
+  const dark = fillHoles(holed.map((st) => ({ ...st, color: "crystal-clear" })), image(size, R, rgbOf("jet")), report);
+  assert.equal(centre(dark).color, "jet");
+});
+
+test("holes: the fill is on unless IS_FILL_HOLES=0", () => {
+  assert.equal(loadConfig({}).fillHoles, true);
+  assert.equal(loadConfig({ IS_FILL_HOLES: "1" }).fillHoles, true);
+  assert.equal(loadConfig({ IS_FILL_HOLES: "0" }).fillHoles, false);
+  assert.equal(loadConfig({}).bwThreshold, 55);
+  assert.equal(loadConfig({ BW_THRESHOLD: "45" }).bwThreshold, 45);
+});
+
+test("black & white: each stone's lightness is read from the AI image composited on white", () => {
+  // Left half dark grey (L* about 21), right half transparent (white on white); a 50 % alpha black
+  // column composites to mid grey (L* 53.6).
+  const size = 200;
+  const ai = image(size, 1000, [50, 50, 50]);
+  for (let y = 0; y < size; y++) {
+    for (let x = 100; x < size; x++) ai.data[(y * size + x) * 4 + 3] = 0;
+    for (let x = 140; x < 160; x++) ai.data.set([0, 0, 0, 128], (y * size + x) * 4);
+  }
+  assert.ok(Math.abs(lightnessOnWhite(ai, 50, 50, 2, S) - 21) < 1);
+  assert.ok(lightnessOnWhite(ai, 120, 50, 2, S) > 99);
+  const mid = lightnessOnWhite(ai, 150, 50, 1.5, S);
+  assert.ok(mid > 50 && mid < 58, String(mid));
+  const { stoneLayout, originMm } = toStoneLayout([
+    { x: 5, y: 5, d: 2, color: "crystal-clear" }, { x: 12, y: 5, d: 2, color: "jet" }, { x: 15, y: 5, d: 1.5, color: "jet" }
+  ], 1);
+  const frame = { mmPerPx: S, offsetMm: [0, 0], originMm };
+  // The mid grey (L* 53.6) is Jet at the default 55 and Crystal at 50.
+  assert.deepEqual(mapBlackAndWhiteFromImage(stoneLayout, ai, frame).stones.map((st) => st.color), ["jet", "crystal-clear", "jet"]);
+  assert.deepEqual(mapBlackAndWhiteFromImage(stoneLayout, ai, frame, 50).stones.map((st) => st.color), ["jet", "crystal-clear", "crystal-clear"]);
+  // Positions and sizes are unchanged.
+  assert.deepEqual(mapBlackAndWhiteFromImage(stoneLayout, ai, frame).stones.map((st) => [st.xMm, st.yMm, st.sizeMm]), stoneLayout.stones.map((st) => [st.xMm, st.yMm, st.sizeMm]));
 });

@@ -6,7 +6,11 @@ import unittest
 import numpy as np
 
 from strass_layout import DEFAULT, PROTOTYPE
+from strass_layout.colour import stone_colours
+from strass_layout.eyes import find_pupils
+from strass_layout.imageio import Pixels
 from strass_layout.geometry import GAP, _exact_keep, mask_cover, violations
+from strass_layout.ordered import delivered_lab
 from strass_layout.rules import BUILD_E, BUILD_F, BUILD_G, BUILD_H, BUILD_I
 from tests import support
 
@@ -37,6 +41,44 @@ class Helpers(unittest.TestCase):
         self.assertEqual(cover[0], 1.0)
         self.assertAlmostEqual(cover[1], 0.5, delta=0.1)
         self.assertEqual(cover[2], 0.0)
+
+
+class StoneBeyondTheEdge(unittest.TestCase):
+    """The DM crash (colour.py: IndexError on an empty quantile): a delivered stone past the image's
+    last row, as the fill and legalise place it when the subject touches the border, has no pixel
+    within its sampling radius."""
+
+    def test_delivered_colour_of_a_stone_past_the_last_row(self):
+        h, w, s = 20, 30, 0.2
+        rgb = np.zeros((h, w, 3), np.float32)
+        rgb[..., 0] = 1.0  # red
+        a = np.ones((h, w), np.float32)
+        # An SS4 stone 2.1 px below the last row's centre: its mean disc (2.25 px) holds fewer than
+        # 3 pixels and its core (R = 2 px) none, so the median rule had nothing to take a quantile of.
+        P = np.array([[10 * s, (h - 1 + 2.1) * s]])
+        lab = delivered_lab(rgb, a, s, P, np.array([1.5]), True)
+        self.assertAlmostEqual(lab[0][0], 53.2, delta=0.5)  # L* of pure red
+        self.assertGreater(lab[0][1], 70)
+        # The median rule too, with the whole disc far outside the image.
+        out = stone_colours(rgb, a, np.array([[h + 50.0, -40.0, 1.0, 0.0]]))
+        self.assertAlmostEqual(out[0][0], 53.2, delta=0.5)
+
+
+class DarkDiscAtTheEdge(unittest.TestCase):
+    """The second crash of the same design (eyes.py, _find_inscribed: IndexError past the last row):
+    a dark region cut by the image's border, with a highlight, has its distance peak near the edge,
+    and the window around it reached past the image."""
+
+    def test_find_pupils_with_a_dark_disc_cut_by_the_bottom_edge(self):
+        h, w = 60, 80
+        rgba = np.zeros((h, w, 4), np.uint8)
+        rgba[..., 3] = 255
+        rgba[..., :3] = 200  # light grey
+        yy, xx = np.mgrid[0:h, 0:w]
+        rgba[np.hypot(yy - (h - 1), xx - 40) <= 22, :3] = 10  # a dark disc centred on the last row
+        rgba[np.hypot(yy - (h - 9), xx - 42) <= 2.5, :3] = 250  # its highlight
+        cands = find_pupils(Pixels(rgba), 0.15, 12.0, core_only=True, inscribed=True)
+        self.assertIsInstance(cands, list)
 
 
 class OnWoman(unittest.TestCase):

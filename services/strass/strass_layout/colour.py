@@ -22,6 +22,9 @@ hue 30 degrees or more (its own fill is at 27); build H gave Einstein's brown sk
 dark red stones. Rules.skin_no_wine picks it.
 
 Ported from rs_fix.py (stone_colours, snap_colours and the colour constants).
+
+IS (exp-holes): stone_colours reads the nearest pixel for a stone with no pixel within its radius
+(beyond the image's edge) instead of failing on an empty quantile.
 """
 import json
 import os
@@ -81,6 +84,10 @@ def stone_colours(rgb, a, det, mean=False):
         RW = max(R, r) if mean else R
         y0, y1 = int(max(0, y - RW)), int(min(h, y + RW + 1))
         x0, x1 = int(max(0, x - RW)), int(min(w, x + RW + 1))
+        nearest = lab[int(round(min(max(y, 0), h - 1))), int(round(min(max(x, 0), w - 1)))]
+        if y1 <= y0 or x1 <= x0:  # IS (exp-holes): the whole disc beyond the image's edge
+            out[i] = nearest
+            continue
         yy, xx = np.mgrid[y0:y1, x0:x1]
         if mean:
             m2 = (np.hypot(yy - y, xx - x) <= max(2.0, r)) & (a[y0:y1, x0:x1] > 0.5)
@@ -92,6 +99,10 @@ def stone_colours(rgb, a, det, mean=False):
         if len(px) < 3:
             m = np.hypot(yy - y, xx - x) <= R
             px = lab[y0:y1, x0:x1][m]
+        if len(px) == 0:
+            # IS (exp-holes): a stone beyond the image's edge (a fill stone where the subject touches
+            # the border, pushed out by legalise) has no pixel within R; read the nearest pixel.
+            px = nearest[None]
         L = px[:, 0]
         keep = L <= np.quantile(L, 0.85)
         px = px[keep] if keep.sum() >= 3 else px

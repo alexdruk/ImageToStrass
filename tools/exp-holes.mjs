@@ -9,15 +9,18 @@
 // null, strict: the service's strict mask PNG or null }]. Writes OUT_DIR/results.json,
 // OUT_DIR/NAME-views.jpg (plain before | plain after | tinted before | tinted after) and
 // OUT_DIR/NAME-closeups.jpg (per worst hole: AI image | plain before, holes ringed | tinted before |
-// tinted after). Paths in the manifest are relative to its own folder.
+// tinted after) and OUT_DIR/NAME-neighbours.jpg (where the neighbour step recoloured filled stones:
+// AI image | plain and tinted without the step | with it). B&W designs are drawn as the pipeline
+// makes them: every stone Jet or Crystal by the AI image's lightness (spec 7.6). Paths in the
+// manifest are relative to its own folder.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { createCanvas } from "@napi-rs/canvas";
-import { mapBlackAndWhite } from "../src/pipeline/bw.js";
+import { mapBlackAndWhiteFromImage } from "../src/pipeline/bw.js";
 import { cleanedLayout, removeCloseStones } from "../src/pipeline/cleanup.js";
 import { acceptLayout } from "../src/pipeline/design.js";
-import { deltaE2000, findHoles, fillHoles, srgbToLab, subjectMask } from "../src/pipeline/holes.js";
+import { NEIGHBOUR_GAP_MM, PALETTE, deltaE2000, findHoles, fillHoles, sampleLab, srgbToLab, subjectMask } from "../src/pipeline/holes.js";
 import { capStoneSizes, pupilCentres, stonesOfLayout } from "../src/pipeline/tiers.js";
 import { renderTinted } from "../src/render/tinted.js";
 import { Stone } from "../src/stones/Stone.js";
@@ -42,7 +45,7 @@ const GAP_DROP_DE = 12; // ordered.py: a small detection within 12 ΔE of the ga
 const overlaps = (a, hole) => Math.hypot(a[0] - hole.x, a[1] - hole.y) < a[2] / 2 + hole.d / 2;
 const inside = (a, hole) => Math.hypot(a[0] - hole.x, a[1] - hole.y) < hole.d / 2;
 
-async function rgba(file) {
+export async function rgba(file) {
   const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   return { data, width: info.width, height: info.height };
 }
@@ -141,7 +144,7 @@ function causeOf(hole, ctx) {
 }
 
 // Groups of holes whose discs lie within 1 mm of each other, worst (largest hole area) first.
-function clusters(holes) {
+export function clusters(holes) {
   const parent = holes.map((_, i) => i);
   const find = (i) => (parent[i] === i ? i : (parent[i] = find(parent[i])));
   for (let i = 0; i < holes.length; i++) {
@@ -160,16 +163,17 @@ function clusters(holes) {
   return [...groups.values()].sort((a, b) => area(b) - area(a));
 }
 
-const asLayout = (stones, mode) => {
+// Plain stones (layout mm) -> StoneLayout in the same mm; B&W read from the AI image (7.6).
+export const asLayout = (stones, mode, ai = null, report = null, threshold = undefined) => {
   const layout = new StoneLayout({
     layerId: "design", sourceMode: "is",
     stones: stones.map((s, index) => new Stone({ xMm: s.x, yMm: s.y, sizeMm: s.d, color: s.color, layerId: "design", index }))
   });
-  return mode === "bw" ? mapBlackAndWhite(layout) : layout;
+  return mode === "bw" ? mapBlackAndWhiteFromImage(layout, ai, { ...report, originMm: [0, 0] }, threshold) : layout;
 };
 
 // Flat discs in their catalogue fill on white. view: { x0, y0, w, h } in mm; rings: [{ x, y, d, colour }].
-function plainPng(layout, view, ppmm, rings = []) {
+export function plainPng(layout, view, ppmm, rings = []) {
   const W = Math.round(view.w * ppmm), H = Math.round(view.h * ppmm);
   const canvas = createCanvas(W, H);
   const ctx = canvas.getContext("2d");
@@ -196,7 +200,7 @@ function plainPng(layout, view, ppmm, rings = []) {
 }
 
 // The tinted render of the stones near a view, cropped to it.
-async function tintedPng(layout, view, ppmm) {
+export async function tintedPng(layout, view, ppmm) {
   const near = layout.stones.filter((s) => s.xMm > view.x0 - 4 && s.xMm < view.x0 + view.w + 4 && s.yMm > view.y0 - 4 && s.yMm < view.y0 + view.h + 4);
   if (!near.length) return plainPng(asLayout([], "colour"), view, ppmm);
   const sub = new StoneLayout({ layerId: "design", sourceMode: "is", stones: near });
@@ -213,7 +217,7 @@ async function tintedPng(layout, view, ppmm) {
   return sharp(padded).extract({ left: Math.max(0, left), top: Math.max(0, top), width: W, height: H }).png().toBuffer();
 }
 
-async function aiPng(file, report, view, ppmm) {
+export async function aiPng(file, report, view, ppmm) {
   const s = report.mmPerPx, [ox, oy] = report.offsetMm;
   const meta = await sharp(file).metadata();
   const left = Math.round((view.x0 + ox) / s), top = Math.round((view.y0 + oy) / s);
@@ -224,7 +228,7 @@ async function aiPng(file, report, view, ppmm) {
     .flatten({ background: "#e9edf5" }).png().toBuffer();
 }
 
-async function strip(file, panels, height) {
+export async function strip(file, panels, height) {
   const PAD = 12, LABEL = 30;
   const bufs = [];
   for (const p of panels) {
@@ -243,7 +247,7 @@ async function strip(file, panels, height) {
   return sharp({ create: { width: W, height: height + LABEL + PAD, channels: 3, background: "#ffffff" } }).composite(composites).jpeg({ quality: 86 }).toBuffer();
 }
 
-async function stack(file, rows) {
+export async function stack(file, rows) {
   const metas = await Promise.all(rows.map((r) => sharp(r).metadata()));
   const W = Math.max(...metas.map((m) => m.width)), H = metas.reduce((s, m) => s + m.height, 0);
   let y = 0;
@@ -266,6 +270,7 @@ export async function runDesign(item, outDir, base) {
 
   const before = findHoles(kept, ai, report);
   const filled = fillHoles(kept, ai, report);
+  const unstepped = fillHoles(kept, ai, report, { neighbours: false });
   const after = findHoles(filled.stones, ai, report);
   const production = acceptLayout(cleanedLayout(layout));
   const natural = cleanedLayout(layout, { fillHolesIn: ai });
@@ -288,7 +293,7 @@ export async function runDesign(item, outDir, base) {
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const s of all) { x0 = Math.min(x0, s.x - s.d); y0 = Math.min(y0, s.y - s.d); x1 = Math.max(x1, s.x + s.d); y1 = Math.max(y1, s.y + s.d); }
   const whole = { x0, y0, w: x1 - x0, h: y1 - y0 };
-  const beforeLayout = asLayout(kept, item.mode), afterLayout = asLayout(filled.stones, item.mode);
+  const beforeLayout = asLayout(kept, item.mode, ai, report), afterLayout = asLayout(filled.stones, item.mode, ai, report);
   const ppmm = 1400 / Math.max(whole.w, whole.h);
   const views = await strip(null, [
     { label: `plain before (${before.holes.length} holes)`, png: plainPng(beforeLayout, whole, ppmm, before.holes.map((h) => ({ ...h, colour: "#e0115f" }))) },
@@ -320,13 +325,47 @@ export async function runDesign(item, outDir, base) {
   }
   if (rows.length) await stack(path.join(outDir, `${item.name}-closeups.jpg`), rows);
 
+  // The neighbour step: the filled stones whose colour none of their neighbours uses ("lone"), the
+  // ΔE from the colour sampled at the spot to the neighbours' most common colour, and the three
+  // largest groups of lone stones drawn without and with the step.
+  const lone = [];
+  const fillLab = new Map(PALETTE.map((p) => [p.id, p.lab]));
+  unstepped.added.forEach((st) => {
+    const nb = unstepped.stones.filter((o) => o !== st && Math.hypot(o.x - st.x, o.y - st.y) - (o.d + st.d) / 2 < NEIGHBOUR_GAP_MM);
+    if (!nb.length || nb.some((o) => o.color === st.color)) return;
+    const counts = {};
+    for (const o of nb) counts[o.color] = (counts[o.color] || 0) + 1;
+    const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+    const lab = sampleLab(ai, (st.x + report.offsetMm[0]) / report.mmPerPx, (st.y + report.offsetMm[1]) / report.mmPerPx, st.d, report.mmPerPx);
+    lone.push({ ...st, de: deltaE2000(lab, fillLab.get(best)) });
+  });
+  if (lone.length) {
+    const noStep = asLayout(unstepped.stones, item.mode, ai, report);
+    const nrows = [];
+    for (const g of clusters(lone).slice(0, 3)) {
+      const cx = g.reduce((t, h) => t + h.x, 0) / g.length, cy = g.reduce((t, h) => t + h.y, 0) / g.length;
+      const view = { x0: cx - 6, y0: cy - 6, w: 12, h: 12 };
+      const zp = 420 / 12;
+      const ringed = g.map((h) => ({ ...h, colour: "#e0115f" }));
+      const changedHere = g.filter((h) => filled.added.some((a) => a.x === h.x && a.y === h.y && a.color !== h.color)).length;
+      nrows.push(await strip(null, [
+        { label: `AI image (${g.length} lone, ΔE ${g.map((h) => h.de.toFixed(0)).join(", ")})`, png: await aiPng(at(item.ai), report, view, zp) },
+        { label: "plain, no neighbour step", png: plainPng(noStep, view, zp, ringed) },
+        { label: `plain, neighbour step (${changedHere} changed)`, png: plainPng(afterLayout, view, zp, ringed) },
+        { label: "tinted, no neighbour step", png: await tintedPng(noStep, view, zp) },
+        { label: "tinted, neighbour step", png: await tintedPng(afterLayout, view, zp) }
+      ], 360));
+    }
+    await stack(path.join(outDir, `${item.name}-neighbours.jpg`), nrows);
+  }
+
   const round = (v, p = 4) => Math.round(v * 10 ** p) / 10 ** p;
   return {
     name: item.name, mode: item.mode,
     stones: kept.length, serviceStones: serviceStones.length, cleanupRemoved: removed.length,
     before: { ss6: before.ss6, ss4: before.ss4, holes: before.holes.length, areaShare: round(before.areaShare), largestEmptyMm: round(before.largestEmptyMm, 2) },
     after: { ss6: after.ss6, ss4: after.ss4, holes: after.holes.length, areaShare: round(after.areaShare), largestEmptyMm: round(after.largestEmptyMm, 2) },
-    added: { total: filled.added.length, ss6: filled.added.filter((s) => s.d === 2).length, ss4: filled.added.filter((s) => s.d === 1.5).length },
+    added: { total: filled.added.length, ss6: filled.added.filter((s) => s.d === 2).length, ss4: filled.added.filter((s) => s.d === 1.5).length, recoloured: filled.recoloured, lone: lone.length, loneDe: lone.map((h) => Math.round(h.de * 10) / 10).sort((a, b) => a - b) },
     serviceLargestEmptyMm: report.largestEmptyCircleMm,
     subjectAreaMm2: Math.round(before.subjectAreaMm2),
     causes, details, closeups, traced: Boolean(trace),

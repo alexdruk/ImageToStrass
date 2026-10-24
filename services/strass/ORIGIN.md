@@ -233,3 +233,28 @@ whose disc is less than 70 % covered by the closed alpha.
 - New script `scripts/holes_trace.py` (IS diagnosis only): lays out saved AI images and records
   which stage dropped, deleted or declined a stone; variants "default", "fill-exact",
   "fill-cover-mask", "fill-both".
+
+### exp-holes follow-up (24 Oct 2026): no crash on a stone beyond the image's edge
+
+An AI image whose subject touches the image's edge crashed the layout with `IndexError: index -1 is
+out of bounds for axis 0 with size 0 (at colour.py:96)`. The fill (`geometry.fill`) places stones on
+a grid that reaches half a pixel past the last pixel centre, and `legalise` can push them further,
+so delivered stones can lie past the image's last row. With
+`sample_delivered` (`ordered.delivered_lab`, IS-05b) their colours are read by `stone_colours`, whose
+median rule then had no pixel within its radius and took the quantile of an empty array. (RS
+38cd831 reads colours at the detections only, which lie inside the image, so this path is IS's.)
+
+- `strass_layout/colour.py`: `stone_colours` reads the nearest pixel of the image for a stone with
+  no pixel within its radius, and for a stone whose whole window lies outside the image (where the
+  window itself was empty). A stone with pixels is read as before, so the equivalence test and
+  every layout that did not crash are unchanged. Docstring note.
+- `strass_layout/eyes.py` (RS bug): with the colour stage fixed, the same image crashed next in
+  `_find_inscribed` (`pupil_inscribed`, build G): `IndexError: index … is out of bounds for axis 0`.
+  A dark region cut by the image's border has its distance-transform peak near the edge, and the
+  window around it was clamped at 0 but not at the image's size. The window now ends at the image's
+  edge; a window inside the image is unchanged, so no layout that did not crash changes. Docstring
+  note.
+- `tests/test_exp_holes.py`: `StoneBeyondTheEdge` reproduces the colour crash with a 20 x 30 px
+  synthetic image (an SS4 stone 2.1 px past the last row, and a disc wholly outside the image);
+  `DarkDiscAtTheEdge` reproduces the pupil crash with an 80 x 60 px image (a dark disc with a
+  highlight, centred on the last row).

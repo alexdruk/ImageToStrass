@@ -14,7 +14,10 @@ import { MIN_GAP_MM } from "./tiers.js";
 // subject's edge it is measured on the grid. fillHoles() places a stone in every hole so found,
 // coloured as the strass service colours its own fill stones (sample_delivered): the mean CIE Lab of
 // the AI pixels (alpha >= 128) within the inner SAMPLE_SHARE of the stone's radius, snapped to the
-// catalogue by the service's snap_colours rules (palette PLUS_REAL_SKIN).
+// catalogue by the service's snap_colours rules (palette PLUS_REAL_SKIN). Then the neighbour step,
+// for filled stones only: a filled stone whose colour none of its neighbours (rim gap below
+// NEIGHBOUR_GAP_MM) uses takes the neighbours' most common colour when that colour's catalogue fill
+// is within NEIGHBOUR_DE (ΔE2000) of the colour sampled at the spot.
 
 export const GRID_PX_PER_MM = 20;
 export const CLOSE_MM = 1.0;
@@ -24,6 +27,8 @@ export const FILL_SIZE_IDS = Object.freeze(["ss6", "ss4"]);
 // Clearances beyond this are not told apart (only the order of the fill and the largest empty
 // circle above 2 * CLEARANCE_CAP_MM depend on it).
 export const CLEARANCE_CAP_MM = 4;
+export const NEIGHBOUR_GAP_MM = 0.5;
+export const NEIGHBOUR_DE = 6;
 
 const GAP = MIN_GAP_MM;
 const EPS = 1e-9;
@@ -80,7 +85,7 @@ export function deltaE2000([L1, a1, b1], [L2, a2, b2]) {
   return Math.sqrt(dL * dL + dC * dC + dH * dH + Rt * dC * dH);
 }
 
-const PALETTE = Object.entries(STONE_COLORS).map(([id, c]) => {
+export const PALETTE = Object.entries(STONE_COLORS).map(([id, c]) => {
   const h = c.fill.replace(/^#/, "");
   const lab = srgbToLab(...[0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)));
   return { id, lab, chroma: Math.hypot(lab[1], lab[2]) };
@@ -138,6 +143,29 @@ export function sampleLab(ai, cx, cy, dMm, mmPerPx) {
   const kept = px.filter((v) => v[0] <= q);
   const use = kept.length >= 3 ? kept : px;
   return [0, 1, 2].map((k) => median(use.map((v) => v[k])));
+}
+
+// The mean CIE L* of the AI pixels composited on white within the inner SAMPLE_SHARE of a stone of
+// diameter dMm at AI pixel (cx, cy) (pixel-index coordinates); at least 2 px of radius, as the
+// service reads colours. A stone with no pixel there (beyond the image's edge) reads the nearest one.
+export function lightnessOnWhite(ai, cx, cy, dMm, mmPerPx) {
+  const { data, width, height } = ai;
+  const radius = Math.max(2, SAMPLE_SHARE * 0.5 * dMm / mmPerPx);
+  const onWhite = (p) => {
+    const a = data[p + 3] / 255;
+    return srgbToLab(...[0, 1, 2].map((k) => data[p + k] * a + 255 * (1 - a)))[0];
+  };
+  let sum = 0, n = 0;
+  for (let y = Math.max(0, Math.floor(cy - radius)); y <= Math.min(height - 1, Math.ceil(cy + radius)); y++) {
+    for (let x = Math.max(0, Math.floor(cx - radius)); x <= Math.min(width - 1, Math.ceil(cx + radius)); x++) {
+      if (Math.hypot(y - cy, x - cx) > radius) continue;
+      sum += onWhite((y * width + x) * 4);
+      n++;
+    }
+  }
+  if (n) return sum / n;
+  const x = Math.round(Math.min(Math.max(cx, 0), width - 1)), y = Math.round(Math.min(Math.max(cy, 0), height - 1));
+  return onWhite((y * width + x) * 4);
 }
 
 function quantile(sorted, q) {
@@ -394,13 +422,55 @@ export function findHoles(stones, ai, report) {
 
 // Plain { x, y, d, color } stones (layout mm, after the overlap cleanup) + the AI image ({ data,
 // width, height } RGBA) + the layout's report -> { stones (the given ones, then one per hole),
-// added, before (findHoles' numbers) }.
-export function fillHoles(stones, ai, report) {
+// added, recoloured (filled stones the neighbour step changed), before (findHoles' numbers) }.
+// neighbours: false leaves out the neighbour step (tools only).
+// A report without the frame (mmPerPx, offsetMm; every /layout answer has them) gets no fill.
+export function fillHoles(stones, ai, report, { neighbours = true } = {}) {
+  if (!(Number(report?.mmPerPx) > 0) || !Array.isArray(report?.offsetMm)) return { stones, added: [], recoloured: 0, before: null };
   const found = findHoles(stones, ai, report);
   const s = Number(report.mmPerPx);
   const [ox, oy] = report.offsetMm;
-  const added = found.holes.map(({ x, y, d }) => ({
-    x, y, d, color: snapColour(sampleLab(ai, (x + ox) / s, (y + oy) / s, d, s))
-  }));
-  return { stones: [...stones, ...added], added, before: found };
+  const sampled = found.holes.map(({ x, y, d }) => sampleLab(ai, (x + ox) / s, (y + oy) / s, d, s));
+  const added = found.holes.map(({ x, y, d }, k) => ({ x, y, d, color: snapColour(sampled[k]) }));
+  const recoloured = neighbours ? neighbourStep(stones, added, sampled) : 0;
+  return { stones: [...stones, ...added], added, recoloured, before: found };
+}
+
+const FILL_LAB = new Map(PALETTE.map((p) => [p.id, p.lab]));
+
+// The neighbour step on the filled stones (in place); decided on the colours before the step, so the
+// order does not matter. Returns how many changed.
+function neighbourStep(stones, added, sampled) {
+  const all = [...stones, ...added];
+  const cell = 5;
+  const grid = new Map();
+  all.forEach((st, i) => {
+    const k = `${Math.floor(st.x / cell)},${Math.floor(st.y / cell)}`;
+    if (!grid.has(k)) grid.set(k, []);
+    grid.get(k).push(i);
+  });
+  const colours = all.map((st) => st.color);
+  const changes = [];
+  added.forEach((st, k) => {
+    const self = stones.length + k;
+    const counts = new Map();
+    const gx = Math.floor(st.x / cell), gy = Math.floor(st.y / cell);
+    for (let a = -1; a <= 1; a++) {
+      for (let b = -1; b <= 1; b++) {
+        for (const j of grid.get(`${gx + a},${gy + b}`) || []) {
+          if (j === self) continue;
+          const o = all[j];
+          if (Math.hypot(o.x - st.x, o.y - st.y) - (o.d + st.d) / 2 >= NEIGHBOUR_GAP_MM) continue;
+          counts.set(colours[j], (counts.get(colours[j]) || 0) + 1);
+        }
+      }
+    }
+    if (!counts.size || counts.has(colours[self])) return;
+    // Most common; on a tie the catalogue's order.
+    const order = [...FILL_LAB.keys()];
+    const [best] = [...counts].sort((p, q) => q[1] - p[1] || order.indexOf(p[0]) - order.indexOf(q[0]))[0];
+    if (deltaE2000(sampled[k], FILL_LAB.get(best)) <= NEIGHBOUR_DE) changes.push([st, best]);
+  });
+  for (const [st, colour] of changes) st.color = colour;
+  return changes.length;
 }

@@ -1,0 +1,1903 @@
+[
+  {
+    "name": "car-rule",
+    "mode": "colour",
+    "stones": 3531,
+    "serviceStones": 3531,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 17,
+      "holes": 17,
+      "areaShare": 0.0017,
+      "largestEmptyMm": 2.18
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.7
+    },
+    "added": {
+      "total": 17,
+      "ss6": 0,
+      "ss4": 17,
+      "recoloured": 0,
+      "lone": 4,
+      "loneDe": [
+        17.4,
+        31.1,
+        38.5,
+        67.6
+      ]
+    },
+    "serviceLargestEmptyMm": 2.154,
+    "subjectAreaMm2": 17321,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 1,
+      "eyes": 0,
+      "rows": 0,
+      "fill-declined": 0,
+      "fill-margin": 16,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "check": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          241,
+          67
+        ],
+        "holes": 2,
+        "causes": {
+          "fill-margin": 2
+        }
+      },
+      {
+        "at": [
+          157,
+          74
+        ],
+        "holes": 1,
+        "causes": {
+          "check": 1
+        }
+      },
+      {
+        "at": [
+          180,
+          43
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-margin": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "painted",
+    "production": {
+      "ok": true,
+      "coverage": 0.626,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.628,
+      "violations": 0,
+      "stones": 3548,
+      "minGapMm": 0.1004
+    }
+  },
+  {
+    "name": "cat-norule",
+    "mode": "colour",
+    "stones": 3140,
+    "serviceStones": 3140,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 8,
+      "holes": 8,
+      "areaShare": 0.001,
+      "largestEmptyMm": 2.02
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.69
+    },
+    "added": {
+      "total": 8,
+      "ss6": 0,
+      "ss4": 8,
+      "recoloured": 0,
+      "lone": 5,
+      "loneDe": [
+        6,
+        7.1,
+        7.3,
+        12.9,
+        46.8
+      ]
+    },
+    "serviceLargestEmptyMm": 2,
+    "subjectAreaMm2": 14706,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 2,
+      "rows": 5,
+      "fill-declined": 0,
+      "fill-margin": 1,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "rows:gap-dot": 4,
+      "eyes": 2,
+      "rows:interstitial": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          69,
+          117
+        ],
+        "holes": 1,
+        "causes": {
+          "rows": 1
+        }
+      },
+      {
+        "at": [
+          27,
+          50
+        ],
+        "holes": 1,
+        "causes": {
+          "rows": 1
+        }
+      },
+      {
+        "at": [
+          92,
+          63
+        ],
+        "holes": 1,
+        "causes": {
+          "eyes": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "painted",
+    "production": {
+      "ok": true,
+      "coverage": 0.645,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.646,
+      "violations": 0,
+      "stones": 3148,
+      "minGapMm": 0.101
+    }
+  },
+  {
+    "name": "cat-rule",
+    "mode": "colour",
+    "stones": 3573,
+    "serviceStones": 3573,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 6,
+      "holes": 6,
+      "areaShare": 0.0006,
+      "largestEmptyMm": 2.17
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.7
+    },
+    "added": {
+      "total": 6,
+      "ss6": 0,
+      "ss4": 6,
+      "recoloured": 0,
+      "lone": 1,
+      "loneDe": [
+        30.5
+      ]
+    },
+    "serviceLargestEmptyMm": 2.209,
+    "subjectAreaMm2": 16421,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 1,
+      "eyes": 2,
+      "rows": 3,
+      "fill-declined": 0,
+      "fill-margin": 0,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "check": 1,
+      "eyes": 2,
+      "rows:tiny": 2,
+      "rows:shadow": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          45,
+          101
+        ],
+        "holes": 1,
+        "causes": {
+          "check": 1
+        }
+      },
+      {
+        "at": [
+          96,
+          71
+        ],
+        "holes": 1,
+        "causes": {
+          "eyes": 1
+        }
+      },
+      {
+        "at": [
+          157,
+          31
+        ],
+        "holes": 1,
+        "causes": {
+          "rows": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "painted",
+    "production": {
+      "ok": true,
+      "coverage": 0.67,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.671,
+      "violations": 0,
+      "stones": 3579,
+      "minGapMm": 0.1008
+    }
+  },
+  {
+    "name": "dachshund-rule",
+    "mode": "colour",
+    "stones": 1628,
+    "serviceStones": 1628,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 5,
+      "holes": 5,
+      "areaShare": 0.0012,
+      "largestEmptyMm": 1.78
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.67
+    },
+    "added": {
+      "total": 5,
+      "ss6": 0,
+      "ss4": 5,
+      "recoloured": 0,
+      "lone": 1,
+      "loneDe": [
+        14.2
+      ]
+    },
+    "serviceLargestEmptyMm": 1.789,
+    "subjectAreaMm2": 7236,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 4,
+      "rows": 0,
+      "fill-declined": 0,
+      "fill-margin": 1,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "eyes": 4
+    },
+    "closeups": [
+      {
+        "at": [
+          23,
+          15
+        ],
+        "holes": 1,
+        "causes": {
+          "eyes": 1
+        }
+      },
+      {
+        "at": [
+          18,
+          27
+        ],
+        "holes": 1,
+        "causes": {
+          "eyes": 1
+        }
+      },
+      {
+        "at": [
+          135,
+          54
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-margin": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "transparent",
+    "production": {
+      "ok": true,
+      "coverage": 0.678,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.679,
+      "violations": 0,
+      "stones": 1633,
+      "minGapMm": 0.1021
+    }
+  },
+  {
+    "name": "dog-norule",
+    "mode": "colour",
+    "stones": 2071,
+    "serviceStones": 2071,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 2,
+      "ss4": 11,
+      "holes": 13,
+      "areaShare": 0.0025,
+      "largestEmptyMm": 2.45
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.69
+    },
+    "added": {
+      "total": 13,
+      "ss6": 2,
+      "ss4": 11,
+      "recoloured": 0,
+      "lone": 5,
+      "loneDe": [
+        12.3,
+        14,
+        14.7,
+        16.4,
+        20
+      ]
+    },
+    "serviceLargestEmptyMm": 1.811,
+    "subjectAreaMm2": 10176,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 10,
+      "rows": 1,
+      "fill-declined": 0,
+      "fill-margin": 2,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "eyes": 10,
+      "rows:tiny": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          42,
+          54
+        ],
+        "holes": 2,
+        "causes": {
+          "eyes": 2
+        }
+      },
+      {
+        "at": [
+          58,
+          49
+        ],
+        "holes": 2,
+        "causes": {
+          "eyes": 2
+        }
+      },
+      {
+        "at": [
+          58,
+          53
+        ],
+        "holes": 1,
+        "causes": {
+          "eyes": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "painted",
+    "production": {
+      "ok": true,
+      "coverage": 0.64,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.643,
+      "violations": 0,
+      "stones": 2084,
+      "minGapMm": 0.1001
+    }
+  },
+  {
+    "name": "dog-rule",
+    "mode": "colour",
+    "stones": 2039,
+    "serviceStones": 2039,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 3,
+      "ss4": 8,
+      "holes": 11,
+      "areaShare": 0.0024,
+      "largestEmptyMm": 2.22
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.7
+    },
+    "added": {
+      "total": 11,
+      "ss6": 3,
+      "ss4": 8,
+      "recoloured": 0,
+      "lone": 6,
+      "loneDe": [
+        35.7,
+        44,
+        47.9,
+        57.3,
+        78.7,
+        79.2
+      ]
+    },
+    "serviceLargestEmptyMm": 1.789,
+    "subjectAreaMm2": 9920,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 9,
+      "rows": 2,
+      "fill-declined": 0,
+      "fill-margin": 0,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "eyes": 9,
+      "rows:shadow": 1,
+      "rows:interstitial": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          40,
+          49
+        ],
+        "holes": 2,
+        "causes": {
+          "eyes": 2
+        }
+      },
+      {
+        "at": [
+          38,
+          53
+        ],
+        "holes": 1,
+        "causes": {
+          "eyes": 1
+        }
+      },
+      {
+        "at": [
+          55,
+          51
+        ],
+        "holes": 1,
+        "causes": {
+          "eyes": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "painted",
+    "production": {
+      "ok": true,
+      "coverage": 0.643,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.645,
+      "violations": 0,
+      "stones": 2050,
+      "minGapMm": 0.1014
+    }
+  },
+  {
+    "name": "giraffe-rule",
+    "mode": "colour",
+    "stones": 2286,
+    "serviceStones": 2286,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 1,
+      "ss4": 40,
+      "holes": 41,
+      "areaShare": 0.0065,
+      "largestEmptyMm": 2.6
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.7
+    },
+    "added": {
+      "total": 41,
+      "ss6": 1,
+      "ss4": 40,
+      "recoloured": 0,
+      "lone": 21,
+      "loneDe": [
+        11.4,
+        13.5,
+        14,
+        14.3,
+        14.9,
+        17.6,
+        18.6,
+        18.6,
+        18.8,
+        21.5,
+        22.2,
+        22.9,
+        24,
+        26.9,
+        27,
+        28.2,
+        31.9,
+        33.5,
+        34.6,
+        40.7,
+        44.1
+      ]
+    },
+    "serviceLargestEmptyMm": 2.608,
+    "subjectAreaMm2": 11322,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 3,
+      "rows": 15,
+      "fill-declined": 0,
+      "fill-margin": 23,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "rows:interstitial": 9,
+      "eyes": 3,
+      "rows:gap-dot": 4,
+      "rows:tiny": 1,
+      "rows:shadow": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          53,
+          245
+        ],
+        "holes": 2,
+        "causes": {
+          "fill-margin": 2
+        }
+      },
+      {
+        "at": [
+          66,
+          148
+        ],
+        "holes": 2,
+        "causes": {
+          "fill-margin": 2
+        }
+      },
+      {
+        "at": [
+          40,
+          64
+        ],
+        "holes": 1,
+        "causes": {
+          "rows": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "painted",
+    "production": {
+      "ok": true,
+      "coverage": 0.589,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.595,
+      "violations": 0,
+      "stones": 2327,
+      "minGapMm": 0.1011
+    }
+  },
+  {
+    "name": "mug-norule",
+    "mode": "colour",
+    "stones": 2224,
+    "serviceStones": 2224,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.68
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.68
+    },
+    "added": {
+      "total": 0,
+      "ss6": 0,
+      "ss4": 0,
+      "recoloured": 0,
+      "lone": 0,
+      "loneDe": []
+    },
+    "serviceLargestEmptyMm": 1.649,
+    "subjectAreaMm2": 9902,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 0,
+      "rows": 0,
+      "fill-declined": 0,
+      "fill-margin": 0,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {},
+    "closeups": [],
+    "traced": true,
+    "gapColour": "painted",
+    "production": {
+      "ok": true,
+      "coverage": 0.698,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.698,
+      "violations": 0,
+      "stones": 2224,
+      "minGapMm": 0.1016
+    }
+  },
+  {
+    "name": "mug-rule",
+    "mode": "colour",
+    "stones": 1751,
+    "serviceStones": 1751,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.42
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.42
+    },
+    "added": {
+      "total": 0,
+      "ss6": 0,
+      "ss4": 0,
+      "recoloured": 0,
+      "lone": 0,
+      "loneDe": []
+    },
+    "serviceLargestEmptyMm": 1.442,
+    "subjectAreaMm2": 7852,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 0,
+      "rows": 0,
+      "fill-declined": 0,
+      "fill-margin": 0,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {},
+    "closeups": [],
+    "traced": true,
+    "gapColour": "painted",
+    "production": {
+      "ok": true,
+      "coverage": 0.7,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.7,
+      "violations": 0,
+      "stones": 1751,
+      "minGapMm": 0.103
+    }
+  },
+  {
+    "name": "rs-cat",
+    "mode": "colour",
+    "stones": 2150,
+    "serviceStones": 2150,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 12,
+      "holes": 12,
+      "areaShare": 0.0021,
+      "largestEmptyMm": 1.77
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.7
+    },
+    "added": {
+      "total": 12,
+      "ss6": 0,
+      "ss4": 12,
+      "recoloured": 0,
+      "lone": 4,
+      "loneDe": [
+        9.2,
+        57.5,
+        68.5,
+        78.7
+      ]
+    },
+    "serviceLargestEmptyMm": 1.844,
+    "subjectAreaMm2": 9968,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 3,
+      "rows": 2,
+      "fill-declined": 1,
+      "fill-margin": 6,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "fill-declined:cover": 1,
+      "rows:rows-deleted": 1,
+      "rows:tiny": 1,
+      "eyes": 3
+    },
+    "closeups": [
+      {
+        "at": [
+          48,
+          117
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-declined": 1
+        }
+      },
+      {
+        "at": [
+          25,
+          93
+        ],
+        "holes": 1,
+        "causes": {
+          "rows": 1
+        }
+      },
+      {
+        "at": [
+          73,
+          82
+        ],
+        "holes": 1,
+        "causes": {
+          "rows": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "transparent",
+    "production": {
+      "ok": true,
+      "coverage": 0.647,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.649,
+      "violations": 0,
+      "stones": 2162,
+      "minGapMm": 0.1003
+    }
+  },
+  {
+    "name": "rs-dog",
+    "mode": "colour",
+    "stones": 1670,
+    "serviceStones": 1670,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 2,
+      "ss4": 11,
+      "holes": 13,
+      "areaShare": 0.0031,
+      "largestEmptyMm": 2.39
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.66
+    },
+    "added": {
+      "total": 13,
+      "ss6": 2,
+      "ss4": 11,
+      "recoloured": 0,
+      "lone": 7,
+      "loneDe": [
+        8.2,
+        14.4,
+        17.8,
+        19.2,
+        28.8,
+        33.6,
+        38.4
+      ]
+    },
+    "serviceLargestEmptyMm": 2.417,
+    "subjectAreaMm2": 8188,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 9,
+      "rows": 1,
+      "fill-declined": 1,
+      "fill-margin": 2,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "eyes": 9,
+      "fill-declined:cover": 1,
+      "rows:rows-deleted": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          15,
+          43
+        ],
+        "holes": 2,
+        "causes": {
+          "eyes": 2
+        }
+      },
+      {
+        "at": [
+          13,
+          3
+        ],
+        "holes": 2,
+        "causes": {
+          "fill-declined": 1,
+          "fill-margin": 1
+        }
+      },
+      {
+        "at": [
+          46,
+          51
+        ],
+        "holes": 1,
+        "causes": {
+          "eyes": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "painted",
+    "production": {
+      "ok": true,
+      "coverage": 0.628,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.632,
+      "violations": 0,
+      "stones": 1683,
+      "minGapMm": 0.1023
+    }
+  },
+  {
+    "name": "rs-einstein",
+    "mode": "colour",
+    "stones": 3590,
+    "serviceStones": 3590,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 4,
+      "holes": 4,
+      "areaShare": 0.0004,
+      "largestEmptyMm": 1.79
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.69
+    },
+    "added": {
+      "total": 4,
+      "ss6": 0,
+      "ss4": 4,
+      "recoloured": 0,
+      "lone": 1,
+      "loneDe": [
+        20.9
+      ]
+    },
+    "serviceLargestEmptyMm": 1.811,
+    "subjectAreaMm2": 16330,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 1,
+      "rows": 0,
+      "fill-declined": 1,
+      "fill-margin": 2,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "fill-declined:cover": 1,
+      "eyes": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          38,
+          82
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-declined": 1
+        }
+      },
+      {
+        "at": [
+          87,
+          67
+        ],
+        "holes": 1,
+        "causes": {
+          "eyes": 1
+        }
+      },
+      {
+        "at": [
+          46,
+          84
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-margin": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "transparent",
+    "production": {
+      "ok": true,
+      "coverage": 0.671,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.671,
+      "violations": 0,
+      "stones": 3594,
+      "minGapMm": 0.1
+    }
+  },
+  {
+    "name": "rs-jesus",
+    "mode": "colour",
+    "stones": 3297,
+    "serviceStones": 3297,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 10,
+      "holes": 10,
+      "areaShare": 0.0011,
+      "largestEmptyMm": 1.78
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.7
+    },
+    "added": {
+      "total": 10,
+      "ss6": 0,
+      "ss4": 10,
+      "recoloured": 0,
+      "lone": 2,
+      "loneDe": [
+        22.1,
+        39.8
+      ]
+    },
+    "serviceLargestEmptyMm": 1.844,
+    "subjectAreaMm2": 15806,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 0,
+      "rows": 3,
+      "fill-declined": 0,
+      "fill-margin": 7,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "rows:tiny": 1,
+      "rows:rows-deleted": 2
+    },
+    "closeups": [
+      {
+        "at": [
+          82,
+          34
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-margin": 1
+        }
+      },
+      {
+        "at": [
+          74,
+          112
+        ],
+        "holes": 1,
+        "causes": {
+          "rows": 1
+        }
+      },
+      {
+        "at": [
+          28,
+          60
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-margin": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "transparent",
+    "production": {
+      "ok": true,
+      "coverage": 0.629,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.63,
+      "violations": 0,
+      "stones": 3307,
+      "minGapMm": 0.1002
+    }
+  },
+  {
+    "name": "rs-lake",
+    "mode": "colour",
+    "stones": 4089,
+    "serviceStones": 4089,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 11,
+      "holes": 11,
+      "areaShare": 0.001,
+      "largestEmptyMm": 2.19
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.69
+    },
+    "added": {
+      "total": 11,
+      "ss6": 0,
+      "ss4": 11,
+      "recoloured": 0,
+      "lone": 6,
+      "loneDe": [
+        8.1,
+        13.2,
+        18.3,
+        19.8,
+        22.1,
+        23.7
+      ]
+    },
+    "serviceLargestEmptyMm": 2.126,
+    "subjectAreaMm2": 19224,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 1,
+      "eyes": 0,
+      "rows": 0,
+      "fill-declined": 3,
+      "fill-margin": 7,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "check": 1,
+      "fill-declined:cover": 3
+    },
+    "closeups": [
+      {
+        "at": [
+          108,
+          137
+        ],
+        "holes": 1,
+        "causes": {
+          "check": 1
+        }
+      },
+      {
+        "at": [
+          17,
+          127
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-declined": 1
+        }
+      },
+      {
+        "at": [
+          36,
+          68
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-declined": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "transparent",
+    "production": {
+      "ok": true,
+      "coverage": 0.66,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.661,
+      "violations": 0,
+      "stones": 4100,
+      "minGapMm": 0.1002
+    }
+  },
+  {
+    "name": "rs-leopard",
+    "mode": "colour",
+    "stones": 2433,
+    "serviceStones": 2433,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 3,
+      "holes": 3,
+      "areaShare": 0.0005,
+      "largestEmptyMm": 1.75
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.69
+    },
+    "added": {
+      "total": 3,
+      "ss6": 0,
+      "ss4": 3,
+      "recoloured": 0,
+      "lone": 1,
+      "loneDe": [
+        11.1
+      ]
+    },
+    "serviceLargestEmptyMm": 1.789,
+    "subjectAreaMm2": 11536,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 0,
+      "rows": 0,
+      "fill-declined": 0,
+      "fill-margin": 3,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {},
+    "closeups": [
+      {
+        "at": [
+          68,
+          74
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-margin": 1
+        }
+      },
+      {
+        "at": [
+          62,
+          71
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-margin": 1
+        }
+      },
+      {
+        "at": [
+          62,
+          18
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-margin": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "transparent",
+    "production": {
+      "ok": true,
+      "coverage": 0.645,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.645,
+      "violations": 0,
+      "stones": 2436,
+      "minGapMm": 0.1008
+    }
+  },
+  {
+    "name": "rs-logo",
+    "mode": "colour",
+    "stones": 833,
+    "serviceStones": 833,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.42
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.42
+    },
+    "added": {
+      "total": 0,
+      "ss6": 0,
+      "ss4": 0,
+      "recoloured": 0,
+      "lone": 0,
+      "loneDe": []
+    },
+    "serviceLargestEmptyMm": 1.414,
+    "subjectAreaMm2": 3183,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 0,
+      "rows": 0,
+      "fill-declined": 0,
+      "fill-margin": 0,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {},
+    "closeups": [],
+    "traced": true,
+    "gapColour": "transparent",
+    "production": {
+      "ok": true,
+      "coverage": 0.796,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.796,
+      "violations": 0,
+      "stones": 833,
+      "minGapMm": 0.1024
+    }
+  },
+  {
+    "name": "rs-parrot",
+    "mode": "colour",
+    "stones": 2542,
+    "serviceStones": 2542,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 10,
+      "holes": 10,
+      "areaShare": 0.0015,
+      "largestEmptyMm": 2.17
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.68
+    },
+    "added": {
+      "total": 10,
+      "ss6": 0,
+      "ss4": 10,
+      "recoloured": 0,
+      "lone": 4,
+      "loneDe": [
+        29.2,
+        29.8,
+        35.3,
+        50.1
+      ]
+    },
+    "serviceLargestEmptyMm": 2.154,
+    "subjectAreaMm2": 12044,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 1,
+      "eyes": 2,
+      "rows": 6,
+      "fill-declined": 0,
+      "fill-margin": 1,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "check": 1,
+      "eyes": 2,
+      "rows:interstitial": 3,
+      "rows:shadow": 1,
+      "rows:gap-dot": 1,
+      "rows:tiny": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          112,
+          84
+        ],
+        "holes": 2,
+        "causes": {
+          "rows": 2
+        }
+      },
+      {
+        "at": [
+          63,
+          46
+        ],
+        "holes": 1,
+        "causes": {
+          "check": 1
+        }
+      },
+      {
+        "at": [
+          135,
+          92
+        ],
+        "holes": 1,
+        "causes": {
+          "eyes": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "painted",
+    "production": {
+      "ok": true,
+      "coverage": 0.644,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.645,
+      "violations": 0,
+      "stones": 2552,
+      "minGapMm": 0.1008
+    }
+  },
+  {
+    "name": "rs-portrait",
+    "mode": "colour",
+    "stones": 3990,
+    "serviceStones": 3990,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 7,
+      "ss4": 48,
+      "holes": 55,
+      "areaShare": 0.0057,
+      "largestEmptyMm": 3.14
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.7
+    },
+    "added": {
+      "total": 55,
+      "ss6": 7,
+      "ss4": 48,
+      "recoloured": 0,
+      "lone": 6,
+      "loneDe": [
+        17.2,
+        23.1,
+        23.7,
+        23.9,
+        26,
+        76.9
+      ]
+    },
+    "serviceLargestEmptyMm": 3.225,
+    "subjectAreaMm2": 18747,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 0,
+      "rows": 16,
+      "fill-declined": 6,
+      "fill-margin": 32,
+      "edge": 1,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "fill-declined:cover": 4,
+      "rows:gap-dot": 11,
+      "rows:tiny": 4,
+      "fill-declined:cover+room": 1,
+      "edge": 1,
+      "fill-declined:room": 1,
+      "rows:shadow": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          139,
+          118
+        ],
+        "holes": 3,
+        "causes": {
+          "rows": 3
+        }
+      },
+      {
+        "at": [
+          128,
+          104
+        ],
+        "holes": 3,
+        "causes": {
+          "fill-margin": 3
+        }
+      },
+      {
+        "at": [
+          14,
+          89
+        ],
+        "holes": 2,
+        "causes": {
+          "fill-declined": 2
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "painted",
+    "production": {
+      "ok": true,
+      "coverage": 0.652,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.658,
+      "violations": 0,
+      "stones": 4045,
+      "minGapMm": 0.1004
+    }
+  },
+  {
+    "name": "rs-rose",
+    "mode": "colour",
+    "stones": 1846,
+    "serviceStones": 1846,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.69
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.69
+    },
+    "added": {
+      "total": 0,
+      "ss6": 0,
+      "ss4": 0,
+      "recoloured": 0,
+      "lone": 0,
+      "loneDe": []
+    },
+    "serviceLargestEmptyMm": 1.709,
+    "subjectAreaMm2": 8248,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 0,
+      "rows": 0,
+      "fill-declined": 0,
+      "fill-margin": 0,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {},
+    "closeups": [],
+    "traced": true,
+    "gapColour": "transparent",
+    "production": {
+      "ok": true,
+      "coverage": 0.683,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.683,
+      "violations": 0,
+      "stones": 1846,
+      "minGapMm": 0.1012
+    }
+  },
+  {
+    "name": "rs-tulips",
+    "mode": "colour",
+    "stones": 2673,
+    "serviceStones": 2673,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 0,
+      "ss4": 2,
+      "holes": 2,
+      "areaShare": 0.0003,
+      "largestEmptyMm": 1.97
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.7
+    },
+    "added": {
+      "total": 2,
+      "ss6": 0,
+      "ss4": 2,
+      "recoloured": 0,
+      "lone": 2,
+      "loneDe": [
+        13.1,
+        16.3
+      ]
+    },
+    "serviceLargestEmptyMm": 1.97,
+    "subjectAreaMm2": 12389,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 0,
+      "rows": 0,
+      "fill-declined": 1,
+      "fill-margin": 1,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "fill-declined:room": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          128,
+          87
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-declined": 1
+        }
+      },
+      {
+        "at": [
+          100,
+          100
+        ],
+        "holes": 1,
+        "causes": {
+          "fill-margin": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "transparent",
+    "production": {
+      "ok": true,
+      "coverage": 0.665,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.665,
+      "violations": 0,
+      "stones": 2675,
+      "minGapMm": 0.1009
+    }
+  },
+  {
+    "name": "rs-woman",
+    "mode": "colour",
+    "stones": 2613,
+    "serviceStones": 2613,
+    "cleanupRemoved": 0,
+    "before": {
+      "ss6": 3,
+      "ss4": 11,
+      "holes": 14,
+      "areaShare": 0.0024,
+      "largestEmptyMm": 2.59
+    },
+    "after": {
+      "ss6": 0,
+      "ss4": 0,
+      "holes": 0,
+      "areaShare": 0,
+      "largestEmptyMm": 1.7
+    },
+    "added": {
+      "total": 14,
+      "ss6": 3,
+      "ss4": 11,
+      "recoloured": 0,
+      "lone": 7,
+      "loneDe": [
+        7.4,
+        8.8,
+        11.1,
+        41.6,
+        48.5,
+        68.8,
+        68.9
+      ]
+    },
+    "serviceLargestEmptyMm": 1.97,
+    "subjectAreaMm2": 11904,
+    "causes": {
+      "is-cleanup": 0,
+      "check": 0,
+      "eyes": 8,
+      "rows": 4,
+      "fill-declined": 0,
+      "fill-margin": 2,
+      "edge": 0,
+      "not-detected": 0,
+      "ai-empty": 0
+    },
+    "details": {
+      "eyes": 8,
+      "rows:shadow": 3,
+      "rows:tiny": 1
+    },
+    "closeups": [
+      {
+        "at": [
+          109,
+          36
+        ],
+        "holes": 3,
+        "causes": {
+          "eyes": 3
+        }
+      },
+      {
+        "at": [
+          93,
+          34
+        ],
+        "holes": 2,
+        "causes": {
+          "eyes": 2
+        }
+      },
+      {
+        "at": [
+          115,
+          52
+        ],
+        "holes": 1,
+        "causes": {
+          "rows": 1
+        }
+      }
+    ],
+    "traced": true,
+    "gapColour": "transparent",
+    "production": {
+      "ok": true,
+      "coverage": 0.671,
+      "violations": 0
+    },
+    "filledDesign": {
+      "ok": true,
+      "coverage": 0.674,
+      "violations": 0,
+      "stones": 2627,
+      "minGapMm": 0.1
+    }
+  }
+]
