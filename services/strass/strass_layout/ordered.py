@@ -9,6 +9,8 @@ every stone gets its nearest catalogue colour.
 IS (IS-05b): with Rules.sample_delivered each stone's colour is read at its final position, from
 the inner SAMPLE_SHARE of its radius (delivered_lab, _delivered_colours), fill stones included,
 instead of at its detection.
+
+IS (exp-holes): the result's "fill" marks the stones the fill placed (report.fillAtMm).
 """
 import cv2
 import numpy as np
@@ -179,4 +181,5 @@ def ordered_layout(px, det, state, rules=DEFAULT):
         CC = _delivered_colours(rgb, a, s, P3, D3, CC, rules.mean_colour)
     ids, _ = snap_colours(CC, palette(rules))
     P3 = np.array([[round(float(x), 3), round(float(y), 3)] for x, y in P3])
-    return {"s": s, "mask": mask, "col": col, "P": P3, "D": D3, "ids": ids}
+    # IS (exp-holes): which stones the fill placed (k3 past the rows), for report.fillAtMm.
+    return {"s": s, "mask": mask, "col": col, "P": P3, "D": D3, "ids": ids, "fill": k3 >= len(P2)}

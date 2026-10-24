@@ -22,15 +22,7 @@
     "added": {
       "total": 17,
       "ss6": 0,
-      "ss4": 17,
-      "recoloured": 0,
-      "lone": 4,
-      "loneDe": [
-        17.4,
-        31.1,
-        38.5,
-        67.6
-      ]
+      "ss4": 17
     },
     "serviceLargestEmptyMm": 2.154,
     "subjectAreaMm2": 17321,
@@ -118,16 +110,7 @@
     "added": {
       "total": 8,
       "ss6": 0,
-      "ss4": 8,
-      "recoloured": 0,
-      "lone": 5,
-      "loneDe": [
-        6,
-        7.1,
-        7.3,
-        12.9,
-        46.8
-      ]
+      "ss4": 8
     },
     "serviceLargestEmptyMm": 2,
     "subjectAreaMm2": 14706,
@@ -217,12 +200,7 @@
     "added": {
       "total": 6,
       "ss6": 0,
-      "ss4": 6,
-      "recoloured": 0,
-      "lone": 1,
-      "loneDe": [
-        30.5
-      ]
+      "ss4": 6
     },
     "serviceLargestEmptyMm": 2.209,
     "subjectAreaMm2": 16421,
@@ -313,12 +291,7 @@
     "added": {
       "total": 5,
       "ss6": 0,
-      "ss4": 5,
-      "recoloured": 0,
-      "lone": 1,
-      "loneDe": [
-        14.2
-      ]
+      "ss4": 5
     },
     "serviceLargestEmptyMm": 1.789,
     "subjectAreaMm2": 7236,
@@ -406,16 +379,7 @@
     "added": {
       "total": 13,
       "ss6": 2,
-      "ss4": 11,
-      "recoloured": 0,
-      "lone": 5,
-      "loneDe": [
-        12.3,
-        14,
-        14.7,
-        16.4,
-        20
-      ]
+      "ss4": 11
     },
     "serviceLargestEmptyMm": 1.811,
     "subjectAreaMm2": 10176,
@@ -504,17 +468,7 @@
     "added": {
       "total": 11,
       "ss6": 3,
-      "ss4": 8,
-      "recoloured": 0,
-      "lone": 6,
-      "loneDe": [
-        35.7,
-        44,
-        47.9,
-        57.3,
-        78.7,
-        79.2
-      ]
+      "ss4": 8
     },
     "serviceLargestEmptyMm": 1.789,
     "subjectAreaMm2": 9920,
@@ -604,32 +558,7 @@
     "added": {
       "total": 41,
       "ss6": 1,
-      "ss4": 40,
-      "recoloured": 0,
-      "lone": 21,
-      "loneDe": [
-        11.4,
-        13.5,
-        14,
-        14.3,
-        14.9,
-        17.6,
-        18.6,
-        18.6,
-        18.8,
-        21.5,
-        22.2,
-        22.9,
-        24,
-        26.9,
-        27,
-        28.2,
-        31.9,
-        33.5,
-        34.6,
-        40.7,
-        44.1
-      ]
+      "ss4": 40
     },
     "serviceLargestEmptyMm": 2.608,
     "subjectAreaMm2": 11322,
@@ -721,10 +650,7 @@
     "added": {
       "total": 0,
       "ss6": 0,
-      "ss4": 0,
-      "recoloured": 0,
-      "lone": 0,
-      "loneDe": []
+      "ss4": 0
     },
     "serviceLargestEmptyMm": 1.649,
     "subjectAreaMm2": 9902,
@@ -779,10 +705,7 @@
     "added": {
       "total": 0,
       "ss6": 0,
-      "ss4": 0,
-      "recoloured": 0,
-      "lone": 0,
-      "loneDe": []
+      "ss4": 0
     },
     "serviceLargestEmptyMm": 1.442,
     "subjectAreaMm2": 7852,
@@ -837,15 +760,7 @@
     "added": {
       "total": 12,
       "ss6": 0,
-      "ss4": 12,
-      "recoloured": 0,
-      "lone": 4,
-      "loneDe": [
-        9.2,
-        57.5,
-        68.5,
-        78.7
-      ]
+      "ss4": 12
     },
     "serviceLargestEmptyMm": 1.844,
     "subjectAreaMm2": 9968,
@@ -936,18 +851,7 @@
     "added": {
       "total": 13,
       "ss6": 2,
-      "ss4": 11,
-      "recoloured": 0,
-      "lone": 7,
-      "loneDe": [
-        8.2,
-        14.4,
-        17.8,
-        19.2,
-        28.8,
-        33.6,
-        38.4
-      ]
+      "ss4": 11
     },
     "serviceLargestEmptyMm": 2.417,
     "subjectAreaMm2": 8188,
@@ -1038,12 +942,7 @@
     "added": {
       "total": 4,
       "ss6": 0,
-      "ss4": 4,
-      "recoloured": 0,
-      "lone": 1,
-      "loneDe": [
-        20.9
-      ]
+      "ss4": 4
     },
     "serviceLargestEmptyMm": 1.811,
     "subjectAreaMm2": 16330,
@@ -1132,13 +1031,7 @@
     "added": {
       "total": 10,
       "ss6": 0,
-      "ss4": 10,
-      "recoloured": 0,
-      "lone": 2,
-      "loneDe": [
-        22.1,
-        39.8
-      ]
+      "ss4": 10
     },
     "serviceLargestEmptyMm": 1.844,
     "subjectAreaMm2": 15806,
@@ -1227,17 +1120,7 @@
     "added": {
       "total": 11,
       "ss6": 0,
-      "ss4": 11,
-      "recoloured": 0,
-      "lone": 6,
-      "loneDe": [
-        8.1,
-        13.2,
-        18.3,
-        19.8,
-        22.1,
-        23.7
-      ]
+      "ss4": 11
     },
     "serviceLargestEmptyMm": 2.126,
     "subjectAreaMm2": 19224,
@@ -1326,12 +1209,7 @@
     "added": {
       "total": 3,
       "ss6": 0,
-      "ss4": 3,
-      "recoloured": 0,
-      "lone": 1,
-      "loneDe": [
-        11.1
-      ]
+      "ss4": 3
     },
     "serviceLargestEmptyMm": 1.789,
     "subjectAreaMm2": 11536,
@@ -1417,10 +1295,7 @@
     "added": {
       "total": 0,
       "ss6": 0,
-      "ss4": 0,
-      "recoloured": 0,
-      "lone": 0,
-      "loneDe": []
+      "ss4": 0
     },
     "serviceLargestEmptyMm": 1.414,
     "subjectAreaMm2": 3183,
@@ -1475,15 +1350,7 @@
     "added": {
       "total": 10,
       "ss6": 0,
-      "ss4": 10,
-      "recoloured": 0,
-      "lone": 4,
-      "loneDe": [
-        29.2,
-        29.8,
-        35.3,
-        50.1
-      ]
+      "ss4": 10
     },
     "serviceLargestEmptyMm": 2.154,
     "subjectAreaMm2": 12044,
@@ -1576,17 +1443,7 @@
     "added": {
       "total": 55,
       "ss6": 7,
-      "ss4": 48,
-      "recoloured": 0,
-      "lone": 6,
-      "loneDe": [
-        17.2,
-        23.1,
-        23.7,
-        23.9,
-        26,
-        76.9
-      ]
+      "ss4": 48
     },
     "serviceLargestEmptyMm": 3.225,
     "subjectAreaMm2": 18747,
@@ -1680,10 +1537,7 @@
     "added": {
       "total": 0,
       "ss6": 0,
-      "ss4": 0,
-      "recoloured": 0,
-      "lone": 0,
-      "loneDe": []
+      "ss4": 0
     },
     "serviceLargestEmptyMm": 1.709,
     "subjectAreaMm2": 8248,
@@ -1738,13 +1592,7 @@
     "added": {
       "total": 2,
       "ss6": 0,
-      "ss4": 2,
-      "recoloured": 0,
-      "lone": 2,
-      "loneDe": [
-        13.1,
-        16.3
-      ]
+      "ss4": 2
     },
     "serviceLargestEmptyMm": 1.97,
     "subjectAreaMm2": 12389,
@@ -1822,18 +1670,7 @@
     "added": {
       "total": 14,
       "ss6": 3,
-      "ss4": 11,
-      "recoloured": 0,
-      "lone": 7,
-      "loneDe": [
-        7.4,
-        8.8,
-        11.1,
-        41.6,
-        48.5,
-        68.8,
-        68.9
-      ]
+      "ss4": 11
     },
     "serviceLargestEmptyMm": 1.97,
     "subjectAreaMm2": 11904,

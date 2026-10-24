@@ -25,6 +25,9 @@ The trace holds plain lists, every position in the layout's own (cropped) mm, li
   eyeDropped     [x, y, d] stones of the ordered layout the eye stage removed
   eyeAdded       [x, y, d] eye stones
   checkRemoved   [x, y, d] stones the last gap check of post_process removed
+  serviceFill    [x, y, d, stage] stones of the final layout that the service's fills placed
+                 ("rows": the ordered layout's fill, after its second resolve_idx; "post": the
+                 fills after the eyes)
 """
 import dataclasses
 import json
@@ -275,8 +278,20 @@ def run(png, rules, models):
     pre_D = np.concatenate([last["D"], last["out"][1]]) if len(last["out"][0]) else last["D"]
     final = {key(q["x"], q["y"]) for q in result["stones"]}
     check_removed = [[round(float(x) - ox, 3), round(float(y) - oy, 3), float(d)] for (x, y), d in zip(pre_P, pre_D) if key(x, y) not in final]
+    # The service's own fill stones in the final layout: the rows fill's stones are the second
+    # resolve_idx's survivors with an index past the rows (they may have moved); the post fills'
+    # are their accepted candidates, which stay where they were placed.
+    n_rows = len(rec.resolve[0][2][0])
+    fill_keys = {}
+    for (x, y), d, k in zip(np.round(P2r, 3), D2r, idx2):
+        if k >= n_rows:
+            fill_keys[key(x, y)] = (float(d), "rows")
+    for f in post_fills:
+        for (x, y), d in zip(f["out"][0], f["out"][1]):
+            fill_keys[key(x, y)] = (float(d), "post")
+    service_fill = [[round(k[0] - ox, 3), round(k[1] - oy, 3), d, st] for k, (d, st) in fill_keys.items() if k in final]
     trace = {
-        "mmPerPx": s, "offsetMm": [ox, oy],
+        "mmPerPx": s, "offsetMm": [ox, oy], "serviceFill": service_fill,
         "detections": detections, "rowsDeleted": rows_deleted, "fill": fills,
         "eyeDropped": eye_dropped, "eyeAdded": eye_added, "checkRemoved": check_removed,
         "face": layout["report"]["face"],

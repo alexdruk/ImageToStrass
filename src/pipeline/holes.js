@@ -11,13 +11,14 @@ import { MIN_GAP_MM } from "./tiers.js";
 // findHoles() counts them on a grid of GRID_PX_PER_MM in the layout's own mm (the /layout answer's
 // stones; AI pixel = (mm + report.offsetMm) / report.mmPerPx): greedily, the free spot farthest
 // from everything first, SS6 while one fits, then SS4. The clearance to the stones is exact; to the
-// subject's edge it is measured on the grid. fillHoles() places a stone in every hole so found,
-// coloured as the strass service colours its own fill stones (sample_delivered): the mean CIE Lab of
-// the AI pixels (alpha >= 128) within the inner SAMPLE_SHARE of the stone's radius, snapped to the
-// catalogue by the service's snap_colours rules (palette PLUS_REAL_SKIN). Then the neighbour step,
-// for filled stones only: a filled stone whose colour none of its neighbours (rim gap below
-// NEIGHBOUR_GAP_MM) uses takes the neighbours' most common colour when that colour's catalogue fill
-// is within NEIGHBOUR_DE (ΔE2000) of the colour sampled at the spot.
+// subject's edge it is measured on the grid. fillHoles() places a stone in every hole so found and
+// gives it its neighbours' colour (neighbourVote): the colour with the largest weight among the
+// stones within VOTE_MM of its edge, each weighing 1 - gap / VOTE_MM, so nearer stones count more; on
+// a tie the nearest stone's colour. A hole sits between stones, where the AI painted its gaps, so its
+// own pixels say little (dark-spot fix, docs/exp-holes.md section 9). With colours: "pixels" (tools
+// only) it reads them instead, as the strass service colours its own fill stones (sample_delivered):
+// the mean CIE Lab of the AI pixels (alpha >= 128) within the inner SAMPLE_SHARE of the stone's
+// radius, snapped to the catalogue by the service's snap_colours rules (palette PLUS_REAL_SKIN).
 
 export const GRID_PX_PER_MM = 20;
 export const CLOSE_MM = 1.0;
@@ -27,8 +28,7 @@ export const FILL_SIZE_IDS = Object.freeze(["ss6", "ss4"]);
 // Clearances beyond this are not told apart (only the order of the fill and the largest empty
 // circle above 2 * CLEARANCE_CAP_MM depend on it).
 export const CLEARANCE_CAP_MM = 4;
-export const NEIGHBOUR_GAP_MM = 0.5;
-export const NEIGHBOUR_DE = 6;
+export const VOTE_MM = 1.0;
 
 const GAP = MIN_GAP_MM;
 const EPS = 1e-9;
@@ -422,55 +422,81 @@ export function findHoles(stones, ai, report) {
 
 // Plain { x, y, d, color } stones (layout mm, after the overlap cleanup) + the AI image ({ data,
 // width, height } RGBA) + the layout's report -> { stones (the given ones, then one per hole),
-// added, recoloured (filled stones the neighbour step changed), before (findHoles' numbers) }.
-// neighbours: false leaves out the neighbour step (tools only).
+// added, before (findHoles' numbers) }. colours: "neighbours" (the pipeline) or "pixels" (tools).
 // A report without the frame (mmPerPx, offsetMm; every /layout answer has them) gets no fill.
-export function fillHoles(stones, ai, report, { neighbours = true } = {}) {
-  if (!(Number(report?.mmPerPx) > 0) || !Array.isArray(report?.offsetMm)) return { stones, added: [], recoloured: 0, before: null };
+export function fillHoles(stones, ai, report, { colours = "neighbours" } = {}) {
+  if (!(Number(report?.mmPerPx) > 0) || !Array.isArray(report?.offsetMm)) return { stones, added: [], before: null };
   const found = findHoles(stones, ai, report);
   const s = Number(report.mmPerPx);
   const [ox, oy] = report.offsetMm;
-  const sampled = found.holes.map(({ x, y, d }) => sampleLab(ai, (x + ox) / s, (y + oy) / s, d, s));
-  const added = found.holes.map(({ x, y, d }, k) => ({ x, y, d, color: snapColour(sampled[k]) }));
-  const recoloured = neighbours ? neighbourStep(stones, added, sampled) : 0;
-  return { stones: [...stones, ...added], added, recoloured, before: found };
+  let added = found.holes.map(({ x, y, d }) => ({ x, y, d, color: snapColour(sampleLab(ai, (x + ox) / s, (y + oy) / s, d, s)) }));
+  if (colours === "neighbours") {
+    const all = [...stones, ...added];
+    const voted = neighbourVote(all, new Set(added.map((_, k) => stones.length + k)), (st) => st.color);
+    added = added.map((st, k) => ({ ...st, color: voted.get(stones.length + k) }));
+  }
+  return { stones: [...stones, ...added], added, before: found };
 }
 
-const FILL_LAB = new Map(PALETTE.map((p) => [p.id, p.lab]));
-
-// The neighbour step on the filled stones (in place); decided on the colours before the step, so the
-// order does not matter. Returns how many changed.
-function neighbourStep(stones, added, sampled) {
-  const all = [...stones, ...added];
+// Colours by the neighbour vote for the stones at the indices in targets (a Set) of plain { x, y, d }
+// stones; colourOf(stone, index) gives the others' colours. Targets are decided in rounds: a target
+// with a decided stone within VOTE_MM of its edge takes the colour with the largest summed weight (1 -
+// gap / VOTE_MM) among them, on a tie the nearest one's; the round's results vote in the next round
+// (holes next to holes). A target with no decided stone within reach after that takes the nearest
+// decided stone's colour. Returns Map(index -> colour).
+export function neighbourVote(stones, targets, colourOf) {
   const cell = 5;
   const grid = new Map();
-  all.forEach((st, i) => {
+  stones.forEach((st, i) => {
     const k = `${Math.floor(st.x / cell)},${Math.floor(st.y / cell)}`;
     if (!grid.has(k)) grid.set(k, []);
     grid.get(k).push(i);
   });
-  const colours = all.map((st) => st.color);
-  const changes = [];
-  added.forEach((st, k) => {
-    const self = stones.length + k;
-    const counts = new Map();
+  const colour = new Map();
+  stones.forEach((st, i) => { if (!targets.has(i)) colour.set(i, colourOf(st, i)); });
+  const out = new Map();
+  let open = [...targets];
+  const gapOf = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) - (a.d + b.d) / 2;
+  const near = (i, reach) => {
+    const st = stones[i], r = Math.ceil((reach + 4) / cell);
     const gx = Math.floor(st.x / cell), gy = Math.floor(st.y / cell);
-    for (let a = -1; a <= 1; a++) {
-      for (let b = -1; b <= 1; b++) {
-        for (const j of grid.get(`${gx + a},${gy + b}`) || []) {
-          if (j === self) continue;
-          const o = all[j];
-          if (Math.hypot(o.x - st.x, o.y - st.y) - (o.d + st.d) / 2 >= NEIGHBOUR_GAP_MM) continue;
-          counts.set(colours[j], (counts.get(colours[j]) || 0) + 1);
-        }
+    const found = [];
+    for (let a = -r; a <= r; a++) for (let b = -r; b <= r; b++) {
+      for (const j of grid.get(`${gx + a},${gy + b}`) || []) {
+        if (j === i || !colour.has(j)) continue;
+        const gap = gapOf(st, stones[j]);
+        if (gap < reach) found.push({ j, gap });
       }
     }
-    if (!counts.size || counts.has(colours[self])) return;
-    // Most common; on a tie the catalogue's order.
-    const order = [...FILL_LAB.keys()];
-    const [best] = [...counts].sort((p, q) => q[1] - p[1] || order.indexOf(p[0]) - order.indexOf(q[0]))[0];
-    if (deltaE2000(sampled[k], FILL_LAB.get(best)) <= NEIGHBOUR_DE) changes.push([st, best]);
-  });
-  for (const [st, colour] of changes) st.color = colour;
-  return changes.length;
+    return found;
+  };
+  while (open.length) {
+    const decided = [];
+    const still = [];
+    for (const i of open) {
+      const voters = near(i, VOTE_MM);
+      if (!voters.length) { still.push(i); continue; }
+      const weight = new Map();
+      for (const { j, gap } of voters) weight.set(colour.get(j), (weight.get(colour.get(j)) || 0) + 1 - Math.max(0, gap) / VOTE_MM);
+      const top = Math.max(...weight.values());
+      const tied = new Set([...weight].filter(([, w]) => w >= top - 1e-9).map(([c]) => c));
+      const nearest = voters.filter((v) => tied.has(colour.get(v.j))).sort((p, q) => p.gap - q.gap || p.j - q.j)[0];
+      decided.push([i, colour.get(nearest.j)]);
+    }
+    if (!decided.length) {
+      // Nothing decided within reach: the nearest decided stone anywhere.
+      for (const i of still) {
+        let best = null;
+        colour.forEach((c, j) => {
+          const gap = gapOf(stones[i], stones[j]);
+          if (!best || gap < best.gap) best = { gap, c };
+        });
+        out.set(i, best ? best.c : colourOf(stones[i], i));
+      }
+      break;
+    }
+    for (const [i, c] of decided) { colour.set(i, c); out.set(i, c); }
+    open = still;
+  }
+  return out;
 }

@@ -10,6 +10,11 @@ Alex's decisions on it (24 Oct), now built:
 3. Two crashes on AI images whose subject touches the image's edge are fixed in IS's strass copy
    (section 7, `services/strass/ORIGIN.md`).
 
+Dark spots (24 Oct, section 9): Alex saw small Jet stones with a dark halo among Crystal stones in
+the B&W designs. The cause was fill stones reading the AI's gap paint; now every stone the IS fill
+adds takes its neighbours' colour (replacing the 6 ΔE step of the first decision), and the service's
+own fill stones can do the same behind `IS_SERVICE_FILL_NEIGHBOURS=1` (off).
+
 Designs measured here: the 9 CC0 AI images of IS-03b (`tools/fixtures/is03b-ai/`) and the 12 RS
 test images (`services/strass/prototype/img/`), each laid out again with `DEFAULT` (no provider
 call). The private portraits were measured the same way (colour and B&W); their pictures, numbers
@@ -17,9 +22,10 @@ and reports stay in `data/private-portraits/` (`holes.html`, `bw.html`) and are 
 
 Reproduce: `services/strass/scripts/holes_trace.py OUT default NAME=PNG ...` (layouts and stage
 traces), then `node tools/exp-holes.mjs data/exp-holes/manifest.json docs/exp-holes` and `node
-tools/exp-bw.mjs data/exp-holes/manifest.json docs/exp-holes`. The pictures in
-[`docs/exp-holes/`](exp-holes/) were then reduced to 1400 px wide (JPEG quality 66);
-`results.json` and `bw-results.json` there hold every number below.
+tools/exp-bw.mjs data/exp-holes/manifest.json docs/exp-holes` and `node tools/exp-spots.mjs
+data/exp-holes/manifest.json docs/exp-holes both`. The pictures in
+[`docs/exp-holes/`](exp-holes/) were then reduced to 1200 px wide (JPEG quality 60);
+`results.json`, `bw-results.json` and `spots-results.json` there hold every number below.
 
 ## 1. What a hole is
 
@@ -135,35 +141,28 @@ B removes about half of the holes and nothing else changes (faces, pupils and vi
 on every layout); the eye and rows holes are not its stage. A reaches 0 on its own, keeps the strass
 copy's layout at the RS rules, and was chosen.
 
-## 5. Neighbour step for filled stones
+## 5. Colours of the filled stones
 
-Rule (spec 7.5): a filled stone whose colour none of its neighbours (rim gap below 0.5 mm) uses
-takes the neighbours' most common colour (on a tie the catalogue's first) when that colour's
-catalogue fill is within 6 ΔE2000 of the colour sampled at the spot. Decided on the colours before
-the step, so the order of the stones does not matter.
+First decision (24 Oct): a filled stone read its colour from the AI image's pixels, then a filled
+stone whose colour no neighbour within 0.5 mm used took the neighbours' most common colour when that
+was within 6 ΔE of the sampled colour. On these 21 designs that step changed none of the 235 filled
+stones: 83 had a colour no neighbour used, but the neighbours' colour was 6.0 to 79 ΔE (median 23)
+from the sampled one. The pixels under a hole are the AI's gap paint or a mix at a colour boundary,
+not a stone. Section 9 shows what that did in black & white.
 
-On the 21 designs: of the 235 filled stones, 83 have a colour none of their neighbours uses, and
-**none changes**: the neighbours' most common colour is 6.0 to 79 ΔE from the colour the AI image
-shows at the spot (quartiles 14, 23 and 38 ΔE; 4 within 8 ΔE, 8 within 10). In the close-ups a lone
-filled stone sits mostly on a boundary between two colour areas, where the sampled colour is a mix
-rather than a neighbour's colour slightly off. On the private portraits the
-step changed a handful of stones (`data/private-portraits/holes.html`).
-
-The giraffe ([neighbours close-up](exp-holes/giraffe-rule-neighbours.jpg)), 21 of whose 41 filled
-stones are lone: the olive stones on the mane's edge lie between Jet and gold (41–44 ΔE from Jet,
-the neighbours' colour), a Copper stone 33 ΔE from its neighbours' Smoked Topaz; with 6 ΔE all stay. Left to right:
-AI image | plain without the step | plain with it | tinted without | tinted with; the filled stones
-in question are ringed.
-
-![Giraffe, neighbour step](exp-holes/giraffe-rule-neighbours.jpg)
-
-`NAME-neighbours.jpg` exists for every design with lone filled stones (17 of 21).
+Now (spec 7.5): every filled stone takes its neighbours' colour and does not read its pixels. Among
+the stones within 1 mm of its edge each weighs 1 − gap / 1 mm, so nearer stones count more; the
+colour with the largest total weight wins, on a tie the nearest stone's. Filled stones next to
+filled stones are decided in rounds; one with no decided stone within 1 mm takes the nearest
+decided stone's colour. In black & white the same vote is taken between the neighbours' Jet and
+Crystal (7.6).
 
 ## 6. Black & white read from the AI image
 
-Rule (spec 7.6): after the fill, every delivered stone, filled ones included, takes its lightness
+Rule (spec 7.6): after the fill, every delivered stone takes its lightness
 from the AI image itself: the mean CIE L\* of the pixels composited on white within the inner 60 %
-of its radius (at least 2 px). Below `BW_THRESHOLD` (default 55) Jet, otherwise Crystal. Before,
+of its radius (at least 2 px). Below `BW_THRESHOLD` (default 55) Jet, otherwise Crystal. The filled
+stones are not read: they take Jet or Crystal from their neighbours (section 5). Before,
 the service's catalogue colour was mapped by its fill's L\*, so the service's colour snapping (skin
 and chroma rules, the eye stage's colours, the dark-dot clean-up) stood between the AI's drawing and
 the result.
@@ -175,27 +174,27 @@ drawn with the B&W prompt, are almost two-tone. Old against new on the 21 design
 
 | design | Otsu L\* | Jet share old → new | stones changed | lone, old | lone at 45 / 55 / 65 (%) |
 | --- | ---: | --- | ---: | ---: | --- |
-| car-rule | 50.5 | 51.3 % → 50.0 % | 64 | 0.5 % | 0.7 / 0.7 / 0.6 |
+| car-rule | 50.5 | 51.3 % → 49.9 % | 64 | 0.5 % | 0.7 / 0.7 / 0.6 |
 | cat-norule | 64.5 | 26.7 % → 24.1 % | 142 | 2.5 % | 1.8 / 2.2 / 2.5 |
-| cat-rule | 65.5 | 36.2 % → 26.8 % | 347 | 2.0 % | 1.4 / 2.2 / 2.2 |
-| dachshund-rule | 41.5 | 90.1 % → 82.2 % | 129 | 1.2 % | 1.0 / 1.3 / 1.8 |
-| dog-norule | 48.5 | 48.7 % → 34.4 % | 311 | 2.1 % | 1.0 / 2.2 / 1.7 |
-| dog-rule | 47.5 | 44.0 % → 35.8 % | 188 | 1.5 % | 1.3 / 1.0 / 1.7 |
-| giraffe-rule | 56.5 | 48.7 % → 48.0 % | 32 | 5.7 % | 3.8 / 5.0 / 6.1 |
+| cat-rule | 65.5 | 36.2 % → 26.8 % | 347 | 2.0 % | 1.5 / 2.2 / 2.2 |
+| dachshund-rule | 41.5 | 90.1 % → 82.3 % | 129 | 1.2 % | 1.0 / 1.5 / 1.8 |
+| dog-norule | 48.5 | 48.7 % → 34.4 % | 311 | 2.1 % | 1.0 / 2.2 / 1.5 |
+| dog-rule | 47.5 | 44.0 % → 35.7 % | 188 | 1.5 % | 1.3 / 1.0 / 1.7 |
+| giraffe-rule | 56.5 | 48.7 % → 47.7 % | 32 | 5.7 % | 3.5 / 3.8 / 5.4 |
 | mug-norule | 69.5 | 21.6 % → 21.3 % | 9 | 0.8 % | 3.4 / 0.8 / 0.8 |
 | mug-rule | 81.5 | 12.7 % → 2.5 % | 180 | 0.1 % | 0.0 / 1.4 / 0.2 |
-| rs-cat | 55.5 | 53.3 % → 47.8 % | 128 | 2.1 % | 1.8 / 2.2 / 2.2 |
-| rs-dog | 58.5 | 33.9 % → 30.7 % | 77 | 1.1 % | 2.1 / 1.9 / 2.1 |
+| rs-cat | 55.5 | 53.3 % → 47.9 % | 128 | 2.1 % | 1.8 / 2.2 / 2.2 |
+| rs-dog | 58.5 | 33.9 % → 30.8 % | 77 | 1.1 % | 2.1 / 1.9 / 2.1 |
 | rs-einstein | 53.5 | 62.8 % → 58.8 % | 144 | 0.6 % | 1.1 / 0.7 / 1.1 |
-| rs-jesus | 46.5 | 68.8 % → 66.4 % | 77 | 1.7 % | 2.2 / 1.9 / 3.0 |
+| rs-jesus | 46.5 | 68.8 % → 66.6 % | 77 | 1.7 % | 2.1 / 1.7 / 2.9 |
 | rs-lake | 59.5 | 63.2 % → 54.6 % | 347 | 2.3 % | 1.5 / 2.3 / 2.5 |
 | rs-leopard | 50.5 | 53.0 % → 51.8 % | 26 | 7.9 % | 8.4 / 7.9 / 7.9 |
 | rs-logo | 31.5 | 85.1 % → 85.1 % | 0 | 0.0 % | 0.0 / 0.0 / 0.0 |
-| rs-parrot | 52.5 | 49.0 % → 41.4 % | 208 | 2.1 % | 1.6 / 1.8 / 2.6 |
-| rs-portrait | 52.5 | 43.2 % → 43.8 % | 146 | 1.1 % | 1.1 / 0.9 / 1.1 |
+| rs-parrot | 52.5 | 49.0 % → 41.3 % | 208 | 2.1 % | 1.6 / 1.8 / 2.5 |
+| rs-portrait | 52.5 | 43.2 % → 44.1 % | 146 | 1.1 % | 1.0 / 0.9 / 1.0 |
 | rs-rose | 42.5 | 94.5 % → 94.2 % | 6 | 0.1 % | 0.5 / 0.4 / 0.1 |
-| rs-tulips | 60.5 | 54.4 % → 40.8 % | 378 | 0.8 % | 1.0 / 1.7 / 0.8 |
-| rs-woman | 37.5 | 76.8 % → 75.0 % | 54 | 0.3 % | 1.1 / 0.3 / 0.3 |
+| rs-tulips | 60.5 | 54.4 % → 40.8 % | 378 | 0.8 % | 0.9 / 1.7 / 0.8 |
+| rs-woman | 37.5 | 76.8 % → 74.9 % | 54 | 0.3 % | 0.9 / 0.3 / 0.4 |
 
 - **Stones changed**: stones of the old design (no fill) whose Jet/Crystal differs in the new one.
 - **Lone**: the speckle, a Jet stone with no Jet neighbour within 0.5 mm (or Crystal without a
@@ -206,10 +205,10 @@ drawn with the B&W prompt, are almost two-tone. Old against new on the 21 design
 
 The new rule is darker where the service's skin and fur colours were dark catalogue colours over
 mid-tone AI pixels (dogs, cats, tulips) and keeps what the AI drew otherwise. Speckle stays about
-where it was (faces 2.3 % old, 2.3 % new at 55).
+where it was (faces 2.3 % old, 2.2 % new at 55).
 
-Threshold: over the 12 faces, the speckle is 2.0 % at 40, 2.2 % at 45 and 50, 2.3 % at 55, 2.5 % at
-60, 2.6 % at 65 and 2.4 % at 70: a little cleaner below 55, but the differences are a few stones
+Threshold: over the 12 faces, the speckle is 1.9 % at 40, 2.1 % at 45 and 50, 2.2 % at 55, 2.4 % at
+60, 2.5 % at 65 and 2.4 % at 70: a little cleaner below 55, but the differences are a few stones
 per face. On the private B&W portraits (drawn with the B&W prompt) the same holds: 45–50 is slightly
 cleaner than 55 in the faces, from 60 up single Jet stones start to appear on cheeks, and each
 image's natural break lies around 50; the difference between 50 and 55 is small. The default stays
@@ -243,6 +242,120 @@ equivalence test against the prototype holds.
 
 - `IS_FILL_HOLES` (default on; `0` turns the hole fill off).
 - `BW_THRESHOLD` (default 55).
+- `IS_SERVICE_FILL_NEIGHBOURS` (default off; `1` gives the service's fill stones their neighbours'
+  colour, section 9).
 - Fake mode (`IS_FAKE=1`) uses `src/pipeline/fake/ai.png`, the fake layout's own stones drawn as
   flat discs (`tools/make-fake-ai.mjs`), so the fill and black & white read the image the layout
   came from.
+
+## 9. Dark spots in black & white
+
+Alex saw small Jet stones with a dark halo among Crystal stones in the tinted B&W designs. The
+suspected cause: the hole fill puts SS4 stones in the spaces between stones, they read their colour
+from the AI image there, which is the AI's dark gap paint, and become Jet among Crystal; in the
+tinted view each Jet stone's gap colour (section 8 of the spec) draws the halo.
+
+**Checked first** (`tools/exp-spots.mjs`), on every design and both modes, with the stones split into
+the IS fill's, the service's own fill stones (`sample_delivered` makes them read their own pixels
+too; the service now reports them as `report.fillAtMm`) and the rest (the stones the AI drew).
+"Spots": in colour a stone no neighbour within 0.5 mm shares its colour with; in B&W a Jet stone
+with at least 3 neighbours, more than half of them Crystal. Before the fix (fill stones reading
+their pixels), on the 21 designs:
+
+| class | stones | colour: lone | B&W: Jet among Crystal | B&W: Crystal among Jet |
+| --- | ---: | ---: | ---: | ---: |
+| IS fill | 235 | 83 (35 %) | 20 (8.5 %) | 29 (12 %) |
+| service fill | 1135 | 270 (24 %) | 118 (10 %) | 43 (3.8 %) |
+| stones the AI drew | 52 834 | 6217 (12 %) | 3353 (6.3 %) | 3113 (5.9 %) |
+
+Both kinds of fill stone are spots two to three times as often as the stones the AI drew, and the
+service's fill stones, five times as many, read darker than their neighbours (mean L\* 26 against
+39 around them). The private B&W portraits, drawn with the B&W prompt (white stones with black
+outlines on dark gap paint), show it more strongly, and for both kinds of fill stone. So the
+cause is confirmed, for the IS fill and the service's fill alike.
+
+**Fix** (spec 7.5, 7.6): the IS fill's stones take their neighbours' colour (section 5). The
+service's fill stones get the same vote in IS behind `IS_SERVICE_FILL_NEIGHBOURS=1` (off), in one
+vote with the IS fill's stones; the strass copy only reports which stones they are.
+
+| design | mode | IS fill | service fill | IS fill spots, before → after | service fill spots → with flag | spots in stones the AI drew | IS fill recoloured | service fill recoloured (flag) |
+| --- | --- | ---: | ---: | --- | --- | ---: | ---: | ---: |
+| car-rule | colour | 17 | 250 | 4 → 0 | 52 → 9 | 200 | 7 | 188 |
+| car-rule-bw | B&W | 17 | 250 | 0 → 0 | 28 → 4 | 181 | 1 | 85 |
+| cat-norule | colour | 8 | 27 | 5 → 0 | 10 → 0 | 655 | 6 | 20 |
+| cat-norule-bw | B&W | 8 | 27 | 0 → 0 | 5 → 0 | 272 | 1 | 11 |
+| cat-rule | colour | 6 | 34 | 1 → 0 | 14 → 0 | 512 | 3 | 24 |
+| cat-rule-bw | B&W | 6 | 34 | 0 → 0 | 6 → 2 | 316 | 0 | 10 |
+| dachshund-rule | colour | 5 | 17 | 1 → 0 | 4 → 0 | 68 | 2 | 14 |
+| dachshund-rule-bw | B&W | 5 | 17 | 0 → 0 | 3 → 0 | 36 | 1 | 9 |
+| dog-norule | colour | 13 | 27 | 5 → 0 | 5 → 0 | 281 | 7 | 14 |
+| dog-norule-bw | B&W | 13 | 27 | 0 → 0 | 6 → 1 | 149 | 1 | 12 |
+| dog-rule | colour | 11 | 24 | 6 → 0 | 11 → 0 | 323 | 10 | 18 |
+| dog-rule-bw | B&W | 11 | 24 | 3 → 0 | 5 → 0 | 152 | 3 | 9 |
+| giraffe-rule | colour | 41 | 259 | 21 → 0 | 78 → 18 | 618 | 33 | 168 |
+| giraffe-rule-bw | B&W | 41 | 259 | 8 → 1 | 28 → 6 | 201 | 15 | 95 |
+| mug-norule | colour | 0 | 0 | 0 → 0 | 0 → 0 | 123 | 0 | 0 |
+| mug-norule-bw | B&W | 0 | 0 | 0 → 0 | 0 → 0 | 153 | 0 | 0 |
+| mug-rule | colour | 0 | 0 | 0 → 0 | 0 → 0 | 31 | 0 | 0 |
+| mug-rule-bw | B&W | 0 | 0 | 0 → 0 | 0 → 0 | 37 | 0 | 0 |
+| rs-cat | colour | 12 | 11 | 4 → 0 | 4 → 0 | 340 | 7 | 8 |
+| rs-cat-bw | B&W | 12 | 11 | 1 → 0 | 0 → 0 | 104 | 4 | 6 |
+| rs-dog | colour | 13 | 12 | 7 → 0 | 8 → 0 | 251 | 9 | 11 |
+| rs-dog-bw | B&W | 13 | 12 | 0 → 0 | 3 → 0 | 104 | 3 | 3 |
+| rs-einstein | colour | 4 | 8 | 1 → 0 | 2 → 1 | 300 | 3 | 4 |
+| rs-einstein-bw | B&W | 4 | 8 | 0 → 0 | 0 → 0 | 294 | 1 | 4 |
+| rs-jesus | colour | 10 | 23 | 2 → 0 | 10 → 0 | 389 | 4 | 14 |
+| rs-jesus-bw | B&W | 10 | 23 | 0 → 0 | 2 → 0 | 181 | 7 | 10 |
+| rs-lake | colour | 11 | 5 | 6 → 0 | 1 → 0 | 520 | 7 | 2 |
+| rs-lake-bw | B&W | 11 | 5 | 0 → 0 | 0 → 0 | 294 | 3 | 2 |
+| rs-leopard | colour | 3 | 22 | 1 → 0 | 12 → 0 | 596 | 1 | 18 |
+| rs-leopard-bw | B&W | 3 | 22 | 0 → 0 | 3 → 0 | 375 | 0 | 11 |
+| rs-logo | colour | 0 | 0 | 0 → 0 | 0 → 0 | 1 | 0 | 0 |
+| rs-logo-bw | B&W | 0 | 0 | 0 → 0 | 0 → 0 | 0 | 0 | 0 |
+| rs-parrot | colour | 10 | 51 | 4 → 0 | 19 → 1 | 272 | 8 | 34 |
+| rs-parrot-bw | B&W | 10 | 51 | 3 → 0 | 11 → 0 | 127 | 5 | 15 |
+| rs-portrait | colour | 55 | 352 | 6 → 0 | 31 → 15 | 449 | 16 | 207 |
+| rs-portrait-bw | B&W | 55 | 352 | 1 → 0 | 17 → 4 | 108 | 12 | 38 |
+| rs-rose | colour | 0 | 0 | 0 → 0 | 0 → 0 | 45 | 0 | 0 |
+| rs-rose-bw | B&W | 0 | 0 | 0 → 0 | 0 → 0 | 1 | 0 | 0 |
+| rs-tulips | colour | 2 | 2 | 2 → 0 | 0 → 0 | 95 | 2 | 2 |
+| rs-tulips-bw | B&W | 2 | 2 | 0 → 0 | 0 → 0 | 193 | 0 | 0 |
+| rs-woman | colour | 14 | 11 | 7 → 0 | 9 → 0 | 103 | 9 | 10 |
+| rs-woman-bw | B&W | 14 | 11 | 4 → 0 | 1 → 0 | 70 | 8 | 3 |
+
+(Spots: lone stones in colour, Jet among Crystal in B&W. The B&W rows here are the colour AI images
+laid out in B&W mode; the private portraits, drawn with the B&W prompt, are the real case.)
+
+Totals: the IS fill's spots go from 83 to 0 in colour and from 20 to 1 in B&W; 134 (colour) and 65
+(B&W) of its 235 stones change colour. With the flag the service's fill spots go from 270 to 44 in
+colour and from 118 to 17 in B&W, but it recolours 756 of the 1135 service fill stones in colour
+and 323 in B&W.
+
+**What remains**:
+
+- The one IS fill spot left (giraffe, B&W) is an SS4 stone with two Jet stones 0.13 and 0.15 mm
+  away (weights 0.87 and 0.85) and two Crystal stones 0.15 and 0.27 mm away (0.85 and 0.73): Jet
+  wins by weight. Its third Crystal neighbour is another filled stone, decided in a later round, so
+  by the spot count (within 0.5 mm) it is Jet among mostly Crystal.
+- With the flag off (the default), the service's fill stones keep their spots (118 in B&W). With
+  the flag on 17 remain.
+- Most "spots" left are stones the AI drew: one-stone-wide dark lines (outlines, strands of hair,
+  the B&W prompt's mixing patterns). They are the drawing, not gap paint; the
+  `NAME-remaining.jpg` close-ups show the densest of them for each B&W design.
+
+**The flag's cost**: some of the service's fill stones sit on real dark detail the AI drew as a
+line or a ring rather than as stones (an eye's outline, a thin black line), and the vote turns them
+into the surrounding colour.
+In colour it recolours two thirds of the service's fill stones, far beyond the spots. So the flag
+stays off; it is there to try on the B&W designs where the service's fill makes spots.
+
+Pictures: `NAME-spots.jpg` (colour) and `NAME-bw-spots.jpg` (B&W): the three worst groups of fill-
+stone spots before the fix, AI image | plain before (ringed: magenta IS fill, cyan service fill) |
+tinted before | tinted with the IS fill by neighbours (the pipeline) | tinted with the service's
+fill stones too (flag). `NAME-bw-remaining.jpg`: the densest Jet-among-Crystal stones left in the
+pipeline's B&W design (orange: drawn by the AI). For example the giraffe
+([colour](exp-holes/giraffe-rule-spots.jpg), [B&W](exp-holes/giraffe-rule-bw-spots.jpg),
+[left in B&W](exp-holes/giraffe-rule-bw-remaining.jpg)), the RS portrait
+([B&W](exp-holes/rs-portrait-bw-spots.jpg)) and the car ([B&W](exp-holes/car-rule-bw-spots.jpg)).
+
+![Giraffe, B&W spots before and after](exp-holes/giraffe-rule-bw-spots.jpg)

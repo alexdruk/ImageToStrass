@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { mapBlackAndWhiteFromImage } from "../src/pipeline/bw.js";
 import { cleanedLayout } from "../src/pipeline/cleanup.js";
-import { CLOSE_MM, fillHoles, findHoles, lightnessOnWhite, snapColour, squaredEdt, subjectMask } from "../src/pipeline/holes.js";
+import { CLOSE_MM, fillHoles, findHoles, lightnessOnWhite, neighbourVote, snapColour, squaredEdt, subjectMask } from "../src/pipeline/holes.js";
 import { checkGaps, toStoneLayout } from "../src/pipeline/tiers.js";
 import { loadConfig } from "../src/server/config.js";
 import { STONE_COLORS } from "../src/stones/StoneColors.js";
@@ -123,26 +123,71 @@ test("holes: cleanedLayout without the AI image fills nothing; a report without 
   assert.equal(cleanedLayout(frameless, { fillHolesIn: image(10, 4) }).filled, 0);
 });
 
-test("holes: the neighbour step gives a lone filled stone its neighbours' colour within 6 ΔE", () => {
+test("holes: a filled stone takes its neighbours' colour, not the pixels under it", () => {
   const size = 400, R = 180;
-  // The AI painted Amethyst; the stones around the hole are Fuchsia (5.6 ΔE from Amethyst).
-  const ai = image(size, R, rgbOf("amethyst"));
-  const holed = hexStones(size, R, (x, y) => Math.hypot(x - 20, y - 20) < 1).map((st) => ({ ...st, color: "fuchsia" }));
-  const plain = fillHoles(holed, ai, report, { neighbours: false });
+  const holed = hexStones(size, R, (x, y) => Math.hypot(x - 20, y - 20) < 1);
   const centre = (r) => r.added.find((st) => Math.hypot(st.x - 20, st.y - 20) < 1);
-  assert.equal(centre(plain).color, "amethyst");
-  const stepped = fillHoles(holed, ai, report);
-  assert.equal(centre(stepped).color, "fuchsia");
-  assert.ok(stepped.recoloured >= 1);
-  // Jet painted, Crystal around: far more than 6 ΔE, the filled stone stays Jet.
-  const dark = fillHoles(holed.map((st) => ({ ...st, color: "crystal-clear" })), image(size, R, rgbOf("jet")), report);
-  assert.equal(centre(dark).color, "jet");
+  // The AI painted Amethyst; the stones around the hole are Fuchsia.
+  const purple = holed.map((st) => ({ ...st, color: "fuchsia" }));
+  assert.equal(centre(fillHoles(purple, image(size, R, rgbOf("amethyst")), report, { colours: "pixels" })).color, "amethyst");
+  assert.equal(centre(fillHoles(purple, image(size, R, rgbOf("amethyst")), report)).color, "fuchsia");
+  // The dark spot: dark gap paint under the hole, Crystal all around -> Crystal.
+  const light = holed.map((st) => ({ ...st, color: "crystal-clear" }));
+  assert.equal(centre(fillHoles(light, image(size, R, rgbOf("jet")), report, { colours: "pixels" })).color, "jet");
+  assert.equal(centre(fillHoles(light, image(size, R, rgbOf("jet")), report)).color, "crystal-clear");
 });
 
-test("holes: the fill is on unless IS_FILL_HOLES=0", () => {
+test("holes: the neighbour vote weighs nearer stones more, breaks ties by the nearest, and chains", () => {
+  // Target 0 (SS6 at the origin). Blue 0.2 mm away weighs 0.8; two reds 0.6 mm away 0.4 each:
+  // a tie, which the nearest (blue) wins. A third red 0.9 mm away (0.1) tips it to red.
+  const at = (x, color, d = 2) => ({ x, y: 0, d, color });
+  const ring = (gap, angle, color) => ({ x: (2 + gap) * Math.cos(angle), y: (2 + gap) * Math.sin(angle), d: 2, color });
+  const base = [at(0, null), ring(0.2, 0, "blue"), ring(0.6, 2, "red"), ring(0.6, 4, "red")];
+  assert.equal(neighbourVote(base, new Set([0]), (st) => st.color).get(0), "blue");
+  assert.equal(neighbourVote([...base, ring(0.9, 3, "red")], new Set([0]), (st) => st.color).get(0), "red");
+  // Stones beyond 1 mm do not vote.
+  assert.equal(neighbourVote([at(0, null), ring(0.5, 0, "blue"), ring(1.2, 2, "red"), ring(1.2, 3, "red")], new Set([0]), (st) => st.color).get(0), "blue");
+  // A target with no decided stone within reach takes its colour from a target decided first.
+  const chain = [at(0, null), at(2.2, null), at(4.4, "green")];
+  const voted = neighbourVote(chain, new Set([0, 1]), (st) => st.color);
+  assert.deepEqual([voted.get(1), voted.get(0)], ["green", "green"]);
+});
+
+test("holes: in black & white the voted stones take Jet or Crystal from their neighbours", () => {
+  // A white image with a dark spot under the middle stone of three in a row.
+  const size = 200;
+  const ai = image(size, 1000, [250, 250, 250]);
+  for (let y = 40; y < 60; y++) for (let x = 90; x < 110; x++) ai.data.set([0, 0, 0, 255], (y * size + x) * 4);
+  const { stoneLayout, originMm } = toStoneLayout([
+    { x: 7.8, y: 5, d: 2, color: "jet" }, { x: 10, y: 5, d: 1.5, color: "jet" }, { x: 12.2, y: 5, d: 2, color: "jet" }
+  ], 1);
+  const frame = { mmPerPx: S, offsetMm: [0, 0], originMm };
+  assert.deepEqual(mapBlackAndWhiteFromImage(stoneLayout, ai, frame).stones.map((st) => st.color), ["crystal-clear", "jet", "crystal-clear"]);
+  assert.deepEqual(mapBlackAndWhiteFromImage(stoneLayout, ai, frame, 55, [1]).stones.map((st) => st.color), ["crystal-clear", "crystal-clear", "crystal-clear"]);
+});
+
+test("holes: with serviceFillNeighbours the service's fill stones (report.fillAtMm) take their neighbours' colour", () => {
+  const layout = JSON.parse(readFileSync(new URL("./fixtures/layouts/woman.json", import.meta.url), "utf8"));
+  const [x, y, , colour] = layout.stones[100];
+  // Give that stone a colour none of its neighbours has and call it a service fill stone.
+  const other = colour === "siam" ? "emerald" : "siam";
+  const marked = { ...layout, stones: layout.stones.map((st, i) => (i === 100 ? [st[0], st[1], st[2], other] : st)), report: { ...layout.report, fillAtMm: [[x, y]] } };
+  const off = cleanedLayout(marked);
+  const on = cleanedLayout(marked, { serviceFillNeighbours: true });
+  assert.equal(off.serviceVoted, 0);
+  assert.equal(on.serviceVoted, 1);
+  // The cleanup removes nothing from this layout, so the stone keeps its index.
+  assert.deepEqual(on.voted, [100]);
+  assert.equal(off.stoneLayout.stones[100].color, other);
+  assert.notEqual(on.stoneLayout.stones[100].color, other);
+});
+
+test("holes: the fill is on unless IS_FILL_HOLES=0; the service fill vote is off unless asked for", () => {
   assert.equal(loadConfig({}).fillHoles, true);
   assert.equal(loadConfig({ IS_FILL_HOLES: "1" }).fillHoles, true);
   assert.equal(loadConfig({ IS_FILL_HOLES: "0" }).fillHoles, false);
+  assert.equal(loadConfig({}).serviceFillNeighbours, false);
+  assert.equal(loadConfig({ IS_SERVICE_FILL_NEIGHBOURS: "1" }).serviceFillNeighbours, true);
   assert.equal(loadConfig({}).bwThreshold, 55);
   assert.equal(loadConfig({ BW_THRESHOLD: "45" }).bwThreshold, 45);
 });

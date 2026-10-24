@@ -1,0 +1,3944 @@
+[
+  {
+    "name": "car-rule",
+    "mode": "colour",
+    "serviceFill": 250,
+    "isFill": 17,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3281,
+            "lone": 199,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 250,
+            "lone": 52,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 17,
+            "lone": 4,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 255
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3281,
+            "lone": 200,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 250,
+            "lone": 52,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 17,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 252,
+        "changed": {
+          "is": 7,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3281,
+            "lone": 222,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 250,
+            "lone": 9,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 17,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 231,
+        "changed": {
+          "is": 11,
+          "service": 188
+        }
+      }
+    }
+  },
+  {
+    "name": "car-rule-bw",
+    "mode": "bw",
+    "serviceFill": 250,
+    "isFill": 17,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3281,
+            "lone": 39,
+            "darkAmongLight": 180,
+            "lightAmongDark": 172,
+            "meanL": 54.5,
+            "meanNeighbourL": 52.6
+          },
+          "service": {
+            "stones": 250,
+            "lone": 3,
+            "darkAmongLight": 28,
+            "lightAmongDark": 0,
+            "meanL": 10.4,
+            "meanNeighbourL": 35.6
+          },
+          "is": {
+            "stones": 17,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": 13.5,
+            "meanNeighbourL": 43.4
+          }
+        },
+        "spots": 208
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3281,
+            "lone": 39,
+            "darkAmongLight": 181,
+            "lightAmongDark": 172,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 250,
+            "lone": 3,
+            "darkAmongLight": 28,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 17,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 1,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 209,
+        "changed": {
+          "is": 1,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3281,
+            "lone": 50,
+            "darkAmongLight": 189,
+            "lightAmongDark": 147,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 250,
+            "lone": 3,
+            "darkAmongLight": 4,
+            "lightAmongDark": 4,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 17,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 1,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 193,
+        "changed": {
+          "is": 7,
+          "service": 85
+        }
+      }
+    }
+  },
+  {
+    "name": "cat-norule",
+    "mode": "colour",
+    "serviceFill": 27,
+    "isFill": 8,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3113,
+            "lone": 657,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 27,
+            "lone": 10,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 8,
+            "lone": 5,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 672
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3113,
+            "lone": 655,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 27,
+            "lone": 10,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 8,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 665,
+        "changed": {
+          "is": 6,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3113,
+            "lone": 647,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 27,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 8,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 647,
+        "changed": {
+          "is": 6,
+          "service": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "cat-norule-bw",
+    "mode": "bw",
+    "serviceFill": 27,
+    "isFill": 8,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3113,
+            "lone": 97,
+            "darkAmongLight": 272,
+            "lightAmongDark": 154,
+            "meanL": 71.2,
+            "meanNeighbourL": 71
+          },
+          "service": {
+            "stones": 27,
+            "lone": 3,
+            "darkAmongLight": 5,
+            "lightAmongDark": 1,
+            "meanL": 42.8,
+            "meanNeighbourL": 60.1
+          },
+          "is": {
+            "stones": 8,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": 54.8,
+            "meanNeighbourL": 60.2
+          }
+        },
+        "spots": 277
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3113,
+            "lone": 98,
+            "darkAmongLight": 272,
+            "lightAmongDark": 154,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 27,
+            "lone": 3,
+            "darkAmongLight": 5,
+            "lightAmongDark": 1,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 8,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 277,
+        "changed": {
+          "is": 1,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3113,
+            "lone": 96,
+            "darkAmongLight": 275,
+            "lightAmongDark": 152,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 27,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 8,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 275,
+        "changed": {
+          "is": 1,
+          "service": 11
+        }
+      }
+    }
+  },
+  {
+    "name": "cat-rule",
+    "mode": "colour",
+    "serviceFill": 34,
+    "isFill": 6,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3539,
+            "lone": 512,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 34,
+            "lone": 14,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 6,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 527
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3539,
+            "lone": 512,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 34,
+            "lone": 14,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 6,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 526,
+        "changed": {
+          "is": 3,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3539,
+            "lone": 513,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 34,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 6,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 513,
+        "changed": {
+          "is": 3,
+          "service": 24
+        }
+      }
+    }
+  },
+  {
+    "name": "cat-rule-bw",
+    "mode": "bw",
+    "serviceFill": 34,
+    "isFill": 6,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3539,
+            "lone": 113,
+            "darkAmongLight": 316,
+            "lightAmongDark": 142,
+            "meanL": 68.2,
+            "meanNeighbourL": 69
+          },
+          "service": {
+            "stones": 34,
+            "lone": 6,
+            "darkAmongLight": 6,
+            "lightAmongDark": 6,
+            "meanL": 47.7,
+            "meanNeighbourL": 55.7
+          },
+          "is": {
+            "stones": 6,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": 62.4,
+            "meanNeighbourL": 60.3
+          }
+        },
+        "spots": 322
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3539,
+            "lone": 113,
+            "darkAmongLight": 316,
+            "lightAmongDark": 142,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 34,
+            "lone": 6,
+            "darkAmongLight": 6,
+            "lightAmongDark": 6,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 6,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 322,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3539,
+            "lone": 115,
+            "darkAmongLight": 310,
+            "lightAmongDark": 140,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 34,
+            "lone": 0,
+            "darkAmongLight": 2,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 6,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 312,
+        "changed": {
+          "is": 0,
+          "service": 10
+        }
+      }
+    }
+  },
+  {
+    "name": "dachshund-rule",
+    "mode": "colour",
+    "serviceFill": 17,
+    "isFill": 5,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 1611,
+            "lone": 68,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 17,
+            "lone": 4,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 5,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 73
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 1611,
+            "lone": 68,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 17,
+            "lone": 4,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 5,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 72,
+        "changed": {
+          "is": 2,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 1611,
+            "lone": 67,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 17,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 5,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 67,
+        "changed": {
+          "is": 2,
+          "service": 14
+        }
+      }
+    }
+  },
+  {
+    "name": "dachshund-rule-bw",
+    "mode": "bw",
+    "serviceFill": 17,
+    "isFill": 5,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 1611,
+            "lone": 9,
+            "darkAmongLight": 36,
+            "lightAmongDark": 75,
+            "meanL": 38.5,
+            "meanNeighbourL": 38.7
+          },
+          "service": {
+            "stones": 17,
+            "lone": 3,
+            "darkAmongLight": 3,
+            "lightAmongDark": 6,
+            "meanL": 52.7,
+            "meanNeighbourL": 52.3
+          },
+          "is": {
+            "stones": 5,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 1,
+            "meanL": 59.4,
+            "meanNeighbourL": 46.7
+          }
+        },
+        "spots": 39
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 1611,
+            "lone": 9,
+            "darkAmongLight": 36,
+            "lightAmongDark": 75,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 17,
+            "lone": 4,
+            "darkAmongLight": 3,
+            "lightAmongDark": 6,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 5,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 39,
+        "changed": {
+          "is": 1,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 1611,
+            "lone": 8,
+            "darkAmongLight": 33,
+            "lightAmongDark": 78,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 17,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 5,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 33,
+        "changed": {
+          "is": 2,
+          "service": 9
+        }
+      }
+    }
+  },
+  {
+    "name": "dog-norule",
+    "mode": "colour",
+    "serviceFill": 27,
+    "isFill": 13,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2044,
+            "lone": 287,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 27,
+            "lone": 5,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 13,
+            "lone": 5,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 297
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2044,
+            "lone": 281,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 27,
+            "lone": 4,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 13,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 285,
+        "changed": {
+          "is": 7,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2044,
+            "lone": 274,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 27,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 13,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 274,
+        "changed": {
+          "is": 10,
+          "service": 14
+        }
+      }
+    }
+  },
+  {
+    "name": "dog-norule-bw",
+    "mode": "bw",
+    "serviceFill": 27,
+    "isFill": 13,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2044,
+            "lone": 113,
+            "darkAmongLight": 149,
+            "lightAmongDark": 98,
+            "meanL": 58.1,
+            "meanNeighbourL": 59.8
+          },
+          "service": {
+            "stones": 27,
+            "lone": 2,
+            "darkAmongLight": 6,
+            "lightAmongDark": 0,
+            "meanL": 42.5,
+            "meanNeighbourL": 53.6
+          },
+          "is": {
+            "stones": 13,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": 30.1,
+            "meanNeighbourL": 32.8
+          }
+        },
+        "spots": 155
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2044,
+            "lone": 113,
+            "darkAmongLight": 149,
+            "lightAmongDark": 97,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 27,
+            "lone": 2,
+            "darkAmongLight": 6,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 13,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 155,
+        "changed": {
+          "is": 1,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2044,
+            "lone": 111,
+            "darkAmongLight": 153,
+            "lightAmongDark": 94,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 27,
+            "lone": 0,
+            "darkAmongLight": 1,
+            "lightAmongDark": 1,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 13,
+            "lone": 0,
+            "darkAmongLight": 1,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 155,
+        "changed": {
+          "is": 2,
+          "service": 12
+        }
+      }
+    }
+  },
+  {
+    "name": "dog-rule",
+    "mode": "colour",
+    "serviceFill": 24,
+    "isFill": 11,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2015,
+            "lone": 328,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 24,
+            "lone": 11,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 11,
+            "lone": 6,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 345
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2015,
+            "lone": 323,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 24,
+            "lone": 13,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 336,
+        "changed": {
+          "is": 10,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2015,
+            "lone": 318,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 24,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 318,
+        "changed": {
+          "is": 10,
+          "service": 18
+        }
+      }
+    }
+  },
+  {
+    "name": "dog-rule-bw",
+    "mode": "bw",
+    "serviceFill": 24,
+    "isFill": 11,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2015,
+            "lone": 138,
+            "darkAmongLight": 152,
+            "lightAmongDark": 125,
+            "meanL": 56.5,
+            "meanNeighbourL": 58.7
+          },
+          "service": {
+            "stones": 24,
+            "lone": 2,
+            "darkAmongLight": 5,
+            "lightAmongDark": 0,
+            "meanL": 33.2,
+            "meanNeighbourL": 48.4
+          },
+          "is": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 3,
+            "lightAmongDark": 0,
+            "meanL": 22.3,
+            "meanNeighbourL": 42.7
+          }
+        },
+        "spots": 160
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2015,
+            "lone": 138,
+            "darkAmongLight": 152,
+            "lightAmongDark": 123,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 24,
+            "lone": 3,
+            "darkAmongLight": 5,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 157,
+        "changed": {
+          "is": 3,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2015,
+            "lone": 139,
+            "darkAmongLight": 154,
+            "lightAmongDark": 120,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 24,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 154,
+        "changed": {
+          "is": 4,
+          "service": 9
+        }
+      }
+    }
+  },
+  {
+    "name": "giraffe-rule",
+    "mode": "colour",
+    "serviceFill": 259,
+    "isFill": 41,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2027,
+            "lone": 641,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 259,
+            "lone": 78,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 41,
+            "lone": 21,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 740
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2027,
+            "lone": 618,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 259,
+            "lone": 79,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 41,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 697,
+        "changed": {
+          "is": 33,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2027,
+            "lone": 554,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 259,
+            "lone": 18,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 41,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 572,
+        "changed": {
+          "is": 34,
+          "service": 168
+        }
+      }
+    }
+  },
+  {
+    "name": "giraffe-rule-bw",
+    "mode": "bw",
+    "serviceFill": 259,
+    "isFill": 41,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2027,
+            "lone": 323,
+            "darkAmongLight": 198,
+            "lightAmongDark": 237,
+            "meanL": 60.2,
+            "meanNeighbourL": 58.9
+          },
+          "service": {
+            "stones": 259,
+            "lone": 4,
+            "darkAmongLight": 28,
+            "lightAmongDark": 5,
+            "meanL": 38.6,
+            "meanNeighbourL": 48.2
+          },
+          "is": {
+            "stones": 41,
+            "lone": 2,
+            "darkAmongLight": 8,
+            "lightAmongDark": 4,
+            "meanL": 54.2,
+            "meanNeighbourL": 60.5
+          }
+        },
+        "spots": 234
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2027,
+            "lone": 317,
+            "darkAmongLight": 201,
+            "lightAmongDark": 229,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 259,
+            "lone": 5,
+            "darkAmongLight": 27,
+            "lightAmongDark": 5,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 41,
+            "lone": 0,
+            "darkAmongLight": 1,
+            "lightAmongDark": 1,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 229,
+        "changed": {
+          "is": 15,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2027,
+            "lone": 311,
+            "darkAmongLight": 213,
+            "lightAmongDark": 205,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 259,
+            "lone": 13,
+            "darkAmongLight": 6,
+            "lightAmongDark": 10,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 41,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 1,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 219,
+        "changed": {
+          "is": 18,
+          "service": 95
+        }
+      }
+    }
+  },
+  {
+    "name": "mug-norule",
+    "mode": "colour",
+    "serviceFill": 0,
+    "isFill": 0,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2224,
+            "lone": 123,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 123
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2224,
+            "lone": 123,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 123,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2224,
+            "lone": 123,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 123,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      }
+    }
+  },
+  {
+    "name": "mug-norule-bw",
+    "mode": "bw",
+    "serviceFill": 0,
+    "isFill": 0,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2224,
+            "lone": 24,
+            "darkAmongLight": 153,
+            "lightAmongDark": 24,
+            "meanL": 83,
+            "meanNeighbourL": 83.8
+          }
+        },
+        "spots": 153
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2224,
+            "lone": 24,
+            "darkAmongLight": 153,
+            "lightAmongDark": 24,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 153,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2224,
+            "lone": 24,
+            "darkAmongLight": 153,
+            "lightAmongDark": 24,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 153,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      }
+    }
+  },
+  {
+    "name": "mug-rule",
+    "mode": "colour",
+    "serviceFill": 0,
+    "isFill": 0,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 1751,
+            "lone": 31,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 31
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 1751,
+            "lone": 31,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 31,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 1751,
+            "lone": 31,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 31,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      }
+    }
+  },
+  {
+    "name": "mug-rule-bw",
+    "mode": "bw",
+    "serviceFill": 0,
+    "isFill": 0,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 1751,
+            "lone": 26,
+            "darkAmongLight": 37,
+            "lightAmongDark": 10,
+            "meanL": 89.6,
+            "meanNeighbourL": 89.8
+          }
+        },
+        "spots": 37
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 1751,
+            "lone": 26,
+            "darkAmongLight": 37,
+            "lightAmongDark": 10,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 37,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 1751,
+            "lone": 26,
+            "darkAmongLight": 37,
+            "lightAmongDark": 10,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 37,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-cat",
+    "mode": "colour",
+    "serviceFill": 11,
+    "isFill": 12,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2139,
+            "lone": 341,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 11,
+            "lone": 4,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 12,
+            "lone": 4,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 349
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2139,
+            "lone": 340,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 11,
+            "lone": 4,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 12,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 344,
+        "changed": {
+          "is": 7,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2139,
+            "lone": 336,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 12,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 336,
+        "changed": {
+          "is": 7,
+          "service": 8
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-cat-bw",
+    "mode": "bw",
+    "serviceFill": 11,
+    "isFill": 12,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2139,
+            "lone": 69,
+            "darkAmongLight": 106,
+            "lightAmongDark": 136,
+            "meanL": 56.3,
+            "meanNeighbourL": 56.7
+          },
+          "service": {
+            "stones": 11,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 5,
+            "meanL": 74.2,
+            "meanNeighbourL": 51
+          },
+          "is": {
+            "stones": 12,
+            "lone": 1,
+            "darkAmongLight": 1,
+            "lightAmongDark": 3,
+            "meanL": 85.4,
+            "meanNeighbourL": 61.8
+          }
+        },
+        "spots": 107
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2139,
+            "lone": 69,
+            "darkAmongLight": 104,
+            "lightAmongDark": 137,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 11,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 5,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 12,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 104,
+        "changed": {
+          "is": 4,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2139,
+            "lone": 68,
+            "darkAmongLight": 98,
+            "lightAmongDark": 138,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 1,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 12,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 98,
+        "changed": {
+          "is": 4,
+          "service": 6
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-dog",
+    "mode": "colour",
+    "serviceFill": 12,
+    "isFill": 13,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 1658,
+            "lone": 254,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 12,
+            "lone": 8,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 13,
+            "lone": 7,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 269
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 1658,
+            "lone": 251,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 12,
+            "lone": 8,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 13,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 259,
+        "changed": {
+          "is": 9,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 1658,
+            "lone": 250,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 12,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 13,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 250,
+        "changed": {
+          "is": 9,
+          "service": 11
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-dog-bw",
+    "mode": "bw",
+    "serviceFill": 12,
+    "isFill": 13,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 1658,
+            "lone": 143,
+            "darkAmongLight": 104,
+            "lightAmongDark": 51,
+            "meanL": 70.3,
+            "meanNeighbourL": 73.4
+          },
+          "service": {
+            "stones": 12,
+            "lone": 1,
+            "darkAmongLight": 3,
+            "lightAmongDark": 0,
+            "meanL": 60.7,
+            "meanNeighbourL": 70.3
+          },
+          "is": {
+            "stones": 13,
+            "lone": 2,
+            "darkAmongLight": 0,
+            "lightAmongDark": 1,
+            "meanL": 59.7,
+            "meanNeighbourL": 52.6
+          }
+        },
+        "spots": 107
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 1658,
+            "lone": 138,
+            "darkAmongLight": 104,
+            "lightAmongDark": 52,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 12,
+            "lone": 1,
+            "darkAmongLight": 3,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 13,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 107,
+        "changed": {
+          "is": 3,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 1658,
+            "lone": 137,
+            "darkAmongLight": 106,
+            "lightAmongDark": 52,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 12,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 13,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 106,
+        "changed": {
+          "is": 3,
+          "service": 3
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-einstein",
+    "mode": "colour",
+    "serviceFill": 8,
+    "isFill": 4,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3582,
+            "lone": 298,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 8,
+            "lone": 2,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 4,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 301
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3582,
+            "lone": 300,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 8,
+            "lone": 2,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 4,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 302,
+        "changed": {
+          "is": 3,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3582,
+            "lone": 300,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 8,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 4,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 301,
+        "changed": {
+          "is": 3,
+          "service": 4
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-einstein-bw",
+    "mode": "bw",
+    "serviceFill": 8,
+    "isFill": 4,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3582,
+            "lone": 30,
+            "darkAmongLight": 294,
+            "lightAmongDark": 231,
+            "meanL": 50,
+            "meanNeighbourL": 50.1
+          },
+          "service": {
+            "stones": 8,
+            "lone": 3,
+            "darkAmongLight": 0,
+            "lightAmongDark": 4,
+            "meanL": 61.3,
+            "meanNeighbourL": 45.3
+          },
+          "is": {
+            "stones": 4,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 1,
+            "meanL": 85.9,
+            "meanNeighbourL": 56.1
+          }
+        },
+        "spots": 294
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3582,
+            "lone": 30,
+            "darkAmongLight": 294,
+            "lightAmongDark": 231,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 8,
+            "lone": 3,
+            "darkAmongLight": 0,
+            "lightAmongDark": 4,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 4,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 294,
+        "changed": {
+          "is": 1,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3582,
+            "lone": 30,
+            "darkAmongLight": 293,
+            "lightAmongDark": 232,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 8,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 4,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 293,
+        "changed": {
+          "is": 1,
+          "service": 4
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-jesus",
+    "mode": "colour",
+    "serviceFill": 23,
+    "isFill": 10,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3274,
+            "lone": 389,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 23,
+            "lone": 10,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 10,
+            "lone": 2,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 401
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3274,
+            "lone": 389,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 23,
+            "lone": 10,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 10,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 399,
+        "changed": {
+          "is": 4,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3274,
+            "lone": 388,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 23,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 10,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 388,
+        "changed": {
+          "is": 4,
+          "service": 14
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-jesus-bw",
+    "mode": "bw",
+    "serviceFill": 23,
+    "isFill": 10,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3274,
+            "lone": 96,
+            "darkAmongLight": 182,
+            "lightAmongDark": 320,
+            "meanL": 36.7,
+            "meanNeighbourL": 38.2
+          },
+          "service": {
+            "stones": 23,
+            "lone": 4,
+            "darkAmongLight": 2,
+            "lightAmongDark": 7,
+            "meanL": 57.4,
+            "meanNeighbourL": 39.3
+          },
+          "is": {
+            "stones": 10,
+            "lone": 5,
+            "darkAmongLight": 0,
+            "lightAmongDark": 6,
+            "meanL": 77.2,
+            "meanNeighbourL": 26
+          }
+        },
+        "spots": 184
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3274,
+            "lone": 90,
+            "darkAmongLight": 181,
+            "lightAmongDark": 322,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 23,
+            "lone": 4,
+            "darkAmongLight": 2,
+            "lightAmongDark": 7,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 10,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 183,
+        "changed": {
+          "is": 7,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3274,
+            "lone": 86,
+            "darkAmongLight": 182,
+            "lightAmongDark": 318,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 23,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 10,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 182,
+        "changed": {
+          "is": 7,
+          "service": 10
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-lake",
+    "mode": "colour",
+    "serviceFill": 5,
+    "isFill": 11,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 4084,
+            "lone": 523,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 5,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 11,
+            "lone": 6,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 530
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 4084,
+            "lone": 520,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 5,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 521,
+        "changed": {
+          "is": 7,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 4084,
+            "lone": 520,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 5,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 520,
+        "changed": {
+          "is": 7,
+          "service": 2
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-lake-bw",
+    "mode": "bw",
+    "serviceFill": 5,
+    "isFill": 11,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 4084,
+            "lone": 129,
+            "darkAmongLight": 297,
+            "lightAmongDark": 363,
+            "meanL": 55.3,
+            "meanNeighbourL": 56
+          },
+          "service": {
+            "stones": 5,
+            "lone": 2,
+            "darkAmongLight": 0,
+            "lightAmongDark": 2,
+            "meanL": 66,
+            "meanNeighbourL": 57.1
+          },
+          "is": {
+            "stones": 11,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 3,
+            "meanL": 82.5,
+            "meanNeighbourL": 57.4
+          }
+        },
+        "spots": 297
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 4084,
+            "lone": 129,
+            "darkAmongLight": 294,
+            "lightAmongDark": 363,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 5,
+            "lone": 2,
+            "darkAmongLight": 0,
+            "lightAmongDark": 2,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 294,
+        "changed": {
+          "is": 3,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 4084,
+            "lone": 129,
+            "darkAmongLight": 294,
+            "lightAmongDark": 363,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 5,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 294,
+        "changed": {
+          "is": 3,
+          "service": 2
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-leopard",
+    "mode": "colour",
+    "serviceFill": 22,
+    "isFill": 3,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2411,
+            "lone": 597,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 22,
+            "lone": 12,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 3,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 610
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2411,
+            "lone": 596,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 22,
+            "lone": 12,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 3,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 608,
+        "changed": {
+          "is": 1,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2411,
+            "lone": 585,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 22,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 3,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 585,
+        "changed": {
+          "is": 1,
+          "service": 18
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-leopard-bw",
+    "mode": "bw",
+    "serviceFill": 22,
+    "isFill": 3,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2411,
+            "lone": 234,
+            "darkAmongLight": 375,
+            "lightAmongDark": 379,
+            "meanL": 48.6,
+            "meanNeighbourL": 50.8
+          },
+          "service": {
+            "stones": 22,
+            "lone": 4,
+            "darkAmongLight": 3,
+            "lightAmongDark": 5,
+            "meanL": 73.1,
+            "meanNeighbourL": 49.8
+          },
+          "is": {
+            "stones": 3,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": 90.3,
+            "meanNeighbourL": 70.3
+          }
+        },
+        "spots": 378
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2411,
+            "lone": 234,
+            "darkAmongLight": 375,
+            "lightAmongDark": 379,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 22,
+            "lone": 4,
+            "darkAmongLight": 3,
+            "lightAmongDark": 5,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 3,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 378,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2411,
+            "lone": 228,
+            "darkAmongLight": 369,
+            "lightAmongDark": 378,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 22,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 1,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 3,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 369,
+        "changed": {
+          "is": 0,
+          "service": 11
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-logo",
+    "mode": "colour",
+    "serviceFill": 0,
+    "isFill": 0,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 833,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 1
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 833,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 1,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 833,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 1,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-logo-bw",
+    "mode": "bw",
+    "serviceFill": 0,
+    "isFill": 0,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 833,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": 13.1,
+            "meanNeighbourL": 13.1
+          }
+        },
+        "spots": 0
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 833,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 0,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 833,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 0,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-parrot",
+    "mode": "colour",
+    "serviceFill": 51,
+    "isFill": 10,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2491,
+            "lone": 271,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 51,
+            "lone": 19,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 10,
+            "lone": 4,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 294
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2491,
+            "lone": 272,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 51,
+            "lone": 19,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 10,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 291,
+        "changed": {
+          "is": 8,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2491,
+            "lone": 270,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 51,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 10,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 271,
+        "changed": {
+          "is": 8,
+          "service": 34
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-parrot-bw",
+    "mode": "bw",
+    "serviceFill": 51,
+    "isFill": 10,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2491,
+            "lone": 46,
+            "darkAmongLight": 127,
+            "lightAmongDark": 179,
+            "meanL": 57.5,
+            "meanNeighbourL": 57.5
+          },
+          "service": {
+            "stones": 51,
+            "lone": 5,
+            "darkAmongLight": 11,
+            "lightAmongDark": 0,
+            "meanL": 37.2,
+            "meanNeighbourL": 46.3
+          },
+          "is": {
+            "stones": 10,
+            "lone": 1,
+            "darkAmongLight": 3,
+            "lightAmongDark": 1,
+            "meanL": 52.2,
+            "meanNeighbourL": 61.6
+          }
+        },
+        "spots": 141
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2491,
+            "lone": 45,
+            "darkAmongLight": 127,
+            "lightAmongDark": 175,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 51,
+            "lone": 5,
+            "darkAmongLight": 11,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 10,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 138,
+        "changed": {
+          "is": 5,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2491,
+            "lone": 44,
+            "darkAmongLight": 132,
+            "lightAmongDark": 165,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 51,
+            "lone": 1,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 10,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 132,
+        "changed": {
+          "is": 5,
+          "service": 15
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-portrait",
+    "mode": "colour",
+    "serviceFill": 352,
+    "isFill": 55,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3638,
+            "lone": 452,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 352,
+            "lone": 31,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 55,
+            "lone": 6,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 489
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3638,
+            "lone": 449,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 352,
+            "lone": 32,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 55,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 481,
+        "changed": {
+          "is": 16,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3638,
+            "lone": 427,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 352,
+            "lone": 15,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 55,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 442,
+        "changed": {
+          "is": 26,
+          "service": 207
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-portrait-bw",
+    "mode": "bw",
+    "serviceFill": 352,
+    "isFill": 55,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 3638,
+            "lone": 51,
+            "darkAmongLight": 110,
+            "lightAmongDark": 111,
+            "meanL": 61.8,
+            "meanNeighbourL": 61.1
+          },
+          "service": {
+            "stones": 352,
+            "lone": 1,
+            "darkAmongLight": 17,
+            "lightAmongDark": 1,
+            "meanL": 10.5,
+            "meanNeighbourL": 25.3
+          },
+          "is": {
+            "stones": 55,
+            "lone": 7,
+            "darkAmongLight": 1,
+            "lightAmongDark": 7,
+            "meanL": 26.5,
+            "meanNeighbourL": 25.6
+          }
+        },
+        "spots": 128
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 3638,
+            "lone": 49,
+            "darkAmongLight": 108,
+            "lightAmongDark": 110,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 352,
+            "lone": 1,
+            "darkAmongLight": 15,
+            "lightAmongDark": 1,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 55,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 123,
+        "changed": {
+          "is": 12,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 3638,
+            "lone": 48,
+            "darkAmongLight": 117,
+            "lightAmongDark": 97,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 352,
+            "lone": 4,
+            "darkAmongLight": 4,
+            "lightAmongDark": 6,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 55,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 121,
+        "changed": {
+          "is": 13,
+          "service": 38
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-rose",
+    "mode": "colour",
+    "serviceFill": 0,
+    "isFill": 0,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 1846,
+            "lone": 45,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 45
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 1846,
+            "lone": 45,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 45,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 1846,
+            "lone": 45,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 45,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-rose-bw",
+    "mode": "bw",
+    "serviceFill": 0,
+    "isFill": 0,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 1846,
+            "lone": 8,
+            "darkAmongLight": 1,
+            "lightAmongDark": 31,
+            "meanL": 42.4,
+            "meanNeighbourL": 42.8
+          }
+        },
+        "spots": 1
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 1846,
+            "lone": 8,
+            "darkAmongLight": 1,
+            "lightAmongDark": 31,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 1,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 1846,
+            "lone": 8,
+            "darkAmongLight": 1,
+            "lightAmongDark": 31,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 1,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-tulips",
+    "mode": "colour",
+    "serviceFill": 2,
+    "isFill": 2,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2671,
+            "lone": 97,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 2,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 2,
+            "lone": 2,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 99
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2671,
+            "lone": 95,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 2,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 2,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 95,
+        "changed": {
+          "is": 2,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2671,
+            "lone": 95,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 2,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 2,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 95,
+        "changed": {
+          "is": 2,
+          "service": 2
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-tulips-bw",
+    "mode": "bw",
+    "serviceFill": 2,
+    "isFill": 2,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2671,
+            "lone": 50,
+            "darkAmongLight": 193,
+            "lightAmongDark": 197,
+            "meanL": 58.6,
+            "meanNeighbourL": 58.9
+          },
+          "service": {
+            "stones": 2,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": 59.5,
+            "meanNeighbourL": 69
+          },
+          "is": {
+            "stones": 2,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": 62.1,
+            "meanNeighbourL": 56.7
+          }
+        },
+        "spots": 193
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2671,
+            "lone": 50,
+            "darkAmongLight": 193,
+            "lightAmongDark": 197,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 2,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 2,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 193,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2671,
+            "lone": 50,
+            "darkAmongLight": 193,
+            "lightAmongDark": 197,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 2,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 2,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 193,
+        "changed": {
+          "is": 0,
+          "service": 0
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-woman",
+    "mode": "colour",
+    "serviceFill": 11,
+    "isFill": 14,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2602,
+            "lone": 103,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 11,
+            "lone": 9,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 14,
+            "lone": 7,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 119
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2602,
+            "lone": 103,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 11,
+            "lone": 8,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 14,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 111,
+        "changed": {
+          "is": 9,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2602,
+            "lone": 100,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 14,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 100,
+        "changed": {
+          "is": 9,
+          "service": 10
+        }
+      }
+    }
+  },
+  {
+    "name": "rs-woman-bw",
+    "mode": "bw",
+    "serviceFill": 11,
+    "isFill": 14,
+    "variants": {
+      "pixels": {
+        "classes": {
+          "other": {
+            "stones": 2602,
+            "lone": 10,
+            "darkAmongLight": 71,
+            "lightAmongDark": 78,
+            "meanL": 38.8,
+            "meanNeighbourL": 39.1
+          },
+          "service": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 1,
+            "lightAmongDark": 1,
+            "meanL": 42.7,
+            "meanNeighbourL": 42.9
+          },
+          "is": {
+            "stones": 14,
+            "lone": 3,
+            "darkAmongLight": 4,
+            "lightAmongDark": 2,
+            "meanL": 40.9,
+            "meanNeighbourL": 55.5
+          }
+        },
+        "spots": 76
+      },
+      "neighbours": {
+        "classes": {
+          "other": {
+            "stones": 2602,
+            "lone": 11,
+            "darkAmongLight": 70,
+            "lightAmongDark": 75,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 1,
+            "lightAmongDark": 1,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 14,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 71,
+        "changed": {
+          "is": 8,
+          "service": 0
+        }
+      },
+      "service": {
+        "classes": {
+          "other": {
+            "stones": 2602,
+            "lone": 11,
+            "darkAmongLight": 70,
+            "lightAmongDark": 74,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "service": {
+            "stones": 11,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          },
+          "is": {
+            "stones": 14,
+            "lone": 0,
+            "darkAmongLight": 0,
+            "lightAmongDark": 0,
+            "meanL": null,
+            "meanNeighbourL": null
+          }
+        },
+        "spots": 70,
+        "changed": {
+          "is": 8,
+          "service": 3
+        }
+      }
+    }
+  }
+]

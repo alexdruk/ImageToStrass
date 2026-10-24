@@ -48,6 +48,9 @@ export function loadConfig(env = process.env) {
     layoutTimeoutMs: positive(env.LAYOUT_TIMEOUT_SECONDS, 180) * 1000,
     bwThreshold: positive(env.BW_THRESHOLD, 55),
     // Hole fill after the overlap cleanup (spec 7.5): on unless IS_FILL_HOLES=0.
-    fillHoles: env.IS_FILL_HOLES !== "0"
+    fillHoles: env.IS_FILL_HOLES !== "0",
+    // The service's own fill stones take their neighbours' colour too (spec 7.5; off unless
+    // IS_SERVICE_FILL_NEIGHBOURS=1).
+    serviceFillNeighbours: env.IS_SERVICE_FILL_NEIGHBOURS === "1"
   };
 }

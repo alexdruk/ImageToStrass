@@ -1,7 +1,7 @@
 // Experiment exp-holes, black & white (docs/exp-holes.md section 6; tools only, never used by the
 // app): the old B&W design (the service's colours mapped by their catalogue fill's L*, no hole fill)
-// against the new one (spec 7.5 and 7.6: hole fill, every stone read from the AI image), and the
-// threshold study.
+// against the new one (spec 7.5 and 7.6: hole fill, every stone read from the AI image, the filled
+// stones by their neighbours), and the threshold study.
 //
 //   node tools/exp-bw.mjs MANIFEST.json OUT_DIR [THRESHOLD]
 //
@@ -94,11 +94,12 @@ export async function runBw(item, outDir, base, threshold = DEFAULT_BW_THRESHOLD
   const s = report.mmPerPx, [ox, oy] = report.offsetMm;
   const kept = removeCloseStones(capStoneSizes(stonesOfLayout(layout), pupilCentres(layout)).stones).stones;
   const filled = fillHoles(kept, ai, report).stones;
+  const voted = filled.map((_, i) => i).filter((i) => i >= kept.length);
 
   // Old: the production before exp-holes (no fill, catalogue fills mapped). New: fill, image read.
   const oldNatural = cleanedLayout(layout);
   const oldStones = mapBlackAndWhite(asLayout(kept, "colour"), threshold);
-  const newStones = asLayout(filled, "bw", ai, report, threshold);
+  const newStones = asLayout(filled, "bw", ai, report, threshold, voted);
   const L = filled.map((st) => lightnessOnWhite(ai, (st.x + ox) / s, (st.y + oy) / s, st.d, s));
   const keptL = L.slice(0, kept.length);
   let changed = 0;
@@ -106,7 +107,7 @@ export async function runBw(item, outDir, base, threshold = DEFAULT_BW_THRESHOLD
 
   const box = faceBox(report);
   const study = THRESHOLDS.map((t) => {
-    const colours = L.map((v) => (v < t ? "dark" : "light"));
+    const colours = asLayout(filled, "bw", ai, report, t, voted).stones.map((st) => (st.color === "jet" ? "dark" : "light"));
     return { threshold: t, jetShare: colours.filter((c) => c === "dark").length / colours.length, lone: loneShare(filled, colours), loneFace: box ? loneShare(filled, colours, box) : null };
   });
   const oldColours = oldStones.stones.map((st) => (st.color === "jet" ? "dark" : "light"));
@@ -129,7 +130,7 @@ export async function runBw(item, outDir, base, threshold = DEFAULT_BW_THRESHOLD
     const view = { x0: (box.x0 + box.x1) / 2 - side / 2, y0: (box.y0 + box.y1) / 2 - side / 2, w: side, h: side };
     const zp = 380 / side;
     const panels = [{ label: "AI image", png: await aiPng(at(item.ai), report, view, zp) }, { label: "old", png: await tintedPng(oldStones, view, zp) }];
-    for (const t of FACE_THRESHOLDS) panels.push({ label: `new, ${t}`, png: await tintedPng(asLayout(filled, "bw", ai, report, t), view, zp) });
+    for (const t of FACE_THRESHOLDS) panels.push({ label: `new, ${t}`, png: await tintedPng(asLayout(filled, "bw", ai, report, t, voted), view, zp) });
     await stack(path.join(outDir, `${item.name}-bw-faces.jpg`), [await strip(null, panels, 380)]);
   }
   const round = (v, p = 4) => (v == null ? null : Math.round(v * 10 ** p) / 10 ** p);

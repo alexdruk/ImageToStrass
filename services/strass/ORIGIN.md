@@ -258,3 +258,19 @@ median rule then had no pixel within its radius and took the quantile of an empt
   synthetic image (an SS4 stone 2.1 px past the last row, and a disc wholly outside the image);
   `DarkDiscAtTheEdge` reproduces the pupil crash with an 80 x 60 px image (a dark disc with a
   highlight, centred on the last row).
+
+### exp-holes dark spots (24 Oct 2026): report.fillAtMm
+
+IS gives the stones the service's fills placed their neighbours' colour when
+`IS_SERVICE_FILL_NEIGHBOURS=1` (IS spec 7.5; the rule is IS code, `src/pipeline/cleanup.js`). The
+`/layout` answer did not say which stones those are, so the report gains a key; no stone, size or
+colour changes.
+
+- `strass_layout/ordered.py`: the result's `"fill"` marks the stones the ordered layout's fill placed
+  (the second `resolve_idx`'s survivors past the rows).
+- `strass_layout/post.py`: `info["fillAtMm"]`, the centres (frame mm) of the delivered stones that
+  the ordered layout's fill or the fills after the eyes placed.
+- `strass_layout/pipeline.py`: `layout_frame` passes `fillAtMm` in the frame; `finish_layout` adds
+  `report.fillAtMm` (`[x, y]` per stone, cropped mm like the stones).
+- `tests/test_contract.py`: `fillAtMm` added to `REPORT_KEYS`; `README.md`: the new key.
+- `scripts/holes_trace.py` records the same stones independently (`serviceFill`); they agree.

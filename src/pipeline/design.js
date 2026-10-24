@@ -261,21 +261,22 @@ export function createPipeline({
       }
       storeNew(dir, "layout.json", `${JSON.stringify(placed.layout)}\n`);
       // Natural size: SS16 cap, overlap cleanup and hole fill (7.5; config.fillHoles, off with
-      // IS_FILL_HOLES=0), then acceptance (7.4) on the result. Black & white reads every delivered
-      // stone's lightness from the AI image (7.6).
+      // IS_FILL_HOLES=0; filled stones, and with config.serviceFillNeighbours the service's fill
+      // stones, in their neighbours' colour), then acceptance (7.4) on the result. Black & white reads
+      // every other delivered stone's lightness from the AI image (7.6).
       const ai = await rgbaOf(aiPng);
-      const natural = cleanedLayout(placed.layout, config.fillHoles ? { fillHolesIn: ai } : {});
+      const natural = cleanedLayout(placed.layout, { fillHolesIn: config.fillHoles ? ai : null, serviceFillNeighbours: config.serviceFillNeighbours });
       const check = acceptLayout(natural);
       if (!check.ok) return rerunOrFail(code, n, settings, check, outputPx);
       const stoneLayout = settings.mode === "bw"
-        ? mapBlackAndWhiteFromImage(natural.stoneLayout, ai, { ...placed.layout.report, originMm: natural.originMm }, config.bwThreshold)
+        ? mapBlackAndWhiteFromImage(natural.stoneLayout, ai, { ...placed.layout.report, originMm: natural.originMm }, config.bwThreshold, natural.voted)
         : natural.stoneLayout;
 
       stage("files");
       storeNew(dir, "stones.json", `${JSON.stringify(stoneLayout.toJSON())}\n`);
       storeNew(dir, "tinted.png", await renderFullOffThread(stoneLayout));
       const result = designResult(stoneLayout, { coverage: check.coverage, settings, outputPx });
-      finish(code, n, "done", { counts: 1, result }, { stones: result.stones, capped: natural.capped, removed: natural.removed, filled: natural.filled, recoloured: natural.recoloured });
+      finish(code, n, "done", { counts: 1, result }, { stones: result.stones, capped: natural.capped, removed: natural.removed, filled: natural.filled, serviceVoted: natural.serviceVoted });
     } catch (error) {
       log.error(`Design ${id} failed: ${error.stack || error.message}`);
       fail(code, n, "error");
