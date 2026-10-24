@@ -20,7 +20,8 @@ stones take their neighbours' colour (7.5, 7.6). Revised 24 Oct 2026 (exp-holes,
 tinted view's gap rule for black & white designs is a setting, today's by default (section 8,
 `BW_GAP`); behind `IS_BW_FROM_DISCS=1` (off) a B&W stone takes the colour of the AI stone disc it
 overlaps most (7.6, `report.discsAtMm`). Revised 24 Oct 2026 (exp-bw-stencil): a stencil variant
-of the black & white prompt behind `BW_STYLE=stencil` (7.2; halftone stays the default).
+of the black & white prompt behind `BW_STYLE=stencil` (7.2; halftone stays the default). Revised 24
+Oct 2026 (exp-bw-stencil, eyes): the stencil variant has an eye rule (7.2, version 5).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -267,8 +268,9 @@ minutes".
 - Black & white mode: section 4 and the final check sentence are replaced by Appendix A.
 - Black & white style (exp-bw-stencil): the setting `BW_STYLE` picks the black & white variant:
   `halftone` (the default) is Appendix A; `stencil` replaces section 4 and the final check with
-  solid Jet and Crystal areas and no mixing of the two (text in `src/pipeline/prompt.js` only),
-  prompt version `IS_STENCIL_PROMPT_VERSION = 4`.
+  solid Jet and Crystal areas and no mixing of the two, and an eye rule (eyes never part of a dark
+  area, kept apart from dark shadows and eyebrows by Crystal) (text in `src/pipeline/prompt.js`
+  only), prompt version `IS_STENCIL_PROMPT_VERSION = 5`.
 - The prompt is built server-side only, never logged in a file the web server serves, never sent
   to the browser.
 

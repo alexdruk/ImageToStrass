@@ -74,10 +74,12 @@ test("black & white stencil prompt replaces only section 4 and the final check; 
   assert.equal(st.at(-1), ht.at(-1));
   assert.ok(!st.includes(ht[4]), "no halftone mixing rule");
   assert.ok(st.length > ht.length);
+  // exp-bw-stencil eye rule (version 5): one line on the eyes, after the faces line.
+  assert.equal(st.filter((l) => /\beyes?\b/i.test(l) && !ht.includes(l)).length, 2);
   assert.ok(!st.join("\n").includes("Siam"), "no palette line");
   // Colour ignores the style; only the stencil variant has the new version.
   assert.equal(buildPrompt({ mode: "colour", bwStyle: "stencil" }), buildPrompt({ mode: "colour" }));
-  assert.equal(IS_STENCIL_PROMPT_VERSION, IS_PROMPT_VERSION + 1);
+  assert.equal(IS_STENCIL_PROMPT_VERSION, 5);
   assert.equal(promptVersion({ mode: "bw", bwStyle: "stencil" }), IS_STENCIL_PROMPT_VERSION);
   for (const o of [{ mode: "bw" }, { mode: "bw", bwStyle: "halftone" }, { mode: "colour" }, { mode: "colour", bwStyle: "stencil" }]) assert.equal(promptVersion(o), IS_PROMPT_VERSION);
   assert.throws(() => buildPrompt({ mode: "bw", bwStyle: "dots" }));

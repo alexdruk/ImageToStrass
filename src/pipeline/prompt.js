@@ -11,8 +11,8 @@ import { STONE_COLORS } from '../stones/StoneColors.js';
 
 // IS: version of the IS prompt (v6 of RS plus the IS additions). A wording change bumps it.
 export const IS_PROMPT_VERSION = 3;
-// IS (exp-bw-stencil): the Black & white stencil variant has its own version.
-export const IS_STENCIL_PROMPT_VERSION = 4;
+// IS (exp-bw-stencil): the Black & white stencil variant has its own version (5: the eye rule).
+export const IS_STENCIL_PROMPT_VERSION = 5;
 // IS (exp-bw-stencil): the Black & white styles (the BW_STYLE setting); the first is the default.
 export const BW_STYLES = Object.freeze(['halftone', 'stencil']);
 
@@ -85,6 +85,7 @@ function bwStencilColoursSection(colors) {
     '- Stencil style: every area is solid. Decide for each area whether it is dark or light, and fill all of it with that one colour.',
     '- Never alternate or mix the two colours to suggest grey: no checkerboards, no dotted, speckled or halftone areas.',
     '- Faces: light skin in Crystal. The shadows that shape the face (eye sockets, under the nose, under the lower lip, the jaw and neck shadow) and the hair in solid Jet, as clean shapes.',
+    '- Eyes are never part of a dark area. In each eye the white is Crystal, the iris and the pupil are Jet, with one Crystal catch-light stone, and at least one row of Crystal stones separates the eye from any dark shadow or eyebrow around it.',
     '- Keep the subject clearly readable from a distance: strong Jet outlines around the main shapes.'
   ].join('\n');
 }
