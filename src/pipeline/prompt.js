@@ -4,12 +4,17 @@
 // IS (spec section 7.2): the stones prompt only (the flat style is not copied). Section 6 uses the
 // whole image instead of a square one, and rule 1 has no "about 60 stones across" sentence (prompt
 // version 3, IS-03b decision); for Black & white, section 4 and the final check are replaced
-// by the spec's Appendix A. There is no size line: every design has its natural size (7.5). The prompt is built
+// by the spec's Appendix A (BW_STYLE halftone, the default) or by the stencil variant (BW_STYLE
+// stencil, exp-bw-stencil). There is no size line: every design has its natural size (7.5). The prompt is built
 // server-side only; it is never logged, stored under public/ or sent to the browser.
 import { STONE_COLORS } from '../stones/StoneColors.js';
 
 // IS: version of the IS prompt (v6 of RS plus the IS additions). A wording change bumps it.
 export const IS_PROMPT_VERSION = 3;
+// IS (exp-bw-stencil): the Black & white stencil variant has its own version (5: the eye rule).
+export const IS_STENCIL_PROMPT_VERSION = 5;
+// IS (exp-bw-stencil): the Black & white styles (the BW_STYLE setting); the first is the default.
+export const BW_STYLES = Object.freeze(['halftone', 'stencil']);
 
 // IMG-026 (S10, S11, build H): version 6 is the placement-chart prompt of the spec's Appendix D, with
 // the generated palette line inside rule 4.
@@ -70,6 +75,21 @@ function bwColoursSection(colors) {
   ].join('\n');
 }
 
+// IS (exp-bw-stencil): section 4 for Black & white in stencil style: solid areas, no mixing.
+function bwStencilColoursSection(colors) {
+  return [
+    '4. COLOURS',
+    'Use only these two colours, with exactly these hex values, as flat fills:',
+    `Jet ${colors.jet.previewColor}, Crystal ${colors['crystal-clear'].previewColor}.`,
+    '- Every stone is either Jet or Crystal. No greys, no other colours, no tints.',
+    '- Stencil style: every area is solid. Decide for each area whether it is dark or light, and fill all of it with that one colour.',
+    '- Never alternate or mix the two colours to suggest grey: no checkerboards, no dotted, speckled or halftone areas.',
+    '- Faces: light skin in Crystal. The shadows that shape the face (eye sockets, under the nose, under the lower lip, the jaw and neck shadow) and the hair in solid Jet, as clean shapes.',
+    '- Eyes are never part of a dark area. In each eye the white is Crystal, the iris and the pupil are Jet, with one Crystal catch-light stone, and at least one row of Crystal stones separates the eye from any dark shadow or eyebrow around it.',
+    '- Keep the subject clearly readable from a distance: strong Jet outlines around the main shapes.'
+  ].join('\n');
+}
+
 const V6_DESIGN = [
   '',
   '5. DESIGN',
@@ -91,6 +111,8 @@ const CHECK_TAIL = '; the background is transparent or pure magenta.';
 const V6_CHECK = ['', `${CHECK_HEAD}only the listed colours are used, skin and fur only from their ramps${CHECK_TAIL}`].join('\n');
 // IS: spec Appendix A, the final check for Black & white (no ramps to refer to).
 const BW_CHECK = ['', `${CHECK_HEAD}every stone is Jet or Crystal${CHECK_TAIL}`].join('\n');
+// IS (exp-bw-stencil): the final check of the stencil variant.
+const BW_STENCIL_CHECK = ['', `${CHECK_HEAD}every stone is Jet or Crystal; no area is mixed or speckled${CHECK_TAIL}`].join('\n');
 
 // "Name #hex" pairs in catalogue order; the hex is previewColor. IMG-026F: the aiOnly colours are
 // listed only with includeAiOnly, which the stones prompt passes.
@@ -98,9 +120,21 @@ export function buildPaletteLine(colors = STONE_COLORS, includeAiOnly = false) {
   return Object.values(colors).filter((c) => includeAiOnly || !c.aiOnly).map((c) => `${c.name} ${c.previewColor}`).join(', ');
 }
 
-// IS: { mode: 'colour' | 'bw' } -> the prompt text.
-export function buildPrompt({ mode }, colors = STONE_COLORS) {
+function checkOptions(mode, bwStyle) {
   if (mode !== 'colour' && mode !== 'bw') throw new RangeError('mode must be colour or bw.');
+  if (!BW_STYLES.includes(bwStyle)) throw new RangeError('bwStyle must be halftone or stencil.');
+}
+
+// IS: the version of the prompt buildPrompt makes for these options.
+export function promptVersion({ mode, bwStyle = BW_STYLES[0] }) {
+  checkOptions(mode, bwStyle);
+  return mode === 'bw' && bwStyle === 'stencil' ? IS_STENCIL_PROMPT_VERSION : IS_PROMPT_VERSION;
+}
+
+// IS: { mode: 'colour' | 'bw', bwStyle: 'halftone' | 'stencil' (Black & white only) } -> the prompt text.
+export function buildPrompt({ mode, bwStyle = BW_STYLES[0] }, colors = STONE_COLORS) {
+  checkOptions(mode, bwStyle);
+  if (mode === 'bw' && bwStyle === 'stencil') return [V6_HEAD, bwStencilColoursSection(colors), V6_DESIGN, BW_STENCIL_CHECK].join('\n');
   if (mode === 'bw') return [V6_HEAD, bwColoursSection(colors), V6_DESIGN, BW_CHECK].join('\n');
   const colours = [V6_COLOURS_INTRO, buildPaletteLine(colors, true), V6_COLOURS_RULES].join('\n');
   return [V6_HEAD, colours, V6_DESIGN, V6_CHECK].join('\n');
