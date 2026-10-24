@@ -6,7 +6,7 @@ import sharp from "sharp";
 import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import { MODEL_INPUT_SIDE, acceptLayout, modelInput, normalizeDesignSettings, subjectBox } from "../src/pipeline/design.js";
 import { callLayoutService } from "../src/pipeline/layout.js";
-import { IS_PROMPT_VERSION, buildPrompt } from "../src/pipeline/prompt.js";
+import { BW_STYLES, IS_PROMPT_VERSION, IS_STENCIL_PROMPT_VERSION, buildPrompt, promptVersion } from "../src/pipeline/prompt.js";
 import { IMAGE_EDITS_URL, createProvider } from "../src/pipeline/provider.js";
 import { createQueue } from "../src/pipeline/queue.js";
 import { TIERS, applyTier, chooseTier, naturalLayout, snapDown } from "../src/pipeline/tiers.js";
@@ -50,6 +50,37 @@ test("black & white prompt replaces section 4 and the final check (Appendix A)",
   assert.equal(bwCheck, colourCheck.replace("only the listed colours are used, skin and fur only from their ramps", "every stone is Jet or Crystal"));
   assert.ok(!/ramp|skin|fur/.test(bwCheck));
   assert.throws(() => buildPrompt({ mode: "grey" }));
+});
+
+test("black & white stencil prompt replaces only section 4 and the final check; its own version", () => {
+  // The stencil wording lives in src/pipeline/ only, so this test checks the structure, not the text.
+  const halftone = buildPrompt({ mode: "bw" });
+  assert.equal(buildPrompt({ mode: "bw", bwStyle: "halftone" }), halftone);
+  assert.deepEqual(BW_STYLES, ["halftone", "stencil"]);
+  const stencil = buildPrompt({ mode: "bw", bwStyle: "stencil" });
+  assert.equal(stencil.split("4. COLOURS")[0], halftone.split("4. COLOURS")[0]);
+  const [stencilDesign, stencilCheck] = stencil.split("5. DESIGN")[1].split("\n\nBefore finishing, ");
+  const [halftoneDesign, halftoneCheck] = halftone.split("5. DESIGN")[1].split("\n\nBefore finishing, ");
+  assert.equal(stencilDesign, halftoneDesign);
+  // The check keeps every rule and adds one before the background rule.
+  const [head, tail] = halftoneCheck.split("; the background");
+  assert.ok(stencilCheck.startsWith(`${head}; `) && stencilCheck.endsWith(`; the background${tail}`) && stencilCheck.length > halftoneCheck.length);
+  // Section 4: the same two colours with their hex values, the same first and last rule; the mixing
+  // rule is gone and the middle rules are new.
+  const lines = (text) => text.split("4. COLOURS")[1].split("5. DESIGN")[0].trim().split("\n");
+  const [st, ht] = [lines(stencil), lines(halftone)];
+  assert.ok(st[1].includes(`Jet ${STONE_COLORS.jet.previewColor}, Crystal ${STONE_COLORS["crystal-clear"].previewColor}.`));
+  assert.deepEqual(st.slice(0, 3), ht.slice(0, 3));
+  assert.equal(st.at(-1), ht.at(-1));
+  assert.ok(!st.includes(ht[4]), "no halftone mixing rule");
+  assert.ok(st.length > ht.length);
+  assert.ok(!st.join("\n").includes("Siam"), "no palette line");
+  // Colour ignores the style; only the stencil variant has the new version.
+  assert.equal(buildPrompt({ mode: "colour", bwStyle: "stencil" }), buildPrompt({ mode: "colour" }));
+  assert.equal(IS_STENCIL_PROMPT_VERSION, IS_PROMPT_VERSION + 1);
+  assert.equal(promptVersion({ mode: "bw", bwStyle: "stencil" }), IS_STENCIL_PROMPT_VERSION);
+  for (const o of [{ mode: "bw" }, { mode: "bw", bwStyle: "halftone" }, { mode: "colour" }, { mode: "colour", bwStyle: "stencil" }]) assert.equal(promptVersion(o), IS_PROMPT_VERSION);
+  assert.throws(() => buildPrompt({ mode: "bw", bwStyle: "dots" }));
 });
 
 // A provider with a scripted fetch. Each entry: a status + body, "reject", or "hang".

@@ -240,7 +240,7 @@ export function createPipeline({
       const input = await modelInput(readFileSync(path.join(dir, "prepared.png")), { cropToSubject: settings.removeBackground });
 
       stage("designing");
-      const drawn = await redraw(input, { mode: settings.mode }, stopping.signal);
+      const drawn = await redraw(input, { mode: settings.mode, bwStyle: config.bwStyle }, stopping.signal);
       if (!drawn) return fail(code, n, "cancelled");
       if (drawn.error === "declined") return finish(code, n, "declined", { error_code: "declined" }, { reason: drawn.detail });
       if (drawn.error) return fail(code, n, drawn.detail);

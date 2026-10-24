@@ -193,6 +193,9 @@ test("holes: the fill is on unless IS_FILL_HOLES=0; the service fill vote is off
   assert.equal(loadConfig({}).bwGap, "nearest");
   for (const g of ["nearest", "crystal", "white", "black"]) assert.equal(loadConfig({ BW_GAP: g }).bwGap, g);
   assert.equal(loadConfig({ BW_GAP: "grey" }).bwGap, "nearest");
+  assert.equal(loadConfig({}).bwStyle, "halftone");
+  assert.equal(loadConfig({ BW_STYLE: "stencil" }).bwStyle, "stencil");
+  assert.equal(loadConfig({ BW_STYLE: "dots" }).bwStyle, "halftone");
   assert.equal(loadConfig({}).bwFromDiscs, false);
   assert.equal(loadConfig({ IS_BW_FROM_DISCS: "1" }).bwFromDiscs, true);
 });
