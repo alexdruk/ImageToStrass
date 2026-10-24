@@ -190,37 +190,12 @@ test("holes: the fill is on unless IS_FILL_HOLES=0; the service fill vote is off
   assert.equal(loadConfig({ IS_SERVICE_FILL_NEIGHBOURS: "1" }).serviceFillNeighbours, true);
   assert.equal(loadConfig({}).bwThreshold, 55);
   assert.equal(loadConfig({ BW_THRESHOLD: "45" }).bwThreshold, 45);
-  assert.equal(loadConfig({}).bwGap, "nearest");
+  assert.equal(loadConfig({}).bwGap, "crystal");
   for (const g of ["nearest", "crystal", "white", "black"]) assert.equal(loadConfig({ BW_GAP: g }).bwGap, g);
-  assert.equal(loadConfig({ BW_GAP: "grey" }).bwGap, "nearest");
+  assert.equal(loadConfig({ BW_GAP: "grey" }).bwGap, "crystal");
   assert.equal(loadConfig({}).bwStyle, "halftone");
   assert.equal(loadConfig({ BW_STYLE: "stencil" }).bwStyle, "stencil");
   assert.equal(loadConfig({ BW_STYLE: "dots" }).bwStyle, "halftone");
-  assert.equal(loadConfig({}).bwFromDiscs, false);
-  assert.equal(loadConfig({ IS_BW_FROM_DISCS: "1" }).bwFromDiscs, true);
-});
-
-test("black & white: with fromDiscs a stone takes the colour of the AI stone disc it overlaps most", () => {
-  // Dark gap paint with a white disc (r 1 mm) at (7.2, 5); a dark disc at (3.8, 5) in the same paint.
-  // report.discsAtMm holds both discs.
-  const size = 200;
-  const ai = image(size, 1000, [20, 20, 20]);
-  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-    if (Math.hypot(x - 72, y - 50) <= 10) ai.data.set([250, 250, 250, 255], (y * size + x) * 4);
-  }
-  const discsAtMm = [[3.8, 5, 2], [7.2, 5, 2]];
-  // Stone 0 on the dark disc; stone 1 moved 1.1 mm left off the white disc, its inner 60 % mostly on
-  // the paint; stone 2 on the paint away from every disc; stone 3 between the discs, overlapping the
-  // white one more (its inner 60 % all paint).
-  const { stoneLayout, originMm } = toStoneLayout([
-    { x: 3.8, y: 5, d: 2, color: "jet" }, { x: 6.1, y: 5, d: 1.5, color: "jet" }, { x: 6, y: 12, d: 2, color: "jet" }, { x: 5.6, y: 5, d: 2, color: "jet" }
-  ], 1);
-  const frame = { mmPerPx: S, offsetMm: [0, 0], originMm, discsAtMm };
-  const colours = (opts) => mapBlackAndWhiteFromImage(stoneLayout, ai, frame, 55, [], opts).stones.map((st) => st.color);
-  assert.deepEqual(colours(), ["jet", "jet", "jet", "jet"]);
-  assert.deepEqual(colours({ fromDiscs: true }), ["jet", "crystal-clear", "jet", "crystal-clear"]);
-  // No discs in the report (layouts before exp-holes B&W): read as before.
-  assert.deepEqual(mapBlackAndWhiteFromImage(stoneLayout, ai, { ...frame, discsAtMm: undefined }, 55, [], { fromDiscs: true }).stones.map((st) => st.color), colours());
 });
 
 test("black & white: each stone's lightness is read from the AI image composited on white", () => {

@@ -57,10 +57,8 @@ export function loadConfig(env = process.env) {
     // The service's own fill stones take their neighbours' colour too (spec 7.5; off unless
     // IS_SERVICE_FILL_NEIGHBOURS=1).
     serviceFillNeighbours: env.IS_SERVICE_FILL_NEIGHBOURS === "1",
-    // Black & white (exp-holes): the tinted view's gap rule (spec 8, step 4; tinted.js BW_GAPS,
-    // "nearest" unless BW_GAP names another), and each stone read from the AI stone disc it overlaps
-    // most (spec 7.6; off unless IS_BW_FROM_DISCS=1).
-    bwGap: BW_GAPS.includes(env.BW_GAP) ? env.BW_GAP : "nearest",
-    bwFromDiscs: env.IS_BW_FROM_DISCS === "1"
+    // Black & white: the tinted view's gap rule (spec 8, step 4; tinted.js BW_GAPS, "crystal"
+    // unless BW_GAP names another).
+    bwGap: BW_GAPS.includes(env.BW_GAP) ? env.BW_GAP : "crystal"
   };
 }

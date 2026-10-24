@@ -15,9 +15,10 @@ import { BW_GAPS } from "./bw-gaps.js";
 //   4. but only if the pixel lies within FILL_MARGIN_MM of that stone's edge, the same margin for
 //      every size; elsewhere the background shows (white in the app, transparent in the PNG file).
 //      Black & white designs (exp-holes; bwGap, the BW_GAP setting) fill those pixels by one of
-//      BW_GAPS: "nearest" steps 2-3 as for colour (the default); "crystal" as "nearest", but where
-//      the second-nearest stone's edge is within the margin too and its colour differs, the gap of
-//      the lighter of the two (Crystal's next to Jet: dark only between Jet stones); "white" and
+//      BW_GAPS: "nearest" steps 2-3 as for colour; "crystal" (the app's default, BW_GAP) as
+//      "nearest", but where the second-nearest stone's edge is within the margin too and its colour
+//      differs, the gap of the lighter of the two (Crystal's next to Jet: dark only between Jet
+//      stones); "white" and
 //      "black" the fabric (WHITE_FABRIC, BLACK_FABRIC). A large Jet stone's outer rim band (step 5)
 //      takes the fabric colour too.
 //   5. The stones are drawn on top with the RS faceted crystal renderer (drawStone: a stone above

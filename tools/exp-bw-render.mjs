@@ -15,7 +15,8 @@
 // OUT_DIR/NAME-{whole,face,1..4}.jpg (and NAME-plain-{whole,1..4}.jpg).
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
-import { DEFAULT_BW_THRESHOLD, mapBlackAndWhiteFromImage } from "../src/pipeline/bw.js";
+import { BW_DARK, BW_LIGHT, DEFAULT_BW_THRESHOLD, mapBlackAndWhiteFromImage } from "../src/pipeline/bw.js";
+import { lightnessOnWhite } from "../src/pipeline/holes.js";
 import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import { BW_GAPS } from "../src/render/tinted.js";
 import { Stone } from "../src/stones/Stone.js";
@@ -44,6 +45,64 @@ function jetAmongCrystal(stones) {
   return n;
 }
 
+// Area shared by two discs (radii r1, r2, centres dist apart).
+function overlapArea(r1, r2, dist) {
+  if (dist >= r1 + r2) return 0;
+  if (dist <= Math.abs(r1 - r2)) return Math.PI * Math.min(r1, r2) ** 2;
+  const a = r1 * r1 * Math.acos((dist * dist + r1 * r1 - r2 * r2) / (2 * dist * r1));
+  const b = r2 * r2 * Math.acos((dist * dist + r2 * r2 - r1 * r1) / (2 * dist * r2));
+  return a + b - 0.5 * Math.sqrt((-dist + r1 + r2) * (dist + r1 - r2) * (dist - r1 + r2) * (dist + r1 + r2));
+}
+
+// The disc fix (exp-holes; IS_BW_FROM_DISCS until exp-faces removed it from the app): the stone's colour is that of the AI stone disc
+// (frame.discsAtMm, [x, y, d] in the layout's mm: the stones the service detected, not the painted
+// dots it dropped) it overlaps most, the disc read as a stone at its own centre and size; a stone
+// that overlaps none is read as before. The layout moves stones off their discs, partly onto the AI's
+// dark gap paint, which then read Jet among Crystal (docs/exp-holes.md section 10).
+function discReader(discs, ai, s, offsetMm, threshold) {
+  const CELL = 3;
+  const grid = new Map();
+  discs.forEach(([x, y], k) => {
+    const key = `${Math.floor(x / CELL)},${Math.floor(y / CELL)}`;
+    if (!grid.has(key)) grid.set(key, []);
+    grid.get(key).push(k);
+  });
+  const colour = new Map();
+  const colourOf = (k) => {
+    if (!colour.has(k)) {
+      const [x, y, d] = discs[k];
+      colour.set(k, lightnessOnWhite(ai, (x + offsetMm[0]) / s, (y + offsetMm[1]) / s, d, s) < threshold ? BW_DARK : BW_LIGHT);
+    }
+    return colour.get(k);
+  };
+  // The colour of the disc a stone at (x, y), diameter d (layout mm) overlaps most, or null.
+  return (x, y, d) => {
+    let best = 0, at = -1;
+    const gx = Math.floor(x / CELL), gy = Math.floor(y / CELL);
+    for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) {
+      for (const k of grid.get(`${gx + a},${gy + b}`) || []) {
+        const area = overlapArea(d / 2, discs[k][2] / 2, Math.hypot(discs[k][0] - x, discs[k][1] - y));
+        if (area > best) { best = area; at = k; }
+      }
+    }
+    return at >= 0 ? colourOf(at) : null;
+  };
+}
+
+// mapBlackAndWhiteFromImage's result with every stone that overlaps a disc recoloured by it (the
+// voted stones keep their vote, as the app's fromDiscs path did not read them either).
+function withDiscs(mapped, layout, ai, { mmPerPx, offsetMm, originMm, discsAtMm }, threshold, voted) {
+  const disc = discReader(discsAtMm, ai, Number(mmPerPx), offsetMm, threshold);
+  const skip = new Set(voted);
+  return new StoneLayout({
+    layerId: mapped.layerId, sourceMode: mapped.sourceMode,
+    stones: mapped.stones.map((st, i) => new Stone({
+      xMm: st.xMm, yMm: st.yMm, sizeMm: st.sizeMm, layerId: st.layerId, index: st.index, metadata: st.metadata,
+      color: skip.has(i) ? st.color : disc(layout.stones[i].xMm + originMm[0], layout.stones[i].yMm + originMm[1], st.sizeMm) ?? st.color
+    }))
+  });
+}
+
 // The layout's mm (the frame of the report, the trace and the diagnosis windows).
 const shifted = (layout, [gx, gy]) => new StoneLayout({
   layerId: "design", sourceMode: "is",
@@ -59,8 +118,9 @@ export async function renderBw(item, windows, outDir, base, plain = false) {
   const report = { ...layout.report, discsAtMm: layout.report.discsAtMm ?? trace.detections.filter((d) => STONE_VERDICTS.has(d[3])).map(([x, y, d]) => [x, y, d]) };
   const natural = cleanedLayout(layout, { fillHolesIn: ai });
   const frame = { ...report, originMm: natural.originMm };
-  const today = shifted(mapBlackAndWhiteFromImage(natural.stoneLayout, ai, frame, DEFAULT_BW_THRESHOLD, natural.voted), natural.originMm);
-  const fixed = shifted(mapBlackAndWhiteFromImage(natural.stoneLayout, ai, frame, DEFAULT_BW_THRESHOLD, natural.voted, { fromDiscs: true }), natural.originMm);
+  const mapped = mapBlackAndWhiteFromImage(natural.stoneLayout, ai, frame, DEFAULT_BW_THRESHOLD, natural.voted);
+  const today = shifted(mapped, natural.originMm);
+  const fixed = shifted(withDiscs(mapped, natural.stoneLayout, ai, frame, DEFAULT_BW_THRESHOLD, natural.voted), natural.originMm);
   let toCrystal = 0, toJet = 0;
   today.stones.forEach((st, i) => {
     if (st.color === fixed.stones[i].color) return;

@@ -17,11 +17,13 @@ without the compare slider, tabs at phone width (10); Etsy connect, poller, refu
 as built (11.2–11.4). Revised 24 Oct 2026 (exp-holes): hole fill after the overlap cleanup (7.5);
 black & white read from the AI image (7.6). Revised 24 Oct 2026 (exp-holes, dark spots): filled
 stones take their neighbours' colour (7.5, 7.6). Revised 24 Oct 2026 (exp-holes, B&W render): the
-tinted view's gap rule for black & white designs is a setting, today's by default (section 8,
-`BW_GAP`); behind `IS_BW_FROM_DISCS=1` (off) a B&W stone takes the colour of the AI stone disc it
-overlaps most (7.6, `report.discsAtMm`). Revised 24 Oct 2026 (exp-bw-stencil): a stencil variant
+tinted view's gap rule for black & white designs is a setting (section 8, `BW_GAP`); a disc reading
+behind `IS_BW_FROM_DISCS=1` (7.6, removed in exp-faces). Revised 24 Oct 2026 (exp-bw-stencil): a stencil variant
 of the black & white prompt behind `BW_STYLE=stencil` (7.2; halftone stays the default). Revised 24
-Oct 2026 (exp-bw-stencil, eyes): the stencil variant has an eye rule (7.2, version 5).
+Oct 2026 (exp-bw-stencil, eyes): the stencil variant has an eye rule (7.2, version 5). Revised 24 Oct
+2026 (exp-faces, leftovers): `BW_GAP` `crystal` is the default for black & white designs (section 8);
+the disc reading `IS_BW_FROM_DISCS` is removed (7.6; the service keeps `report.discsAtMm`); the leak
+check skips random tokens (section 12).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -400,13 +402,10 @@ that put the service's colour snapping (skin and chroma rules, the eye stage's c
 AI's Jet/Crystal drawing and the result (`docs/exp-holes.md`, section 6, also on the choice of the
 threshold).
 
-With `IS_BW_FROM_DISCS=1` (off by default; exp-holes, `docs/exp-holes.md` section 10) a stone that is
-read takes the Jet or Crystal of the AI stone disc it overlaps most (by area), the disc read as above
-at its own centre and diameter, instead of the pixels at its delivered position; a stone that
-overlaps no disc, and every stone of a layout without discs, is read as above. The discs are the
-service's `report.discsAtMm` (`[x, y, d]` in the stones' mm): every stone the service detected in
-the AI image except the tiny ones, shadows, painted gap dots and interstitial dots. The layout moves
-stones off the AI's discs, some onto its dark gap paint, where they read Jet among Crystal.
+The service's report keeps `discsAtMm` (`[x, y, d]` in the stones' mm: every stone the service
+detected in the AI image except the tiny ones, shadows, painted gap dots and interstitial dots), for
+experiments; the disc reading tried in exp-holes (`IS_BW_FROM_DISCS`, `docs/exp-holes.md` section 10)
+was removed in exp-faces.
 
 ### 7.7 Result
 
@@ -434,11 +433,12 @@ Definition (from the RS 30 Sep decision, sharpened here):
    wide black octagon around the eye). Beyond that (the design's outer edge and true holes) the
    background shows: white in the app, transparent in the PNG file.
    Black & white designs (exp-holes, `docs/exp-holes.md` section 10) fill those pixels by the
-   setting `BW_GAP`: `nearest` (the default) as steps 2–3; `crystal`: as `nearest`, but where the
+   setting `BW_GAP`: `crystal` (the default since exp-faces): as `nearest`, but where the
    second-nearest stone's edge is within 0.6 mm too and its colour differs, the gap colour of the
    lighter of the two, so a Jet stone among Crystal stones gets Crystal's light gap and the dark
    gap shows only between Jet stones (a Jet stone with no other stone within reach keeps its own);
-   `white` and `black`: the fabric, `#ffffff` and `#111111`. The colour designs keep steps 2–3. The
+   `nearest`: steps 2–3; `white` and `black`: the fabric, `#ffffff` and `#111111`. The colour
+   designs keep steps 2–3. The
    AI draws mid-tones in B&W as Jet and Crystal stones side by side; with `nearest` each Jet stone
    among Crystal sits in a black octagon of its own gap colour and reads larger than it is.
 5. The stones are drawn on top with the RS faceted crystal renderer
@@ -657,7 +657,12 @@ which then becomes paid (or refunded, if the order was).
   name and the first 40 characters of the prompt, image and document metadata included (PNG text,
   XMP, EXIF, ICC and C2PA chunks, JPEG APP segments, PDF info and streams, SVG and DXF comments);
   any match, or any metadata chunk in a file the buyer gets, fails. A scripted provider whose image
-  carries such metadata and whose errors name it must leave no trace either.
+  carries such metadata and whose errors name it must leave no trace either. The generic words
+  (`openai`, `gpt`, `dall`, `prompt`) are not matched inside random tokens, which can spell them by
+  chance (exp-faces): IS codes, the Turnstile widget's ids (`cf-chl-widget-` and five random
+  characters), and runs of letters, digits, `-` and `_` of at least 12 characters that switch
+  between lower case, upper case and digits at least 3 times (nonces, ETags, ids); the model name
+  and the prompt text are matched everywhere.
 - The AI image is archived without metadata (4.2): provider outputs carry C2PA chunks that name
   the provider.
 
@@ -801,8 +806,7 @@ BW_THRESHOLD=55
 BW_STYLE=halftone                # B&W prompt: halftone or stencil (7.2)
 IS_FILL_HOLES=1                  # 0 = no hole fill (7.5)
 IS_SERVICE_FILL_NEIGHBOURS=0     # 1 = the service's fill stones take their neighbours' colour (7.5)
-BW_GAP=nearest                   # B&W tinted gaps: nearest, crystal, white or black (8)
-IS_BW_FROM_DISCS=0               # 1 = a B&W stone takes the colour of the AI stone disc it overlaps most (7.6)
+BW_GAP=crystal                   # B&W tinted gaps: crystal, nearest, white or black (8)
 IS_DAILY_DESIGN_CAP=100
 IS_DESIGNS_PER_IP_PER_DAY=6
 TURNSTILE_SITE_KEY=
