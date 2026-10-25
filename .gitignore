@@ -8,3 +8,5 @@ services/strass/.venv/
 services/strass/models/shape_predictor_68_face_landmarks.dat
 services/strass/models/rembg/
 __pycache__/
+# local logs
+logs/
