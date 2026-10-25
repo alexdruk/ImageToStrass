@@ -63,7 +63,7 @@ const round = (v, k = 2) => (v == null || !Number.isFinite(v) ? null : Math.roun
 // dogs (strands).
 export const SHOWN = Object.freeze(["rs-woman", "rs-portrait", "rs-einstein", "rs-jesus", "cc0-cat-norule", "cc0-cat-rule", "cc0-dachshund-rule", "cc0-dog-norule", "cc0-dog-rule", "rs-cat", "rs-dog"]);
 
-function publicDesigns() {
+export function publicDesigns() {
   const list = [];
   for (const n of ["car-rule", "cat-norule", "cat-rule", "dachshund-rule", "dog-norule", "dog-rule", "giraffe-rule", "mug-norule", "mug-rule"]) {
     const photo = n.split("-")[0];
@@ -80,18 +80,18 @@ function publicDesigns() {
   return list;
 }
 
-function privateDesigns() {
+export function privateDesigns() {
   return readJson(R("data/private-portraits/faces/manifest.json")).map((e) => ({
     name: `${e.name}-${e.style}`, base: e.name, set: "private", style: e.style, original: e.original, input: e.input, ai: e.ai, layout: e.layout
   }));
 }
 
-async function rgba(file) {
+export async function rgba(file) {
   const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   return { data, width: info.width, height: info.height };
 }
 
-async function layoutOf(design) {
+export async function layoutOf(design) {
   if (existsSync(design.layout)) return readJson(design.layout);
   const png = await aiImageForArchive(readFileSync(design.ai));
   const answer = await callLayoutService({
@@ -107,7 +107,7 @@ async function layoutOf(design) {
 // --- Landmarks -----------------------------------------------------------------------------------
 
 // The landmark jobs a design needs: [{ id, path, blurPx, confidence? }].
-function landmarkJobs(design, report) {
+export function landmarkJobs(design, report) {
   if (design.humanPhoto === false) return [];
   const blurPx = BLUR_MM / (report.mmPerPx ?? 0.15);
   if (design.set === "private") {
@@ -121,7 +121,7 @@ function landmarkJobs(design, report) {
 }
 
 // Cached landmarks (exp-faces' file), with the missing jobs run and added.
-function landmarks(file, jobs) {
+export function landmarks(file, jobs) {
   const have = existsSync(file) ? readJson(file) : {};
   const todo = [...new Map(jobs.filter((j) => !(j.id in have)).map((j) => [j.id, j])).values()];
   if (!todo.length) return have;
@@ -136,7 +136,7 @@ function landmarks(file, jobs) {
 }
 
 // The design's faces in layout mm (as exp-faces matchFaces): { faces: [points], info }.
-function facesOf(design, report, marks) {
+export function facesOf(design, report, marks) {
   const toMm = ([x, y]) => [(x - 0.5) * report.mmPerPx - report.offsetMm[0], (y - 0.5) * report.mmPerPx - report.offsetMm[1]];
   if (design.humanPhoto === false) return { faces: [], info: { why: "the photo has no human face" } };
   if (design.set !== "private") {
@@ -166,7 +166,7 @@ function facesOf(design, report, marks) {
 }
 
 // The prepared photo (the model input, the AI image's shape) as Lab at layout mm.
-function photoReader(input, ai, report) {
+export function photoReader(input, ai, report) {
   const s = report.mmPerPx, [ox, oy] = report.offsetMm;
   const fx = input.width / ai.width, fy = input.height / ai.height;
   return (x, y) => {
@@ -180,12 +180,12 @@ function photoReader(input, ai, report) {
 
 // --- Pictures ------------------------------------------------------------------------------------
 
-const layoutMm = (stones) => new StoneLayout({
+export const layoutMm = (stones) => new StoneLayout({
   layerId: "design", sourceMode: "is",
   stones: stones.map((s, index) => new Stone({ xMm: s.x, yMm: s.y, sizeMm: s.d, color: s.color, layerId: "design", index }))
 });
 
-async function photoPng(inputFile, ai, report, view, ppmm) {
+export async function photoPng(inputFile, ai, report, view, ppmm) {
   const meta = await sharp(inputFile).metadata();
   const fx = meta.width / ai.width, fy = meta.height / ai.height;
   const s = report.mmPerPx, [ox, oy] = report.offsetMm;
@@ -196,7 +196,7 @@ async function photoPng(inputFile, ai, report, view, ppmm) {
     .resize(Math.round(view.w * ppmm), Math.round(view.h * ppmm)).flatten({ background: "#ffffff" }).png().toBuffer();
 }
 
-function viewAround(pts, margin, aspect) {
+export function viewAround(pts, margin, aspect) {
   let { x0, x1, y0, y1 } = boxOf(pts, margin);
   const w = x1 - x0, h = y1 - y0;
   if (w / h < aspect) { const add = (h * aspect - w) / 2; x0 -= add; x1 += add; } else { const add = (w / aspect - h) / 2; y0 -= add; y1 += add; }
@@ -213,7 +213,7 @@ function faceViews(face) {
 }
 
 // Panels of one view: photo (if any) | AI | each design.
-async function panels(design, ai, report, view, height, designs) {
+export async function panels(design, ai, report, view, height, designs) {
   const ppmm = height / view.h;
   const out = [];
   if (design.input) out.push({ label: "prepared photo", png: await photoPng(design.input, ai, report, view, ppmm) });

@@ -1,8 +1,9 @@
-import { PALETTE, snapColour } from "../pipeline/holes.js";
+import { PALETTE, deltaE2000, snapColour } from "../pipeline/holes.js";
 import { MIN_GAP_MM } from "../pipeline/tiers.js";
 import { getStoneSize } from "../stones/StoneSizes.js";
 import {
-  SS4_D, SS6_D, boxOf, centroid, eyeTooSmall, insidePolygon, lidPaths, lipOutlineD, lipOutlinePath, lowerLidD, polylineDistance
+  SS4_D, SS6_D, boxOf, centroid, eyeDesign, insidePolygon, lidPaths, lipOutlineD, lipOutlinePath, lowerLidD, mouthDesign,
+  polylineDistance
 } from "./faces.js";
 import { CRYSTAL, JET, ROW_GAP_MM, rampOf } from "./map.js";
 
@@ -10,6 +11,24 @@ import { CRYSTAL, JET, ROW_GAP_MM, rampOf } from "./map.js";
 // from a landmark face (faces.js faceGeometry) in the placement's first step (place.js). Every stone
 // keeps MIN_GAP_MM to every other and lies inside the subject (env.fits); chains are chains as
 // everywhere (env.chain: even steps, one colour and size, at least 3 stones).
+//
+// Build 4: the design of each feature follows its size (faces.js eyeDesign, mouthDesign). Below are
+// the full designs; the others:
+//
+//   Simple eye   (6-10 mm wide) the upper lid a chain of SS4 Jet; the pupil one Jet stone as the full
+//                eye's (it may sit up to SIMPLE_PUPIL_DOWN_MM below the iris centre, there being no
+//                lower lid); one Crystal white on each side of it along the eye (SS6, else SS4) where
+//                it fits; no iris ring, lower lid, catch-light or lashes.
+//   Kept eye     (under 6 mm) today's stones (the AI's), cleaned (cleanKept): the pupil kept, every
+//                other stone of a colour outside the eye's (Jet, Crystal, the skin's tones and its
+//                lower-lid tone) takes the nearest of those (CIEDE2000).
+//   Simple mouth (7-14 mm wide) the mouth line as the full mouth's; both lips packed in one lip tone
+//                (the AI's lip discs' most common colour); no outline; an open mouth's teeth as the
+//                full mouth's.
+//   Line mouth   (hair or a beard over the lips, faces.js mouthDesign) the mouth line only, in the
+//                darkest colour the AI drew along it (a lip-outline step darker if that is not dark).
+//   Kept mouth   (under 7 mm) today's stones, cleaned: colours outside Jet, Crystal, the lips' and
+//                the skin's tones take the nearest of those.
 //
 //   Eye    the upper lid a chain of SS6 Jet along the almond's upper curve, the lower lid a chain of
 //          SS4 (SS6 on large eyes, lowerLidD) in a dark tone of the skin ramp, both LID_OFFSET of a
@@ -61,6 +80,8 @@ export const LIP_OUTLINE_STEP_L = 10;
 export const TEETH_L = 62;
 export const TEETH_SHARE = 0.15;
 export const EDGE_SLACK_MM = 0.35;
+export const SIMPLE_PUPIL_DOWN_MM = 1.0;
+export const KEPT_PUPIL_L = 35;
 
 const GAP = MIN_GAP_MM;
 const EPS = 1e-6;
@@ -140,7 +161,7 @@ function faceColours(face, env) {
   })();
   if (bw) {
     return { bw, skin: null, skinL: cheekL, lowerLid: JET, shadow: JET, nostril: JET, iris: JET, white: CRYSTAL, catchLight: CRYSTAL,
-      lips: { upper: JET, lower: CRYSTAL, outline: JET, line: JET, dark: JET, source: "black & white" }, brow: JET, irisSource: "black & white" };
+      lips: { upper: JET, lower: CRYSTAL, outline: JET, line: JET, dark: JET, one: JET, source: "black & white" }, brow: JET, irisSource: "black & white" };
   }
   const skin = majority(face.cheeks.map(([x, y]) => env.areaColourAt(x, y))) ?? snapColour(env.aiLab(...face.cheeks[0], 2));
   const ramp = rampColours(skin);
@@ -157,6 +178,7 @@ function faceColours(face, env) {
     return labs.length ? [0, 1, 2].map((k) => labs.reduce((s, v) => s + v[k], 0) / labs.length) : null;
   };
   const fromDiscs = (poly) => majority(discsIn(poly));
+  const one = fromDiscs(face.lips.outer);
   let lower = fromDiscs(face.lips.lower) ?? fromDiscs(face.lips.upper);
   let upper = fromDiscs(face.lips.upper) ?? lower;
   const source = lower ? "AI discs" : "AI pixels";
@@ -166,7 +188,7 @@ function faceColours(face, env) {
   const outline = darkerInRamp(upper, LIP_OUTLINE_STEP_L, lipRamp);
   const line = darkerInRamp(outline, 6, lipRamp);
   return { bw, skin, skinL: L(skin), cheekL, ramp, lowerLid, shadow, nostril: lowerLid, white: CRYSTAL, catchLight: CRYSTAL,
-    lips: { upper, lower, outline, line, dark: line, source } };
+    lips: { upper, lower, outline, line, dark: line, one: one ?? lower, source } };
 }
 
 // The iris colour (colour designs): the photo's (the median of the iris ring's samples, not the lid's
@@ -239,13 +261,14 @@ function pack(env, poly, colourAt, part, { angle = 0, origin = centroid(poly), s
 // Where a pupil of diameter d fits: at the iris centre, else moved by as little as fits, up to 0.4
 // iris radii (across the eye first). With catchFits, the nearest spot where its catch-light fits
 // too, if there is one. -> [x, y] or null.
-function pupilSpot(eye, d, env, catchFits = null) {
+// down: also as far as that below the iris centre (mm; a simple eye has no lower lid).
+function pupilSpot(eye, d, env, catchFits = null, down = 0) {
   const { c, r } = eye.iris;
   const spots = [];
   for (let a = -4; a <= 4; a++) {
-    for (let b = -8; b <= 8; b++) {
-      const t = b * 0.05 * r, s = a * 0.1 * r;
-      if (Math.hypot(t, s) > 0.4 * r + EPS) continue;
+    for (let b = -8; b <= 8 + Math.ceil(down / 0.1); b++) {
+      const t = b <= 8 ? b * 0.05 * r : 0.4 * r + (b - 8) * 0.1, s = a * 0.1 * r;
+      if (Math.hypot(t, s) > Math.max(0.4 * r, down) + EPS || (t > 0.4 * r + EPS && Math.abs(s) > 0.4 * r + EPS)) continue;
       spots.push({ p: [c[0] + t * eye.normal[0] + s * eye.axis[0], c[1] + t * eye.normal[1] + s * eye.axis[1]], off: Math.hypot(t, s) + (a ? 0.01 : 0) });
     }
   }
@@ -299,14 +322,63 @@ function lashes(eye, env, colours) {
   return { drawn, share: round(outer), innerShare: round(inner), count: drawn ? Math.max(2, Math.min(5, Math.round(2 + (3 * (outer - LASH_DARK_SHARE)) / 0.4))) : 0 };
 }
 
+// The largest pupil size (at most half the iris width, SS6 at least) that fits in every eye of rows.
+function commonPupil(rows, env, down = 0) {
+  const allowed = (eye) => { const s = PUPIL_SIZES.filter((d) => d <= eye.iris.r + EPS); return s.length ? s : [SS6_D]; };
+  const largest = rows.map((r) => allowed(r.eye).find((d) => pupilSpot(r.eye, d, env, null, down)) ?? null);
+  return largest.some((d) => d != null) ? Math.min(...largest.filter((d) => d != null)) : null;
+}
+
+// Simple eyes (build 4): an SS4 Jet upper lid, a Jet pupil, one Crystal white on each side.
+function buildSimpleEyes(rows, env, colours) {
+  for (const r of rows) {
+    r.out.upperLid = env.chain("upper-lid", JET, SS4_D, lidPaths(r.eye, SS4_D, SS4_D).upper, false);
+    r.out.upperLidSize = "ss4";
+  }
+  const common = commonPupil(rows, env, SIMPLE_PUPIL_DOWN_MM);
+  for (const r of rows) {
+    let spot = null, d = null;
+    for (const s of common == null ? [] : PUPIL_SIZES.filter((q) => q <= common + EPS)) { spot = pupilSpot(r.eye, s, env, null, SIMPLE_PUPIL_DOWN_MM); if (spot) { d = s; break; } }
+    if (!spot) { r.out.pupil = null; r.out.pupilMissing = "no room below the lid"; continue; }
+    env.put(spot[0], spot[1], d, JET, "pupil");
+    r.pupil = { c: spot, d };
+    r.out.pupil = { d, offMm: round(dist(spot, r.eye.iris.c)), share: round(d / (2 * r.eye.iris.r)) };
+  }
+  for (const r of rows) {
+    r.out.white = 0;
+    if (!r.pupil) continue;
+    const { axis, normal, opening } = r.eye;
+    r.out.whiteSides = [-1, 1].map((side) => {
+      for (const d of [SS6_D, SS4_D]) {
+        for (const extra of [0, 0.15, 0.3, 0.5]) {
+          for (const shift of [0, -0.2, 0.2, -0.4, 0.4, -0.6, 0.6]) {
+            const along = side * (r.pupil.d / 2 + GAP + d / 2 + 0.002 + extra);
+            const p = [r.pupil.c[0] + along * axis[0] + shift * normal[0], r.pupil.c[1] + along * axis[1] + shift * normal[1]];
+            if (!insidePolygon(p, opening) || polylineDistance(p, opening, true) < d / 2 - EDGE_SLACK_MM || !env.fits(p[0], p[1], d)) continue;
+            env.put(p[0], p[1], d, colours.white, "white");
+            r.out.white++;
+            return d === SS6_D ? "ss6" : "ss4";
+          }
+        }
+      }
+      return null;
+    });
+  }
+  return common;
+}
+
 function buildEyes(face, env, colours, light) {
   const lowerD = lowerLidD(face.eyes);
+  const design = eyeDesign(face);
   const rows = face.eyes.map((eye) => ({
     eye,
-    out: { widthMm: round(eye.widthMm), heightMm: round(eye.heightMm), irisRMm: round(eye.iris.r), pupilSnapMm: round(eye.snapMm) }
+    out: { design, widthMm: round(eye.widthMm), heightMm: round(eye.heightMm), irisRMm: round(eye.iris.r), pupilSnapMm: round(eye.snapMm) }
   }));
-  const built = rows.filter((r) => !eyeTooSmall(r.eye));
-  for (const r of rows) if (eyeTooSmall(r.eye)) r.out.skipped = `eye too small (${round(r.eye.widthMm, 1)} x ${round(r.eye.heightMm, 1)} mm): today's stones kept`;
+  const w = face.eyes.map((e) => e.widthMm);
+  const summary = { design, widthRatio: round(Math.min(...w) / Math.max(...w)) };
+  if (design === "kept") return { eyes: rows.map((r) => r.out), ...summary, pupilSize: null };
+  if (design === "simple") return { eyes: rows.map((r) => r.out), ...summary, pupilSize: buildSimpleEyes(rows, env, colours) };
+  const built = rows;
   // Lids.
   for (const r of built) {
     const { upper, lower } = lidPaths(r.eye, lowerD);
@@ -315,9 +387,7 @@ function buildEyes(face, env, colours, light) {
     r.out.lowerLidSize = lowerD === SS6_D ? "ss6" : "ss4";
   }
   // Pupils: the largest size at most half the iris width (SS6 at least) that fits in both eyes.
-  const allowed = (eye) => { const s = PUPIL_SIZES.filter((d) => d <= eye.iris.r + EPS); return s.length ? s : [SS6_D]; };
-  const largest = built.map((r) => allowed(r.eye).find((d) => pupilSpot(r.eye, d, env)) ?? null);
-  const common = largest.some((d) => d != null) ? Math.min(...largest.filter((d) => d != null)) : null;
+  const common = commonPupil(built, env);
   for (const r of built) {
     const sizes = common == null ? [] : PUPIL_SIZES.filter((d) => d <= common + EPS);
     let spot = null, d = null;
@@ -391,8 +461,7 @@ function buildEyes(face, env, colours, light) {
     const keep = r.ringed ? (p) => dist(p, r.pupil.c) > r.eye.iris.r : () => true;
     r.out.white = pack(env, r.eye.opening, () => colours.white, "white", { angle, origin: r.pupil?.c ?? r.eye.iris.c, keep });
   }
-  const w = face.eyes.map((e) => e.widthMm);
-  return { eyes: rows.map((r) => r.out), widthRatio: round(Math.min(...w) / Math.max(...w)), pupilSize: common };
+  return { eyes: rows.map((r) => r.out), ...summary, pupilSize: common };
 }
 
 // --- Nose ----------------------------------------------------------------------------------------
@@ -456,14 +525,35 @@ function buildNose(face, env, colours) {
 
 // --- Lips and teeth ------------------------------------------------------------------------------
 
+// The darkest colour the AI drew along the mouth line (its discs within 1 mm), a lip-outline step
+// darker in its ramp if that is not dark (L* above 40); Jet in black & white or with no disc there.
+function lineColour(lips, env, colours) {
+  if (colours.bw) return JET;
+  const near = env.discs.filter((d) => polylineDistance([d.x, d.y], lips.line) <= 1.0).map((d) => d.snap).sort((a, b) => L(a) - L(b));
+  if (!near.length) return JET;
+  return L(near[0]) > 40 ? darkerInRamp(near[0], LIP_OUTLINE_STEP_L) : near[0];
+}
+
 function buildMouth(face, env, colours) {
   const lips = face.lips;
   const c = colours.lips;
+  const design = mouthDesign(face);
   const angle = Math.atan2(face.u[1], face.u[0]);
   const outlineD = lipOutlineD(lips);
-  const out = { open: lips.open, colours: { upper: c.upper, lower: c.lower, outline: c.outline, line: c.line }, source: c.source };
-  out.outline = env.chain("lip-outline", c.outline, outlineD, lipOutlinePath(lips), true);
-  out.outlineSize = outlineD === SS6_D ? "ss6" : "ss4";
+  const out = { design, widthMm: round(lips.widthMm), open: lips.open, hair: lips.hair ? { share: lips.hair.share, under: lips.hair.under } : null };
+  if (design === "kept") return out;
+  if (design === "line") {
+    const colour = lineColour(lips, env, colours);
+    out.colours = { line: colour };
+    out.line = env.chain("mouth-line", colour, SS4_D, lips.line, false);
+    return out;
+  }
+  out.colours = design === "full" ? { upper: c.upper, lower: c.lower, outline: c.outline, line: c.line } : { lips: c.one, line: c.line };
+  out.source = c.source;
+  if (design === "full") {
+    out.outline = env.chain("lip-outline", c.outline, outlineD, lipOutlinePath(lips), true);
+    out.outlineSize = outlineD === SS6_D ? "ss6" : "ss4";
+  }
   if (!lips.open) {
     out.line = env.chain("mouth-line", c.line, SS4_D, lips.line, false);
   } else {
@@ -476,8 +566,46 @@ function buildMouth(face, env, colours) {
     out.teeth = { share: round(share), visible: teeth };
     out.teeth.stones = pack(env, lips.opening, (p) => (teeth && light(p) ? CRYSTAL : c.dark), teeth ? "teeth" : "mouth", { angle });
   }
-  out.upper = pack(env, lips.upper, () => c.upper, "upper-lip", { angle });
-  out.lower = pack(env, lips.lower, () => c.lower, "lower-lip", { angle });
+  out.upper = pack(env, lips.upper, () => (design === "full" ? c.upper : c.one), "upper-lip", { angle });
+  out.lower = pack(env, lips.lower, () => (design === "full" ? c.lower : c.one), "lower-lip", { angle });
+  return out;
+}
+
+// --- Kept features -------------------------------------------------------------------------------
+
+// The nearest of the allowed colours (CIEDE2000 between catalogue colours).
+const nearestOf = (colour, allowed) => allowed.reduce((a, b) => (deltaE2000(LAB[colour], LAB[b]) < deltaE2000(LAB[colour], LAB[a]) ? b : a));
+
+// Today's stones kept in a face's kept eye and mouth regions (env.kept: { stone, region }), cleaned:
+// in an eye the pupil (the largest stone of L* KEPT_PUPIL_L or less within the iris, nearest its
+// centre on a tie) stays; every other stone of a colour outside the feature's colours takes the
+// nearest of them. Black & white designs have only Jet and Crystal already. -> per feature
+// { kind, stones, recoloured, pupil }.
+function cleanKept(face, env, colours) {
+  const out = [];
+  const skinTones = colours.bw ? [] : [...new Set(face.cheeks.flatMap(([x, y]) => env.areaTonesAt(x, y) ?? []))];
+  for (const region of env.keptRegions.filter((r) => r.faceGeo === face)) {
+    const list = env.kept.filter((k) => k.region === region).map((k) => k.stone);
+    const row = { kind: region.kind, stones: list.length, recoloured: 0 };
+    let pupil = null;
+    if (region.kind === "eye") {
+      const eye = face.eyes.find((e) => e.iris.c === region.pupil);
+      const dark = list.filter((st) => L(st.color) <= KEPT_PUPIL_L && dist([st.x, st.y], eye.iris.c) <= eye.iris.r + st.d / 2);
+      pupil = dark.sort((a, b) => b.d - a.d || dist([a.x, a.y], eye.iris.c) - dist([b.x, b.y], eye.iris.c))[0] ?? null;
+      row.pupil = pupil ? { d: pupil.d, colour: pupil.color } : null;
+    }
+    if (!colours.bw) {
+      const allowed = [...new Set(region.kind === "eye"
+        ? [JET, CRYSTAL, ...skinTones, colours.lowerLid]
+        : [JET, CRYSTAL, ...skinTones, colours.lips.upper, colours.lips.lower, colours.lips.outline, colours.lips.line])].filter((id) => LAB[id]);
+      for (const st of list) {
+        if (st === pupil || allowed.includes(st.color) || !LAB[st.color]) continue;
+        st.color = nearestOf(st.color, allowed);
+        row.recoloured++;
+      }
+    }
+    out.push(row);
+  }
   return out;
 }
 
@@ -488,8 +616,9 @@ export function buildFace(face, env) {
   const eyes = buildEyes(face, env, colours, light);
   const mouth = buildMouth(face, env, colours);
   const nose = buildNose(face, env, colours);
+  const kept = cleanKept(face, env, colours);
   return {
     ipdMm: round(face.ipd, 1), light: { side: light.side > 0 ? "right" : "left", source: light.source, diffL: light.diffL },
-    skin: colours.skin, ...eyes, nose, mouth
+    skin: colours.skin, ...eyes, nose, mouth, kept
   };
 }

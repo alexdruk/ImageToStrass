@@ -1,6 +1,6 @@
 # exp-engine — a stone placement engine for the design concept
 
-Status: experiment, branch `exp-engine`, three builds on 25 Oct 2026. Production is unchanged: the
+Status: experiment, branch `exp-engine`, four builds on 25 Oct 2026. Production is unchanged: the
 engine runs only with `IS_ENGINE=concept` (spec 7.8); the default stays today's pipeline (spec 7.5,
 7.6). The strass service is unchanged: it still gives the detections (`report.discsAtMm`), the pupils
 and face, and the natural size (`mmPerPx`, `offsetMm`), so designs keep their size and frame.
@@ -14,6 +14,132 @@ images laid out once by the local service, `data/exp-engine/layouts/`). Private 
 Build 2 (sections 1-6) answers Alex's review of build 1: holes everywhere, brows unfinished, faces not
 as the concept says. Faces stay for build 3; build 2 fixes the engine underneath them. Build 1 is kept
 below as history.
+
+## Build 4: face features by size
+
+Alex's review of build 3: on the family photos the built faces fail, because most eyes there are 6 to
+10 mm wide (3 to 5 stones), too small for the concept's full eye. Build 4 designs each feature by its
+size (concept section 5, revised; section 1's hole limit is now 1.4 mm too) and tries bigger faces
+(head-and-shoulders crops of the private photos). Production is unchanged (spec 7.8: the pipeline
+passes no landmarks). Builds 3, 2 and 1 follow as history.
+
+### B4.1 What was built
+
+1. **Designs by size** (`src/engine/faces.js` `eyeDesign`, `mouthDesign`). Eyes by their width
+   (corner to corner): **full** from 10 mm (build 3's eye), **simple** from 6 mm, else **kept**. Both
+   eyes of a face get the smaller eye's design, so they stay alike (a turned face's far eye decides).
+   Lips by the mouth's width: **full** from 14 mm, **simple** from 7 mm, else **kept**; **line** (the
+   mouth line only) for a full or simple mouth under hair.
+2. **Simple eye** (`features.js buildSimpleEyes`): the upper lid a chain of SS4 Jet; the pupil one Jet
+   stone, as the full eye's (half the iris at most, SS6 at least, both eyes the same), allowed up to
+   1 mm below the iris centre since there is no lower lid; one Crystal white on each side of it along
+   the eye (SS6, else SS4) where it fits inside the opening. No iris ring, lower lid, catch-light or
+   lashes. Its region is the lid chain's path and the lower lid curve 0.4 mm further down.
+3. **Kept eye and mouth** (`place.js`, `features.js cleanKept`): today's stones (the AI's) in an
+   ellipse around the feature, cleaned: in an eye the pupil (the largest stone of L\* 35 or less within
+   the iris) stays as it is; every other stone whose colour is not one of the feature's (eye: Jet,
+   Crystal, the skin's tones and its lower-lid tone; mouth: those and the lip tones) takes the nearest
+   of them (CIEDE2000). Black & white designs are Jet and Crystal already.
+4. **Simple mouth**: the mouth line as the full mouth's (an open mouth: along both inner lips, with
+   the teeth) and both lips packed in one lip tone (the most common colour of the AI's lip discs); no
+   outline.
+5. **No lips over a moustache or beard** (`map.js lipsUnderHair`): the hair's tones are the AI's brow
+   colours (outside the skin ramp, whose dark end is as often skin shadow), the colours of its discs
+   over the forehead, and the light greys (white hair); less the cheeks' tones. The lips are under hair
+   when at least 40 % of the AI's non-ink discs on the upper lip (a moustache) or the lower lip (a
+   beard) are hair tones, and at least 30 % between the nose and the upper lip or in a chin band below
+   the lower lip are too (a lip drawn in a hair-like tone, as red hair and lip shading share Colorado
+   Topaz, has skin around it). Black & white: Jet on 80 % of the lips and of the band above them.
+   Then only the mouth line is built, in the darkest colour the AI drew along it, and its region is a
+   band of 1.2 mm around the line, so the hair's area runs on over the lips.
+6. **Check 5 by design** (`checks.js`): a full eye as before; a simple eye its upper lid (70 %), a white
+   (one light stone; no catch-light is set apart) and its pupil; a kept eye its pupil (L\* 35 or less,
+   SS4 or more). Full lips their outline; simple and line mouths their mouth line (a line mouth
+   against the skin alone); a kept mouth nothing. The catch-light is now the light stone touching the
+   pupil above its centre and closest to it (before, a white touching the pupil higher up could be
+   taken for it).
+7. **Bigger faces** (`tools/exp-faces-size.mjs hs`, private): for each private photo whose prepared
+   photo has one face (9 of 12), the prepared photo made again as the app makes it, a
+   head-and-shoulders crop (the face 45 % of the crop's width, the top half a face height above the
+   forehead, 1.3 times as high as wide), and the crop through the production pipeline in colour: one
+   provider call each, 9 calls in all, no retry, no automatic re-run. All 9 were accepted (0 stones
+   removed, coverage 0.63–0.67).
+
+### B4.2 Results
+
+Public faces (the RS images; the private results are in `data/private-portraits/faces-size.html`):
+
+| Set | Designs | Faces | Eyes: full · simple · kept | Mouths: full · simple · line · kept | Check 5 today | Check 5 engine |
+| --- | ---: | ---: | --- | --- | ---: | ---: |
+| photos | 3 | 3 | 4 · 2 · 0 | 1 · 1 · 1 · 0 | 0/3 | 3/3 |
+
+Each face: the eyes' and the mouth's width, the design they got (the hair share over the lips), and
+check 5 for today's design and the engine's:
+
+| Design | Face | Eyes: width mm (design) | Mouth: width mm (design; hair over the lips) | Who | Check 5 | Eyes (left — right) | Lips |
+| --- | ---: | --- | --- | --- | --- | --- | --- |
+| rs-einstein | 1 | 13.8 · 10.1 (full) | 26.3 (line; 0.88) | today | fail | full: outline no (0.62/0.86) · white 1 · pupil 4.7 · catch-light yes → **fail** — full: outline no (0.29/0.95) · white 0 · pupil 4.7 · catch-light yes → **fail** | line: outline yes (0.84) · mouth line yes (0.79) → ok |
+| | | | | engine | **pass** | full: outline yes (0.9/1) · white 5 · pupil 2 · catch-light yes → ok — full: outline yes (0.71/1) · white 2 · pupil 2 · catch-light yes → ok | line: outline yes (0.72) · mouth line yes (1) → ok |
+| rs-portrait | 1 | 14.4 · 21.8 (full) | 29 (full; 0) | today | fail | full: outline no (0.62/0.33) · white 8 · pupil 2.8 · catch-light yes → **fail** — full: outline no (0.81/0.38) · white 10 · pupil 2.8 · catch-light yes → **fail** | full: outline yes (0.94) · mouth line no (0.66) → ok |
+| | | | | engine | **pass** | full: outline yes (1/1) · white 6 · pupil 4 · catch-light yes → ok — full: outline yes (1/1) · white 6 · pupil 4 · catch-light yes → ok | full: outline yes (1) · mouth line yes (1) → ok |
+| rs-woman | 1 | 11 · 6.5 (simple) | 12.8 (simple; 0) | today | fail | simple: outline no (0.57/0.14) · white 3 · pupil 4.7 → **fail** — simple: outline no (0.24/0) · white 0 · pupil 4.7 → **fail** | simple: outline no (0.63) · mouth line no (0.42) → **fail** |
+| | | | | engine | **pass** | simple: outline yes (1/0.81) · white 2 · pupil 2 → ok — simple: outline yes (1/1) · white 1 · pupil 2 → ok | simple: outline no (0.26) · mouth line yes (1) → ok |
+
+Checks 1-4:
+
+| Design | Who | Stones | 1 Gaps: viol. / min | 2 Lines clean · other colour · breaks | 3 Patches <4 | 4 Holes ≥1.4 mm | Faces passing check 5 |
+| --- | --- | ---: | --- | --- | ---: | ---: | --- |
+| rs-einstein | today | 3594 | 0 / 0.1 | 37/71 · 22 · 0 | 462 | 58 | 0/1 |
+|  | engine | 3433 | 0 / 0.1 | 64/71 · 1 · 0 | 1 | 21 | 1/1 |
+| rs-portrait | today | 4045 | 0 / 0.1 | 7/35 · 2 · 4 | 674 | 223 | 0/1 |
+|  | engine | 4031 | 0 / 0.1 | 34/35 · 0 · 0 | 3 | 34 | 1/1 |
+| rs-woman | today | 2627 | 0 / 0.1 | 6/14 · 4 · 1 | 158 | 39 | 0/1 |
+|  | engine | 2552 | 0 / 0.1 | 12/14 · 0 · 0 | 0 | 13 | 1/1 |
+
+Private photos, in numbers only (colour; 12 photos with 16 faces, and their 9 head-and-shoulders
+crops):
+
+| Set | Faces | Eyes: full · simple · kept | Mouths: full · simple · line · kept | Check 5 today | Check 5 engine |
+| --- | ---: | --- | --- | ---: | ---: |
+| photos | 16 | 2 · 24 · 6 | 12 · 3 · 1 · 0 | 1/16 | 14/16 |
+| head-and-shoulders crops | 9 | 14 · 4 · 0 | 9 · 0 · 0 · 0 | 0/9 | 6/9 |
+
+What it shows:
+
+- **Sizes.** On the photos as they are, 24 of 32 eyes are 6–10 mm (simple), 6 under 6 mm (kept), 2
+  full; with simple eyes 14 of 16 faces pass check 5 (build 3's full eyes: most failed for want of
+  room for the white). The two failures: a closed eye (0.9 mm high) has no pupil to keep, and a tiny
+  face's kept eye whose pupil the AI drew off the landmark iris.
+- **Crops.** The head-and-shoulders crop makes the face bigger in the design where the photo showed
+  more than head and shoulders (eyes 6.4 → 11.7 mm, 7.3 → 11.6, 9.8 → 11.9), and hardly where it
+  already was one (9.8 → 10.4): the AI draws about the same number of stones across whatever it is
+  given, so the design's natural size stays about the same and the face takes more of it. 14 of 18
+  eyes are full on the crops. 6 of 9 pass check 5; the failures are room, not design: a nearly closed
+  eye (the smaller eye, 8.7 mm, makes both simple, and no white fits in it), a full eye with room for
+  one white only, and an upper lid that covers 67 % of the lid (70 % asked) under glasses.
+- **Beards.** Einstein's white moustache and a groom's red beard get only the mouth line. Without the
+  second condition (hair beside the lips) a woman with red hair lost her lips; with it, no false
+  find on the 28 faces.
+- **Not met, or open.** The landmarks of a turned or small face can sit off the AI's drawing (rs-woman's
+  lips, a smiling man's teeth): the features are built where the landmarks are, and the AI's teeth are
+  then missed. Full lips read heavy (dark lip tones, lipstick-like) on children's faces. A simple eye
+  has no catch-light, as asked; the eyes look flatter for it.
+
+### B4.3 Pictures
+
+Each face: the image | AI image | today | engine with faces by size; then the eyes and the mouth.
+
+### rs-woman (simple eyes, simple mouth)
+
+![rs-woman](exp-engine/b4/rs-woman.jpg)
+
+### rs-portrait (full eyes, full lips)
+
+![rs-portrait](exp-engine/b4/rs-portrait.jpg)
+
+### rs-einstein (full eyes, mouth line under the moustache)
+
+![rs-einstein](exp-engine/b4/rs-einstein.jpg)
 
 ## Build 3: faces, holes, lines leaving the subject
 

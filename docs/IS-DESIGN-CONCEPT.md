@@ -1,7 +1,8 @@
 # IS design concept (v1)
 
 Status: concept, 25 Oct 2026. Revised 25 Oct 2026 (exp-engine build 3): check 4 counts holes of 1.4 mm
-or more. Every IS design must follow these rules. The engine that places
+or more. Revised 25 Oct 2026 (exp-engine build 4): face features by size (section 5); no visible hole
+is 1.4 mm (section 1). Every IS design must follow these rules. The engine that places
 stones (spec section 7) implements them; the checks in section 8 below measure them.
 
 Why: until now IS copied the stones the AI drew and fixed faults one by one. The result has no
@@ -14,7 +15,7 @@ holes appear where rows of stones meet. From now on the AI image (or, later, the
 - Main stone SS6. SS4 for fine lines and small details. SS10 only inside large calm areas.
   Pupils SS6 to SS16 (SS20 allowed for pupils on real human faces).
 - Gap between neighbours: at least 0.1 mm, normally 0.1–0.3 mm.
-- **No visible holes:** inside the subject, no empty circle between stones larger than 1.0 mm in
+- **No visible holes:** inside the subject, no empty circle between stones of 1.4 mm or more in
   diameter (stones in tidy rows leave at most about 0.4–1.0 mm).
 
 ## 2. Lines
@@ -47,7 +48,22 @@ An area is a part of the picture with one meaning: skin, hair, a shirt, a backgr
 Feature size and position come from face landmarks. Both eyes use a similar size, and the
 catch-lights sit on the same side in both eyes.
 
-**Eye**
+**Designs by size.** Each feature's design follows its width (corner to corner):
+
+| Feature | Width | Design |
+| --- | --- | --- |
+| Eye | 10 mm or more | the full eye below |
+| Eye | 6 to 10 mm | simple eye: a Jet pupil, one Crystal white stone on each side where it fits, an upper lid chain of SS4 Jet; no iris ring, no lower lid, no lashes |
+| Eye | under 6 mm | the AI's own eye stones, cleaned only: no stray colours, the pupil kept |
+| Lips | 14 mm or more | the full lips below |
+| Lips | 7 to 14 mm | a mouth line chain and one lip tone (no outline) |
+| Lips | under 7 mm | the AI's own stones, cleaned |
+
+Both eyes of a face get the same design, the one of the smaller eye. Lips are never built over a
+moustache or beard: where the map has hair or beard tones where the lips would go, only the mouth
+line is kept.
+
+**Eye** (full)
 - Almond-shaped outline.
 - Upper lid: a chain of SS6 Jet stones, the heaviest line of the eye.
 - Lower lid: a chain of SS4 or SS6 stones, a dark tone of the skin ramp (Jet in black & white).
@@ -67,7 +83,7 @@ catch-lights sit on the same side in both eyes.
 - If needed, one shadow chain of SS4 stones along the darker side, from the bridge to the tip,
   one tone darker than the skin.
 
-**Lips**
+**Lips** (full)
 - Outline: a chain of SS4 or SS6 stones in a dark lip tone.
 - Usually the upper lip is filled with a darker lip tone and the lower lip with a lighter one.
 - Mouth line: a chain of SS4 dark stones between the lips, usually present.
@@ -98,5 +114,7 @@ A stone of a higher rule is never removed for a lower one.
 3. Areas: no patch smaller than 4 stones; at most 3 tones per area.
 4. Holes: no hole of 1.4 mm or more inside the subject (an empty circle of that diameter between
    stones, or between stones and the subject's edge).
-5. Faces: each eye has its outline, white and pupil, and usually a catch-light; lips have an
-   outline and usually a mouth line.
+5. Faces, by each feature's design (section 5): a full eye has its outline, white and pupil, and
+   usually a catch-light; a simple eye its upper lid, a white and its pupil; a kept eye its pupil.
+   Full lips have an outline and usually a mouth line; simple lips and a mouth under hair their
+   mouth line; kept lips nothing more.

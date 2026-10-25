@@ -1,0 +1,922 @@
+{
+ "results": [
+  {
+   "name": "rs-einstein",
+   "base": "rs-einstein",
+   "hs": false,
+   "faces": {
+    "count": 1,
+    "ai": 1,
+    "why": null
+   },
+   "today": {
+    "stones": 3594,
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 71,
+      "clean": 37,
+      "offColour": 22,
+      "offSize": 30,
+      "breaks": 0,
+      "mixedLines": 7,
+      "brokenLines": 0,
+      "missing": 6,
+      "pass": false
+     },
+     "areas": {
+      "areas": 88,
+      "overTones": 43,
+      "maxTones": 11,
+      "patches": 640,
+      "smallPatches": 462,
+      "smallPatchStones": 679,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 58,
+      "largestMm": 1.68,
+      "at": 58,
+      "pass": false,
+      "histogram": [
+       2868,
+       1680,
+       544,
+       148,
+       66
+      ]
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "design": "full",
+         "widthMm": 13.78,
+         "outline": false,
+         "upper": 0.62,
+         "lower": 0.86,
+         "white": false,
+         "whites": 1,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 0.83,
+         "catchLight": true,
+         "side": 1,
+         "pass": false
+        },
+        {
+         "design": "full",
+         "widthMm": 10.11,
+         "outline": false,
+         "upper": 0.29,
+         "lower": 0.95,
+         "white": false,
+         "whites": 0,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 0.91,
+         "catchLight": true,
+         "side": 1,
+         "pass": false
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "design": "line",
+        "widthMm": 26.27,
+        "outline": true,
+        "outlineShare": 0.84,
+        "mouthLine": true,
+        "mouthLineShare": 0.79,
+        "pass": true
+       },
+       "skinL": 77,
+       "pass": false
+      }
+     ]
+    }
+   },
+   "engine": {
+    "stones": 3433,
+    "ms": 5269,
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 71,
+      "clean": 64,
+      "offColour": 1,
+      "offSize": 3,
+      "breaks": 0,
+      "mixedLines": 1,
+      "brokenLines": 0,
+      "missing": 3,
+      "pass": false,
+      "chains": {
+       "count": 90,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 86,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 242,
+      "smallPatches": 1,
+      "smallPatchStones": 3,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 21,
+      "largestMm": 1.67,
+      "at": 21,
+      "pass": false,
+      "histogram": [
+       2888,
+       3497,
+       565,
+       140,
+       20
+      ]
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "design": "full",
+         "widthMm": 13.78,
+         "outline": true,
+         "upper": 0.9,
+         "lower": 1,
+         "white": true,
+         "whites": 5,
+         "pupil": true,
+         "pupilD": 2,
+         "pupilShare": 0.35,
+         "catchLight": true,
+         "side": 1,
+         "pass": true
+        },
+        {
+         "design": "full",
+         "widthMm": 10.11,
+         "outline": true,
+         "upper": 0.71,
+         "lower": 1,
+         "white": true,
+         "whites": 2,
+         "pupil": true,
+         "pupilD": 2,
+         "pupilShare": 0.39,
+         "catchLight": true,
+         "side": 1,
+         "pass": true
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "design": "line",
+        "widthMm": 26.27,
+        "outline": true,
+        "outlineShare": 0.72,
+        "mouthLine": true,
+        "mouthLineShare": 1,
+        "pass": true
+       },
+       "skinL": 66,
+       "pass": true
+      }
+     ]
+    }
+   },
+   "features": [
+    {
+     "ipdMm": 25.9,
+     "eyes": [
+      {
+       "widthMm": 13.8,
+       "heightMm": 5.5,
+       "design": "full",
+       "built": {
+        "design": "full",
+        "widthMm": 13.78,
+        "heightMm": 5.53,
+        "irisRMm": 2.84,
+        "pupilSnapMm": 1.03,
+        "upperLid": 9,
+        "lowerLid": 9,
+        "lowerLidSize": "ss4",
+        "pupil": {
+         "d": 2,
+         "offMm": 0,
+         "share": 0.35
+        },
+        "catchLight": {
+         "turnDeg": 0
+        },
+        "irisColour": "smoked-topaz",
+        "irisSource": "AI discs",
+        "ring": 5,
+        "irisFill": 0,
+        "lashes": {
+         "drawn": false,
+         "share": 0.12,
+         "innerShare": 0.35,
+         "stones": 0
+        },
+        "white": 5
+       }
+      },
+      {
+       "widthMm": 10.1,
+       "heightMm": 5.3,
+       "design": "full",
+       "built": {
+        "design": "full",
+        "widthMm": 10.11,
+        "heightMm": 5.33,
+        "irisRMm": 2.59,
+        "pupilSnapMm": 0.95,
+        "upperLid": 7,
+        "lowerLid": 7,
+        "lowerLidSize": "ss4",
+        "pupil": {
+         "d": 2,
+         "offMm": 0,
+         "share": 0.39
+        },
+        "catchLight": {
+         "turnDeg": 0
+        },
+        "irisColour": "smoked-topaz",
+        "irisSource": "AI discs",
+        "ring": 3,
+        "irisFill": 0,
+        "lashes": {
+         "drawn": true,
+         "share": 0.55,
+         "innerShare": 0.2,
+         "stones": 4
+        },
+        "white": 2
+       }
+      }
+     ],
+     "mouth": {
+      "widthMm": 26.3,
+      "design": "line",
+      "open": false,
+      "hair": {
+       "under": true,
+       "share": 0.88,
+       "around": 0.86,
+       "tones": [
+        "hematite",
+        "graphite",
+        "crystal-clear",
+        "crystal",
+        "silver",
+        "grey"
+       ]
+      },
+      "built": {
+       "design": "line",
+       "widthMm": 26.27,
+       "open": false,
+       "hair": {
+        "share": 0.88,
+        "under": true
+       },
+       "colours": {
+        "line": "jet"
+       },
+       "line": 15
+      }
+     },
+     "kept": []
+    }
+   ],
+   "picture": "rs-einstein.jpg"
+  },
+  {
+   "name": "rs-portrait",
+   "base": "rs-portrait",
+   "hs": false,
+   "faces": {
+    "count": 1,
+    "ai": 1,
+    "why": null
+   },
+   "today": {
+    "stones": 4045,
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 35,
+      "clean": 7,
+      "offColour": 2,
+      "offSize": 35,
+      "breaks": 4,
+      "mixedLines": 2,
+      "brokenLines": 3,
+      "missing": 4,
+      "pass": false
+     },
+     "areas": {
+      "areas": 46,
+      "overTones": 25,
+      "maxTones": 11,
+      "patches": 833,
+      "smallPatches": 674,
+      "smallPatchStones": 953,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 223,
+      "largestMm": 1.72,
+      "at": 223,
+      "pass": false,
+      "histogram": [
+       3375,
+       1509,
+       782,
+       348,
+       241
+      ]
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "design": "full",
+         "widthMm": 14.39,
+         "outline": false,
+         "upper": 0.62,
+         "lower": 0.33,
+         "white": true,
+         "whites": 8,
+         "pupil": true,
+         "pupilD": 2.8,
+         "pupilShare": 0.34,
+         "catchLight": true,
+         "side": 1,
+         "pass": false
+        },
+        {
+         "design": "full",
+         "widthMm": 21.79,
+         "outline": false,
+         "upper": 0.81,
+         "lower": 0.38,
+         "white": true,
+         "whites": 10,
+         "pupil": true,
+         "pupilD": 2.8,
+         "pupilShare": 0.32,
+         "catchLight": true,
+         "side": 1,
+         "pass": false
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "design": "full",
+        "widthMm": 29.02,
+        "outline": true,
+        "outlineShare": 0.94,
+        "mouthLine": false,
+        "mouthLineShare": 0.66,
+        "pass": true
+       },
+       "skinL": 77,
+       "pass": false
+      }
+     ]
+    }
+   },
+   "engine": {
+    "stones": 4031,
+    "ms": 5808,
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 35,
+      "clean": 34,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false,
+      "chains": {
+       "count": 58,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 45,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 147,
+      "smallPatches": 3,
+      "smallPatchStones": 6,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 34,
+      "largestMm": 1.65,
+      "at": 34,
+      "pass": false,
+      "histogram": [
+       2997,
+       3612,
+       749,
+       257,
+       43
+      ]
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "design": "full",
+         "widthMm": 14.39,
+         "outline": true,
+         "upper": 1,
+         "lower": 1,
+         "white": true,
+         "whites": 6,
+         "pupil": true,
+         "pupilD": 4,
+         "pupilShare": 0.49,
+         "catchLight": true,
+         "side": 1,
+         "pass": true
+        },
+        {
+         "design": "full",
+         "widthMm": 21.79,
+         "outline": true,
+         "upper": 1,
+         "lower": 1,
+         "white": true,
+         "whites": 6,
+         "pupil": true,
+         "pupilD": 4,
+         "pupilShare": 0.46,
+         "catchLight": true,
+         "side": 1,
+         "pass": true
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "design": "full",
+        "widthMm": 29.02,
+        "outline": true,
+        "outlineShare": 1,
+        "mouthLine": true,
+        "mouthLineShare": 1,
+        "pass": true
+       },
+       "skinL": 77,
+       "pass": true
+      }
+     ]
+    }
+   },
+   "features": [
+    {
+     "ipdMm": 36.6,
+     "eyes": [
+      {
+       "widthMm": 14.4,
+       "heightMm": 7.5,
+       "design": "full",
+       "built": {
+        "design": "full",
+        "widthMm": 14.39,
+        "heightMm": 7.46,
+        "irisRMm": 4.06,
+        "pupilSnapMm": 0.99,
+        "upperLid": 9,
+        "lowerLid": 9,
+        "lowerLidSize": "ss4",
+        "pupil": {
+         "d": 4,
+         "offMm": 0.45,
+         "share": 0.49
+        },
+        "catchLight": {
+         "turnDeg": 45
+        },
+        "irisColour": "grey",
+        "irisSource": "AI discs",
+        "ring": 0,
+        "ringSkipped": "ring does not fit (3 of 10)",
+        "lashes": {
+         "drawn": false,
+         "share": 0.62,
+         "innerShare": 0.8,
+         "stones": 0
+        },
+        "white": 6
+       }
+      },
+      {
+       "widthMm": 21.8,
+       "heightMm": 7,
+       "design": "full",
+       "built": {
+        "design": "full",
+        "widthMm": 21.79,
+        "heightMm": 7.01,
+        "irisRMm": 4.39,
+        "pupilSnapMm": 0.53,
+        "upperLid": 12,
+        "lowerLid": 13,
+        "lowerLidSize": "ss4",
+        "pupil": {
+         "d": 4,
+         "offMm": 0,
+         "share": 0.46
+        },
+        "catchLight": {
+         "turnDeg": 30
+        },
+        "irisColour": "grey",
+        "irisSource": "AI discs",
+        "ring": 4,
+        "irisFill": 4,
+        "lashes": {
+         "drawn": false,
+         "share": 0.45,
+         "innerShare": 0.53,
+         "stones": 0
+        },
+        "white": 6
+       }
+      }
+     ],
+     "mouth": {
+      "widthMm": 29,
+      "design": "full",
+      "open": false,
+      "hair": {
+       "under": false,
+       "share": 0,
+       "around": 0.15,
+       "tones": [
+        "graphite",
+        "jet-hematite",
+        "hematite",
+        "silver",
+        "grey",
+        "light-peach",
+        "crystal"
+       ]
+      },
+      "built": {
+       "design": "full",
+       "widthMm": 29.02,
+       "open": false,
+       "hair": {
+        "share": 0,
+        "under": false
+       },
+       "colours": {
+        "upper": "light-siam",
+        "lower": "scarlet",
+        "outline": "indian-siam",
+        "line": "jet"
+       },
+       "source": "AI discs",
+       "outline": 43,
+       "outlineSize": "ss4",
+       "line": 15,
+       "upper": 23,
+       "lower": 30
+      }
+     },
+     "kept": []
+    }
+   ],
+   "picture": "rs-portrait.jpg"
+  },
+  {
+   "name": "rs-woman",
+   "base": "rs-woman",
+   "hs": false,
+   "faces": {
+    "count": 1,
+    "ai": 1,
+    "why": null
+   },
+   "today": {
+    "stones": 2627,
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 14,
+      "clean": 6,
+      "offColour": 4,
+      "offSize": 5,
+      "breaks": 1,
+      "mixedLines": 2,
+      "brokenLines": 1,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 38,
+      "overTones": 13,
+      "maxTones": 6,
+      "patches": 231,
+      "smallPatches": 158,
+      "smallPatchStones": 220,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 39,
+      "largestMm": 1.65,
+      "at": 39,
+      "pass": false,
+      "histogram": [
+       2227,
+       1207,
+       366,
+       85,
+       42
+      ]
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "design": "simple",
+         "widthMm": 10.96,
+         "outline": false,
+         "upper": 0.57,
+         "lower": 0.14,
+         "white": true,
+         "whites": 3,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 1.12,
+         "catchLight": true,
+         "side": -1,
+         "pass": false
+        },
+        {
+         "design": "simple",
+         "widthMm": 6.46,
+         "outline": false,
+         "upper": 0.24,
+         "lower": 0,
+         "white": false,
+         "whites": 0,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 1.41,
+         "catchLight": false,
+         "side": null,
+         "pass": false
+        }
+       ],
+       "sameSide": null,
+       "lips": {
+        "design": "simple",
+        "widthMm": 12.78,
+        "outline": false,
+        "outlineShare": 0.63,
+        "mouthLine": false,
+        "mouthLineShare": 0.42,
+        "pass": false
+       },
+       "skinL": 77,
+       "pass": false
+      }
+     ]
+    }
+   },
+   "engine": {
+    "stones": 2552,
+    "ms": 3838,
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 14,
+      "clean": 12,
+      "offColour": 0,
+      "offSize": 1,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": false,
+      "chains": {
+       "count": 26,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 37,
+      "overTones": 0,
+      "maxTones": 2,
+      "patches": 96,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 13,
+      "largestMm": 1.63,
+      "at": 13,
+      "pass": false,
+      "histogram": [
+       1739,
+       2033,
+       430,
+       119,
+       13
+      ]
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "design": "simple",
+         "widthMm": 10.96,
+         "outline": true,
+         "upper": 1,
+         "lower": 0.81,
+         "white": true,
+         "whites": 2,
+         "pupil": true,
+         "pupilD": 2,
+         "pupilShare": 0.48,
+         "catchLight": true,
+         "side": -1,
+         "pass": true
+        },
+        {
+         "design": "simple",
+         "widthMm": 6.46,
+         "outline": true,
+         "upper": 1,
+         "lower": 1,
+         "white": true,
+         "whites": 1,
+         "pupil": true,
+         "pupilD": 2,
+         "pupilShare": 0.6,
+         "catchLight": true,
+         "side": -1,
+         "pass": true
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "design": "simple",
+        "widthMm": 12.78,
+        "outline": false,
+        "outlineShare": 0.26,
+        "mouthLine": true,
+        "mouthLineShare": 1,
+        "pass": true
+       },
+       "skinL": 77,
+       "pass": true
+      }
+     ]
+    }
+   },
+   "features": [
+    {
+     "ipdMm": 19.6,
+     "eyes": [
+      {
+       "widthMm": 11,
+       "heightMm": 5.2,
+       "design": "simple",
+       "built": {
+        "design": "simple",
+        "widthMm": 10.96,
+        "heightMm": 5.2,
+        "irisRMm": 2.1,
+        "pupilSnapMm": 2.85,
+        "upperLid": 9,
+        "upperLidSize": "ss4",
+        "pupil": {
+         "d": 2,
+         "offMm": 0,
+         "share": 0.48
+        },
+        "white": 2,
+        "whiteSides": [
+         "ss6",
+         "ss6"
+        ]
+       }
+      },
+      {
+       "widthMm": 6.5,
+       "heightMm": 4.5,
+       "design": "simple",
+       "built": {
+        "design": "simple",
+        "widthMm": 6.46,
+        "heightMm": 4.45,
+        "irisRMm": 1.66,
+        "pupilSnapMm": 1.57,
+        "upperLid": 7,
+        "upperLidSize": "ss4",
+        "pupil": {
+         "d": 2,
+         "offMm": 0,
+         "share": 0.6
+        },
+        "white": 1,
+        "whiteSides": [
+         "ss6",
+         null
+        ]
+       }
+      }
+     ],
+     "mouth": {
+      "widthMm": 12.8,
+      "design": "simple",
+      "open": false,
+      "hair": {
+       "under": false,
+       "share": 0,
+       "around": 0.08,
+       "tones": [
+        "crystal-clear",
+        "crystal",
+        "silver",
+        "grey"
+       ]
+      },
+      "built": {
+       "design": "simple",
+       "widthMm": 12.78,
+       "open": false,
+       "hair": {
+        "share": 0,
+        "under": false
+       },
+       "colours": {
+        "lips": "silk",
+        "line": "colorado-topaz"
+       },
+       "source": "AI discs",
+       "line": 7,
+       "upper": 5,
+       "lower": 6
+      }
+     },
+     "kept": []
+    }
+   ],
+   "picture": "rs-woman.jpg"
+  }
+ ]
+}

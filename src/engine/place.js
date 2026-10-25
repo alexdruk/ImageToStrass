@@ -12,8 +12,9 @@ import { JET, MIN_LINE_STONES, MIN_PATCH, ROW_GAP_MM, SS4_MM, SS6_MM, traceSpaci
 //
 //   1. Features. Landmark faces (build 3): every face's features built by the concept (features.js
 //      buildFace: eyes, lips, teeth, nose), role "feature" with its part, the lines among them
-//      chains. Pupil regions (faces without landmarks, builds 1 and 2): today's stones whose centre
-//      lies in an eye or mouth region, unchanged.
+//      chains. Pupil regions (faces without landmarks, builds 1 and 2; a landmark face's kept eyes
+//      and mouth, build 4): today's stones whose centre lies in an eye or mouth region, kept (a
+//      landmark face's cleaned by features.js cleanKept).
 //   1b. Brows (map.js findBrows): each row a chain along its path, inner end first, in the brow's
 //      colour, SS6 (a piece of at least MIN_LINE_STONES stones).
 //   2. Lines, dark and light, longest first: stones along each smoothed path at an even chord step
@@ -167,16 +168,19 @@ export function placeStones(map, ai, { today = [], debug = null, bandRows = BAND
   };
 
   // 1. Features: today's stones in the pupil regions; the landmark faces' features.
+  const kept = [];
   for (const st of today) {
-    if (!regions.some((r) => !r.poly && inRegion(r, st.x, st.y))) continue;
-    add({ x: st.x, y: st.y, d: st.d, color: st.color, role: "feature", part: "kept", chain: null, area: null });
+    const region = regions.find((r) => !r.poly && inRegion(r, st.x, st.y));
+    if (!region) continue;
+    const i = add({ x: st.x, y: st.y, d: st.d, color: st.color, role: "feature", part: "kept", chain: null, area: null });
+    kept.push({ stone: stones[i], region });
     stats.keptToday++;
   }
   if (map.faces?.length) {
     const s = Number(map.report.mmPerPx), [ox, oy] = map.report.offsetMm;
     const fits = (x, y, d) => insideSubject(x, y, d / 2 - 0.05) && !hash.overlaps(x, y, d, MIN_GAP_MM);
     const env = {
-      mode: map.mode, threshold: map.threshold, discs: map.discs, photoLab, fits,
+      mode: map.mode, threshold: map.threshold, discs: map.discs, photoLab, fits, kept, keptRegions: regions.filter((r) => r.keep),
       put: (x, y, d, colour, part) => { stats.features++; return add({ x, y, d, color: colour, role: "feature", part, chain: null, area: null }); },
       chain: (part, colour, d, pts, closed, minStones = MIN_LINE_STONES) => {
         const pitch = d + ROW_GAP_MM;

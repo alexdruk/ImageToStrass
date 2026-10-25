@@ -59,10 +59,11 @@ function eyeCentre([x, y], ipd, pupilD, discs) {
 // layout report (+ the map's discs, { x, y, d, lab }; + the landmark faces, faceGeometry) -> regions
 // in layout mm. Pupil regions: [{ kind: "eye" | "mouth", x, y, ax, ay, angle, pupil }] (angle: of
 // the ellipse's ax axis, radians; pupil: [x, y] of an eye). With landmark faces: their polygon
-// regions (landmarkRegions), and pupil regions only for service pupils that lie on no landmark eye
-// (no mouth then), and for a landmark eye too small to build (eyeTooSmall), around that eye.
+// regions (landmarkRegions; a kept eye or mouth is an ellipse with keep: true), and pupil regions only
+// for service pupils that lie on no landmark eye (no mouth then).
 export function faceRegions(report, discs = [], faces = []) {
-  const fromFaces = faces.flatMap((f) => landmarkRegions(f));
+  // Each landmark region knows its face (not enumerable: the saved map stays plain).
+  const fromFaces = faces.flatMap((f) => landmarkRegions(f).map((r) => Object.defineProperty(r, "faceGeo", { value: f, enumerable: false })));
   const pupilRegions = pupilFaceRegions(report, discs);
   if (!faces.length) return pupilRegions;
   const onLandmarkEye = (p) => faces.some((f) => f.eyes.some((e) => Math.hypot(e.iris.c[0] - p[0], e.iris.c[1] - p[1]) < 0.5 * f.ipd));
@@ -299,11 +300,33 @@ export function faceGeometry(points, { pupils = [] } = {}) {
   };
 }
 
-// A landmark eye too narrow for the concept's eye (an upper lid of 3 SS6 stones and a pupil):
-// such an eye gets a pupil region instead (today's stones kept), reported by features.js.
-export const MIN_EYE_WIDTH_MM = 5;
-export const MIN_EYE_HEIGHT_MM = 1.6;
-export const eyeTooSmall = (eye) => eye.widthMm < MIN_EYE_WIDTH_MM || eye.heightMm < MIN_EYE_HEIGHT_MM;
+// Feature designs by size (build 4, concept section 5): most eyes on the family photos are 6 to 10 mm
+// wide, too small for the concept's full eye. By the eye's width (corner to corner):
+//   "full"   FULL_EYE_MM or more: the concept's full eye (features.js);
+//   "simple" SIMPLE_EYE_MM or more: Jet pupil, one Crystal white on each side, an SS4 Jet upper lid;
+//   "kept"   smaller: the AI's own eye stones (today's), cleaned (place.js), in a pupil region.
+// Both eyes of a face get one design, the smaller eye's (both eyes use a similar size).
+// The mouth by its width (corner to corner): "full" from FULL_MOUTH_MM, "simple" (a mouth line and
+// one lip tone, no outline) from SIMPLE_MOUTH_MM, else "kept"; "line" (the mouth line only) when
+// hair or beard tones lie where the lips would go (lipsUnderHair, map.js), for full and simple mouths.
+export const FULL_EYE_MM = 10;
+export const SIMPLE_EYE_MM = 6;
+export const FULL_MOUTH_MM = 14;
+export const SIMPLE_MOUTH_MM = 7;
+
+export function eyeDesign(face) {
+  const w = Math.min(...face.eyes.map((e) => e.widthMm));
+  return w >= FULL_EYE_MM ? "full" : w >= SIMPLE_EYE_MM ? "simple" : "kept";
+}
+
+export function mouthDesign(face) {
+  const w = face.lips.widthMm;
+  const bySize = w >= FULL_MOUTH_MM ? "full" : w >= SIMPLE_MOUTH_MM ? "simple" : "kept";
+  return bySize !== "kept" && face.lips.underHair ? "line" : bySize;
+}
+
+// Around the mouth line, the region of a "line" mouth (the hair's area runs on beside it).
+export const MOUTH_LINE_REGION_MM = 1.2;
 
 // Where the feature chains run (features.js uses the same paths): the lids, LID_OFFSET of their
 // stone's radius outside the eye's curves (a whole radius on an eye lower than SMALL_EYE_MM, so its
@@ -315,11 +338,11 @@ export const SS6_D = 2;
 export const lowerLidD = (eyes) => (Math.min(...eyes.map((e) => e.widthMm)) >= 18 ? SS6_D : SS4_D);
 export const lipOutlineD = (lips) => (lips.widthMm >= 35 ? SS6_D : SS4_D);
 
-export function lidPaths(eye, lowerD) {
+export function lidPaths(eye, lowerD, upperD = SS6_D) {
   const up = [-eye.normal[0], -eye.normal[1]];
   const share = eye.heightMm < SMALL_EYE_MM ? 1 : LID_OFFSET;
   return {
-    upper: offsetLine(eye.upper, share * SS6_D / 2, up),
+    upper: offsetLine(eye.upper, share * upperD / 2, up),
     lower: offsetLine(eye.lower, share * lowerD / 2, eye.normal)
   };
 }
@@ -331,22 +354,46 @@ const polyRegion = (kind, poly, lineMarginMm, blocksArea, extra = {}) => {
   return { kind, poly, box: boxOf(poly), x, y, ax: Math.max(...poly.map((p) => dist(p, [x, y]))), ay: 0, angle: 0, lineMarginMm, blocksArea, ...extra };
 };
 
-// The polygon regions of a landmark face: each eye big enough (its lid chains' path), the mouth
-// (its outline chain's path) and the nose (bridge, alae and base, grown by a little).
+// The polygon regions of a landmark face, by its designs: a full eye the path of its lid chains; a
+// simple eye its upper lid chain's path and the lower lid's curve LOWER_ROOM_MM further down (room
+// for the pupil, whose skin the area fills beyond); a kept eye a pupil region (an ellipse around it,
+// today's stones kept, keep: true). The mouth: full and simple the path of the outline chain; line a
+// band of MOUTH_LINE_REGION_MM around the mouth line; kept an ellipse around the lips (today's stones
+// kept). The nose (bridge, alae and base, grown by a little).
+export const LOWER_ROOM_MM = 0.4;
+
 export function landmarkRegions(face) {
   const out = [];
   const lowerD = lowerLidD(face.eyes);
+  const eyes = eyeDesign(face), mouth = mouthDesign(face);
   for (const eye of face.eyes) {
-    if (eyeTooSmall(eye)) {
+    if (eyes === "kept") {
       const angle = Math.atan2(eye.axis[1], eye.axis[0]);
       const [x, y] = centroid(eye.opening);
-      out.push({ kind: "eye", x, y, ax: eye.widthMm / 2 + 1.5, ay: eye.heightMm / 2 + 1.5, angle, pupil: eye.iris.c, small: true });
+      out.push({ kind: "eye", x, y, ax: eye.widthMm / 2 + 1.5, ay: eye.heightMm / 2 + 1.5, angle, pupil: eye.iris.c, small: true, keep: true, design: "kept" });
+      continue;
+    }
+    if (eyes === "simple") {
+      const { upper } = lidPaths(eye, SS4_D, SS4_D);
+      const lower = offsetLine(eye.lower, LOWER_ROOM_MM, eye.normal);
+      out.push(polyRegion("eye", [...upper, ...lower.slice(1, -1).reverse()], 2.0, true, { pupil: eye.iris.c, design: "simple" }));
       continue;
     }
     const { upper, lower } = lidPaths(eye, lowerD);
-    out.push(polyRegion("eye", [...upper, ...lower.slice(1, -1).reverse()], 2.5, true, { pupil: eye.iris.c }));
+    out.push(polyRegion("eye", [...upper, ...lower.slice(1, -1).reverse()], 2.5, true, { pupil: eye.iris.c, design: "full" }));
   }
-  out.push(polyRegion("mouth", lipOutlinePath(face.lips), 1.5, true));
+  const lips = face.lips;
+  if (mouth === "kept") {
+    const angle = Math.atan2(face.u[1], face.u[0]);
+    const [x, y] = centroid(lips.outer);
+    const h = Math.max(...lips.outer.map((p) => Math.abs((p[0] - x) * face.v[0] + (p[1] - y) * face.v[1])));
+    out.push({ kind: "mouth", x, y, ax: lips.widthMm / 2 + 1.0, ay: h + 1.0, angle, keep: true, design: "kept" });
+  } else if (mouth === "line") {
+    const r = MOUTH_LINE_REGION_MM;
+    out.push(polyRegion("mouth", [...offsetLine(lips.line, r, [-face.v[0], -face.v[1]]), ...offsetLine(lips.line, r, face.v).reverse()], 1.0, true, { design: "line" }));
+  } else {
+    out.push(polyRegion("mouth", lipOutlinePath(lips), 1.5, true, { design: mouth }));
+  }
   const { bridge, alae, base, tip } = face.nose;
   const side = face.u.map((c) => c * 0.12 * face.ipd);
   const nose = [[bridge[0] - side[0], bridge[1] - side[1]], [bridge[0] + side[0], bridge[1] + side[1]], alae[1], base, alae[0]];

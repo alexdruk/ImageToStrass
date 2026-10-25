@@ -1,6 +1,6 @@
 import { PALETTE } from "../pipeline/holes.js";
 import { MIN_GAP_MM } from "../pipeline/tiers.js";
-import { inRegion, insidePolygon } from "./faces.js";
+import { eyeDesign, inRegion, insidePolygon, mouthDesign } from "./faces.js";
 import { MIN_PATCH, MAX_TONES } from "./map.js";
 import { neighbourLists } from "./place.js";
 
@@ -23,13 +23,16 @@ import { neighbourLists } from "./place.js";
 //      reads it) of MAX_HOLE_MM or more (build 3; 1.0 mm before), by the cells (map grid) whose
 //      distance to every stone edge and to the subject's edge is at least MAX_HOLE_MM / 2; each
 //      connected piece is one hole.
-//   5. Faces (checkFaces), per landmark face: each eye has its outline (the upper lid dark along
+//   5. Faces (checkFaces), per landmark face, by the design its features' size asks for (faces.js
+//      eyeDesign, mouthDesign; build 4). A full eye has its outline (the upper lid dark along
 //      UPPER_COVER of it, the lower lid darker than the skin along LOWER_COVER), its white (at least
 //      two light stones in the opening, not the catch-light) and its pupil (a dark stone of SS6 or
 //      more at the iris centre), and usually a catch-light (the highest of the smallest light stones
-//      touching the pupil); the lips have an outline (10 L* darker than the skin along LIP_COVER of it) and
-//      usually a mouth line (8 L* darker than the lower lip and the skin along LIP_COVER of it).
-//      Measured on any design, against the landmarks; black & white: dark is Jet.
+//      touching the pupil); a simple eye its upper lid, a white (one light stone) and its pupil; a
+//      kept eye its pupil (a stone of L* KEPT_DARK_L or less, SS4 or more). Full lips have an outline
+//      (10 L* darker than the skin along LIP_COVER of it) and usually a mouth line (8 L* darker than
+//      the lower lip and the skin along LIP_COVER of it); simple and line mouths their mouth line; a
+//      kept mouth nothing. Measured on any design, against the landmarks; black & white: dark is Jet.
 
 export const ON_LINE_MM = 0.8;
 export const BREAK_PITCHES = 1.5;
@@ -273,6 +276,7 @@ export const LOWER_COVER = 0.6;
 export const LIP_COVER = 0.7;
 export const LIGHT_L = 80;
 export const DARK_L = 25;
+export const KEPT_DARK_L = 35;
 export const TOUCH_MM = 0.35;
 const LIGHTNESS = Object.fromEntries(PALETTE.map((p) => [p.id, p.lab[0]]));
 
@@ -302,41 +306,50 @@ export function checkFaces(stones, faces, { mode = "colour" } = {}) {
     const cheek = new Set(face.cheeks.flatMap((p) => near(p, 0.12 * face.ipd)));
     const skinL = medianOf([...cheek].map((i) => Ls[i])) ?? 70;
     const dark = (i, below) => (mode === "bw" ? stones[i].color === "jet" : Ls[i] <= below);
+    const design = eyeDesign(face), mouth = mouthDesign(face);
     const eyes = face.eyes.map((eye) => {
       const upper = share(middle(eye.upper), (i) => dark(i, Math.max(30, skinL - 25)));
       const lower = share(middle(eye.lower), (i) => dark(i, skinL - 8));
       const { c, r } = eye.iris;
-      const pupil = near(c, Math.max(1.0, 0.6 * r)).filter((i) => Ls[i] <= DARK_L && stones[i].d >= 1.9).sort((a, b) => stones[b].d - stones[a].d)[0];
+      const pupil = design === "kept"
+        ? near(c, Math.max(1.0, 0.6 * r)).filter((i) => (mode === "bw" ? stones[i].color === "jet" : Ls[i] <= KEPT_DARK_L) && stones[i].d >= 1.4).sort((a, b) => stones[b].d - stones[a].d)[0]
+        : near(c, Math.max(1.0, 0.6 * r)).filter((i) => Ls[i] <= DARK_L && stones[i].d >= 1.9).sort((a, b) => stones[b].d - stones[a].d)[0];
       const rim = (i) => (pupil == null ? Infinity : Math.hypot(stones[i].x - stones[pupil].x, stones[i].y - stones[pupil].y) - (stones[i].d + stones[pupil].d) / 2);
       const inOpening = near(c, eye.widthMm).filter((i) => insidePolygon([stones[i].x, stones[i].y], eye.opening));
-      // The catch-light: of the smallest light stones touching the pupil, the highest; other light
-      // stones are white.
-      const up = (i) => (stones[i].x - c[0]) * face.v[0] + (stones[i].y - c[1]) * face.v[1];
+      // The catch-light: of the smallest light stones touching the pupil, one above its centre, the
+      // closest to it (rim to rim, to 0.02 mm), then the highest; other light stones are white (a
+      // simple eye has no catch-light: every light stone in it is white).
+      const up = (i) => (stones[i].x - stones[pupil].x) * face.v[0] + (stones[i].y - stones[pupil].y) * face.v[1];
       const catchLight = [...new Set(inOpening.concat(near(c, 6)))].filter((i) => Ls[i] >= LIGHT_L && stones[i].d <= 2.05 && rim(i) <= TOUCH_MM)
-        .sort((a, b) => stones[a].d - stones[b].d || up(a) - up(b))[0];
-      const whites = inOpening.filter((i) => Ls[i] >= LIGHT_L && i !== catchLight);
+        .sort((a, b) => stones[a].d - stones[b].d || (up(a) < 0 ? 0 : 1) - (up(b) < 0 ? 0 : 1) || Math.round(rim(a) / 0.02) - Math.round(rim(b) / 0.02) || up(a) - up(b))[0];
+      const whites = inOpening.filter((i) => Ls[i] >= LIGHT_L && (design !== "full" || i !== catchLight));
       const side = catchLight == null ? null : Math.sign((stones[catchLight].x - stones[pupil].x) * face.u[0] + (stones[catchLight].y - stones[pupil].y) * face.u[1]) || 0;
-      return {
-        outline: upper >= UPPER_COVER && lower >= LOWER_COVER, upper: r2(upper), lower: r2(lower),
-        white: whites.length >= 2, whites: whites.length,
+      const e = {
+        design, widthMm: r2(eye.widthMm),
+        outline: upper >= UPPER_COVER && (design !== "full" || lower >= LOWER_COVER), upper: r2(upper), lower: r2(lower),
+        white: whites.length >= (design === "full" ? 2 : 1), whites: whites.length,
         pupil: pupil != null, pupilD: pupil == null ? null : stones[pupil].d, pupilShare: pupil == null ? null : r2(stones[pupil].d / (2 * r)),
         catchLight: catchLight != null, side
       };
+      e.pass = design === "kept" ? e.pupil : e.outline && e.white && e.pupil;
+      return e;
     });
     const sides = eyes.map((e) => e.side);
     const lips = face.lips;
     // Outline: darker than the skin; mouth line: darker than the lower lip (the lighter one).
     const lowerL = medianOf(near(face.lips.line[5], lips.widthMm).filter((i) => insidePolygon([stones[i].x, stones[i].y], lips.lower)).map((i) => Ls[i])) ?? skinL;
     const outline = share(walkXY(lips.outer, 0.3, true), (i) => dark(i, skinL - 10));
-    const lineSamples = lips.open ? [...middle(walkXY(lips.upperInner, 0.3), 0.15, 0.85), ...middle(walkXY(lips.lowerInner, 0.3), 0.15, 0.85)] : middle(walkXY(lips.line, 0.3), 0.15, 0.85);
-    const mouthLine = share(lineSamples, (i) => dark(i, Math.min(lowerL, skinL) - 8), 1.0);
+    const lineSamples = lips.open && mouth !== "line" ? [...middle(walkXY(lips.upperInner, 0.3), 0.15, 0.85), ...middle(walkXY(lips.lowerInner, 0.3), 0.15, 0.85)] : middle(walkXY(lips.line, 0.3), 0.15, 0.85);
+    // A line mouth has no lips built: its line is measured against the skin alone.
+    const mouthLine = share(lineSamples, (i) => dark(i, (mouth === "line" ? skinL : Math.min(lowerL, skinL)) - 8), 1.0);
     const faceOut = {
       eyes,
       sameSide: sides.every((s) => s != null) ? sides[0] === sides[1] : null,
-      lips: { outline: outline >= LIP_COVER, outlineShare: r2(outline), mouthLine: mouthLine >= LIP_COVER, mouthLineShare: r2(mouthLine) },
+      lips: { design: mouth, widthMm: r2(lips.widthMm), outline: outline >= LIP_COVER, outlineShare: r2(outline), mouthLine: mouthLine >= LIP_COVER, mouthLineShare: r2(mouthLine) },
       skinL: Math.round(skinL)
     };
-    faceOut.pass = eyes.every((e) => e.outline && e.white && e.pupil) && faceOut.lips.outline;
+    faceOut.lips.pass = mouth === "full" ? faceOut.lips.outline : mouth === "kept" ? true : faceOut.lips.mouthLine;
+    faceOut.pass = eyes.every((e) => e.pass) && faceOut.lips.pass;
     return faceOut;
   });
 }

@@ -5,7 +5,7 @@ import { STONE_COLORS } from "../stones/StoneColors.js";
 import { getStoneSize } from "../stones/StoneSizes.js";
 import { computeSingleDistanceRing } from "./ContourRingSampler.js";
 import { dilateMask, erodeMask, labelComponents8, polylineLengthMm, smoothPolyline, traceSkeletonPaths, zhangSuenThin } from "./LineDesignSampler.js";
-import { blocksLine, faceGeometry, faceRegions } from "./faces.js";
+import { blocksLine, faceGeometry, faceRegions, insidePolygon } from "./faces.js";
 import { Grid } from "./grid.js";
 
 // The map (exp-engine, design concept sections 2-4; docs/exp-engine.md section 2). The AI image is
@@ -857,6 +857,68 @@ const thin = (points, step) => {
 
 // --- The map -----------------------------------------------------------------------------------
 
+// Hair or a beard where the lips would go (build 4: lips are never built over a moustache or beard).
+// The hair's tones: the colours of the AI's brow discs (outside the skin ramp) and of its discs over the forehead (HAIR_BAND
+// IPD above the face oval's top, within 0.6 IPD of the midline) and the light greys (GREY_HAIR), less
+// the skin's (the discs at the cheeks). The lips are under hair when HAIR_SHARE or more of the AI's
+// discs on the upper lip (a moustache) or on the lower (a beard), ink discs not counted, are in those
+// tones (not the open mouth: teeth are Crystal), and HAIR_AROUND or more of those between the nose and
+// the upper lip or in the chin band HAIR_RING IPD below the lower lip. Black & white: Jet on HAIR_SHARE_BW of the lips and of the
+// band between the nose and the upper lip. -> { under, share, tones }.
+export const HAIR_BAND = 0.5;
+export const HAIR_SHARE = 0.4;
+export const HAIR_SHARE_BW = 0.8;
+export const HAIR_RING = 0.25;
+export const HAIR_AROUND = 0.3;
+// White and grey hair (a white moustache): never a lip's colour.
+export const GREY_HAIR = Object.freeze(["crystal-clear", "crystal", "silver", "grey"]);
+
+function lipsUnderHair(face, discs, brows, mode) {
+  const { u, v, ipd, lips } = face;
+  const inside = (d, poly) => insidePolygon([d.x, d.y], poly);
+  const onLip = (poly) => discs.filter((d) => inside(d, poly) && !(lips.opening && inside(d, lips.opening)));
+  const onLips = [...onLip(lips.upper), ...onLip(lips.lower)];
+  const r2 = (x) => Math.round(x * 100) / 100;
+  if (onLips.length < 3) return { under: false, share: null, tones: [] };
+  if (mode !== "colour") {
+    const nose = face.nose.base;
+    const top = lips.upperOuter[lips.upperOuter.length >> 1];
+    const band = discs.filter((d) => {
+      const a = (d.x - top[0]) * u[0] + (d.y - top[1]) * u[1], b = (d.x - top[0]) * v[0] + (d.y - top[1]) * v[1];
+      const up = (nose[0] - top[0]) * v[0] + (nose[1] - top[1]) * v[1];
+      return Math.abs(a) <= lips.widthMm / 2 && b < 0 && b > up;
+    });
+    const jet = (list) => (list.length ? list.filter((d) => d.snap === JET).length / list.length : 0);
+    const share = Math.min(jet(onLips), band.length >= 3 ? jet(band) : 0);
+    return { under: share >= HAIR_SHARE_BW, share: r2(share), tones: [JET] };
+  }
+  const skin = new Set(discs.filter((d) => face.cheeks.some((c) => Math.hypot(d.x - c[0], d.y - c[1]) <= 0.12 * ipd)).map((d) => d.snap));
+  const top = face.oval[0];
+  const hairDiscs = discs.filter((d) => {
+    const a = (d.x - top[0]) * u[0] + (d.y - top[1]) * u[1], b = (d.x - top[0]) * v[0] + (d.y - top[1]) * v[1];
+    return Math.abs(a) <= 0.6 * ipd && b < 0 && b >= -HAIR_BAND * ipd;
+  });
+  // A brow tone of the skin ramp is the skin's shadow as often as hair: only the forehead's hair says so.
+  const skinRamp = RAMPS.find((r) => r.id === "skin").colours;
+  const browTones = brows.flatMap((b) => b.discs.map((o) => discs[o].snap)).filter((t) => !skinRamp.includes(t));
+  const tones = new Set([...browTones, ...hairDiscs.map((d) => d.snap), ...GREY_HAIR]);
+  for (const t of skin) tones.delete(t);
+  // A moustache covers the upper lip, a beard the lower: the larger of the two lips' shares.
+  // The AI's dark lip outline and line are ink (line discs), a beard is not: ink is not counted.
+  const shareOf = (all) => { const list = all.filter((d) => !d.ink); return list.length >= 3 ? list.filter((d) => tones.has(d.snap)).length / list.length : 0; };
+  const share = Math.max(shareOf(onLip(lips.upper)), shareOf(onLip(lips.lower)));
+  // A moustache or beard covers the skin beside the lips too (lips drawn in a hair-like tone do not):
+  // the band between the nose and the upper lip, or the chin band HAIR_RING IPD below the lower lip,
+  // both as wide as the mouth.
+  const mid = lips.upperOuter[lips.upperOuter.length >> 1], low = lips.lowerOuter[lips.lowerOuter.length >> 1];
+  const across = (d, o) => [(d.x - o[0]) * u[0] + (d.y - o[1]) * u[1], (d.x - o[0]) * v[0] + (d.y - o[1]) * v[1]];
+  const noseUp = (face.nose.base[0] - mid[0]) * v[0] + (face.nose.base[1] - mid[1]) * v[1];
+  const band = discs.filter((d) => { const [a, b] = across(d, mid); return Math.abs(a) <= lips.widthMm / 2 && b < 0 && b > noseUp && !inside(d, lips.outer); });
+  const chin = discs.filter((d) => { const [a, b] = across(d, low); return Math.abs(a) <= lips.widthMm / 2 && b > 0 && b <= HAIR_RING * ipd && !inside(d, lips.outer); });
+  const around = Math.max(shareOf(band), shareOf(chin));
+  return { under: share >= HAIR_SHARE && around >= HAIR_AROUND, share: r2(share), around: r2(around), tones: [...tones] };
+}
+
 // /layout answer + AI image ({ data, width, height } RGBA) -> the map. mode "colour" or "bw";
 // style "halftone" or "stencil" (black & white only); threshold: the B&W L* threshold.
 // faces: landmark faces (each 478 [x, y] in layout mm; tools/exp-engine.mjs), or none.
@@ -878,7 +940,6 @@ export function buildMap(layout, ai, { mode = "colour", style = "halftone", thre
   markInk(discs, nb, mode, style);
   const pupils = Array.isArray(report.pupilsAtMm) ? report.pupilsAtMm : [];
   const geo = faces.map((points) => faceGeometry(points, { pupils }));
-  const regions = faceRegions(report, discs, geo);
   const { protrusion, body, bodyDist, strandDist, strands } = findStrands(grid, subject, subjectDist);
   // The AI's own dark outline along the body's edge: the subject outline's job, neither line nor
   // area (its cells take the areas inside it). Light discs there are no light line either. A strand's
@@ -908,10 +969,15 @@ export function buildMap(layout, ai, { mode = "colour", style = "halftone", thre
   const cut = new Uint8Array(grid.n);
   for (let k = 0; k < grid.n; k++) cut[k] = body[k] && bodyDist[k] < LINE_EDGE_MM && strandDist[k] > LEAVE_MM ? 1 : 0;
 
-  // Brows (concept section 5): never an area, never an ordinary line.
+  // Brows (concept section 5): never an area, never an ordinary line. Landmark brows come first: their
+  // colours are the hair's, which lipsUnderHair looks for over the lips before the regions are made.
   let brows = [], browNotes = [];
-  if (geo.length) ({ brows, notes: browNotes } = browsFromFaces(geo, discs, mode));
-  else if (report.face === "human") brows = findBrows(discs, nb, regions, mode);
+  if (geo.length) {
+    ({ brows, notes: browNotes } = browsFromFaces(geo, discs, mode));
+    geo.forEach((face, fi) => { face.lips.hair = lipsUnderHair(face, discs, brows.filter((b) => b.face === fi), mode); face.lips.underHair = face.lips.hair.under; });
+  }
+  const regions = faceRegions(report, discs, geo);
+  if (!geo.length && report.face === "human") brows = findBrows(discs, nb, regions, mode);
   for (const b of brows) for (const o of b.discs) { discs[o].line = true; discs[o].ink = false; discs[o].light = false; }
 
   const lines = dropDoubled([

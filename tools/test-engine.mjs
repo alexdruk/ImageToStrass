@@ -8,7 +8,7 @@ import sharp from "sharp";
 import { HIST_BINS, MAX_HOLE_MM, runChecks, checkGapsOf, checkHoles, holeHistogram } from "../src/engine/checks.js";
 import { RAMPS, rampOf } from "../src/engine/map.js";
 import { ditherJet } from "../src/engine/place.js";
-import { faceRegions, inRegion } from "../src/engine/faces.js";
+import { eyeDesign, faceGeometry, faceRegions, inRegion, mouthDesign } from "../src/engine/faces.js";
 import { engineLayout, mapPicture, mapToJSON, todaysDesign } from "../src/engine/index.js";
 import { MAX_TONES } from "../src/engine/map.js";
 import { loadConfig } from "../src/server/config.js";
@@ -162,14 +162,16 @@ test("engine: band, honeycomb and the hole histogram", () => {
 // --- Build 3: faces from landmarks, check 5, holes, strands ---------------------------------------
 
 // A real landmark set (the RS portrait's AI image, tools/fixtures/face-landmarks.json) moved onto the
-// fake design's centre at a pupil distance of 24 mm.
-const MESH_POINTS = (() => {
+// fake design's centre at a pupil distance of ipd mm (28: eyes 11 and 16.7 mm wide, mouth 22 mm, the
+// full designs; 16: eyes 6.3 and 9.5, mouth 12.7, simple; 9: eyes 3.5 and 5.4, mouth 7.1, kept eyes).
+const meshAt = (ipd) => {
   const { points } = JSON.parse(readFileSync(new URL("./fixtures/face-landmarks.json", import.meta.url), "utf8"));
   const [a, b] = [points[468], points[473]];
-  const k = 24 / Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const k = ipd / Math.hypot(b[0] - a[0], b[1] - a[1]);
   const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
   return points.map(([x, y]) => [centre[0] + (x - m[0]) * k, centre[1] - 6 + (y - m[1]) * k]);
-})();
+};
+const MESH_POINTS = meshAt(28);
 
 for (const [mode, style] of [["colour", "halftone"], ["bw", "stencil"]]) {
   test(`engine faces (${mode}): the concept's features from landmarks, check 5`, () => {
@@ -206,13 +208,81 @@ for (const [mode, style] of [["colour", "halftone"], ["bw", "stencil"]]) {
     assert.equal(checks.lines.chains.pass, true);
     assert.equal(checks.faces.length, 1);
     const [f] = checks.faces;
-    assert.ok(f.eyes.every((e) => e.outline && e.white && e.pupil), "check 5: every eye has outline, white and pupil");
-    assert.ok(f.lips.outline, "check 5: the lips have an outline");
+    assert.ok(f.eyes.every((e) => e.design === "full" && e.outline && e.white && e.pupil), "check 5: every eye has outline, white and pupil");
+    assert.ok(f.lips.design === "full" && f.lips.outline, "check 5: the lips have an outline");
     assert.equal(f.sameSide, true);
     // Today's design measured against the same landmarks: check 5 runs on any design.
     assert.equal(runChecks(today.stones, engine.map).faces.length, 1);
   });
 }
+
+// Build 4: the designs by size.
+test("faces: eye and mouth designs by size (both eyes the smaller one's; lips under hair get the line only)", () => {
+  const geo = (ipd) => faceGeometry(meshAt(ipd));
+  assert.equal(eyeDesign(geo(28)), "full");
+  assert.equal(mouthDesign(geo(28)), "full");
+  assert.equal(eyeDesign(geo(16)), "simple", "eyes 6.3 and 9.5 mm: both simple");
+  assert.equal(mouthDesign(geo(16)), "simple");
+  assert.equal(eyeDesign(geo(9)), "kept");
+  assert.equal(mouthDesign(geo(9)), "simple", "a 7.1 mm mouth");
+  const face = geo(16);
+  assert.equal(mouthDesign({ ...face, lips: { ...face.lips, underHair: true } }), "line");
+  assert.equal(mouthDesign({ ...face, lips: { ...face.lips, widthMm: 6.5, underHair: true } }), "kept");
+});
+
+for (const mode of ["colour", "bw"]) {
+  test(`engine faces (${mode}): simple eyes and a simple mouth (6-10 mm eyes, 7-14 mm mouth; a line under hair)`, () => {
+    const today = todaysDesign(LAYOUT, AI, { mode });
+    const engine = engineLayout(LAYOUT, AI, { mode, style: "stencil", today: today.stones, faces: [meshAt(16)] });
+    assert.equal(engine.gaps.ok, true);
+    const part = (p) => engine.stones.filter((s) => s.part === p);
+    assert.ok(part("upper-lid").length >= 6 && part("upper-lid").every((s) => s.color === "jet" && s.d === 1.5), "upper lids: SS4 Jet");
+    for (const p of ["lower-lid", "catch-light", "iris", "lash", "lip-outline", "kept"]) assert.equal(part(p).length, 0, `no ${p}`);
+    assert.equal(part("pupil").length, 2);
+    assert.ok(part("pupil").every((s) => s.color === "jet" && s.d >= 2));
+    const whites = part("white");
+    assert.ok(whites.length >= 2 && whites.length <= 4 && whites.every((s) => s.color === "crystal-clear"), "one white each side");
+    assert.ok(part("mouth-line").length >= 3);
+    const lips = [...part("upper-lip"), ...part("lower-lip")];
+    // The fake AI image draws the lips Silver: in colour a light grey is white hair (a moustache), so
+    // the mouth keeps its line only; in black & white they are not Jet, so the lips are built.
+    const design = mode === "colour" ? "line" : "simple";
+    if (design === "simple") {
+      assert.ok(lips.length > 0);
+      assert.equal(new Set(lips.map((s) => s.color)).size, 1, "one lip tone");
+    } else assert.equal(lips.length, 0, "no lips under hair");
+    const [f] = runChecks(engine.stones, engine.map, { chains: engine.chains }).faces;
+    assert.ok(f.eyes.every((e) => e.design === "simple" && e.pass), "check 5: simple eyes pass");
+    assert.ok(f.lips.design === design && f.lips.pass);
+    const report = engine.stats.faces[0];
+    assert.equal(report.design, "simple");
+    assert.equal(report.mouth.design, design);
+  });
+}
+
+test("engine faces: eyes under 6 mm keep today's stones, cleaned (pupil kept, stray colours to the eye's)", () => {
+  const today = todaysDesign(LAYOUT, AI, { mode: "colour" });
+  const geo = faceGeometry(meshAt(9));
+  // Today's stones plus, in each eye, a dark pupil at the iris centre and a stray Emerald beside it.
+  const free = (p, d) => today.stones.filter((s) => Math.hypot(s.x - p[0], s.y - p[1]) < (s.d + d) / 2 + 0.15);
+  const extra = [];
+  for (const eye of geo.eyes) {
+    const c = eye.iris.c, side = [c[0] + 2.2 * eye.axis[0], c[1] + 2.2 * eye.axis[1]];
+    extra.push({ x: c[0], y: c[1], d: 2, color: "jet" }, { x: side[0], y: side[1], d: 1.5, color: "emerald" });
+  }
+  const near = new Set(extra.flatMap((e) => free([e.x, e.y], e.d)));
+  const stones = [...today.stones.filter((s) => !near.has(s)), ...extra];
+  const engine = engineLayout(LAYOUT, AI, { mode: "colour", today: stones, faces: [meshAt(9)] });
+  assert.equal(engine.gaps.ok, true);
+  const kept = engine.stones.filter((s) => s.part === "kept");
+  assert.ok(kept.length >= 4);
+  assert.equal(kept.filter((s) => s.color === "emerald").length, 0, "the stray colour is gone");
+  for (const e of extra.filter((x) => x.color === "jet")) assert.ok(kept.some((s) => s.x === e.x && s.y === e.y && s.color === "jet"), "pupil kept");
+  assert.equal(engine.stones.filter((s) => s.part === "pupil" || s.part === "upper-lid").length, 0, "nothing built in a kept eye");
+  const eyes = engine.stats.faces[0].kept.filter((k) => k.kind === "eye");
+  assert.equal(eyes.length, 2);
+  assert.ok(eyes.every((k) => k.pupil && k.recoloured >= 1));
+});
 
 test("checks: check 4 counts holes of 1.4 mm or more; the hole step only reduces them", () => {
   assert.equal(MAX_HOLE_MM, 1.4);

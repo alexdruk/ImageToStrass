@@ -28,6 +28,7 @@ check skips random tokens (section 12). Revised 25 Oct 2026 (exp-engine): the de
 Revised 25 Oct 2026 (exp-engine, build 2): band and honeycomb packing, brows, light lines, the outline
 colour from the area's ramp, the engine in the render worker (7.8). Revised 25 Oct 2026 (exp-engine, build 3):
 face features from landmarks (tools only), lines leaving the subject, the hole step, checks 4 (1.4 mm) and 5 (7.8).
+Revised 25 Oct 2026 (exp-engine, build 4): face features designed by their size, no lips over a beard (7.8).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -442,6 +443,13 @@ closed or an SS4 fits in it. Faces by the concept's section 5 (eyes, brows, nose
 eyes alike, catch-lights on the light's side) need face landmarks (MediaPipe Face Landmarker), which
 only the experiment tools have (`tools/exp-engine.mjs`, its own Python environment outside the
 service); the pipeline passes none, so its faces keep today's eye and mouth stones.
+
+Build 4 (`docs/exp-engine.md`, "Build 4"). Each landmark feature's design follows its width (concept
+section 5): eyes full from 10 mm, simple (pupil, a white each side, SS4 upper lid) from 6 mm, else
+today's stones cleaned (stray colours to the nearest of the eye's, the pupil kept), both eyes the
+smaller one's design; lips full from 14 mm, simple (mouth line, one lip tone) from 7 mm, else today's
+stones cleaned; only the mouth line where the AI drew hair or beard tones on a lip. Check 5 asks of
+each feature what its design has.
 
 ## 8. Tinted view (D4)
 
