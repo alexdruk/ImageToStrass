@@ -167,6 +167,25 @@ async function pollWhile(env, code, n, busy) {
   return times;
 }
 
+test("IS_ENGINE=concept: the engine places the stones and its map is archived", async () => {
+  const srv = await start({ env: { IS_FAKE: "1", IS_ENGINE: "concept" } });
+  try {
+    const { code } = await srv.upload();
+    assert.equal((await srv.create(code, SETTINGS)).status, 202);
+    await srv.pipeline.idle();
+    const done = await srv.poll(code, 1);
+    assert.equal(done.body.status, "done");
+    const dir = path.join(srv.config.archiveDir, code, "attempt-1");
+    for (const f of ["map.json", "map.png", "stones.json", "tinted.png"]) assert.ok(existsSync(path.join(dir, f)), f);
+    const stones = JSON.parse(readFileSync(path.join(dir, "stones.json"), "utf8")).stones;
+    assert.equal(done.body.result.stones, stones.length);
+    assert.notEqual(stones.length, NATURAL.count, "not today's design");
+    assert.ok(!LEAK.test(JSON.stringify(done.body)) && !LEAK.test(done.text), "IS fields only");
+  } finally {
+    await srv.stop();
+  }
+});
+
 test("renders run off the main thread: a poll is answered within 200 ms while one runs", async () => {
   const env = await start();
   try {

@@ -57,6 +57,9 @@ export function loadConfig(env = process.env) {
     // The service's own fill stones take their neighbours' colour too (spec 7.5; off unless
     // IS_SERVICE_FILL_NEIGHBOURS=1).
     serviceFillNeighbours: env.IS_SERVICE_FILL_NEIGHBOURS === "1",
+    // Stone placement (exp-engine, docs/exp-engine.md): "concept" places every stone with the design
+    // concept's engine (src/engine/); anything else keeps today's pipeline.
+    engine: env.IS_ENGINE === "concept" ? "concept" : "today",
     // Black & white: the tinted view's gap rule (spec 8, step 4; tinted.js BW_GAPS, "crystal"
     // unless BW_GAP names another).
     bwGap: BW_GAPS.includes(env.BW_GAP) ? env.BW_GAP : "crystal"

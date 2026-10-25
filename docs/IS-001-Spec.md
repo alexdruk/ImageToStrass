@@ -23,7 +23,8 @@ of the black & white prompt behind `BW_STYLE=stencil` (7.2; halftone stays the d
 Oct 2026 (exp-bw-stencil, eyes): the stencil variant has an eye rule (7.2, version 5). Revised 24 Oct
 2026 (exp-faces, leftovers): `BW_GAP` `crystal` is the default for black & white designs (section 8);
 the disc reading `IS_BW_FROM_DISCS` is removed (7.6; the service keeps `report.discsAtMm`); the leak
-check skips random tokens (section 12).
+check skips random tokens (section 12). Revised 25 Oct 2026 (exp-engine): the design-concept engine
+(`docs/IS-DESIGN-CONCEPT.md`) behind `IS_ENGINE=concept` (7.8); today's pipeline stays the default.
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -413,6 +414,18 @@ was removed in exp-faces.
 `result_json`: stone count, count per size, count per colour, natural width × height in mm
 (`widthMm`, `heightMm`) and in (`widthIn`, `heightIn`), coverage, mode, and `outputPx` (server
 only, 7.3). The browser gets every field except `outputPx`.
+
+### 7.8 Concept engine (exp-engine, behind `IS_ENGINE=concept`)
+
+Experimental; off unless `IS_ENGINE=concept` (`docs/exp-engine.md`). After 7.5 and 7.6 have made
+today's design (acceptance 7.4 unchanged), `src/engine/` makes the design again by the design
+concept: the AI image and the service's detections (`report.discsAtMm`) become a map (subject
+outline, areas with at most 3 tones, lines), and IS places every stone itself, in the concept's
+order: today's stones in the eye and mouth regions (from the service's pupils) unchanged, line
+chains, the subject outline chain, contour-parallel rows per area, the hole fill of 7.5 for seams,
+then patches below 4 stones joined to their neighbours. Frame and natural size are the service's.
+The map is archived as `attempt-<n>/map.json` and `map.png` (server only). If the engine fails, or
+its gap check finds a violation, today's design is delivered. The service is unchanged.
 
 ## 8. Tinted view (D4)
 
@@ -806,6 +819,7 @@ BW_THRESHOLD=55
 BW_STYLE=halftone                # B&W prompt: halftone or stencil (7.2)
 IS_FILL_HOLES=1                  # 0 = no hole fill (7.5)
 IS_SERVICE_FILL_NEIGHBOURS=0     # 1 = the service's fill stones take their neighbours' colour (7.5)
+IS_ENGINE=                       # concept = the design-concept engine places the stones (7.8)
 BW_GAP=crystal                   # B&W tinted gaps: crystal, nearest, white or black (8)
 IS_DAILY_DESIGN_CAP=100
 IS_DESIGNS_PER_IP_PER_DAY=6

@@ -1,0 +1,2896 @@
+{
+ "summary": {
+  "today": {
+   "designs": 21,
+   "gapPass": 21,
+   "lines": 407,
+   "cleanLines": 207,
+   "offColour": 77,
+   "offSize": 234,
+   "breaks": 18,
+   "missing": 12,
+   "linePass": 2,
+   "overTones": 429,
+   "smallPatches": 6458,
+   "areaPass": 1,
+   "holes": 16287,
+   "holePass": 0,
+   "largestHole": 1.72,
+   "stones": 54204,
+   "ms": 12551,
+   "maxMs": 980
+  },
+  "engine": {
+   "designs": 21,
+   "gapPass": 21,
+   "lines": 407,
+   "cleanLines": 379,
+   "offColour": 2,
+   "offSize": 1,
+   "breaks": 0,
+   "missing": 22,
+   "linePass": 7,
+   "overTones": 0,
+   "smallPatches": 2,
+   "areaPass": 19,
+   "holes": 16793,
+   "holePass": 0,
+   "largestHole": 1.71,
+   "stones": 51995,
+   "ms": 58335,
+   "maxMs": 3983
+  }
+ },
+ "results": [
+  {
+   "name": "cc0-car-rule",
+   "set": "CC0",
+   "style": "colour",
+   "today": {
+    "stones": 3548,
+    "ms": 630,
+    "size": {
+     "widthMm": 260,
+     "heightMm": 87.4
+    },
+    "bySize": {
+     "2": 3276,
+     "1.5": 272
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 31,
+      "clean": 15,
+      "offColour": 7,
+      "offSize": 34,
+      "breaks": 1,
+      "mixedLines": 5,
+      "brokenLines": 1,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 43,
+      "overTones": 14,
+      "maxTones": 8,
+      "patches": 459,
+      "smallPatches": 307,
+      "smallPatchStones": 405,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 1851,
+      "largestMm": 1.7,
+      "at": 1851,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 3579,
+    "ms": 3207,
+    "msParts": {
+     "map": 1159,
+     "place": 2001
+    },
+    "size": {
+     "widthMm": 259.1,
+     "heightMm": 86.7
+    },
+    "bySize": {
+     "2": 3082,
+     "1.5": 497
+    },
+    "byRole": {
+     "line": 295,
+     "outline": 266,
+     "area": 2244,
+     "seam": 774
+    },
+    "stats": {
+     "features": 0,
+     "lines": 295,
+     "lineChains": 29,
+     "linePiecesDropped": 2,
+     "lineBreaks": 0,
+     "outline": 266,
+     "outlineChains": 8,
+     "area": 2244,
+     "seam": 774,
+     "recoloured": 29,
+     "settled": 16353,
+     "retoned": 140
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 31,
+      "clean": 29,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false,
+      "chains": {
+       "count": 37,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 43,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 181,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 1016,
+      "largestMm": 1.71,
+      "at": 1016,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 31,
+     "areas": 43,
+     "faces": 0,
+     "discs": 3285
+    }
+   },
+   "closeUps": 3
+  },
+  {
+   "name": "cc0-cat-norule",
+   "set": "CC0",
+   "style": "colour",
+   "today": {
+    "stones": 3148,
+    "ms": 584,
+    "size": {
+     "widthMm": 158.4,
+     "heightMm": 120.8
+    },
+    "bySize": {
+     "2": 2758,
+     "1.5": 388,
+     "4.7": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.101,
+      "pass": true
+     },
+     "lines": {
+      "lines": 19,
+      "clean": 6,
+      "offColour": 5,
+      "offSize": 11,
+      "breaks": 2,
+      "mixedLines": 5,
+      "brokenLines": 2,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 54,
+      "overTones": 32,
+      "maxTones": 10,
+      "patches": 896,
+      "smallPatches": 705,
+      "smallPatchStones": 972,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 979,
+      "largestMm": 1.7,
+      "at": 979,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 3014,
+    "ms": 2813,
+    "msParts": {
+     "map": 957,
+     "place": 1817
+    },
+    "size": {
+     "widthMm": 157.6,
+     "heightMm": 120
+    },
+    "bySize": {
+     "2": 2560,
+     "1.5": 452,
+     "4.7": 2
+    },
+    "byRole": {
+     "feature": 194,
+     "line": 85,
+     "outline": 252,
+     "area": 1786,
+     "seam": 697
+    },
+    "stats": {
+     "features": 194,
+     "lines": 85,
+     "lineChains": 17,
+     "linePiecesDropped": 2,
+     "lineBreaks": 0,
+     "outline": 252,
+     "outlineChains": 2,
+     "area": 1786,
+     "seam": 697,
+     "recoloured": 81,
+     "settled": 16195,
+     "retoned": 166
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 19,
+      "clean": 17,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 2,
+      "pass": false,
+      "chains": {
+       "count": 19,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 54,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 217,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 1040,
+      "largestMm": 1.66,
+      "at": 1040,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 19,
+     "areas": 56,
+     "faces": 2,
+     "discs": 3119
+    }
+   },
+   "closeUps": 4
+  },
+  {
+   "name": "cc0-cat-rule",
+   "set": "CC0",
+   "style": "colour",
+   "today": {
+    "stones": 3579,
+    "ms": 711,
+    "size": {
+     "widthMm": 167.8,
+     "heightMm": 125.7
+    },
+    "bySize": {
+     "2": 3269,
+     "1.5": 308,
+     "4.7": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.101,
+      "pass": true
+     },
+     "lines": {
+      "lines": 13,
+      "clean": 4,
+      "offColour": 1,
+      "offSize": 4,
+      "breaks": 1,
+      "mixedLines": 1,
+      "brokenLines": 1,
+      "missing": 2,
+      "pass": false
+     },
+     "areas": {
+      "areas": 63,
+      "overTones": 38,
+      "maxTones": 9,
+      "patches": 779,
+      "smallPatches": 566,
+      "smallPatchStones": 821,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 541,
+      "largestMm": 1.68,
+      "at": 541,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 3362,
+    "ms": 3115,
+    "msParts": {
+     "map": 982,
+     "place": 2086
+    },
+    "size": {
+     "widthMm": 167.1,
+     "heightMm": 125.2
+    },
+    "bySize": {
+     "2": 2835,
+     "1.5": 525,
+     "4.7": 2
+    },
+    "byRole": {
+     "feature": 225,
+     "line": 53,
+     "outline": 263,
+     "area": 1943,
+     "seam": 878
+    },
+    "stats": {
+     "features": 225,
+     "lines": 53,
+     "lineChains": 11,
+     "linePiecesDropped": 2,
+     "lineBreaks": 0,
+     "outline": 263,
+     "outlineChains": 2,
+     "area": 1943,
+     "seam": 878,
+     "recoloured": 117,
+     "settled": 18420,
+     "retoned": 192
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 13,
+      "clean": 11,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 2,
+      "pass": false,
+      "chains": {
+       "count": 13,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 62,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 265,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 1060,
+      "largestMm": 1.66,
+      "at": 1060,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 13,
+     "areas": 68,
+     "faces": 2,
+     "discs": 3549
+    }
+   },
+   "closeUps": 4
+  },
+  {
+   "name": "cc0-dachshund-rule",
+   "set": "CC0",
+   "style": "colour",
+   "today": {
+    "stones": 1633,
+    "ms": 393,
+    "size": {
+     "widthMm": 159.2,
+     "heightMm": 106.4
+    },
+    "bySize": {
+     "2": 1452,
+     "1.5": 179,
+     "4.7": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.102,
+      "pass": true
+     },
+     "lines": {
+      "lines": 6,
+      "clean": 4,
+      "offColour": 0,
+      "offSize": 2,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 26,
+      "overTones": 10,
+      "maxTones": 7,
+      "patches": 159,
+      "smallPatches": 110,
+      "smallPatchStones": 164,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 292,
+      "largestMm": 1.65,
+      "at": 292,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 1520,
+    "ms": 1768,
+    "msParts": {
+     "map": 596,
+     "place": 1158
+    },
+    "size": {
+     "widthMm": 157.9,
+     "heightMm": 105.8
+    },
+    "bySize": {
+     "2": 1258,
+     "1.5": 260,
+     "4.7": 2
+    },
+    "byRole": {
+     "feature": 84,
+     "line": 27,
+     "outline": 245,
+     "area": 872,
+     "seam": 292
+    },
+    "stats": {
+     "features": 84,
+     "lines": 27,
+     "lineChains": 5,
+     "linePiecesDropped": 1,
+     "lineBreaks": 0,
+     "outline": 245,
+     "outlineChains": 11,
+     "area": 872,
+     "seam": 292,
+     "recoloured": 16,
+     "settled": 6144,
+     "retoned": 28
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 6,
+      "clean": 5,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false,
+      "chains": {
+       "count": 16,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 26,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 69,
+      "smallPatches": 1,
+      "smallPatchStones": 3,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 397,
+      "largestMm": 1.65,
+      "at": 397,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 6,
+     "areas": 26,
+     "faces": 2,
+     "discs": 1610
+    }
+   },
+   "closeUps": 4
+  },
+  {
+   "name": "cc0-dog-norule",
+   "set": "CC0",
+   "style": "colour",
+   "today": {
+    "stones": 2084,
+    "ms": 664,
+    "size": {
+     "widthMm": 87,
+     "heightMm": 203.1
+    },
+    "bySize": {
+     "2": 2008,
+     "1.5": 74,
+     "4.7": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 7,
+      "clean": 5,
+      "offColour": 0,
+      "offSize": 1,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 33,
+      "overTones": 21,
+      "maxTones": 13,
+      "patches": 349,
+      "smallPatches": 231,
+      "smallPatchStones": 354,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 958,
+      "largestMm": 1.66,
+      "at": 958,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 2077,
+    "ms": 2462,
+    "msParts": {
+     "map": 857,
+     "place": 1582
+    },
+    "size": {
+     "widthMm": 86.2,
+     "heightMm": 202.3
+    },
+    "bySize": {
+     "2": 1858,
+     "1.5": 217,
+     "4.7": 2
+    },
+    "byRole": {
+     "feature": 129,
+     "line": 45,
+     "outline": 382,
+     "area": 1145,
+     "seam": 376
+    },
+    "stats": {
+     "features": 129,
+     "lines": 45,
+     "lineChains": 6,
+     "linePiecesDropped": 1,
+     "lineBreaks": 0,
+     "outline": 382,
+     "outlineChains": 9,
+     "area": 1145,
+     "seam": 376,
+     "recoloured": 79,
+     "settled": 8089,
+     "retoned": 51
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 7,
+      "clean": 6,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false,
+      "chains": {
+       "count": 15,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 33,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 121,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 581,
+      "largestMm": 1.62,
+      "at": 581,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 7,
+     "areas": 35,
+     "faces": 3,
+     "discs": 2063
+    }
+   },
+   "closeUps": 4
+  },
+  {
+   "name": "cc0-dog-rule",
+   "set": "CC0",
+   "style": "colour",
+   "today": {
+    "stones": 2050,
+    "ms": 468,
+    "size": {
+     "widthMm": 83.8,
+     "heightMm": 200.8
+    },
+    "bySize": {
+     "2": 1954,
+     "1.5": 94,
+     "4.7": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.101,
+      "pass": true
+     },
+     "lines": {
+      "lines": 5,
+      "clean": 2,
+      "offColour": 3,
+      "offSize": 3,
+      "breaks": 0,
+      "mixedLines": 1,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 33,
+      "overTones": 21,
+      "maxTones": 8,
+      "patches": 344,
+      "smallPatches": 248,
+      "smallPatchStones": 377,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 914,
+      "largestMm": 1.72,
+      "at": 914,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 2022,
+    "ms": 2548,
+    "msParts": {
+     "map": 926,
+     "place": 1599
+    },
+    "size": {
+     "widthMm": 83.2,
+     "heightMm": 200
+    },
+    "bySize": {
+     "2": 1798,
+     "1.5": 222,
+     "4.7": 2
+    },
+    "byRole": {
+     "feature": 152,
+     "line": 61,
+     "outline": 379,
+     "area": 1065,
+     "seam": 365
+    },
+    "stats": {
+     "features": 152,
+     "lines": 61,
+     "lineChains": 6,
+     "linePiecesDropped": 1,
+     "lineBreaks": 2,
+     "outline": 379,
+     "outlineChains": 14,
+     "area": 1065,
+     "seam": 365,
+     "recoloured": 77,
+     "settled": 8314,
+     "retoned": 47
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 5,
+      "clean": 5,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": true,
+      "chains": {
+       "count": 20,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 33,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 122,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 609,
+      "largestMm": 1.66,
+      "at": 609,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 5,
+     "areas": 33,
+     "faces": 3,
+     "discs": 2031
+    }
+   },
+   "closeUps": 4
+  },
+  {
+   "name": "cc0-giraffe-rule",
+   "set": "CC0",
+   "style": "colour",
+   "today": {
+    "stones": 2327,
+    "ms": 636,
+    "size": {
+     "widthMm": 79.8,
+     "heightMm": 307.5
+    },
+    "bySize": {
+     "2": 1946,
+     "1.5": 379,
+     "2.8": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.101,
+      "pass": true
+     },
+     "lines": {
+      "lines": 14,
+      "clean": 9,
+      "offColour": 4,
+      "offSize": 8,
+      "breaks": 1,
+      "mixedLines": 2,
+      "brokenLines": 1,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 28,
+      "overTones": 12,
+      "maxTones": 11,
+      "patches": 703,
+      "smallPatches": 514,
+      "smallPatchStones": 679,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 1460,
+      "largestMm": 1.71,
+      "at": 1460,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 2333,
+    "ms": 2948,
+    "msParts": {
+     "map": 853,
+     "place": 2066
+    },
+    "size": {
+     "widthMm": 78.4,
+     "heightMm": 307.1
+    },
+    "bySize": {
+     "2": 2048,
+     "1.5": 283,
+     "2.8": 2
+    },
+    "byRole": {
+     "feature": 53,
+     "line": 90,
+     "outline": 422,
+     "area": 1375,
+     "seam": 393
+    },
+    "stats": {
+     "features": 53,
+     "lines": 90,
+     "lineChains": 14,
+     "linePiecesDropped": 0,
+     "lineBreaks": 0,
+     "outline": 422,
+     "outlineChains": 15,
+     "area": 1375,
+     "seam": 393,
+     "recoloured": 29,
+     "settled": 9655,
+     "retoned": 35
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 14,
+      "clean": 14,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": true,
+      "chains": {
+       "count": 29,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 28,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 85,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 647,
+      "largestMm": 1.63,
+      "at": 647,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 14,
+     "areas": 28,
+     "faces": 2,
+     "discs": 2020
+    }
+   },
+   "closeUps": 4
+  },
+  {
+   "name": "cc0-mug-norule",
+   "set": "CC0",
+   "style": "colour",
+   "today": {
+    "stones": 2224,
+    "ms": 475,
+    "size": {
+     "widthMm": 146.5,
+     "heightMm": 109.6
+    },
+    "bySize": {
+     "2": 2119,
+     "1.5": 105
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.102,
+      "pass": true
+     },
+     "lines": {
+      "lines": 12,
+      "clean": 2,
+      "offColour": 23,
+      "offSize": 16,
+      "breaks": 0,
+      "mixedLines": 5,
+      "brokenLines": 0,
+      "missing": 4,
+      "pass": false
+     },
+     "areas": {
+      "areas": 17,
+      "overTones": 5,
+      "maxTones": 5,
+      "patches": 134,
+      "smallPatches": 99,
+      "smallPatchStones": 128,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 119,
+      "largestMm": 1.63,
+      "at": 119,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 2130,
+    "ms": 2434,
+    "msParts": {
+     "map": 885,
+     "place": 1528
+    },
+    "size": {
+     "widthMm": 145.9,
+     "heightMm": 109.2
+    },
+    "bySize": {
+     "2": 1879,
+     "1.5": 251
+    },
+    "byRole": {
+     "line": 224,
+     "outline": 228,
+     "area": 1279,
+     "seam": 399
+    },
+    "stats": {
+     "features": 0,
+     "lines": 224,
+     "lineChains": 12,
+     "linePiecesDropped": 0,
+     "lineBreaks": 0,
+     "outline": 228,
+     "outlineChains": 8,
+     "area": 1279,
+     "seam": 399,
+     "recoloured": 3,
+     "settled": 4719,
+     "retoned": 44
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 12,
+      "clean": 11,
+      "offColour": 1,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 1,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": false,
+      "chains": {
+       "count": 20,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 17,
+      "overTones": 0,
+      "maxTones": 2,
+      "patches": 33,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 315,
+      "largestMm": 1.51,
+      "at": 315,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 12,
+     "areas": 17,
+     "faces": 0,
+     "discs": 2226
+    }
+   },
+   "closeUps": 3
+  },
+  {
+   "name": "cc0-mug-rule",
+   "set": "CC0",
+   "style": "colour",
+   "today": {
+    "stones": 1751,
+    "ms": 382,
+    "size": {
+     "widthMm": 130.4,
+     "heightMm": 96
+    },
+    "bySize": {
+     "2": 1681,
+     "1.5": 70
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.103,
+      "pass": true
+     },
+     "lines": {
+      "lines": 0,
+      "clean": 0,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": true
+     },
+     "areas": {
+      "areas": 18,
+      "overTones": 2,
+      "maxTones": 5,
+      "patches": 64,
+      "smallPatches": 36,
+      "smallPatchStones": 52,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 79,
+      "largestMm": 1.41,
+      "at": 79,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 1669,
+    "ms": 1758,
+    "msParts": {
+     "map": 525,
+     "place": 1219
+    },
+    "size": {
+     "widthMm": 130.3,
+     "heightMm": 96.4
+    },
+    "bySize": {
+     "2": 1416,
+     "1.5": 253
+    },
+    "byRole": {
+     "outline": 200,
+     "area": 1015,
+     "seam": 454
+    },
+    "stats": {
+     "features": 0,
+     "lines": 0,
+     "lineChains": 0,
+     "linePiecesDropped": 0,
+     "lineBreaks": 0,
+     "outline": 200,
+     "outlineChains": 12,
+     "area": 1015,
+     "seam": 454,
+     "recoloured": 8,
+     "settled": 5795,
+     "retoned": 111
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 0,
+      "clean": 0,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": true,
+      "chains": {
+       "count": 12,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 18,
+      "overTones": 0,
+      "maxTones": 2,
+      "patches": 54,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 358,
+      "largestMm": 1.67,
+      "at": 358,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 0,
+     "areas": 19,
+     "faces": 0,
+     "discs": 1751
+    }
+   },
+   "closeUps": 2
+  },
+  {
+   "name": "rs-cat",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 2162,
+    "ms": 449,
+    "size": {
+     "widthMm": 103,
+     "heightMm": 130.8
+    },
+    "bySize": {
+     "2": 1801,
+     "1.5": 359,
+     "4.7": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 19,
+      "clean": 8,
+      "offColour": 0,
+      "offSize": 16,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false
+     },
+     "areas": {
+      "areas": 71,
+      "overTones": 36,
+      "maxTones": 9,
+      "patches": 526,
+      "smallPatches": 365,
+      "smallPatchStones": 520,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 649,
+      "largestMm": 1.7,
+      "at": 649,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 2043,
+    "ms": 2206,
+    "msParts": {
+     "map": 708,
+     "place": 1477
+    },
+    "size": {
+     "widthMm": 102,
+     "heightMm": 130.4
+    },
+    "bySize": {
+     "2": 1669,
+     "1.5": 372,
+     "4.7": 2
+    },
+    "byRole": {
+     "feature": 177,
+     "line": 53,
+     "outline": 212,
+     "area": 1072,
+     "seam": 529
+    },
+    "stats": {
+     "features": 177,
+     "lines": 53,
+     "lineChains": 13,
+     "linePiecesDropped": 6,
+     "lineBreaks": 0,
+     "outline": 212,
+     "outlineChains": 9,
+     "area": 1072,
+     "seam": 529,
+     "recoloured": 75,
+     "settled": 11846,
+     "retoned": 112
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 19,
+      "clean": 13,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 6,
+      "pass": false,
+      "chains": {
+       "count": 22,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 71,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 207,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 809,
+      "largestMm": 1.68,
+      "at": 809,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 19,
+     "areas": 75,
+     "faces": 2,
+     "discs": 2215
+    }
+   },
+   "closeUps": 4
+  },
+  {
+   "name": "rs-dog",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 1683,
+    "ms": 492,
+    "size": {
+     "widthMm": 96.6,
+     "heightMm": 160.6
+    },
+    "bySize": {
+     "2": 1530,
+     "1.5": 151,
+     "4.7": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.102,
+      "pass": true
+     },
+     "lines": {
+      "lines": 5,
+      "clean": 3,
+      "offColour": 0,
+      "offSize": 3,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 17,
+      "overTones": 8,
+      "maxTones": 9,
+      "patches": 171,
+      "smallPatches": 133,
+      "smallPatchStones": 178,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 728,
+      "largestMm": 1.65,
+      "at": 728,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 1700,
+    "ms": 2185,
+    "msParts": {
+     "map": 798,
+     "place": 1368
+    },
+    "size": {
+     "widthMm": 95.7,
+     "heightMm": 159.9
+    },
+    "bySize": {
+     "2": 1449,
+     "1.5": 249,
+     "4.7": 2
+    },
+    "byRole": {
+     "feature": 73,
+     "line": 28,
+     "outline": 331,
+     "area": 951,
+     "seam": 317
+    },
+    "stats": {
+     "features": 73,
+     "lines": 28,
+     "lineChains": 5,
+     "linePiecesDropped": 0,
+     "lineBreaks": 0,
+     "outline": 331,
+     "outlineChains": 9,
+     "area": 951,
+     "seam": 317,
+     "recoloured": 6,
+     "settled": 6207,
+     "retoned": 44
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 5,
+      "clean": 5,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": true,
+      "chains": {
+       "count": 14,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 17,
+      "overTones": 0,
+      "maxTones": 2,
+      "patches": 45,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 488,
+      "largestMm": 1.68,
+      "at": 488,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 5,
+     "areas": 17,
+     "faces": 2,
+     "discs": 1674
+    }
+   },
+   "closeUps": 4
+  },
+  {
+   "name": "rs-einstein",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 3594,
+    "ms": 760,
+    "size": {
+     "widthMm": 150.2,
+     "heightMm": 143.2
+    },
+    "bySize": {
+     "2": 3252,
+     "1.5": 340,
+     "4.7": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 52,
+      "clean": 30,
+      "offColour": 4,
+      "offSize": 27,
+      "breaks": 0,
+      "mixedLines": 4,
+      "brokenLines": 0,
+      "missing": 3,
+      "pass": false
+     },
+     "areas": {
+      "areas": 84,
+      "overTones": 41,
+      "maxTones": 7,
+      "patches": 581,
+      "smallPatches": 412,
+      "smallPatchStones": 595,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 648,
+      "largestMm": 1.68,
+      "at": 648,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 3376,
+    "ms": 3983,
+    "msParts": {
+     "map": 1348,
+     "place": 2579
+    },
+    "size": {
+     "widthMm": 149.8,
+     "heightMm": 142.4
+    },
+    "bySize": {
+     "2": 2856,
+     "1.5": 518,
+     "4.7": 2
+    },
+    "byRole": {
+     "feature": 256,
+     "line": 318,
+     "outline": 266,
+     "area": 1738,
+     "seam": 798
+    },
+    "stats": {
+     "features": 256,
+     "lines": 318,
+     "lineChains": 49,
+     "linePiecesDropped": 3,
+     "lineBreaks": 0,
+     "outline": 266,
+     "outlineChains": 12,
+     "area": 1738,
+     "seam": 798,
+     "recoloured": 115,
+     "settled": 14848,
+     "retoned": 156
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 52,
+      "clean": 48,
+      "offColour": 1,
+      "offSize": 1,
+      "breaks": 0,
+      "mixedLines": 1,
+      "brokenLines": 0,
+      "missing": 2,
+      "pass": false,
+      "chains": {
+       "count": 61,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 83,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 263,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 1164,
+      "largestMm": 1.67,
+      "at": 1164,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 52,
+     "areas": 87,
+     "faces": 3,
+     "discs": 3612
+    }
+   },
+   "closeUps": 4
+  },
+  {
+   "name": "rs-jesus",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 3307,
+    "ms": 752,
+    "size": {
+     "widthMm": 145.8,
+     "heightMm": 163.9
+    },
+    "bySize": {
+     "2": 2880,
+     "4": 1,
+     "1.5": 426
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 24,
+      "clean": 11,
+      "offColour": 3,
+      "offSize": 29,
+      "breaks": 4,
+      "mixedLines": 2,
+      "brokenLines": 4,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 94,
+      "overTones": 27,
+      "maxTones": 8,
+      "patches": 641,
+      "smallPatches": 335,
+      "smallPatchStones": 459,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 1466,
+      "largestMm": 1.7,
+      "at": 1466,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 3179,
+    "ms": 3632,
+    "msParts": {
+     "map": 1241,
+     "place": 2347
+    },
+    "size": {
+     "widthMm": 145.4,
+     "heightMm": 162.7
+    },
+    "bySize": {
+     "2": 2665,
+     "1.5": 514
+    },
+    "byRole": {
+     "line": 155,
+     "outline": 271,
+     "area": 1770,
+     "seam": 983
+    },
+    "stats": {
+     "features": 0,
+     "lines": 155,
+     "lineChains": 23,
+     "linePiecesDropped": 1,
+     "lineBreaks": 0,
+     "outline": 271,
+     "outlineChains": 14,
+     "area": 1770,
+     "seam": 983,
+     "recoloured": 87,
+     "settled": 22432,
+     "retoned": 285
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 24,
+      "clean": 23,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false,
+      "chains": {
+       "count": 37,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 94,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 386,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 1442,
+      "largestMm": 1.68,
+      "at": 1442,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 24,
+     "areas": 96,
+     "faces": 0,
+     "discs": 3333
+    }
+   },
+   "closeUps": 3
+  },
+  {
+   "name": "rs-lake",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 4100,
+    "ms": 980,
+    "size": {
+     "widthMm": 154.7,
+     "heightMm": 152.1
+    },
+    "bySize": {
+     "2": 3927,
+     "1.5": 173
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 40,
+      "clean": 18,
+      "offColour": 13,
+      "offSize": 11,
+      "breaks": 0,
+      "mixedLines": 9,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 125,
+      "overTones": 47,
+      "maxTones": 10,
+      "patches": 821,
+      "smallPatches": 548,
+      "smallPatchStones": 773,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 1142,
+      "largestMm": 1.7,
+      "at": 1142,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 3857,
+    "ms": 3962,
+    "msParts": {
+     "map": 1355,
+     "place": 2543
+    },
+    "size": {
+     "widthMm": 153.3,
+     "heightMm": 151.3
+    },
+    "bySize": {
+     "2": 3346,
+     "1.5": 511
+    },
+    "byRole": {
+     "line": 252,
+     "outline": 408,
+     "area": 2177,
+     "seam": 1020
+    },
+    "stats": {
+     "features": 0,
+     "lines": 252,
+     "lineChains": 38,
+     "linePiecesDropped": 2,
+     "lineBreaks": 0,
+     "outline": 408,
+     "outlineChains": 29,
+     "area": 2177,
+     "seam": 1020,
+     "recoloured": 173,
+     "settled": 23570,
+     "retoned": 236
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 40,
+      "clean": 38,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false,
+      "chains": {
+       "count": 67,
+       "wrongStones": 0,
+       "short": 1,
+       "pass": false
+      }
+     },
+     "areas": {
+      "areas": 125,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 395,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 1564,
+      "largestMm": 1.62,
+      "at": 1564,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 40,
+     "areas": 125,
+     "faces": 0,
+     "discs": 4097
+    }
+   },
+   "closeUps": 3
+  },
+  {
+   "name": "rs-leopard",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 2436,
+    "ms": 572,
+    "size": {
+     "widthMm": 117.3,
+     "heightMm": 153.7
+    },
+    "bySize": {
+     "2": 2206,
+     "1.5": 228,
+     "4.7": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.101,
+      "pass": true
+     },
+     "lines": {
+      "lines": 44,
+      "clean": 21,
+      "offColour": 4,
+      "offSize": 16,
+      "breaks": 7,
+      "mixedLines": 3,
+      "brokenLines": 7,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 78,
+      "overTones": 42,
+      "maxTones": 9,
+      "patches": 738,
+      "smallPatches": 561,
+      "smallPatchStones": 773,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 892,
+      "largestMm": 1.68,
+      "at": 892,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 2338,
+    "ms": 2838,
+    "msParts": {
+     "map": 979,
+     "place": 1832
+    },
+    "size": {
+     "widthMm": 116.3,
+     "heightMm": 152.7
+    },
+    "bySize": {
+     "2": 1962,
+     "1.5": 374,
+     "4.7": 2
+    },
+    "byRole": {
+     "feature": 118,
+     "line": 187,
+     "outline": 257,
+     "area": 1246,
+     "seam": 530
+    },
+    "stats": {
+     "features": 118,
+     "lines": 187,
+     "lineChains": 41,
+     "linePiecesDropped": 4,
+     "lineBreaks": 1,
+     "outline": 257,
+     "outlineChains": 15,
+     "area": 1246,
+     "seam": 530,
+     "recoloured": 95,
+     "settled": 13068,
+     "retoned": 64
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 44,
+      "clean": 41,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 3,
+      "pass": false,
+      "chains": {
+       "count": 56,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 77,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 234,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 987,
+      "largestMm": 1.68,
+      "at": 987,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 44,
+     "areas": 79,
+     "faces": 2,
+     "discs": 2433
+    }
+   },
+   "closeUps": 4
+  },
+  {
+   "name": "rs-logo",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 833,
+    "ms": 343,
+    "size": {
+     "widthMm": 144.9,
+     "heightMm": 79.1
+    },
+    "bySize": {
+     "2": 824,
+     "1.5": 9
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.102,
+      "pass": true
+     },
+     "lines": {
+      "lines": 0,
+      "clean": 0,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": true
+     },
+     "areas": {
+      "areas": 6,
+      "overTones": 0,
+      "maxTones": 1,
+      "patches": 9,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 88,
+      "largestMm": 1.37,
+      "at": 88,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 773,
+    "ms": 1225,
+    "msParts": {
+     "map": 390,
+     "place": 831
+    },
+    "size": {
+     "widthMm": 144.2,
+     "heightMm": 78.3
+    },
+    "bySize": {
+     "2": 353,
+     "1.5": 420
+    },
+    "byRole": {
+     "outline": 309,
+     "area": 5,
+     "seam": 459
+    },
+    "stats": {
+     "features": 0,
+     "lines": 0,
+     "lineChains": 0,
+     "linePiecesDropped": 0,
+     "lineBreaks": 0,
+     "outline": 309,
+     "outlineChains": 24,
+     "area": 5,
+     "seam": 459,
+     "recoloured": 0,
+     "settled": 639,
+     "retoned": 23
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 0,
+      "clean": 0,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": true,
+      "chains": {
+       "count": 24,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 2,
+      "overTones": 0,
+      "maxTones": 1,
+      "patches": 7,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 75,
+      "largestMm": 1.6,
+      "at": 75,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 0,
+     "areas": 6,
+     "faces": 0,
+     "discs": 833
+    }
+   },
+   "closeUps": 2
+  },
+  {
+   "name": "rs-parrot",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 2552,
+    "ms": 695,
+    "size": {
+     "widthMm": 168.3,
+     "heightMm": 151.6
+    },
+    "bySize": {
+     "2": 2307,
+     "4": 1,
+     "1.5": 244
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.101,
+      "pass": true
+     },
+     "lines": {
+      "lines": 27,
+      "clean": 14,
+      "offColour": 6,
+      "offSize": 7,
+      "breaks": 0,
+      "mixedLines": 5,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false
+     },
+     "areas": {
+      "areas": 90,
+      "overTones": 32,
+      "maxTones": 9,
+      "patches": 516,
+      "smallPatches": 338,
+      "smallPatchStones": 457,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 1017,
+      "largestMm": 1.67,
+      "at": 1017,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 2407,
+    "ms": 3436,
+    "msParts": {
+     "map": 1138,
+     "place": 2268
+    },
+    "size": {
+     "widthMm": 167.8,
+     "heightMm": 150.5
+    },
+    "bySize": {
+     "2": 2079,
+     "1.5": 328
+    },
+    "byRole": {
+     "line": 148,
+     "outline": 378,
+     "area": 1190,
+     "seam": 691
+    },
+    "stats": {
+     "features": 0,
+     "lines": 148,
+     "lineChains": 26,
+     "linePiecesDropped": 1,
+     "lineBreaks": 0,
+     "outline": 378,
+     "outlineChains": 25,
+     "area": 1190,
+     "seam": 691,
+     "recoloured": 55,
+     "settled": 15409,
+     "retoned": 191
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 27,
+      "clean": 26,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false,
+      "chains": {
+       "count": 51,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 90,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 290,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 1134,
+      "largestMm": 1.69,
+      "at": 1134,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 27,
+     "areas": 90,
+     "faces": 0,
+     "discs": 2496
+    }
+   },
+   "closeUps": 3
+  },
+  {
+   "name": "rs-portrait",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 4045,
+    "ms": 819,
+    "size": {
+     "widthMm": 149.5,
+     "heightMm": 166
+    },
+    "bySize": {
+     "2": 3591,
+     "1.5": 452,
+     "2.8": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 21,
+      "clean": 2,
+      "offColour": 1,
+      "offSize": 30,
+      "breaks": 1,
+      "mixedLines": 1,
+      "brokenLines": 1,
+      "missing": 1,
+      "pass": false
+     },
+     "areas": {
+      "areas": 42,
+      "overTones": 25,
+      "maxTones": 10,
+      "patches": 782,
+      "smallPatches": 627,
+      "smallPatchStones": 885,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 1064,
+      "largestMm": 1.72,
+      "at": 1064,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 3912,
+    "ms": 3841,
+    "msParts": {
+     "map": 1148,
+     "place": 2630
+    },
+    "size": {
+     "widthMm": 149.4,
+     "heightMm": 165.4
+    },
+    "bySize": {
+     "2": 3253,
+     "1.5": 657,
+     "2.8": 2
+    },
+    "byRole": {
+     "feature": 471,
+     "line": 96,
+     "outline": 351,
+     "area": 2221,
+     "seam": 773
+    },
+    "stats": {
+     "features": 471,
+     "lines": 96,
+     "lineChains": 20,
+     "linePiecesDropped": 1,
+     "lineBreaks": 0,
+     "outline": 351,
+     "outlineChains": 8,
+     "area": 2221,
+     "seam": 773,
+     "recoloured": 52,
+     "settled": 16343,
+     "retoned": 59
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 21,
+      "clean": 20,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false,
+      "chains": {
+       "count": 28,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 41,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 145,
+      "smallPatches": 1,
+      "smallPatchStones": 3,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 1245,
+      "largestMm": 1.68,
+      "at": 1245,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 21,
+     "areas": 48,
+     "faces": 3,
+     "discs": 3653
+    }
+   },
+   "closeUps": 4
+  },
+  {
+   "name": "rs-rose",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 1846,
+    "ms": 411,
+    "size": {
+     "widthMm": 121,
+     "heightMm": 130.5
+    },
+    "bySize": {
+     "2": 1689,
+     "1.5": 157
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.101,
+      "pass": true
+     },
+     "lines": {
+      "lines": 29,
+      "clean": 24,
+      "offColour": 0,
+      "offSize": 4,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 41,
+      "overTones": 2,
+      "maxTones": 4,
+      "patches": 126,
+      "smallPatches": 65,
+      "smallPatchStones": 98,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 255,
+      "largestMm": 1.65,
+      "at": 255,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 1673,
+    "ms": 2008,
+    "msParts": {
+     "map": 626,
+     "place": 1367
+    },
+    "size": {
+     "widthMm": 120.1,
+     "heightMm": 130
+    },
+    "bySize": {
+     "2": 1485,
+     "1.5": 188
+    },
+    "byRole": {
+     "line": 156,
+     "outline": 250,
+     "area": 879,
+     "seam": 388
+    },
+    "stats": {
+     "features": 0,
+     "lines": 156,
+     "lineChains": 28,
+     "linePiecesDropped": 1,
+     "lineBreaks": 0,
+     "outline": 250,
+     "outlineChains": 7,
+     "area": 879,
+     "seam": 388,
+     "recoloured": 1,
+     "settled": 7717,
+     "retoned": 76
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 29,
+      "clean": 28,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": false,
+      "chains": {
+       "count": 35,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 40,
+      "overTones": 0,
+      "maxTones": 2,
+      "patches": 108,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 526,
+      "largestMm": 1.69,
+      "at": 526,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 29,
+     "areas": 44,
+     "faces": 0,
+     "discs": 1849
+    }
+   },
+   "closeUps": 3
+  },
+  {
+   "name": "rs-tulips",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 2675,
+    "ms": 689,
+    "size": {
+     "widthMm": 140.3,
+     "heightMm": 141.7
+    },
+    "bySize": {
+     "2": 2547,
+     "1.5": 128
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.101,
+      "pass": true
+     },
+     "lines": {
+      "lines": 31,
+      "clean": 25,
+      "offColour": 3,
+      "offSize": 7,
+      "breaks": 0,
+      "mixedLines": 2,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 71,
+      "overTones": 7,
+      "maxTones": 7,
+      "patches": 262,
+      "smallPatches": 127,
+      "smallPatchStones": 184,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 698,
+      "largestMm": 1.66,
+      "at": 698,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 2537,
+    "ms": 3077,
+    "msParts": {
+     "map": 1128,
+     "place": 1917
+    },
+    "size": {
+     "widthMm": 139.9,
+     "heightMm": 141.1
+    },
+    "bySize": {
+     "2": 2238,
+     "1.5": 299
+    },
+    "byRole": {
+     "line": 286,
+     "outline": 441,
+     "area": 1199,
+     "seam": 611
+    },
+    "stats": {
+     "features": 0,
+     "lines": 286,
+     "lineChains": 31,
+     "linePiecesDropped": 0,
+     "lineBreaks": 0,
+     "outline": 441,
+     "outlineChains": 40,
+     "area": 1199,
+     "seam": 611,
+     "recoloured": 20,
+     "settled": 10366,
+     "retoned": 175
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 31,
+      "clean": 31,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": true,
+      "chains": {
+       "count": 71,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 71,
+      "overTones": 0,
+      "maxTones": 2,
+      "patches": 224,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 720,
+      "largestMm": 1.67,
+      "at": 720,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 31,
+     "areas": 73,
+     "faces": 0,
+     "discs": 2677
+    }
+   },
+   "closeUps": 3
+  },
+  {
+   "name": "rs-woman",
+   "set": "RS",
+   "style": "colour",
+   "today": {
+    "stones": 2627,
+    "ms": 646,
+    "size": {
+     "widthMm": 143.9,
+     "heightMm": 146.7
+    },
+    "bySize": {
+     "2": 2411,
+     "1.5": 214,
+     "4.7": 2
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 8,
+      "clean": 4,
+      "offColour": 0,
+      "offSize": 5,
+      "breaks": 1,
+      "mixedLines": 0,
+      "brokenLines": 1,
+      "missing": 0,
+      "pass": false
+     },
+     "areas": {
+      "areas": 38,
+      "overTones": 7,
+      "maxTones": 5,
+      "patches": 201,
+      "smallPatches": 131,
+      "smallPatchStones": 188,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 447,
+      "largestMm": 1.65,
+      "at": 447,
+      "pass": false
+     }
+    }
+   },
+   "engine": {
+    "stones": 2494,
+    "ms": 2889,
+    "msParts": {
+     "map": 895,
+     "place": 1961
+    },
+    "size": {
+     "widthMm": 143.1,
+     "heightMm": 145.9
+    },
+    "bySize": {
+     "2": 2109,
+     "1.5": 383,
+     "4.7": 2
+    },
+    "byRole": {
+     "feature": 141,
+     "line": 41,
+     "outline": 243,
+     "area": 1523,
+     "seam": 546
+    },
+    "stats": {
+     "features": 141,
+     "lines": 41,
+     "lineChains": 7,
+     "linePiecesDropped": 1,
+     "lineBreaks": 0,
+     "outline": 243,
+     "outlineChains": 12,
+     "area": 1523,
+     "seam": 546,
+     "recoloured": 42,
+     "settled": 9796,
+     "retoned": 61
+    },
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 8,
+      "clean": 8,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 0,
+      "pass": true,
+      "chains": {
+       "count": 19,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 37,
+      "overTones": 0,
+      "maxTones": 2,
+      "patches": 103,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 616,
+      "largestMm": 1.69,
+      "at": 616,
+      "pass": false
+     }
+    },
+    "map": {
+     "lines": 8,
+     "areas": 38,
+     "faces": 3,
+     "discs": 2629
+    }
+   },
+   "closeUps": 4
+  }
+ ]
+}
