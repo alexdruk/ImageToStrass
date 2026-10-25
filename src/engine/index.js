@@ -26,12 +26,13 @@ export function todaysDesign(layout, ai, { mode = "colour", threshold = 55, fill
 // /layout answer + AI image ({ data, width, height } RGBA) + today's stones (todaysDesign().stones)
 // -> { map, stones (plain, layout mm, with role, chain, area), chains, stats, stoneLayout (footprint
 // at the origin, as today's), originMm, gaps, ms }. mode "colour" or "bw"; style: the black & white
-// style ("halftone" or "stencil", spec 7.2 BW_STYLE).
-export function engineLayout(layout, ai, { mode = "colour", style = "halftone", threshold = 55, today = [] } = {}) {
+// style ("halftone" or "stencil", spec 7.2 BW_STYLE). bandRows: rows along each area's outline
+// before the honeycomb (place.js BAND_ROWS when not given; "all" is build 1's rows all the way in).
+export function engineLayout(layout, ai, { mode = "colour", style = "halftone", threshold = 55, today = [], bandRows, packing, hexFirst } = {}) {
   const t0 = performance.now();
   const map = buildMap(layout, ai, { mode, style, threshold });
   const t1 = performance.now();
-  const { stones, chains, stats } = placeStones(map, ai, { today });
+  const { stones, chains, stats } = placeStones(map, ai, { today, bandRows, packing, hexFirst });
   const t2 = performance.now();
   const { stoneLayout, stones: placed, originMm } = toStoneLayout(stones, 1);
   return {

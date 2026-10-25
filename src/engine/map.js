@@ -25,13 +25,17 @@ import { Grid } from "./grid.js";
 //      the median of its neighbours two steps around. Black & white: Jet (L* below the B&W
 //      threshold); halftone: only where the Jet share of the discs around it (HALFTONE_INK_RADIUS_MM,
 //      itself left out) is at most HALFTONE_LINE_SHARE, so the halftone pattern itself is no line.
-//   4. Lines: the thin ink (ink without the discs along the subject's edge, EDGE_DISC_MM, and
+//      Light ink likewise (markInk): discs clearly lighter than the ones around them (Crystal in
+//      black & white), for light lines (whiskers, lace, white stripes, light strands).
+//   3b. Face regions (faces.js) and brows (findBrows): a brow is a chain, never an area or a line.
+//   4. Lines, dark and light alike: the thin ink (ink without the discs along the subject's edge, EDGE_DISC_MM, and
 //      without the parts at least 2 x LINE_HALF_WIDTH_MM wide), thinned to
 //      its centre line (Zhang-Suen, RS LineDesignSampler) away from the subject's edge (the AI's
 //      own outline there is the subject outline's job, LINE_EDGE_MM) and from the face regions,
 //      traced into paths and smoothed. A path shorter than MIN_LINE_STONES stones is no line. Width
 //      class: SS4 (fine) when the discs under it are mostly smaller than SS6, else SS6 (outline).
-//      Colour: the most common catalogue colour of its ink discs (Jet in black & white).
+//      Colour: the most common catalogue colour of its ink discs (Jet in black & white; Crystal for
+//      light lines). A line along most of a brow is dropped (the brow is drawn).
 //   5. Areas, from the discs not on a line. Colour: a graph segmentation of the disc neighbours by
 //      ΔE2000 (Felzenszwalb-Huttenlocher, SEGMENT_K), areas under MIN_AREA_DISCS discs joined to their
 //      most similar neighbour; tones: at most MAX_TONES catalogue colours per area, chosen among the
@@ -41,8 +45,7 @@ import { Grid } from "./grid.js";
 //      the Jet share around each disc snapped to HALFTONE_LEVELS; an area is a piece of one level,
 //      placed as a regular Jet / Crystal pattern of that share.
 //   6. Outline colour of each area: Jet where it is dark (its discs' mean L* below OUTLINE_JET_L) or
-//      grey, else the darkest catalogue colour of its darkest tone's hue (within OUTLINE_HUE_DEG); Jet
-//      in black & white. The AI's own dark outline along the edge (ink discs within EDGE_DISC_MM of
+//      grey, else the darkest colour of its ramp (RAMPS); Jet in black & white. The AI's own dark outline along the edge (ink discs within EDGE_DISC_MM of
 //      it) belongs to no area: its cells take the areas inside it.
 //
 // The rasters stay in memory for the placement and the checks; toJSON() and mapPicture() are what
@@ -58,12 +61,13 @@ export const TONE_GAIN = 0.12;
 export const INK_DARK_L = 28;
 export const INK_MAX_L = 50;
 export const INK_REL_L = 18;
+export const LIGHT_MIN_L = 55;
 export const HALFTONE_RADIUS_MM = 3;
 export const HALFTONE_LINE_SHARE = 0.5;
 export const HALFTONE_INK_RADIUS_MM = 3.5;
 export const HALFTONE_LEVELS = Object.freeze([0, 0.25, 0.5, 0.75, 1]);
 export const LINE_HALF_WIDTH_MM = 1.6;
-export const LINE_EDGE_MM = 1.8;
+export const LINE_EDGE_MM = 1.2;
 export const EDGE_DISC_MM = 1.6;
 export const LINE_BAND_MM = 1.6;
 export const LINE_CUT_MM = 2.5;
@@ -71,7 +75,6 @@ export const MIN_LINE_STONES = 3;
 export const SEGMENT_K = 60;
 export const MIN_AREA_DISCS = 8;
 export const OUTLINE_JET_L = 35;
-export const OUTLINE_HUE_DEG = 25;
 export const MIN_PART_MM2 = 3;
 export const AREA_SMOOTH_MM = 0.6;
 export const TONE_SMOOTH_MM = 0.5;
@@ -239,6 +242,10 @@ function jetShare(discs, counts, { self = true, radius = HALFTONE_RADIUS_MM } = 
   });
 }
 
+// Dark ink (d.ink) and light ink (d.light): discs clearly darker or lighter than the ones around
+// them. Colour, light: L* above LIGHT_MIN_L and INK_REL_L lighter than the median two steps around.
+// Black & white, light: Crystal; in halftone only where the Crystal share around it is at most
+// HALFTONE_LINE_SHARE.
 function markInk(discs, nb, mode, style) {
   if (mode === "colour") {
     for (const d of discs) {
@@ -247,11 +254,15 @@ function markInk(discs, nb, mode, style) {
       ring.delete(d.id);
       const ref = median([...ring].map((o) => discs[o].lab[0]));
       d.ink = d.lab[0] < INK_DARK_L || (d.lab[0] < INK_MAX_L && ref - d.lab[0] > INK_REL_L);
+      d.light = d.lab[0] > LIGHT_MIN_L && d.lab[0] - ref > INK_REL_L;
     }
     return;
   }
   const share = style === "halftone" ? jetShare(discs, () => true, { self: false, radius: HALFTONE_INK_RADIUS_MM }) : null;
-  for (const d of discs) d.ink = d.snap === JET && (!share || share[d.id] <= HALFTONE_LINE_SHARE);
+  for (const d of discs) {
+    d.ink = d.snap === JET && (!share || share[d.id] <= HALFTONE_LINE_SHARE);
+    d.light = d.snap === CRYSTAL && (!share || 1 - share[d.id] <= HALFTONE_LINE_SHARE);
+  }
 }
 
 // --- 4. Lines ----------------------------------------------------------------------------------
@@ -325,14 +336,14 @@ function joinSkeletonPaths(paths) {
   ];
 }
 
-function findLines(grid, subject, subjectDist, owner, discs, regions, mode) {
+function findLines(grid, subject, subjectDist, owner, discs, regions, mode, key = "ink") {
   // The AI's own outline along the subject's edge (discs centred within EDGE_DISC_MM of it) is the
   // subject outline's job; left in, it glues every contour that touches it into a wide band.
-  const edgeDisc = discs.map((d) => d.edge);
+  const edgeDisc = discs.map((d) => (key === "ink" ? d.edge : d.lightEdge));
   const ink = new Uint8Array(grid.n);
   let i0 = grid.w, i1 = -1, j0 = grid.h, j1 = -1;
   for (let k = 0; k < grid.n; k++) {
-    if (owner[k] < 0 || !discs[owner[k]].ink || edgeDisc[owner[k]]) continue;
+    if (owner[k] < 0 || !discs[owner[k]][key] || edgeDisc[owner[k]]) continue;
     ink[k] = 1;
     const i = k % grid.w, j = (k - i) / grid.w;
     if (i < i0) i0 = i;
@@ -370,7 +381,7 @@ function findLines(grid, subject, subjectDist, owner, discs, regions, mode) {
       const under = new Set();
       for (const p of raw) {
         const k = grid.at(p.xMm, p.yMm);
-        if (k >= 0 && owner[k] >= 0 && discs[owner[k]].ink) under.add(owner[k]);
+        if (k >= 0 && owner[k] >= 0 && discs[owner[k]][key]) under.add(owner[k]);
       }
       if (!under.size) continue;
       const fine = median([...under].map((o) => discs[o].d)) < (SS4_MM + SS6_MM) / 2;
@@ -382,7 +393,8 @@ function findLines(grid, subject, subjectDist, owner, discs, regions, mode) {
         id: lines.length,
         size: fine ? "ss4" : "ss6",
         d,
-        colour: mode === "colour" ? modeOf([...under].map((o) => discs[o].snap)) : JET,
+        colour: mode === "colour" ? modeOf([...under].map((o) => discs[o].snap)) : key === "ink" ? JET : CRYSTAL,
+        tone: key === "ink" ? "dark" : "light",
         closed,
         lengthMm: length,
         points: smooth,
@@ -390,16 +402,118 @@ function findLines(grid, subject, subjectDist, owner, discs, regions, mode) {
       });
     }
   }
-  // A line running within one stone step of a longer one (a doubled strand) cannot get its own
-  // chain: it is dropped when most of it lies that close.
+  return lines;
+}
+
+// A line running within one stone step of a longer one (a doubled strand) cannot get its own chain:
+// it is dropped when most of it lies that close.
+function dropDoubled(lines) {
   const kept = [];
-  for (const line of lines.sort((a, b) => b.lengthMm - a.lengthMm)) {
+  for (const line of [...lines].sort((a, b) => b.lengthMm - a.lengthMm)) {
     const reach = line.d + ROW_GAP_MM + SS6_MM / 2;
     const close = line.points.filter((p) => kept.some((o) => o.points.some((q) => Math.hypot(p.xMm - q.xMm, p.yMm - q.yMm) < reach))).length;
     if (close > 0.5 * line.points.length) continue;
     kept.push(line);
   }
   return kept.map((l, id) => ({ ...l, id }));
+}
+
+// --- Brows -------------------------------------------------------------------------------------
+
+// Brows (concept section 5: a chain of 1-2 rows along the brow, thicker at the inner end, in the hair
+// colour), from the pupils: above each eye, in the box BROW_U across and BROW_V above the eye's
+// centre (in pupil distances, on the pupils' axis), the largest connected group of dark discs (dark
+// ink; black & white: Jet) is the brow. Its centre line is a quadratic fitted through the discs; one
+// row along all of it, and where the drawn brow is thicker than BROW_TWO_ROWS stones, a second row
+// on the inner BROW_INNER share, both SS6, so the brow is thicker at its inner end (towards the other
+// eye). Colour: the brow discs' most common catalogue colour (Jet in black & white). A group of fewer
+// than BROW_MIN_DISCS discs is no brow. Returns [{ eye, colour, discs, rows: [line-like { points,
+// d, closed }] }].
+export const BROW_U = [-0.5, 0.5];
+export const BROW_V = [-0.85, -0.2];
+export const BROW_MIN_DISCS = 3;
+export const BROW_TWO_ROWS = 1.4;
+export const BROW_INNER = 0.55;
+
+function findBrows(discs, nb, regions, mode) {
+  const eyes = regions.filter((r) => r.kind === "eye");
+  if (eyes.length !== 2) return [];
+  const [p, q] = eyes.map((e) => e.pupil);
+  const ipd = Math.hypot(q[0] - p[0], q[1] - p[1]);
+  const u = [(q[0] - p[0]) / ipd, (q[1] - p[1]) / ipd], v = [-u[1], u[0]];
+  const pitch = SS6_MM + ROW_GAP_MM;
+  const brows = [];
+  eyes.forEach((eye, e) => {
+    const other = eyes[1 - e];
+    const inner = Math.sign((other.x - eye.x) * u[0] + (other.y - eye.y) * u[1]) || 1;
+    const local = (d) => [((d.x - eye.x) * u[0] + (d.y - eye.y) * u[1]) / ipd, ((d.x - eye.x) * v[0] + (d.y - eye.y) * v[1]) / ipd];
+    const dark = (d) => (mode === "colour" ? d.ink : d.snap === JET);
+    const inBox = new Set(discs.filter((d) => {
+      const [a, b] = local(d);
+      return dark(d) && !d.edge && a >= BROW_U[0] && a <= BROW_U[1] && b >= BROW_V[0] && b <= BROW_V[1];
+    }).map((d) => d.id));
+    let best = [];
+    const seen = new Set();
+    for (const start of inBox) {
+      if (seen.has(start)) continue;
+      const group = [start];
+      seen.add(start);
+      for (let k = 0; k < group.length; k++) for (const o of nb[group[k]]) if (inBox.has(o) && !seen.has(o)) { seen.add(o); group.push(o); }
+      if (group.length > best.length) best = group;
+    }
+    if (best.length < BROW_MIN_DISCS) return;
+    // Centre line t(s) (mm, on the eye's axes), least squares, quadratic when the brow is long enough.
+    const pts = best.map((o) => { const [a, b] = local(discs[o]); return [a * ipd, b * ipd]; });
+    const sMin = Math.min(...pts.map((t) => t[0])), sMax = Math.max(...pts.map((t) => t[0]));
+    if (sMax - sMin < 2 * pitch) return;
+    const fit = polyFit(pts, sMax - sMin > 5 * pitch ? 2 : 1);
+    const along = (s, off) => {
+      const t = fit(s) + off;
+      return { xMm: eye.x + s * u[0] + t * v[0], yMm: eye.y + s * u[1] + t * v[1] };
+    };
+    const residual = pts.map(([a, b]) => b - fit(a));
+    // Thickness of the drawn brow on its inner half: the spread of the discs across the line.
+    const mid = (sMin + sMax) / 2;
+    const innerSide = pts.map(([a], k) => ((a - mid) * inner > 0 ? residual[k] : null)).filter((r) => r != null);
+    const thick = innerSide.length ? (Math.max(...innerSide) - Math.min(...innerSide)) / pitch + 1 : 1;
+    // Inner end first.
+    const [s0, s1] = inner > 0 ? [sMax, sMin] : [sMin, sMax];
+    const path = (from, to, off) => {
+      const n = Math.max(2, Math.ceil(Math.abs(to - from) / 0.2));
+      return Array.from({ length: n + 1 }, (_, k) => along(from + (to - from) * k / n, off));
+    };
+    const rows = [];
+    if (thick >= BROW_TWO_ROWS) {
+      const half = 0.45 * pitch;
+      rows.push({ points: path(s0, s1, half), d: SS6_MM, closed: false });
+      rows.push({ points: path(s0, s0 + (s1 - s0) * BROW_INNER, -half), d: SS6_MM, closed: false });
+    } else {
+      rows.push({ points: path(s0, s1, 0), d: SS6_MM, closed: false });
+    }
+    brows.push({ eye: e, colour: mode === "colour" ? modeOf(best.map((o) => discs[o].snap)) : JET, discs: best, rows, thickness: Math.round(thick * 10) / 10 });
+  });
+  return brows;
+}
+
+// Least-squares polynomial t(s) of the given degree (1 or 2) through [s, t] points.
+function polyFit(pts, degree) {
+  const n = degree + 1;
+  const A = Array.from({ length: n }, () => new Float64Array(n)), b = new Float64Array(n);
+  for (const [x, y] of pts) {
+    const pw = Array.from({ length: n }, (_, i) => x ** i);
+    for (let i = 0; i < n; i++) { b[i] += pw[i] * y; for (let j = 0; j < n; j++) A[i][j] += pw[i] * pw[j]; }
+  }
+  // Gaussian elimination.
+  for (let i = 0; i < n; i++) {
+    let piv = i;
+    for (let r = i + 1; r < n; r++) if (Math.abs(A[r][i]) > Math.abs(A[piv][i])) piv = r;
+    [A[i], A[piv]] = [A[piv], A[i]]; [b[i], b[piv]] = [b[piv], b[i]];
+    if (Math.abs(A[i][i]) < 1e-12) return () => pts.reduce((s, p) => s + p[1], 0) / pts.length;
+    for (let r = i + 1; r < n; r++) { const f = A[r][i] / A[i][i]; for (let c = i; c < n; c++) A[r][c] -= f * A[i][c]; b[r] -= f * b[i]; }
+  }
+  const c = new Float64Array(n);
+  for (let i = n - 1; i >= 0; i--) { let v = b[i]; for (let j = i + 1; j < n; j++) v -= A[i][j] * c[j]; c[i] = v / A[i][i]; }
+  return (x) => c.reduce((s, ci, i) => s + ci * x ** i, 0);
 }
 
 // --- 5. Areas ----------------------------------------------------------------------------------
@@ -548,18 +662,35 @@ function joinSmallPatches(memberIds, nb, tone) {
   }
 }
 
+// The colour ramps of the catalogue (concept section 3: skin, fur, greys ...), light to dark. An
+// area's ramp is the one holding most of its tones (the first listed on a tie); its outline colour is
+// the ramp's darkest colour (concept section 4). Before (build 1) the outline took the darkest
+// catalogue colour within 25 degrees of hue of the area's darkest tone, which for light skin (hue 47)
+// reached Indian Siam, a lip red (rs-woman's neck).
+export const RAMPS = Object.freeze([
+  { id: "skin", colours: ["light-peach", "silk", "rose-gold", "vintage-rose", "golden-shadow", "light-colorado", "copper", "topaz", "colorado-topaz", "greige", "light-smoked-topaz", "smoked-topaz"] },
+  { id: "gold", colours: ["citrine", "gold", "metallic-sunshine", "light-topaz", "light-colorado", "topaz", "colorado-topaz", "smoked-topaz"] },
+  { id: "grey", colours: ["crystal-clear", "crystal", "silver", "grey", "black-diamond", "graphite", "jet-hematite", "hematite", "jet"] },
+  { id: "red", colours: ["rose-peach", "padparadscha", "hyacinth", "scarlet", "light-siam", "siam", "indian-siam"] },
+  { id: "pink", colours: ["rose", "amethyst", "fuchsia"] },
+  { id: "blue", colours: ["light-sapphire", "aquamarine", "sapphire", "capri-blue"] },
+  { id: "green", colours: ["chrysolite", "citrus-green", "peridot", "fern-green", "erinite", "emerald", "olivine", "khaki"] }
+]);
+
+export function rampOf(tones) {
+  let best = RAMPS[2], n = 0;
+  for (const r of RAMPS) {
+    const c = tones.filter((t) => r.colours.includes(t)).length;
+    if (c > n) { best = r; n = c; }
+  }
+  return best;
+}
+
 function outlineColourOf(area, mode, meanL) {
   if (mode !== "colour") return JET;
-  const darkest = area.tones.reduce((a, b) => (labOf[a][0] <= labOf[b][0] ? a : b));
-  if (meanL < OUTLINE_JET_L || chromaOf(labOf[darkest]) < 12) return JET;
-  const hue = hueOf(labOf[darkest]);
-  let best = null;
-  for (const p of PALETTE) {
-    if (p.chroma < 12) continue;
-    const dh = Math.abs(((hueOf(p.lab) - hue + 540) % 360) - 180);
-    if (dh <= OUTLINE_HUE_DEG && (!best || p.lab[0] < best.lab[0])) best = p;
-  }
-  return best && best.lab[0] < labOf[darkest][0] ? best.id : JET;
+  const ramp = rampOf(area.tones);
+  if (meanL < OUTLINE_JET_L || ramp.id === "grey") return JET;
+  return ramp.colours[ramp.colours.length - 1];
 }
 
 function buildAreas(discs, nb, mode, style) {
@@ -636,8 +767,6 @@ export function buildMap(layout, ai, { mode = "colour", style = "halftone", thre
   const outside = new Uint8Array(grid.n);
   for (let k = 0; k < grid.n; k++) outside[k] = subject[k] ? 0 : 1;
   const subjectDist = grid.distanceTo(outside);
-  const regions = faceRegions(report);
-
   const discs = readDiscs(layout, ai, mode, threshold).filter((d) => {
     const k = grid.at(d.x, d.y);
     return k >= 0 && subject[k];
@@ -645,11 +774,24 @@ export function buildMap(layout, ai, { mode = "colour", style = "halftone", thre
   const owner = discCells(grid, subject, discs);
   const nb = discGraph(grid, owner, discs.length);
   markInk(discs, nb, mode, style);
+  const regions = faceRegions(report, discs);
   // The AI's own dark outline along the subject's edge: the subject outline's job, neither line nor
-  // area (its cells take the areas inside it).
-  for (const d of discs) { const k = grid.at(d.x, d.y); d.edge = d.ink && (k < 0 || subjectDist[k] < EDGE_DISC_MM); }
+  // area (its cells take the areas inside it). Light discs there are no light line either.
+  for (const d of discs) {
+    const k = grid.at(d.x, d.y), near = k < 0 || subjectDist[k] < EDGE_DISC_MM;
+    d.edge = d.ink && near;
+    d.lightEdge = d.light && near;
+  }
 
-  const lines = findLines(grid, subject, subjectDist, owner, discs, regions, mode);
+  // Brows (concept section 5): never an area, never an ordinary line.
+  const brows = report.face === "human" ? findBrows(discs, nb, regions, mode) : [];
+  for (const b of brows) for (const o of b.discs) { discs[o].line = true; discs[o].ink = false; discs[o].light = false; }
+
+  const lines = dropDoubled([
+    ...findLines(grid, subject, subjectDist, owner, discs, regions, mode, "ink"),
+    ...findLines(grid, subject, subjectDist, owner, discs, regions, mode, "light")
+  ]).filter((l) => !brows.some((b) => l.points.filter((p) => b.rows[0].points.some((q) => Math.hypot(p.xMm - q.xMm, p.yMm - q.yMm) < 2.5)).length > 0.3 * l.points.length))
+    .map((l, id) => ({ ...l, id }));
   // A line's discs: the ink discs whose cells lie within LINE_BAND_MM of its path, so the areas on
   // both sides meet on the path, not at the edge of a thin dark strip beside it.
   for (const line of lines) {
@@ -659,7 +801,7 @@ export function buildMap(layout, ai, { mode = "colour", style = "halftone", thre
       for (let j = j0; j <= j1; j++) {
         for (let i = i0; i <= i1; i++) {
           const k = j * grid.w + i, o = owner[k];
-          if (o >= 0 && discs[o].ink && Math.hypot(grid.cx(k) - p.xMm, grid.cy(k) - p.yMm) <= LINE_BAND_MM) band.add(o);
+          if (o >= 0 && discs[o][line.tone === "dark" ? "ink" : "light"] && Math.hypot(grid.cx(k) - p.xMm, grid.cy(k) - p.yMm) <= LINE_BAND_MM) band.add(o);
         }
       }
     }
@@ -678,7 +820,7 @@ export function buildMap(layout, ai, { mode = "colour", style = "halftone", thre
   // side (the path itself is a barrier to the spreading), so where two areas meet at a line their
   // border is the line.
   const onPath = new Uint8Array(grid.n);
-  for (const line of lines) {
+  for (const line of [...lines, ...brows.flatMap((b) => b.rows)]) {
     const pts = line.closed ? [...line.points, line.points[0]] : line.points;
     for (let q = 0; q + 1 < pts.length; q++) {
       const a = pts[q], b = pts[q + 1], steps = Math.max(1, Math.ceil(Math.hypot(b.xMm - a.xMm, b.yMm - a.yMm) * grid.ppmm * 2));
@@ -725,7 +867,7 @@ export function buildMap(layout, ai, { mode = "colour", style = "halftone", thre
 
   return {
     mode, style: mode === "colour" ? null : style, threshold, report, grid, subject, part, parts, subjectDist, regions,
-    discs, owner, lines, areas, areaOf, toneOf, borderDist
+    discs, owner, lines, brows, areas, areaOf, toneOf, borderDist
   };
 }
 
@@ -774,14 +916,16 @@ export function mapToJSON(map) {
         discs: a.discs, areaMm2: Math.round(a.areaMm2 * 10) / 10, shape: shape.map((l) => thin(l, 0.4))
       };
     }),
-    lines: map.lines.map((l) => ({ id: l.id, size: l.size, colour: l.colour, closed: l.closed, lengthMm: Math.round(l.lengthMm * 10) / 10, points: thin(l.points, 0.4) })),
+    lines: map.lines.map((l) => ({ id: l.id, tone: l.tone, size: l.size, colour: l.colour, closed: l.closed, lengthMm: Math.round(l.lengthMm * 10) / 10, points: thin(l.points, 0.4) })),
+    brows: (map.brows || []).map((b) => ({ eye: b.eye, colour: b.colour, thickness: b.thickness, rows: b.rows.map((r) => thin(r.points, 0.4)) })),
     faces: map.regions.map((r) => ({ kind: r.kind, x: +r.x.toFixed(2), y: +r.y.toFixed(2), ax: +r.ax.toFixed(2), ay: +r.ay.toFixed(2), angle: +r.angle.toFixed(4) }))
   };
 }
 
 // The map as a picture (PNG) at ppmm px per mm: every area in its tones (halftone areas in a grey
-// of their share), area borders thin grey, lines in their colour (SS6 wide, SS4 narrow) over a red
-// casing, the subject outline magenta, the face regions cyan.
+// of their share), area borders thin grey, lines in their colour (SS6 wide, SS4 narrow) over a casing
+// (dark lines red, light lines blue, brows violet), the subject outline magenta, the face regions
+// cyan.
 export function mapPicture(map, ppmm = 6) {
   const { grid, areaOf, toneOf, subject, areas } = map;
   const w = Math.ceil(grid.w / grid.ppmm * ppmm), h = Math.ceil(grid.h / grid.ppmm * ppmm);
@@ -818,8 +962,8 @@ export function mapPicture(map, ppmm = 6) {
     loop.forEach(([x, y], i) => (i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))));
     ctx.closePath(); ctx.stroke();
   }
-  for (const line of map.lines) {
-    for (const [style, width] of [["#e0001a", line.d * 0.9 + 0.5], [STONE_COLORS[line.colour].fill, line.d * 0.9]]) {
+  for (const line of [...map.lines, ...(map.brows || []).flatMap((b) => b.rows.map((r) => ({ ...r, colour: b.colour, brow: true })))]) {
+    for (const [style, width] of [[line.brow ? "#7a00ff" : line.tone === "light" ? "#0050e0" : "#e0001a", line.d * 0.9 + 0.5], [STONE_COLORS[line.colour].fill, line.d * 0.9]]) {
       ctx.strokeStyle = style; ctx.lineWidth = width * ppmm;
       ctx.beginPath();
       line.points.forEach((p, i) => (i ? ctx.lineTo(X(p.xMm), Y(p.yMm)) : ctx.moveTo(X(p.xMm), Y(p.yMm))));

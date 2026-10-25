@@ -5,8 +5,7 @@ import { attemptDir, storeNew, uploadDir, writeAttemptInputs, writeCodeJson } fr
 import { normalizeSettings } from "../prep/adjust.js";
 import { aiImageForArchive } from "../prep/pngmeta.js";
 import { preparePng } from "../prep/prepare.js";
-import { engineLayout, mapPicture, mapToJSON } from "../engine/index.js";
-import { renderFullOffThread } from "../render/offthread.js";
+import { engineOffThread, renderFullOffThread } from "../render/offthread.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
 import { findStoneSizeByDiameterMm } from "../stones/StoneSizes.js";
 import { mapBlackAndWhiteFromImage } from "./bw.js";
@@ -273,16 +272,17 @@ export function createPipeline({
         ? mapBlackAndWhiteFromImage(natural.stoneLayout, ai, { ...placed.layout.report, originMm: natural.originMm }, config.bwThreshold, natural.voted)
         : natural.stoneLayout;
       // IS_ENGINE=concept (exp-engine): the engine places every stone from the AI image's map, keeping
-      // today's stones in the eye and mouth regions; the map is archived (map.json, map.png). If the
-      // engine fails or its gap check does not pass, today's design is delivered.
+      // today's stones in the eye and mouth regions, in the render worker; the map is archived
+      // (map.json, map.png). If the engine fails or its gap check does not pass, today's design is
+      // delivered.
       if (config.engine === "concept") {
         try {
           const [ox, oy] = natural.originMm;
           const today = stoneLayout.stones.map((s) => ({ x: s.xMm + ox, y: s.yMm + oy, d: s.sizeMm, color: s.color }));
-          const engine = engineLayout(placed.layout, ai, { mode: settings.mode, style: config.bwStyle, threshold: config.bwThreshold, today });
-          storeNew(dir, "map.json", `${JSON.stringify(mapToJSON(engine.map))}\n`);
-          storeNew(dir, "map.png", mapPicture(engine.map));
-          if (engine.gaps.ok && engine.stoneLayout.count >= MIN_STONES) stoneLayout = engine.stoneLayout;
+          const engine = await engineOffThread(placed.layout, ai, { mode: settings.mode, style: config.bwStyle, threshold: config.bwThreshold, today });
+          storeNew(dir, "map.json", `${JSON.stringify(engine.map)}\n`);
+          storeNew(dir, "map.png", engine.mapPng);
+          if (engine.gapsOk && engine.count >= MIN_STONES) stoneLayout = engine.stoneLayout;
           else log.error(`Engine for ${id}: gap check failed or too few stones; today's design kept.`);
         } catch (error) {
           log.error(`Engine for ${id} failed: ${error.stack || error.message}`);

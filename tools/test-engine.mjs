@@ -4,7 +4,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import sharp from "sharp";
-import { runChecks, checkGapsOf, checkHoles } from "../src/engine/checks.js";
+import { HIST_BINS, runChecks, checkGapsOf, checkHoles, holeHistogram } from "../src/engine/checks.js";
+import { RAMPS, rampOf } from "../src/engine/map.js";
+import { ditherJet } from "../src/engine/place.js";
 import { faceRegions, inRegion } from "../src/engine/faces.js";
 import { engineLayout, mapPicture, mapToJSON, todaysDesign } from "../src/engine/index.js";
 import { MAX_TONES } from "../src/engine/map.js";
@@ -56,7 +58,10 @@ for (const [mode, style] of [["colour", null], ["bw", "stencil"], ["bw", "halfto
       for (const i of ch.stones) assert.equal(engine.stones[i].d, ch.d);
       for (let k = 1; k < ch.stones.length; k++) {
         const a = engine.stones[ch.stones[k - 1]], b = engine.stones[ch.stones[k]];
-        assert.ok(Math.hypot(a.x - b.x, a.y - b.y) <= 1.5 * (ch.d + 0.15) + 1e-9, "no break inside a chain");
+        const gap = Math.hypot(a.x - b.x, a.y - b.y);
+        // A longer gap only where another chain crosses (its stone between the two).
+        const crossing = engine.stones.some((s) => s.chain != null && s.chain !== ch.id && Math.hypot(s.x - (a.x + b.x) / 2, s.y - (a.y + b.y) / 2) < gap / 2);
+        assert.ok(gap <= 1.5 * (ch.d + 0.15) + 1e-9 || crossing, "no break inside a chain");
       }
     }
     assert.ok(engine.chains.some((c) => c.kind === "outline"), "the subject has an outline chain");
@@ -105,4 +110,50 @@ test("checks: gaps, holes and lines are measured as the concept states them", ()
     stones[ch.stones[1]].color = ch.colour === "jet" ? "crystal-clear" : "jet";
     assert.ok(runChecks(stones, map).lines.offColour >= 1);
   }
+});
+
+test("engine: the outline colour is the darkest of the area's ramp", () => {
+  // Light skin (build 1 took Indian Siam, a lip red, for it).
+  const skin = rampOf(["light-peach", "rose-gold", "colorado-topaz"]);
+  assert.equal(skin.id, "skin");
+  assert.equal(skin.colours[skin.colours.length - 1], "smoked-topaz");
+  assert.equal(rampOf(["light-sapphire", "capri-blue"]).id, "blue");
+  assert.equal(rampOf(["silver", "grey"]).id, "grey");
+  for (const r of RAMPS) assert.ok(r.colours.length >= 2);
+});
+
+test("engine: an eye region is centred on the eye opening, not on a pupil looking aside", () => {
+  const report = { face: "human", pupilsAtMm: [[20, 20], [40, 20]], pupilsMm: [4, 4] };
+  const white = (x, y) => ({ x, y, d: 2, lab: [92, 0, 0] });
+  // Both eyes look to the right: their whites lie left of the pupils.
+  const discs = [white(15.5, 20), white(13.5, 20), white(35.5, 20), white(33.5, 20)];
+  const [a, b] = faceRegions(report, discs);
+  assert.ok(a.x < 20 && b.x < 40, "moved towards the whites");
+  assert.deepEqual(a.pupil, [20, 20]);
+  assert.ok(inRegion(a, 20, 20) && inRegion(a, 13.5, 20));
+  assert.ok(a.ax < 0.42 * 20, "a narrow eye gets a narrower region");
+  // Without whites the region stays on the pupil.
+  assert.equal(faceRegions(report)[0].x, 20);
+});
+
+test("engine: the halftone pattern is a regular dither of the honeycomb's lattice", () => {
+  for (const share of [0, 0.25, 0.5, 0.75, 1]) {
+    let jet = 0;
+    for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) if (ditherJet(i, j, share)) jet++;
+    assert.equal(jet, share * 64);
+    // The same 4 x 4 tile repeats.
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) assert.equal(ditherJet(i, j, share), ditherJet(i + 4, j - 8, share));
+  }
+});
+
+test("engine: band, honeycomb and the hole histogram", () => {
+  const engine = engineLayout(LAYOUT, AI, { mode: "colour", today: [] });
+  assert.ok(engine.stones.some((s) => s.role === "hex"), "a honeycomb inside the band");
+  assert.ok(engine.stones.some((s) => s.role === "area"), "a band along the outline");
+  const all = engineLayout(LAYOUT, AI, { mode: "colour", today: [], bandRows: "all" });
+  assert.ok(!all.stones.some((s) => s.role === "hex"), "build 1: rows all the way in");
+  const hist = holeHistogram(engine.stones, engine.map);
+  assert.equal(hist.length, HIST_BINS.length);
+  const holes = checkHoles(engine.stones, engine.map).holes;
+  assert.ok(hist[2] + hist[3] + hist[4] >= holes, "every hole of check 4 holds at least one gap of 1.0 mm or more");
 });

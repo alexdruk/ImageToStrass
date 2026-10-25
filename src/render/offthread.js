@@ -1,7 +1,8 @@
 import { Worker } from "node:worker_threads";
 import { StoneLayout } from "../stones/StoneLayout.js";
 
-// The tinted renders (spec section 8) and the delivery ZIP build (section 9) take seconds of CPU.
+// The tinted renders (spec section 8), the delivery ZIP build (section 9) and the concept engine
+// (spec 7.8) take seconds of CPU.
 // They run in one worker thread (offthread-worker.js), so the server keeps answering polls and
 // page requests meanwhile. Jobs are queued in the worker and run one at a time. The worker is
 // started on the first job, kept while it is busy, and does not keep the process alive when idle.
@@ -67,6 +68,13 @@ export async function renderPreviewOffThread(stoneLayout, code, { bwGap = null }
 // buildDeliveryZip({ archiveDir, deliveryDir, code, n }) in the worker -> the ZIP's path.
 export function buildDeliveryZipOffThread(options) {
   return run("zip", options);
+}
+
+// engineLayout(layout, ai, options) (src/engine/) in the worker -> { stoneLayout, map (the saved
+// JSON), mapPng (Buffer), gapsOk, count }. ai: { data, width, height } RGBA.
+export async function engineOffThread(layout, ai, options) {
+  const out = await run("engine", { layout, ai: { data: ai.data, width: ai.width, height: ai.height }, options });
+  return { ...out, stoneLayout: StoneLayout.fromJSON(out.layout), mapPng: toBuffer(out.mapPng) };
 }
 
 // Tests: stop the worker (pending jobs fail).

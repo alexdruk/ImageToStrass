@@ -25,6 +25,8 @@ Oct 2026 (exp-bw-stencil, eyes): the stencil variant has an eye rule (7.2, versi
 the disc reading `IS_BW_FROM_DISCS` is removed (7.6; the service keeps `report.discsAtMm`); the leak
 check skips random tokens (section 12). Revised 25 Oct 2026 (exp-engine): the design-concept engine
 (`docs/IS-DESIGN-CONCEPT.md`) behind `IS_ENGINE=concept` (7.8); today's pipeline stays the default.
+Revised 25 Oct 2026 (exp-engine, build 2): band and honeycomb packing, brows, light lines, the outline
+colour from the area's ramp, the engine in the render worker (7.8).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -419,13 +421,17 @@ only, 7.3). The browser gets every field except `outputPx`.
 
 Experimental; off unless `IS_ENGINE=concept` (`docs/exp-engine.md`). After 7.5 and 7.6 have made
 today's design (acceptance 7.4 unchanged), `src/engine/` makes the design again by the design
-concept: the AI image and the service's detections (`report.discsAtMm`) become a map (subject
-outline, areas with at most 3 tones, lines), and IS places every stone itself, in the concept's
-order: today's stones in the eye and mouth regions (from the service's pupils) unchanged, line
-chains, the subject outline chain, contour-parallel rows per area, the hole fill of 7.5 for seams,
-then patches below 4 stones joined to their neighbours. Frame and natural size are the service's.
-The map is archived as `attempt-<n>/map.json` and `map.png` (server only). If the engine fails, or
-its gap check finds a violation, today's design is delivered. The service is unchanged.
+concept, in the render worker (section 8): the AI image and the service's detections
+(`report.discsAtMm`) become a map (subject outline, areas with at most 3 tones, dark and light
+lines, brows above the eyes), and IS places every stone itself, in the concept's order: today's
+stones in the eye and mouth regions (from the service's pupils, centred on each eye's opening)
+unchanged, brow chains, line chains (passing crossings), the subject outline chain (the darkest
+colour of the bordering area's ramp), then per piece of touching areas a band of two rows along its
+outline and chains with a honeycomb inside (halftone: a regular dither of the honeycomb), the hole
+fill of 7.5 for seams, a settle step, and patches below 4 stones joined to their neighbours. Frame
+and natural size are the service's. The map is archived as `attempt-<n>/map.json` and `map.png`
+(server only). If the engine fails, or its gap check finds a violation, today's design is
+delivered. The service is unchanged.
 
 ## 8. Tinted view (D4)
 

@@ -10,11 +10,12 @@ import { neighbourLists } from "./place.js";
 //   1. Gaps: pairs closer than MIN_GAP_MM (0.1 mm) rim to rim, and the smallest gap.
 //   2. Lines, along every line of the map, from its first to its last stone in the line's colour (a
 //      line with none is missing): the stones on it (centre within ON_LINE_MM of its path) must all
-//      have the line's colour and size, and it must have no break: no stretch longer than
+//      have the line's colour and size, except where another line crosses it (a stone of that
+//      line's colour and size on both paths), and it must have no break: no stretch longer than
 //      BREAK_PITCHES stone steps without a stone. Engine
 //      designs also report their own chains (every stone the chain's colour and size, at least 3).
-//   3. Areas: the stones of each map area (not on a line, not in the outline band along the edge,
-//      not in a face region) have at most MAX_TONES colours, and no patch (stones of one colour
+//   3. Areas: the stones of each map area (not on a line or a brow, not in the outline band along
+//      the edge, not in a face region) have at most MAX_TONES colours, and no patch (stones of one colour
 //      touching, rim gap below PATCH_GAP_MM, in one area) has fewer than MIN_PATCH stones. A
 //      halftone area's pattern is meant (concept section 6), so its patches are counted apart.
 //   4. Holes: empty circles inside the subject (the AI image's closed alpha, as the hole fill
@@ -96,7 +97,10 @@ export function checkLines(stones, map, chains = null) {
     for (let q = first; first >= 0 && q <= last; q++) {
       if (covered[q]) { if (run * 0.2 > BREAK_PITCHES * pitch) breaks++; run = 0; } else run++;
     }
-    const members = [...on].map((i) => stones[i]);
+    // A stone where another line crosses, of that line's colour and size, is the crossing's stone.
+    const crossing = (s) => map.lines.some((o) => o !== line && o.colour === s.color && Math.abs(o.d - s.d) < 0.05 &&
+      o.points.some((p) => Math.hypot(p.xMm - s.x, p.yMm - s.y) <= ON_LINE_MM));
+    const members = [...on].map((i) => stones[i]).filter((s) => (s.color === line.colour && Math.abs(s.d - line.d) <= 0.05) || !crossing(s));
     const offColour = members.filter((s) => s.color !== line.colour).length;
     const offSize = members.filter((s) => Math.abs(s.d - line.d) > 0.05).length;
     rows.push({ id: line.id, stones: members.length, offColour, offSize, breaks, missing: from < 0, clean: members.length >= 3 && !offColour && !offSize && !breaks });
@@ -126,8 +130,10 @@ export function checkLines(stones, map, chains = null) {
 
 export function checkAreas(stones, map, onLine) {
   const { grid, areaOf, subjectDist, regions, areas } = map;
+  const browPoints = (map.brows || []).flatMap((b) => b.rows.flatMap((r) => r.points));
+  const onBrow = (s) => browPoints.some((p) => Math.hypot(p.xMm - s.x, p.yMm - s.y) <= ON_LINE_MM);
   const areaOfStone = stones.map((s, i) => {
-    if (onLine[i] >= 0 || inAnyRegion(regions, s.x, s.y)) return -1;
+    if (onLine[i] >= 0 || inAnyRegion(regions, s.x, s.y) || onBrow(s)) return -1;
     const k = grid.at(s.x, s.y);
     if (k < 0 || areaOf[k] < 0 || subjectDist[k] < OUTLINE_BAND_MM) return -1;
     return areaOf[k];
@@ -159,6 +165,50 @@ export function checkAreas(stones, map, onLine) {
     smallStones += patch.length;
   }
   return { areas: tones.size, overTones, maxTones, patches, smallPatches: small, smallPatchStones: smallStones, halftonePatches: halftoneSmall, pass: overTones === 0 && small === 0 };
+}
+
+// Hole sizes counted from HIST_MIN_MM: bins [0.6, 0.8), [0.8, 1.0), [1.0, 1.2), [1.2, 1.4), 1.4 and more.
+export const HIST_BINS = Object.freeze([0.6, 0.8, 1.0, 1.2, 1.4]);
+
+// Empty circles inside the subject wider than minMm, one per gap: the local maxima of the clearance
+// (to every stone edge and to the subject's edge) above minMm / 2, each twice its clearance wide.
+// (Check 4 counts connected pieces instead; neighbouring gaps above 0.6 mm often join into one.)
+// -> [[x, y, diameter]].
+export function emptyCircles(stones, map, minMm) {
+  const { grid, subject, subjectDist } = map;
+  const cap = 2;
+  const clear = new Float32Array(grid.n).fill(cap + 1);
+  for (const s of stones) {
+    const r = s.d / 2, { i0, i1, j0, j1 } = grid.span(s.x, s.y, r + cap + 1);
+    for (let j = j0; j <= j1; j++) {
+      for (let i = i0; i <= i1; i++) {
+        const k = j * grid.w + i;
+        const c = Math.hypot(grid.cx(k) - s.x, grid.cy(k) - s.y) - r;
+        if (c < clear[k]) clear[k] = c;
+      }
+    }
+  }
+  const val = (k) => (subject[k] ? Math.min(clear[k], subjectDist[k]) : -1);
+  const out = [];
+  for (let k = 0; k < grid.n; k++) {
+    const v = val(k);
+    if (v <= minMm / 2) continue;
+    const i = k % grid.w;
+    let top = true;
+    // Strictly above the neighbours before it, at least as high as those after (one cell per plateau).
+    for (const [m, before] of [[k - grid.w - 1, 1], [k - grid.w, 1], [k - grid.w + 1, 1], [k - 1, 1], [k + 1, 0], [k + grid.w - 1, 0], [k + grid.w, 0], [k + grid.w + 1, 0]]) {
+      if (m < 0 || m >= grid.n || Math.abs((m % grid.w) - i) > 1) continue;
+      const w = val(m);
+      if (before ? w >= v : w > v) { top = false; break; }
+    }
+    if (top) out.push([Math.round(grid.cx(k) * 100) / 100, Math.round(grid.cy(k) * 100) / 100, Math.round(2 * Math.min(v, cap) * 100) / 100]);
+  }
+  return out;
+}
+
+export function holeHistogram(stones, map) {
+  const sizes = emptyCircles(stones, map, HIST_BINS[0]).map((h) => h[2]);
+  return HIST_BINS.map((lo, i) => sizes.filter((d) => d >= lo && (i + 1 === HIST_BINS.length || d < HIST_BINS[i + 1])).length);
 }
 
 export function checkHoles(stones, map) {
@@ -211,6 +261,7 @@ export function runChecks(stones, map, { chains = null } = {}) {
   const lines = checkLines(stones, map, chains);
   const areas = checkAreas(stones, map, lines.onLine);
   const holes = checkHoles(stones, map);
+  holes.histogram = holeHistogram(stones, map);
   delete lines.onLine;
   return { gaps, lines, areas, holes };
 }

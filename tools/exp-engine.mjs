@@ -21,7 +21,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { engineLayout, mapPicture, mapToJSON, todaysDesign } from "../src/engine/index.js";
-import { runChecks } from "../src/engine/checks.js";
+import { HIST_BINS, emptyCircles, runChecks } from "../src/engine/checks.js";
+import { toStoneLayout } from "../src/pipeline/tiers.js";
+import { createCanvas } from "@napi-rs/canvas";
 import { callLayoutService } from "../src/pipeline/layout.js";
 import { aiImageForArchive } from "../src/prep/pngmeta.js";
 import { renderTinted, tintCanvasMm } from "../src/render/tinted.js";
@@ -184,6 +186,44 @@ const fit = (input, h = PANEL_H) => sharp(input).flatten({ background: "#ffffff"
 
 const countBy = (stones, key) => stones.reduce((m, s) => { m[key(s)] = (m[key(s)] || 0) + 1; return m; }, {});
 
+// Plain view (flat stones in their catalogue fill on white), where holes are easiest to see, of the
+// window (x0, y0, size) in layout mm, CLOSE_PX square; empty circles over 1.0 mm ringed red.
+function plainCut(stones, map, x0, y0, size) {
+  const scale = CLOSE_PX / size;
+  const canvas = createCanvas(CLOSE_PX, CLOSE_PX);
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, CLOSE_PX, CLOSE_PX);
+  for (const s of stones) {
+    if (s.x < x0 - 3 || s.y < y0 - 3 || s.x > x0 + size + 3 || s.y > y0 + size + 3) continue;
+    ctx.fillStyle = STONE_COLORS[s.color]?.fill || "#888888";
+    ctx.beginPath();
+    ctx.arc((s.x - x0) * scale, (s.y - y0) * scale, (s.d / 2) * scale, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,0.35)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  ctx.strokeStyle = "#ff0000";
+  ctx.lineWidth = 2;
+  for (const [x, y, d] of emptyCircles(stones, map, 1.0)) {
+    if (x < x0 || y < y0 || x > x0 + size || y > y0 + size) continue;
+    ctx.beginPath();
+    ctx.arc((x - x0) * scale, (y - y0) * scale, (d / 2) * scale, 0, 2 * Math.PI);
+    ctx.stroke();
+  }
+  return canvas.toBuffer("image/png");
+}
+
+// The worst seams of a design: the centres of its two largest empty circles outside the face regions.
+function worstSeams(stones, map) {
+  return emptyCircles(stones, map, 1.0)
+    .filter(([x, y]) => !map.regions.some((r) => Math.hypot(r.x - x, r.y - y) < r.ax))
+    .sort((p, q) => q[2] - p[2])
+    .slice(0, 2)
+    .map(([x, y, d]) => ({ kind: `worst seam (${d} mm)`, x, y, size: 14 }));
+}
+
 async function runOne(design, out) {
   const ai = await rgba(design.ai);
   const layout = await layoutOf(design);
@@ -194,17 +234,29 @@ async function runOne(design, out) {
   const t1 = performance.now();
   const engine = engineLayout(layout, ai, { mode, style, today: today.stones });
   const t2 = performance.now();
-  const checksToday = runChecks(today.stones, engine.map);
-  const checksEngine = runChecks(engine.stones, engine.map, { chains: engine.chains });
-  for (const c of [checksToday, checksEngine]) c.holes.at = c.holes.at.length;
+  // The packing tried with a band of one row (the default is BAND_ROWS, two).
+  const oneRow = engineLayout(layout, ai, { mode, style, today: today.stones, bandRows: 1 });
+  const t3 = performance.now();
+  // Build 1's engine (tools: snapshot of its stones made before build 2, data/.../before/).
+  const saved = JSON.parse(readFileSync(path.join(out.before, `${design.name}.json`), "utf8"));
+  const before = saved.stones.map(([x, y, d, color, role]) => ({ x, y, d, color, role }));
+  const checks = {
+    today: runChecks(today.stones, engine.map),
+    before: runChecks(before, engine.map),
+    engine: runChecks(engine.stones, engine.map, { chains: engine.chains })
+  };
+  for (const c of Object.values(checks)) c.holes.at = c.holes.at.length;
+  const oneRowHoles = runChecks(oneRow.stones, engine.map).holes;
   const box = (sl) => ({ widthMm: Math.round(sl.widthMm * 10) / 10, heightMm: Math.round(sl.heightMm * 10) / 10 });
   const result = {
     name: design.name, set: design.set, style: design.style,
-    today: { stones: today.stones.length, ms: Math.round(t1 - t0), size: box(today.stoneLayout), bySize: countBy(today.stones, (s) => s.d), checks: checksToday },
+    today: { stones: today.stones.length, ms: Math.round(t1 - t0), size: box(today.stoneLayout), bySize: countBy(today.stones, (s) => s.d), checks: checks.today },
+    oneRow: { stones: oneRow.stones.length, ms: Math.round(t3 - t2), holes: oneRowHoles.holes, largestMm: oneRowHoles.largestMm, histogram: oneRowHoles.histogram, gaps: oneRow.gaps.ok },
+    before: { stones: before.length, ms: saved.ms, size: box(toStoneLayout(before, 1).stoneLayout), bySize: countBy(before, (s) => s.d), byRole: countBy(before, (s) => s.role), checks: checks.before },
     engine: {
       stones: engine.stones.length, ms: Math.round(t2 - t1), msParts: engine.ms, size: box(engine.stoneLayout), bySize: countBy(engine.stones, (s) => s.d),
-      byRole: countBy(engine.stones, (s) => s.role), stats: engine.stats, checks: checksEngine,
-      map: { lines: engine.map.lines.length, areas: engine.map.areas.length, faces: engine.map.regions.length, discs: engine.map.discs.length }
+      byRole: countBy(engine.stones, (s) => s.role), stats: engine.stats, checks: checks.engine,
+      map: { lines: engine.map.lines.length, darkLines: engine.map.lines.filter((l) => l.tone === "dark").length, lightLines: engine.map.lines.filter((l) => l.tone === "light").length, brows: engine.map.brows.length, areas: engine.map.areas.length, faces: engine.map.regions.length, discs: engine.map.discs.length }
     }
   };
 
@@ -215,26 +267,37 @@ async function runOne(design, out) {
 
   // Pictures.
   const bwGap = mode === "bw" ? "crystal" : null;
-  const tToday = tinted(today.stones, bwGap), tEngine = tinted(engine.stones, bwGap);
+  const tToday = tinted(today.stones, bwGap), tBefore = tinted(before, bwGap), tEngine = tinted(engine.stones, bwGap);
   const blank = await sharp({ create: { width: 300, height: PANEL_H, channels: 3, background: "#f2f2f2" } }).png().toBuffer();
   const whole = await row([
     await label(design.original ? await fit(design.original) : blank, design.original ? "original" : "original (none)", 200),
     await label(await fit(design.ai), "AI image (map source)", 200),
     await label(await fit(tToday.png), `today: ${result.today.stones} stones`, 200),
-    await label(await fit(tEngine.png), `engine: ${result.engine.stones} stones`, 200),
-    await label(await fit(mapPng), "map", 200)
+    await label(await fit(tBefore.png), `engine before: ${result.before.stones}`, 200),
+    await label(await fit(tEngine.png), `engine now: ${result.engine.stones}`, 200),
+    await label(await fit(mapPng), "map now", 200)
   ]);
-  await sharp(whole).jpeg({ quality: 78 }).toFile(path.join(out.pics, `${design.name}-whole.jpg`));
+  await sharp(whole).jpeg({ quality: 76 }).toFile(path.join(out.pics, `${design.name}-whole.jpg`));
   const rows = [];
   for (const spot of closeUpSpots(engine.map, engine)) {
     const x0 = spot.x - spot.size / 2, y0 = spot.y - spot.size / 2;
     rows.push(await row([
       await label(await aiCut(design.ai, layout.report, x0, y0, spot.size), `${spot.kind}: AI image`, CLOSE_PX),
-      await label(await cut(tToday, x0, y0, spot.size), `${spot.kind}: today`, CLOSE_PX),
-      await label(await cut(tEngine, x0, y0, spot.size), `${spot.kind}: engine`, CLOSE_PX)
+      await label(await cut(tToday, x0, y0, spot.size), "today", CLOSE_PX),
+      await label(await cut(tBefore, x0, y0, spot.size), "engine before", CLOSE_PX),
+      await label(await cut(tEngine, x0, y0, spot.size), "engine now", CLOSE_PX)
     ]));
   }
-  if (rows.length) await sharp(await column(rows)).jpeg({ quality: 80 }).toFile(path.join(out.pics, `${design.name}-closeups.jpg`));
+  for (const spot of worstSeams(engine.stones, engine.map)) {
+    const x0 = spot.x - spot.size / 2, y0 = spot.y - spot.size / 2;
+    rows.push(await row([
+      await label(await aiCut(design.ai, layout.report, x0, y0, spot.size), `${spot.kind}: AI`, CLOSE_PX),
+      await label(plainCut(today.stones, engine.map, x0, y0, spot.size), "plain: today", CLOSE_PX),
+      await label(plainCut(before, engine.map, x0, y0, spot.size), "plain: engine before", CLOSE_PX),
+      await label(plainCut(engine.stones, engine.map, x0, y0, spot.size), "plain: engine now", CLOSE_PX)
+    ]));
+  }
+  if (rows.length) await sharp(await column(rows)).jpeg({ quality: 78 }).toFile(path.join(out.pics, `${design.name}-closeups.jpg`));
   result.closeUps = rows.length;
   return result;
 }
@@ -243,18 +306,21 @@ const fmt = (c) => [
   `${c.gaps.violations} / ${c.gaps.minGapMm}`,
   `${c.lines.clean}/${c.lines.lines} · ${c.lines.offColour} · ${c.lines.offSize} · ${c.lines.breaks} · ${c.lines.missing}`,
   `${c.areas.overTones} (${c.areas.maxTones}) · ${c.areas.smallPatches}${c.areas.halftonePatches ? ` (+${c.areas.halftonePatches} ht)` : ""}`,
-  `${c.holes.holes} / ${c.holes.largestMm}`
+  `${c.holes.holes} / ${c.holes.largestMm}`,
+  c.holes.histogram.join(" · ")
 ];
 
 export function tableRows(results) {
   const lines = [
-    "| Design | | Stones | ms | Size mm | 1 Gaps: viol. / min | 2 Lines: clean · other colour · other size · breaks · missing | 3 Areas: >3 tones (max) · patches <4 | 4 Holes >1 mm / largest |",
-    "| --- | --- | ---: | ---: | --- | --- | --- | --- | --- |"
+    "| Design | | Stones | ms | Size mm | 1 Gaps: viol. / min | 2 Lines: clean · other colour · other size · breaks · missing | 3 Areas: >3 tones (max) · patches <4 | 4 Holes >1 mm / largest | Holes 0.6 · 0.8 · 1.0 · 1.2 · 1.4+ mm |",
+    "| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- |"
   ];
   for (const r of results) {
-    for (const [who, d] of [["today", r.today], ["engine", r.engine]]) {
+    for (const [who, d] of [["today", r.today], ["before", r.before], ["now", r.engine]]) {
       lines.push(`| ${who === "today" ? `${r.name}` : ""} | ${who} | ${d.stones} | ${d.ms} | ${d.size.widthMm} × ${d.size.heightMm} | ${fmt(d.checks).join(" | ")} |`);
     }
+    const o = r.oneRow;
+    lines.push(`|  | now, 1-row band | ${o.stones} | ${o.ms} | | ${o.gaps ? "0" : "violations"} | | | ${o.holes} / ${o.largestMm} | ${o.histogram.join(" · ")} |`);
   }
   return lines.join("\n");
 }
@@ -263,7 +329,7 @@ export function summary(results) {
   const sum = (who, f) => results.reduce((s, r) => s + f(r[who]), 0);
   const all = (who, f) => results.filter((r) => f(r[who])).length;
   const out = {};
-  for (const who of ["today", "engine"]) {
+  for (const who of ["today", "before", "engine"]) {
     out[who] = {
       designs: results.length,
       gapPass: all(who, (d) => d.checks.gaps.pass),
@@ -273,6 +339,8 @@ export function summary(results) {
       overTones: sum(who, (d) => d.checks.areas.overTones), smallPatches: sum(who, (d) => d.checks.areas.smallPatches), areaPass: all(who, (d) => d.checks.areas.pass),
       holes: sum(who, (d) => d.checks.holes.holes), holePass: all(who, (d) => d.checks.holes.pass),
       largestHole: Math.max(...results.map((r) => r[who].checks.holes.largestMm)),
+      histogram: HIST_BINS.map((_, i) => sum(who, (d) => d.checks.holes.histogram[i])),
+      ...(who === "engine" ? { oneRowHoles: results.reduce((t, r) => t + r.oneRow.holes, 0), oneRowHistogram: HIST_BINS.map((_, i) => results.reduce((t, r) => t + r.oneRow.histogram[i], 0)) } : {}),
       stones: sum(who, (d) => d.stones), ms: sum(who, (d) => d.ms), maxMs: Math.max(...results.map((r) => r[who].ms))
     };
   }
@@ -292,12 +360,13 @@ function bySet(results) {
 }
 
 function summaryTable(results) {
-  const lines = ["| Set | Designs | Who | Gap pass | Clean lines | Other colour on lines | Breaks | Missing lines | Areas >3 tones | Patches <4 | Holes >1 mm | Largest hole | Stones | ms (mean / max) |", "| --- | ---: | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |"];
+  const lines = ["| Set | Designs | Who | Gap pass | Clean lines | Other colour on lines | Breaks | Missing lines | Areas >3 tones | Patches <4 | Holes >1 mm | Holes 0.6 · 0.8 · 1.0 · 1.2 · 1.4+ mm | Largest hole | Stones | ms (mean / max) |", "| --- | ---: | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: | --- |"];
   for (const [key, list] of bySet(results)) {
     const s = summary(list);
-    for (const who of ["today", "engine"]) {
+    for (const who of ["today", "before", "engine"]) {
       const v = s[who];
-      lines.push(`| ${who === "today" ? key : ""} | ${who === "today" ? v.designs : ""} | ${who} | ${v.gapPass}/${v.designs} | ${v.cleanLines}/${v.lines} | ${v.offColour} | ${v.breaks} | ${v.missing} | ${v.overTones} | ${v.smallPatches} | ${v.holes} | ${v.largestHole} | ${v.stones} | ${Math.round(v.ms / v.designs)} / ${v.maxMs} |`);
+      if (who === "engine") lines.push(`|  |  | now, 1-row band | | | | | | | ${v.oneRowHoles} | ${v.oneRowHistogram.join(" · ")} | | | |`);
+      lines.push(`| ${who === "today" ? key : ""} | ${who === "today" ? v.designs : ""} | ${who === "engine" ? "now" : who} | ${v.gapPass}/${v.designs} | ${v.cleanLines}/${v.lines} | ${v.offColour} | ${v.breaks} | ${v.missing} | ${v.overTones} | ${v.smallPatches} | ${v.holes} | ${v.histogram.join(" · ")} | ${v.largestHole} | ${v.stones} | ${Math.round(v.ms / v.designs)} / ${v.maxMs} |`);
     }
   }
   return lines.join("\n");
@@ -306,14 +375,14 @@ function summaryTable(results) {
 function page(results) {
   const md = (t) => esc(t).split("\n").filter((l) => !/^\| ---/.test(l)).map((l, i) => `<tr>${l.split("|").slice(1, -1).map((c) => (i ? `<td>${c.trim()}</td>` : `<th>${c.trim()}</th>`)).join("")}</tr>`).join("\n");
   const designs = results.map((r) => `<section><h3>${esc(r.name)}</h3>
-<p>today ${r.today.stones} stones, ${r.today.ms} ms · engine ${r.engine.stones} stones, ${r.engine.ms} ms (map ${r.engine.msParts.map}, placement ${r.engine.msParts.place}) · roles ${esc(JSON.stringify(r.engine.byRole))} · map ${r.engine.map.lines} lines, ${r.engine.map.areas} areas, ${r.engine.map.faces} face regions</p>
+<p>today ${r.today.stones} stones, ${r.today.ms} ms · before ${r.before.stones} stones, ${r.before.ms} ms · now ${r.engine.stones} stones, ${r.engine.ms} ms (map ${r.engine.msParts.map}, placement ${r.engine.msParts.place}) · roles ${esc(JSON.stringify(r.engine.byRole))} · map ${r.engine.map.darkLines} dark and ${r.engine.map.lightLines} light lines, ${r.engine.map.brows} brows, ${r.engine.map.areas} areas, ${r.engine.map.faces} face regions</p>
 <img src="engine/${esc(r.name)}-whole.jpg" alt="${esc(r.name)} whole"><img src="engine/${esc(r.name)}-closeups.jpg" alt="${esc(r.name)} close-ups"></section>`).join("\n");
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Engine comparison (private)</title>
 <style>body{font-family:Helvetica,Arial,sans-serif;margin:16px;color:#1d3557;background:#fff}table{border-collapse:collapse;font-size:13px;margin:8px 0 20px}td,th{border:1px solid #ccd;padding:3px 6px;text-align:right}th{background:#eef2fa}td:first-child,th:first-child{text-align:left}img{max-width:100%;display:block;margin:6px 0}section{border-top:1px solid #ccd;margin-top:18px}</style></head><body>
 <h1>Engine comparison: private photos</h1>
-<p>Private: images, numbers and this page stay under data/private-portraits/. Method and the public results: docs/exp-engine.md. Each design: original | AI image (the map's source) | today | engine | map, then close-ups (AI | today | engine) at a line, an area border, a row seam and the face. Maps: engine/maps/.</p>
+<p>Private: images, numbers and this page stay under data/private-portraits/. Method and the public results: docs/exp-engine.md. Each design: original | AI image (the map's source) | today | engine before (build 1) | engine now | map now, then close-ups (AI | today | before | now) at a line, an area border, a row seam and the face, and the plain view (flat stones, holes over 1.0 mm ringed red) at the engine's two worst seams. Maps: engine/maps/.</p>
 <h2>Summary by style</h2><table>${md(summaryTable(results))}</table>
-<h2>Checks per design</h2><p>1 gaps: violations / smallest gap (mm) · 2 lines: clean of all · stones of another colour · of another size · breaks · missing lines · 3 areas: areas over 3 tones (most tones) · patches under 4 stones (halftone pattern patches apart) · 4 holes: empty circles over 1.0 mm / largest (mm).</p>
+<h2>Checks per design</h2><p>1 gaps: violations / smallest gap (mm) · 2 lines: clean of all · stones of another colour · of another size · breaks · missing lines · 3 areas: areas over 3 tones (most tones) · patches under 4 stones (halftone pattern patches apart) · 4 holes: empty circles over 1.0 mm / largest (mm) · holes by size from 0.6 mm.</p>
 <table>${md(tableRows(results))}</table>
 <h2>Designs</h2>${designs}</body></html>\n`;
 }
@@ -333,8 +402,8 @@ async function main() {
   }
   if (which !== "public" && which !== "private") throw new Error("Usage: node tools/exp-engine.mjs public|private [NAME ...] | tables public|private | page");
   const out = which === "public"
-    ? { pics: R("docs/exp-engine"), maps: R("data/exp-engine/maps"), results: R("docs/exp-engine/results.json") }
-    : { pics: R("data/private-portraits/engine"), maps: R("data/private-portraits/engine/maps"), results: R("data/private-portraits/engine/results.json") };
+    ? { pics: R("docs/exp-engine"), maps: R("data/exp-engine/maps"), before: R("data/exp-engine/before"), results: R("docs/exp-engine/results.json") }
+    : { pics: R("data/private-portraits/engine"), maps: R("data/private-portraits/engine/maps"), before: R("data/private-portraits/engine/before"), results: R("data/private-portraits/engine/results.json") };
   for (const d of [out.pics, out.maps]) mkdirSync(d, { recursive: true });
   let designs = which === "public" ? publicDesigns() : privateDesigns();
   if (only.length) designs = designs.filter((d) => only.includes(d.name));
