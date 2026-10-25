@@ -3,18 +3,15 @@
   "today": {
    "designs": 21,
    "gapPass": 21,
-   "lines": 619,
-   "cleanLines": 275,
-   "offColour": 139,
-   "offSize": 400,
-   "breaks": 27,
+   "lines": 662,
+   "cleanLines": 299,
+   "offColour": 152,
+   "breaks": 32,
    "missing": 38,
-   "linePass": 2,
-   "overTones": 465,
-   "smallPatches": 6605,
-   "areaPass": 1,
-   "holes": 16287,
-   "holePass": 0,
+   "overTones": 474,
+   "smallPatches": 6711,
+   "holes": 1922,
+   "holePass": 1,
    "largestHole": 1.72,
    "histogram": [
     41240,
@@ -23,71 +20,101 @@
     4572,
     1959
    ],
+   "faces": 3,
+   "facePass": 0,
+   "eyes": 6,
+   "eyeOutline": 0,
+   "eyeWhite": 3,
+   "eyePupil": 6,
+   "eyeCatch": 5,
+   "sameSide": 2,
+   "lipOutline": 2,
+   "mouthLine": 0,
    "stones": 54204,
-   "ms": 12611,
-   "maxMs": 1018
+   "ms": 11682,
+   "maxMs": 842
   },
-  "before": {
+  "noFaces": {
    "designs": 21,
    "gapPass": 21,
-   "lines": 619,
-   "cleanLines": 365,
-   "offColour": 19,
-   "offSize": 238,
-   "breaks": 79,
-   "missing": 88,
-   "linePass": 2,
-   "overTones": 63,
-   "smallPatches": 695,
-   "areaPass": 4,
-   "holes": 16793,
-   "holePass": 0,
-   "largestHole": 1.71,
-   "histogram": [
-    42487,
-    50897,
-    14591,
-    3196,
-    980
-   ],
-   "stones": 51995,
-   "ms": 49705,
-   "maxMs": 3573
-  },
-  "engine": {
-   "designs": 21,
-   "gapPass": 21,
-   "lines": 619,
-   "cleanLines": 570,
+   "lines": 662,
+   "cleanLines": 600,
    "offColour": 3,
-   "offSize": 4,
+   "breaks": 2,
+   "missing": 37,
+   "overTones": 6,
+   "smallPatches": 50,
+   "holes": 392,
+   "holePass": 0,
+   "largestHole": 1.69,
+   "histogram": [
+    42480,
+    47085,
+    8814,
+    2420,
+    480
+   ],
+   "beforeHoleStep": [
+    42443,
+    47283,
+    8509,
+    2111,
+    932
+   ],
+   "faces": 3,
+   "facePass": 0,
+   "eyes": 6,
+   "eyeOutline": 0,
+   "eyeWhite": 3,
+   "eyePupil": 6,
+   "eyeCatch": 5,
+   "sameSide": 2,
+   "lipOutline": 2,
+   "mouthLine": 0,
+   "stones": 53605,
+   "ms": 94007,
+   "maxMs": 7337
+  },
+  "withFaces": {
+   "designs": 21,
+   "gapPass": 21,
+   "lines": 662,
+   "cleanLines": 608,
+   "offColour": 2,
    "breaks": 1,
    "missing": 37,
-   "linePass": 5,
    "overTones": 0,
-   "smallPatches": 4,
-   "areaPass": 17,
-   "holes": 10304,
+   "smallPatches": 5,
+   "holes": 380,
    "holePass": 0,
-   "largestHole": 1.71,
+   "largestHole": 1.69,
    "histogram": [
-    42626,
-    47445,
-    8651,
-    2098,
-    945
+    42347,
+    47414,
+    8812,
+    2393,
+    471
    ],
-   "oneRowHoles": 13282,
-   "oneRowHistogram": [
-    38128,
-    48171,
-    11125,
-    2703,
-    1135
+   "beforeHoleStep": [
+    42336,
+    47587,
+    8533,
+    2112,
+    915
    ],
-   "stones": 53473,
-   "ms": 77343,
-   "maxMs": 5705
+   "faces": 3,
+   "facePass": 2,
+   "eyes": 6,
+   "eyeOutline": 6,
+   "eyeWhite": 5,
+   "eyePupil": 6,
+   "eyeCatch": 6,
+   "sameSide": 3,
+   "lipOutline": 3,
+   "mouthLine": 3,
+   "stones": 53658,
+   "ms": 93517,
+   "maxMs": 7337
   }
  },
  "results": [
@@ -95,16 +122,28 @@
    "name": "cc0-car-rule",
    "set": "CC0",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "why": "the photo has no human face"
+   },
+   "holesLeft": {
+    "count": 19,
+    "fixedOnly": 17
+   },
+   "map": {
+    "lines": 35,
+    "strands": 0,
+    "strandLines": 0,
+    "brows": 0,
+    "areas": 46,
+    "regions": 0
+   },
    "today": {
     "stones": 3548,
-    "ms": 672,
+    "ms": 710,
     "size": {
      "widthMm": 260,
      "heightMm": 87.4
-    },
-    "bySize": {
-     "2": 3276,
-     "1.5": 272
     },
     "checks": {
      "gaps": {
@@ -134,9 +173,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 1851,
+      "holes": 210,
       "largestMm": 1.7,
-      "at": 1851,
+      "at": 210,
       "pass": false,
       "histogram": [
        2044,
@@ -148,118 +187,37 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 3720,
-    "ms": 6379,
-    "holes": 722,
-    "largestMm": 1.71,
-    "histogram": [
-     2375,
-     2875,
-     574,
-     190,
-     73
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 3579,
-    "ms": 3182,
-    "size": {
-     "widthMm": 259.1,
-     "heightMm": 86.7
-    },
-    "bySize": {
-     "2": 3082,
-     "1.5": 497
-    },
-    "byRole": {
-     "line": 295,
-     "outline": 266,
-     "area": 2244,
-     "seam": 774
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 35,
-      "clean": 27,
-      "offColour": 3,
-      "offSize": 12,
-      "breaks": 3,
-      "mixedLines": 2,
-      "brokenLines": 2,
-      "missing": 2,
-      "pass": false
-     },
-     "areas": {
-      "areas": 46,
-      "overTones": 4,
-      "maxTones": 5,
-      "patches": 203,
-      "smallPatches": 48,
-      "smallPatchStones": 66,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 1016,
-      "largestMm": 1.71,
-      "at": 1016,
-      "pass": false,
-      "histogram": [
-       3037,
-       3632,
-       849,
-       201,
-       43
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 3702,
-    "ms": 4674,
+   "noFaces": {
+    "stones": 3709,
+    "ms": 5635,
     "msParts": {
-     "map": 1550,
-     "place": 3071
+     "map": 1740,
+     "place": 3835
     },
     "size": {
      "widthMm": 259,
      "heightMm": 86.7
-    },
-    "bySize": {
-     "2": 3277,
-     "1.5": 425
     },
     "byRole": {
      "line": 354,
      "outline": 246,
      "area": 1641,
      "hex": 563,
-     "seam": 898
+     "seam": 905
     },
-    "stats": {
-     "features": 0,
-     "brows": 0,
-     "lines": 354,
-     "lineChains": 33,
-     "linePiecesDropped": 2,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 246,
-     "outlineChains": 14,
-     "area": 1641,
-     "hex": 563,
-     "seam": 898,
-     "recoloured": 55,
-     "settled": 18373,
-     "retoned": 64
+    "holeStep": {
+     "targeted": 78,
+     "closed": 14,
+     "opened": 7,
+     "left": 19
     },
+    "beforeHoleStep": [
+     2878,
+     3092,
+     471,
+     99,
+     51
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -294,46 +252,47 @@
       "pass": true
      },
      "holes": {
-      "holes": 571,
-      "largestMm": 1.71,
-      "at": 571,
+      "holes": 10,
+      "largestMm": 1.69,
+      "at": 10,
       "pass": false,
       "histogram": [
-       2878,
-       3092,
-       471,
-       99,
-       51
+       2865,
+       3093,
+       499,
+       115,
+       23
       ]
      }
-    },
-    "map": {
-     "lines": 35,
-     "darkLines": 24,
-     "lightLines": 11,
-     "brows": 0,
-     "areas": 46,
-     "faces": 0,
-     "discs": 3285
     }
-   },
-   "closeUps": 5
+   }
   },
   {
    "name": "cc0-cat-norule",
    "set": "CC0",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "why": "the photo has no human face"
+   },
+   "holesLeft": {
+    "count": 17,
+    "fixedOnly": 13
+   },
+   "map": {
+    "lines": 33,
+    "strands": 5,
+    "strandLines": 4,
+    "brows": 0,
+    "areas": 57,
+    "regions": 2
+   },
    "today": {
     "stones": 3148,
-    "ms": 1018,
+    "ms": 578,
     "size": {
      "widthMm": 158.4,
      "heightMm": 120.8
-    },
-    "bySize": {
-     "2": 2758,
-     "1.5": 388,
-     "4.7": 2
     },
     "checks": {
      "gaps": {
@@ -342,30 +301,30 @@
       "pass": true
      },
      "lines": {
-      "lines": 30,
-      "clean": 12,
-      "offColour": 5,
-      "offSize": 32,
+      "lines": 33,
+      "clean": 13,
+      "offColour": 7,
+      "offSize": 34,
       "breaks": 2,
-      "mixedLines": 5,
+      "mixedLines": 6,
       "brokenLines": 2,
       "missing": 0,
       "pass": false
      },
      "areas": {
-      "areas": 55,
-      "overTones": 33,
+      "areas": 51,
+      "overTones": 32,
       "maxTones": 10,
-      "patches": 884,
-      "smallPatches": 704,
-      "smallPatchStones": 971,
+      "patches": 881,
+      "smallPatches": 701,
+      "smallPatchStones": 963,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 979,
+      "holes": 95,
       "largestMm": 1.7,
-      "at": 979,
+      "at": 95,
       "pass": false,
       "histogram": [
        2463,
@@ -377,122 +336,38 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 3139,
-    "ms": 5053,
-    "holes": 733,
-    "largestMm": 1.64,
-    "histogram": [
-     2198,
-     2926,
-     639,
-     173,
-     66
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 3014,
-    "ms": 2558,
-    "size": {
-     "widthMm": 157.6,
-     "heightMm": 120
-    },
-    "bySize": {
-     "2": 2560,
-     "1.5": 452,
-     "4.7": 2
-    },
-    "byRole": {
-     "feature": 194,
-     "line": 85,
-     "outline": 252,
-     "area": 1786,
-     "seam": 697
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 30,
-      "clean": 16,
-      "offColour": 0,
-      "offSize": 28,
-      "breaks": 7,
-      "mixedLines": 0,
-      "brokenLines": 5,
-      "missing": 6,
-      "pass": false
-     },
-     "areas": {
-      "areas": 55,
-      "overTones": 2,
-      "maxTones": 4,
-      "patches": 223,
-      "smallPatches": 27,
-      "smallPatchStones": 38,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 1040,
-      "largestMm": 1.66,
-      "at": 1040,
-      "pass": false,
-      "histogram": [
-       2400,
-       3041,
-       925,
-       199,
-       56
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 3175,
-    "ms": 5705,
+   "noFaces": {
+    "stones": 3168,
+    "ms": 5108,
     "msParts": {
-     "map": 1775,
-     "place": 3817
+     "map": 1286,
+     "place": 3773
     },
     "size": {
      "widthMm": 157.6,
      "heightMm": 120
-    },
-    "bySize": {
-     "2": 2620,
-     "1.5": 553,
-     "4.7": 2
     },
     "byRole": {
      "feature": 197,
-     "line": 162,
-     "outline": 230,
-     "area": 1135,
-     "hex": 549,
-     "seam": 902
+     "line": 179,
+     "outline": 228,
+     "area": 1136,
+     "hex": 572,
+     "seam": 856
     },
-    "stats": {
-     "features": 197,
-     "brows": 0,
-     "lines": 162,
-     "lineChains": 28,
-     "linePiecesDropped": 2,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 230,
-     "outlineChains": 8,
-     "area": 1135,
-     "hex": 549,
-     "seam": 902,
-     "recoloured": 87,
-     "settled": 20349,
-     "retoned": 74
+    "holeStep": {
+     "targeted": 79,
+     "closed": 19,
+     "opened": 9,
+     "left": 17
     },
+    "beforeHoleStep": [
+     2397,
+     2721,
+     528,
+     119,
+     56
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -500,8 +375,8 @@
       "pass": true
      },
      "lines": {
-      "lines": 30,
-      "clean": 28,
+      "lines": 33,
+      "clean": 31,
       "offColour": 0,
       "offSize": 0,
       "breaks": 0,
@@ -510,63 +385,65 @@
       "missing": 2,
       "pass": false,
       "chains": {
-       "count": 36,
+       "count": 39,
        "wrongStones": 0,
        "short": 0,
        "pass": true
       }
      },
      "areas": {
-      "areas": 54,
+      "areas": 50,
       "overTones": 0,
       "maxTones": 3,
-      "patches": 165,
+      "patches": 162,
       "smallPatches": 0,
       "smallPatchStones": 0,
       "halftonePatches": 0,
       "pass": true
      },
      "holes": {
-      "holes": 618,
-      "largestMm": 1.67,
-      "at": 618,
+      "holes": 21,
+      "largestMm": 1.64,
+      "at": 21,
       "pass": false,
       "histogram": [
-       2404,
-       2739,
-       542,
-       122,
-       45
+       2401,
+       2713,
+       541,
+       138,
+       23
       ]
      }
-    },
-    "map": {
-     "lines": 30,
-     "darkLines": 18,
-     "lightLines": 12,
-     "brows": 0,
-     "areas": 58,
-     "faces": 2,
-     "discs": 3119
     }
    },
-   "closeUps": 6
+   "picture": "cc0-cat-norule.jpg"
   },
   {
    "name": "cc0-cat-rule",
    "set": "CC0",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "why": "the photo has no human face"
+   },
+   "holesLeft": {
+    "count": 19,
+    "fixedOnly": 19
+   },
+   "map": {
+    "lines": 29,
+    "strands": 5,
+    "strandLines": 5,
+    "brows": 0,
+    "areas": 65,
+    "regions": 2
+   },
    "today": {
     "stones": 3579,
-    "ms": 735,
+    "ms": 711,
     "size": {
      "widthMm": 167.8,
      "heightMm": 125.7
-    },
-    "bySize": {
-     "2": 3269,
-     "1.5": 308,
-     "4.7": 2
     },
     "checks": {
      "gaps": {
@@ -575,30 +452,30 @@
       "pass": true
      },
      "lines": {
-      "lines": 24,
+      "lines": 29,
       "clean": 5,
-      "offColour": 11,
+      "offColour": 20,
       "offSize": 81,
       "breaks": 1,
-      "mixedLines": 4,
+      "mixedLines": 9,
       "brokenLines": 1,
       "missing": 2,
       "pass": false
      },
      "areas": {
-      "areas": 61,
-      "overTones": 39,
+      "areas": 59,
+      "overTones": 37,
       "maxTones": 10,
-      "patches": 778,
-      "smallPatches": 577,
-      "smallPatchStones": 837,
+      "patches": 774,
+      "smallPatches": 574,
+      "smallPatchStones": 832,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 541,
+      "holes": 80,
       "largestMm": 1.68,
-      "at": 541,
+      "at": 80,
       "pass": false,
       "histogram": [
        3482,
@@ -610,122 +487,38 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 3556,
-    "ms": 4631,
-    "holes": 802,
-    "largestMm": 1.69,
-    "histogram": [
-     2256,
-     3041,
-     683,
-     156,
-     61
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 3362,
-    "ms": 2892,
-    "size": {
-     "widthMm": 167.1,
-     "heightMm": 125.2
-    },
-    "bySize": {
-     "2": 2835,
-     "1.5": 525,
-     "4.7": 2
-    },
-    "byRole": {
-     "feature": 225,
-     "line": 53,
-     "outline": 263,
-     "area": 1943,
-     "seam": 878
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 24,
-      "clean": 12,
-      "offColour": 0,
-      "offSize": 56,
-      "breaks": 12,
-      "mixedLines": 0,
-      "brokenLines": 6,
-      "missing": 4,
-      "pass": false
-     },
-     "areas": {
-      "areas": 61,
-      "overTones": 5,
-      "maxTones": 5,
-      "patches": 262,
-      "smallPatches": 35,
-      "smallPatchStones": 50,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 1060,
-      "largestMm": 1.66,
-      "at": 1060,
-      "pass": false,
-      "histogram": [
-       2749,
-       3716,
-       940,
-       200,
-       56
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 3523,
-    "ms": 4497,
+   "noFaces": {
+    "stones": 3531,
+    "ms": 5336,
     "msParts": {
-     "map": 1279,
-     "place": 3169
+     "map": 1500,
+     "place": 3785
     },
     "size": {
      "widthMm": 167.1,
      "heightMm": 125.2
-    },
-    "bySize": {
-     "2": 2904,
-     "1.5": 617,
-     "4.7": 2
     },
     "byRole": {
      "feature": 226,
-     "line": 178,
-     "outline": 263,
-     "area": 1140,
-     "hex": 675,
-     "seam": 1041
+     "line": 209,
+     "outline": 261,
+     "area": 1147,
+     "hex": 700,
+     "seam": 988
     },
-    "stats": {
-     "features": 226,
-     "brows": 0,
-     "lines": 178,
-     "lineChains": 21,
-     "linePiecesDropped": 3,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 263,
-     "outlineChains": 10,
-     "area": 1140,
-     "hex": 675,
-     "seam": 1041,
-     "recoloured": 111,
-     "settled": 22502,
-     "retoned": 72
+    "holeStep": {
+     "targeted": 86,
+     "closed": 15,
+     "opened": 13,
+     "left": 19
     },
+    "beforeHoleStep": [
+     2604,
+     3235,
+     542,
+     130,
+     54
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -733,73 +526,75 @@
       "pass": true
      },
      "lines": {
-      "lines": 24,
-      "clean": 21,
+      "lines": 29,
+      "clean": 25,
       "offColour": 0,
-      "offSize": 0,
+      "offSize": 1,
       "breaks": 0,
       "mixedLines": 0,
       "brokenLines": 0,
       "missing": 3,
       "pass": false,
       "chains": {
-       "count": 31,
+       "count": 36,
        "wrongStones": 0,
        "short": 0,
        "pass": true
       }
      },
      "areas": {
-      "areas": 61,
+      "areas": 59,
       "overTones": 0,
       "maxTones": 3,
-      "patches": 213,
+      "patches": 202,
       "smallPatches": 0,
       "smallPatchStones": 0,
       "halftonePatches": 0,
       "pass": true
      },
      "holes": {
-      "holes": 657,
+      "holes": 17,
       "largestMm": 1.65,
-      "at": 657,
+      "at": 17,
       "pass": false,
       "histogram": [
-       2653,
-       3279,
-       556,
-       152,
-       48
+       2628,
+       3210,
+       560,
+       134,
+       25
       ]
      }
-    },
-    "map": {
-     "lines": 24,
-     "darkLines": 13,
-     "lightLines": 11,
-     "brows": 0,
-     "areas": 67,
-     "faces": 2,
-     "discs": 3549
     }
    },
-   "closeUps": 6
+   "picture": "cc0-cat-rule.jpg"
   },
   {
    "name": "cc0-dachshund-rule",
    "set": "CC0",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "why": "the photo has no human face"
+   },
+   "holesLeft": {
+    "count": 13,
+    "fixedOnly": 11
+   },
+   "map": {
+    "lines": 13,
+    "strands": 0,
+    "strandLines": 0,
+    "brows": 0,
+    "areas": 26,
+    "regions": 2
+   },
    "today": {
     "stones": 1633,
-    "ms": 394,
+    "ms": 370,
     "size": {
      "widthMm": 159.2,
      "heightMm": 106.4
-    },
-    "bySize": {
-     "2": 1452,
-     "1.5": 179,
-     "4.7": 2
     },
     "checks": {
      "gaps": {
@@ -829,9 +624,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 292,
+      "holes": 15,
       "largestMm": 1.65,
-      "at": 292,
+      "at": 15,
       "pass": false,
       "histogram": [
        1299,
@@ -843,96 +638,16 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 1529,
-    "ms": 2397,
-    "holes": 437,
-    "largestMm": 1.67,
-    "histogram": [
-     1046,
-     1331,
-     353,
-     78,
-     33
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 1520,
-    "ms": 1691,
-    "size": {
-     "widthMm": 157.9,
-     "heightMm": 105.8
-    },
-    "bySize": {
-     "2": 1258,
-     "1.5": 260,
-     "4.7": 2
-    },
-    "byRole": {
-     "feature": 84,
-     "line": 27,
-     "outline": 245,
-     "area": 872,
-     "seam": 292
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 13,
-      "clean": 5,
-      "offColour": 0,
-      "offSize": 6,
-      "breaks": 0,
-      "mixedLines": 0,
-      "brokenLines": 0,
-      "missing": 4,
-      "pass": false
-     },
-     "areas": {
-      "areas": 26,
-      "overTones": 0,
-      "maxTones": 3,
-      "patches": 70,
-      "smallPatches": 12,
-      "smallPatchStones": 19,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 397,
-      "largestMm": 1.65,
-      "at": 397,
-      "pass": false,
-      "histogram": [
-       1338,
-       1427,
-       362,
-       56,
-       22
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 1548,
-    "ms": 2317,
+   "noFaces": {
+    "stones": 1549,
+    "ms": 2819,
     "msParts": {
-     "map": 690,
-     "place": 1612
+     "map": 864,
+     "place": 1939
     },
     "size": {
      "widthMm": 157.4,
      "heightMm": 105.8
-    },
-    "bySize": {
-     "2": 1298,
-     "1.5": 248,
-     "4.7": 2
     },
     "byRole": {
      "feature": 84,
@@ -940,25 +655,21 @@
      "outline": 230,
      "area": 574,
      "hex": 237,
-     "seam": 365
+     "seam": 366
     },
-    "stats": {
-     "features": 84,
-     "brows": 0,
-     "lines": 58,
-     "lineChains": 13,
-     "linePiecesDropped": 0,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 230,
-     "outlineChains": 12,
-     "area": 574,
-     "hex": 237,
-     "seam": 365,
-     "recoloured": 31,
-     "settled": 8514,
-     "retoned": 12
+    "holeStep": {
+     "targeted": 48,
+     "closed": 7,
+     "opened": 1,
+     "left": 13
     },
+    "beforeHoleStep": [
+     1242,
+     1322,
+     250,
+     70,
+     22
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -993,46 +704,48 @@
       "pass": true
      },
      "holes": {
-      "holes": 315,
+      "holes": 8,
       "largestMm": 1.65,
-      "at": 315,
+      "at": 8,
       "pass": false,
       "histogram": [
-       1242,
-       1322,
+       1247,
+       1328,
        250,
-       70,
-       22
+       73,
+       14
       ]
      }
-    },
-    "map": {
-     "lines": 13,
-     "darkLines": 7,
-     "lightLines": 6,
-     "brows": 0,
-     "areas": 26,
-     "faces": 2,
-     "discs": 1610
     }
    },
-   "closeUps": 6
+   "picture": "cc0-dachshund-rule.jpg"
   },
   {
    "name": "cc0-dog-norule",
    "set": "CC0",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "why": "the photo has no human face"
+   },
+   "holesLeft": {
+    "count": 7,
+    "fixedOnly": 5
+   },
+   "map": {
+    "lines": 12,
+    "strands": 0,
+    "strandLines": 0,
+    "brows": 0,
+    "areas": 35,
+    "regions": 3
+   },
    "today": {
     "stones": 2084,
-    "ms": 468,
+    "ms": 484,
     "size": {
      "widthMm": 87,
      "heightMm": 203.1
-    },
-    "bySize": {
-     "2": 2008,
-     "1.5": 74,
-     "4.7": 2
     },
     "checks": {
      "gaps": {
@@ -1062,9 +775,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 958,
+      "holes": 94,
       "largestMm": 1.66,
-      "at": 958,
+      "at": 94,
       "pass": false,
       "histogram": [
        1284,
@@ -1076,96 +789,16 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 2105,
-    "ms": 2872,
-    "holes": 546,
-    "largestMm": 1.61,
-    "histogram": [
-     1535,
-     2012,
-     447,
-     124,
-     30
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 2077,
-    "ms": 2021,
-    "size": {
-     "widthMm": 86.2,
-     "heightMm": 202.3
-    },
-    "bySize": {
-     "2": 1858,
-     "1.5": 217,
-     "4.7": 2
-    },
-    "byRole": {
-     "feature": 129,
-     "line": 45,
-     "outline": 382,
-     "area": 1145,
-     "seam": 376
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 12,
-      "clean": 8,
-      "offColour": 0,
-      "offSize": 2,
-      "breaks": 0,
-      "mixedLines": 0,
-      "brokenLines": 0,
-      "missing": 2,
-      "pass": false
-     },
-     "areas": {
-      "areas": 35,
-      "overTones": 1,
-      "maxTones": 4,
-      "patches": 137,
-      "smallPatches": 7,
-      "smallPatchStones": 8,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 581,
-      "largestMm": 1.62,
-      "at": 581,
-      "pass": false,
-      "histogram": [
-       1667,
-       2004,
-       496,
-       124,
-       23
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 2116,
-    "ms": 2886,
+   "noFaces": {
+    "stones": 2120,
+    "ms": 3862,
     "msParts": {
-     "map": 808,
-     "place": 2056
+     "map": 1052,
+     "place": 2784
     },
     "size": {
      "widthMm": 86.2,
      "heightMm": 202.3
-    },
-    "bySize": {
-     "2": 1909,
-     "1.5": 205,
-     "4.7": 2
     },
     "byRole": {
      "feature": 130,
@@ -1173,25 +806,21 @@
      "outline": 382,
      "area": 847,
      "hex": 237,
-     "seam": 452
+     "seam": 456
     },
-    "stats": {
-     "features": 130,
-     "brows": 0,
-     "lines": 68,
-     "lineChains": 12,
-     "linePiecesDropped": 0,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 382,
-     "outlineChains": 8,
-     "area": 847,
-     "hex": 237,
-     "seam": 452,
-     "recoloured": 62,
-     "settled": 11660,
-     "retoned": 31
+    "holeStep": {
+     "targeted": 33,
+     "closed": 8,
+     "opened": 4,
+     "left": 7
     },
+    "beforeHoleStep": [
+     1694,
+     1943,
+     364,
+     79,
+     24
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -1219,53 +848,55 @@
       "areas": 34,
       "overTones": 0,
       "maxTones": 3,
-      "patches": 106,
+      "patches": 107,
       "smallPatches": 0,
       "smallPatchStones": 0,
       "halftonePatches": 0,
       "pass": true
      },
      "holes": {
-      "holes": 410,
-      "largestMm": 1.64,
-      "at": 410,
+      "holes": 11,
+      "largestMm": 1.61,
+      "at": 11,
       "pass": false,
       "histogram": [
-       1694,
-       1943,
-       364,
-       79,
-       24
+       1696,
+       1934,
+       371,
+       93,
+       9
       ]
      }
-    },
-    "map": {
-     "lines": 12,
-     "darkLines": 6,
-     "lightLines": 6,
-     "brows": 0,
-     "areas": 35,
-     "faces": 3,
-     "discs": 2063
     }
    },
-   "closeUps": 6
+   "picture": "cc0-dog-norule.jpg"
   },
   {
    "name": "cc0-dog-rule",
    "set": "CC0",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "why": "the photo has no human face"
+   },
+   "holesLeft": {
+    "count": 16,
+    "fixedOnly": 14
+   },
+   "map": {
+    "lines": 8,
+    "strands": 0,
+    "strandLines": 0,
+    "brows": 0,
+    "areas": 35,
+    "regions": 3
+   },
    "today": {
     "stones": 2050,
-    "ms": 583,
+    "ms": 495,
     "size": {
      "widthMm": 83.8,
      "heightMm": 200.8
-    },
-    "bySize": {
-     "2": 1954,
-     "1.5": 94,
-     "4.7": 2
     },
     "checks": {
      "gaps": {
@@ -1295,9 +926,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 914,
+      "holes": 65,
       "largestMm": 1.72,
-      "at": 914,
+      "at": 65,
       "pass": false,
       "histogram": [
        1295,
@@ -1309,96 +940,16 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 2055,
-    "ms": 2991,
-    "holes": 489,
-    "largestMm": 1.66,
-    "histogram": [
-     1570,
-     1984,
-     423,
-     99,
-     40
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 2022,
-    "ms": 1881,
-    "size": {
-     "widthMm": 83.2,
-     "heightMm": 200
-    },
-    "bySize": {
-     "2": 1798,
-     "1.5": 222,
-     "4.7": 2
-    },
-    "byRole": {
-     "feature": 152,
-     "line": 61,
-     "outline": 379,
-     "area": 1065,
-     "seam": 365
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 8,
-      "clean": 4,
-      "offColour": 0,
-      "offSize": 7,
-      "breaks": 1,
-      "mixedLines": 0,
-      "brokenLines": 1,
-      "missing": 1,
-      "pass": false
-     },
-     "areas": {
-      "areas": 35,
-      "overTones": 0,
-      "maxTones": 3,
-      "patches": 128,
-      "smallPatches": 5,
-      "smallPatchStones": 7,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 609,
-      "largestMm": 1.66,
-      "at": 609,
-      "pass": false,
-      "histogram": [
-       1674,
-       1901,
-       502,
-       118,
-       38
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 2072,
-    "ms": 3173,
+   "noFaces": {
+    "stones": 2074,
+    "ms": 3531,
     "msParts": {
-     "map": 1096,
-     "place": 2053
+     "map": 1071,
+     "place": 2437
     },
     "size": {
      "widthMm": 83.2,
      "heightMm": 200
-    },
-    "bySize": {
-     "2": 1856,
-     "1.5": 214,
-     "4.7": 2
     },
     "byRole": {
      "feature": 151,
@@ -1406,25 +957,21 @@
      "outline": 380,
      "area": 892,
      "hex": 166,
-     "seam": 410
+     "seam": 412
     },
-    "stats": {
-     "features": 151,
-     "brows": 0,
-     "lines": 73,
-     "lineChains": 7,
-     "linePiecesDropped": 1,
-     "lineBreaks": 0,
-     "crossings": 2,
-     "outline": 380,
-     "outlineChains": 14,
-     "area": 892,
-     "hex": 166,
-     "seam": 410,
-     "recoloured": 64,
-     "settled": 9822,
-     "retoned": 12
+    "holeStep": {
+     "targeted": 62,
+     "closed": 12,
+     "opened": 2,
+     "left": 16
     },
+    "beforeHoleStep": [
+     1715,
+     1759,
+     318,
+     89,
+     33
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -1459,46 +1006,48 @@
       "pass": true
      },
      "holes": {
-      "holes": 375,
+      "holes": 13,
       "largestMm": 1.66,
-      "at": 375,
+      "at": 13,
       "pass": false,
       "histogram": [
-       1715,
-       1759,
-       318,
-       89,
-       33
+       1709,
+       1754,
+       329,
+       99,
+       17
       ]
      }
-    },
-    "map": {
-     "lines": 8,
-     "darkLines": 4,
-     "lightLines": 4,
-     "brows": 0,
-     "areas": 35,
-     "faces": 3,
-     "discs": 2031
     }
    },
-   "closeUps": 6
+   "picture": "cc0-dog-rule.jpg"
   },
   {
    "name": "cc0-giraffe-rule",
    "set": "CC0",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "why": "the photo has no human face"
+   },
+   "holesLeft": {
+    "count": 30,
+    "fixedOnly": 28
+   },
+   "map": {
+    "lines": 32,
+    "strands": 0,
+    "strandLines": 0,
+    "brows": 0,
+    "areas": 32,
+    "regions": 2
+   },
    "today": {
     "stones": 2327,
-    "ms": 589,
+    "ms": 556,
     "size": {
      "widthMm": 79.8,
      "heightMm": 307.5
-    },
-    "bySize": {
-     "2": 1946,
-     "1.5": 379,
-     "2.8": 2
     },
     "checks": {
      "gaps": {
@@ -1528,9 +1077,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 1460,
+      "holes": 377,
       "largestMm": 1.71,
-      "at": 1460,
+      "at": 377,
       "pass": false,
       "histogram": [
        1423,
@@ -1542,96 +1091,16 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 2385,
-    "ms": 3444,
-    "holes": 543,
-    "largestMm": 1.66,
-    "histogram": [
-     1803,
-     2214,
-     428,
-     117,
-     51
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 2333,
-    "ms": 2364,
-    "size": {
-     "widthMm": 78.4,
-     "heightMm": 307.1
-    },
-    "bySize": {
-     "2": 2048,
-     "1.5": 283,
-     "2.8": 2
-    },
-    "byRole": {
-     "feature": 53,
-     "line": 90,
-     "outline": 422,
-     "area": 1375,
-     "seam": 393
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 32,
-      "clean": 19,
-      "offColour": 1,
-      "offSize": 3,
-      "breaks": 4,
-      "mixedLines": 1,
-      "brokenLines": 2,
-      "missing": 7,
-      "pass": false
-     },
-     "areas": {
-      "areas": 31,
-      "overTones": 1,
-      "maxTones": 7,
-      "patches": 109,
-      "smallPatches": 17,
-      "smallPatchStones": 22,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 647,
-      "largestMm": 1.63,
-      "at": 647,
-      "pass": false,
-      "histogram": [
-       1949,
-       2275,
-       545,
-       117,
-       35
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 2392,
-    "ms": 3559,
+   "noFaces": {
+    "stones": 2395,
+    "ms": 4334,
     "msParts": {
-     "map": 1110,
-     "place": 2421
+     "map": 1374,
+     "place": 2934
     },
     "size": {
      "widthMm": 78.4,
      "heightMm": 307.1
-    },
-    "bySize": {
-     "2": 2067,
-     "1.5": 323,
-     "2.8": 2
     },
     "byRole": {
      "feature": 58,
@@ -1639,25 +1108,21 @@
      "outline": 390,
      "area": 954,
      "hex": 246,
-     "seam": 573
+     "seam": 576
     },
-    "stats": {
-     "features": 58,
-     "brows": 0,
-     "lines": 171,
-     "lineChains": 31,
-     "linePiecesDropped": 1,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 390,
-     "outlineChains": 19,
-     "area": 954,
-     "hex": 246,
-     "seam": 573,
-     "recoloured": 26,
-     "settled": 11739,
-     "retoned": 17
+    "holeStep": {
+     "targeted": 110,
+     "closed": 17,
+     "opened": 3,
+     "left": 30
     },
+    "beforeHoleStep": [
+     1995,
+     2088,
+     339,
+     109,
+     58
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -1692,45 +1157,47 @@
       "pass": true
      },
      "holes": {
-      "holes": 458,
+      "holes": 24,
       "largestMm": 1.63,
-      "at": 458,
+      "at": 24,
       "pass": false,
       "histogram": [
-       1995,
-       2088,
-       339,
-       109,
-       58
+       1996,
+       2072,
+       359,
+       127,
+       38
       ]
      }
-    },
-    "map": {
-     "lines": 32,
-     "darkLines": 13,
-     "lightLines": 19,
-     "brows": 0,
-     "areas": 32,
-     "faces": 2,
-     "discs": 2020
     }
-   },
-   "closeUps": 6
+   }
   },
   {
    "name": "cc0-mug-norule",
    "set": "CC0",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "why": "the photo has no human face"
+   },
+   "holesLeft": {
+    "count": 5,
+    "fixedOnly": 3
+   },
+   "map": {
+    "lines": 14,
+    "strands": 0,
+    "strandLines": 0,
+    "brows": 0,
+    "areas": 15,
+    "regions": 0
+   },
    "today": {
     "stones": 2224,
-    "ms": 523,
+    "ms": 448,
     "size": {
      "widthMm": 146.5,
      "heightMm": 109.6
-    },
-    "bySize": {
-     "2": 2119,
-     "1.5": 105
     },
     "checks": {
      "gaps": {
@@ -1760,9 +1227,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 119,
+      "holes": 4,
       "largestMm": 1.63,
-      "at": 119,
+      "at": 4,
       "pass": false,
       "histogram": [
        2199,
@@ -1774,118 +1241,37 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 2092,
-    "ms": 3343,
-    "holes": 436,
-    "largestMm": 1.67,
-    "histogram": [
-     1470,
-     1834,
-     356,
-     56,
-     23
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 2130,
-    "ms": 1974,
-    "size": {
-     "widthMm": 145.9,
-     "heightMm": 109.2
-    },
-    "bySize": {
-     "2": 1879,
-     "1.5": 251
-    },
-    "byRole": {
-     "line": 224,
-     "outline": 228,
-     "area": 1279,
-     "seam": 399
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 14,
-      "clean": 12,
-      "offColour": 1,
-      "offSize": 1,
-      "breaks": 0,
-      "mixedLines": 1,
-      "brokenLines": 0,
-      "missing": 0,
-      "pass": false
-     },
-     "areas": {
-      "areas": 15,
-      "overTones": 0,
-      "maxTones": 2,
-      "patches": 25,
-      "smallPatches": 0,
-      "smallPatchStones": 0,
-      "halftonePatches": 0,
-      "pass": true
-     },
-     "holes": {
-      "holes": 315,
-      "largestMm": 1.51,
-      "at": 315,
-      "pass": false,
-      "histogram": [
-       1894,
-       1507,
-       276,
-       50,
-       10
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 2102,
-    "ms": 3121,
+   "noFaces": {
+    "stones": 2105,
+    "ms": 3429,
     "msParts": {
-     "map": 1047,
-     "place": 2054
+     "map": 1102,
+     "place": 2308
     },
     "size": {
      "widthMm": 145.9,
      "heightMm": 109.1
-    },
-    "bySize": {
-     "2": 1928,
-     "1.5": 174
     },
     "byRole": {
      "line": 248,
      "outline": 227,
      "area": 934,
      "hex": 252,
-     "seam": 441
+     "seam": 444
     },
-    "stats": {
-     "features": 0,
-     "brows": 0,
-     "lines": 248,
-     "lineChains": 14,
-     "linePiecesDropped": 0,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 227,
-     "outlineChains": 9,
-     "area": 934,
-     "hex": 252,
-     "seam": 441,
-     "recoloured": 11,
-     "settled": 8638,
-     "retoned": 4
+    "holeStep": {
+     "targeted": 29,
+     "closed": 11,
+     "opened": 3,
+     "left": 5
     },
+    "beforeHoleStep": [
+     1662,
+     1722,
+     228,
+     45,
+     21
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -1913,52 +1299,54 @@
       "areas": 15,
       "overTones": 0,
       "maxTones": 1,
-      "patches": 22,
+      "patches": 20,
       "smallPatches": 0,
       "smallPatchStones": 0,
       "halftonePatches": 0,
       "pass": true
      },
      "holes": {
-      "holes": 299,
+      "holes": 3,
       "largestMm": 1.67,
-      "at": 299,
+      "at": 3,
       "pass": false,
       "histogram": [
-       1662,
-       1722,
-       228,
-       45,
-       21
+       1660,
+       1719,
+       232,
+       54,
+       10
       ]
      }
-    },
-    "map": {
-     "lines": 14,
-     "darkLines": 12,
-     "lightLines": 2,
-     "brows": 0,
-     "areas": 15,
-     "faces": 0,
-     "discs": 2226
     }
-   },
-   "closeUps": 5
+   }
   },
   {
    "name": "cc0-mug-rule",
    "set": "CC0",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "why": "the photo has no human face"
+   },
+   "holesLeft": {
+    "count": 5,
+    "fixedOnly": 0
+   },
+   "map": {
+    "lines": 0,
+    "strands": 0,
+    "strandLines": 0,
+    "brows": 0,
+    "areas": 19,
+    "regions": 0
+   },
    "today": {
     "stones": 1751,
-    "ms": 395,
+    "ms": 410,
     "size": {
      "widthMm": 130.4,
      "heightMm": 96
-    },
-    "bySize": {
-     "2": 1681,
-     "1.5": 70
     },
     "checks": {
      "gaps": {
@@ -1988,9 +1376,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 79,
+      "holes": 1,
       "largestMm": 1.41,
-      "at": 79,
+      "at": 1,
       "pass": false,
       "histogram": [
        1437,
@@ -2002,116 +1390,36 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 1698,
-    "ms": 2210,
-    "holes": 368,
-    "largestMm": 1.67,
-    "histogram": [
-     830,
-     949,
-     297,
-     121,
-     39
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 1669,
-    "ms": 1512,
-    "size": {
-     "widthMm": 130.3,
-     "heightMm": 96.4
-    },
-    "bySize": {
-     "2": 1416,
-     "1.5": 253
-    },
-    "byRole": {
-     "outline": 200,
-     "area": 1015,
-     "seam": 454
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 0,
-      "clean": 0,
-      "offColour": 0,
-      "offSize": 0,
-      "breaks": 0,
-      "mixedLines": 0,
-      "brokenLines": 0,
-      "missing": 0,
-      "pass": true
-     },
-     "areas": {
-      "areas": 18,
-      "overTones": 0,
-      "maxTones": 2,
-      "patches": 54,
-      "smallPatches": 0,
-      "smallPatchStones": 0,
-      "halftonePatches": 0,
-      "pass": true
-     },
-     "holes": {
-      "holes": 358,
-      "largestMm": 1.67,
-      "at": 358,
-      "pass": false,
-      "histogram": [
-       1481,
-       1433,
-       315,
-       55,
-       21
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 1721,
-    "ms": 2337,
+   "noFaces": {
+    "stones": 1737,
+    "ms": 3338,
     "msParts": {
-     "map": 569,
-     "place": 1753
+     "map": 788,
+     "place": 2532
     },
     "size": {
      "widthMm": 130.3,
      "heightMm": 96.4
     },
-    "bySize": {
-     "2": 1632,
-     "1.5": 89
-    },
     "byRole": {
      "outline": 200,
      "area": 305,
      "hex": 619,
-     "seam": 597
+     "seam": 613
     },
-    "stats": {
-     "features": 0,
-     "brows": 0,
-     "lines": 0,
-     "lineChains": 0,
-     "linePiecesDropped": 0,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 200,
-     "outlineChains": 9,
-     "area": 305,
-     "hex": 619,
-     "seam": 597,
-     "recoloured": 13,
-     "settled": 6982,
-     "retoned": 24
+    "holeStep": {
+     "targeted": 57,
+     "closed": 25,
+     "opened": 16,
+     "left": 5
     },
+    "beforeHoleStep": [
+     918,
+     887,
+     210,
+     61,
+     51
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -2139,53 +1447,55 @@
       "areas": 18,
       "overTones": 0,
       "maxTones": 2,
-      "patches": 39,
+      "patches": 37,
       "smallPatches": 0,
       "smallPatchStones": 0,
       "halftonePatches": 0,
       "pass": true
      },
      "holes": {
-      "holes": 310,
-      "largestMm": 1.62,
-      "at": 310,
+      "holes": 5,
+      "largestMm": 1.52,
+      "at": 5,
       "pass": false,
       "histogram": [
-       918,
-       887,
-       210,
-       61,
-       51
+       932,
+       874,
+       233,
+       86,
+       6
       ]
      }
-    },
-    "map": {
-     "lines": 0,
-     "darkLines": 0,
-     "lightLines": 0,
-     "brows": 0,
-     "areas": 19,
-     "faces": 0,
-     "discs": 1751
     }
-   },
-   "closeUps": 4
+   }
   },
   {
    "name": "rs-cat",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "ai": 0,
+    "why": "no landmark face found in the AI image"
+   },
+   "holesLeft": {
+    "count": 20,
+    "fixedOnly": 16
+   },
+   "map": {
+    "lines": 35,
+    "strands": 1,
+    "strandLines": 0,
+    "brows": 0,
+    "areas": 74,
+    "regions": 2
+   },
    "today": {
     "stones": 2162,
-    "ms": 423,
+    "ms": 444,
     "size": {
      "widthMm": 103,
      "heightMm": 130.8
-    },
-    "bySize": {
-     "2": 1801,
-     "1.5": 359,
-     "4.7": 2
     },
     "checks": {
      "gaps": {
@@ -2215,9 +1525,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 649,
+      "holes": 81,
       "largestMm": 1.7,
-      "at": 649,
+      "at": 81,
       "pass": false,
       "histogram": [
        1690,
@@ -2229,122 +1539,38 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 2127,
-    "ms": 2775,
-    "holes": 559,
-    "largestMm": 1.65,
-    "histogram": [
-     1605,
-     1852,
-     473,
-     117,
-     56
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 2043,
-    "ms": 1848,
-    "size": {
-     "widthMm": 102,
-     "heightMm": 130.4
-    },
-    "bySize": {
-     "2": 1669,
-     "1.5": 372,
-     "4.7": 2
-    },
-    "byRole": {
-     "feature": 177,
-     "line": 53,
-     "outline": 212,
-     "area": 1072,
-     "seam": 529
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 35,
-      "clean": 15,
-      "offColour": 0,
-      "offSize": 14,
-      "breaks": 3,
-      "mixedLines": 0,
-      "brokenLines": 3,
-      "missing": 9,
-      "pass": false
-     },
-     "areas": {
-      "areas": 71,
-      "overTones": 4,
-      "maxTones": 5,
-      "patches": 229,
-      "smallPatches": 45,
-      "smallPatchStones": 63,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 809,
-      "largestMm": 1.68,
-      "at": 809,
-      "pass": false,
-      "histogram": [
-       1703,
-       2035,
-       718,
-       153,
-       49
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 2149,
-    "ms": 2819,
+   "noFaces": {
+    "stones": 2159,
+    "ms": 3531,
     "msParts": {
-     "map": 846,
-     "place": 1948
+     "map": 1057,
+     "place": 2452
     },
     "size": {
      "widthMm": 102.4,
      "heightMm": 130.4
-    },
-    "bySize": {
-     "2": 1758,
-     "1.5": 389,
-     "4.7": 2
     },
     "byRole": {
      "feature": 177,
      "line": 114,
      "outline": 207,
      "area": 910,
-     "hex": 254,
-     "seam": 487
+     "hex": 268,
+     "seam": 483
     },
-    "stats": {
-     "features": 177,
-     "brows": 0,
-     "lines": 114,
-     "lineChains": 27,
-     "linePiecesDropped": 8,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 207,
-     "outlineChains": 15,
-     "area": 910,
-     "hex": 254,
-     "seam": 487,
-     "recoloured": 89,
-     "settled": 12249,
-     "retoned": 47
+    "holeStep": {
+     "targeted": 78,
+     "closed": 15,
+     "opened": 3,
+     "left": 20
     },
+    "beforeHoleStep": [
+     1755,
+     1709,
+     324,
+     99,
+     42
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -2372,53 +1598,56 @@
       "areas": 70,
       "overTones": 0,
       "maxTones": 3,
-      "patches": 173,
+      "patches": 164,
       "smallPatches": 1,
       "smallPatchStones": 3,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 375,
-      "largestMm": 1.65,
-      "at": 375,
+      "holes": 20,
+      "largestMm": 1.59,
+      "at": 20,
       "pass": false,
       "histogram": [
-       1811,
-       1864,
-       353,
-       75,
-       42
+       1744,
+       1701,
+       340,
+       113,
+       21
       ]
      }
-    },
-    "map": {
-     "lines": 35,
-     "darkLines": 18,
-     "lightLines": 17,
-     "brows": 0,
-     "areas": 74,
-     "faces": 2,
-     "discs": 2215
     }
    },
-   "closeUps": 6
+   "picture": "rs-cat.jpg"
   },
   {
    "name": "rs-dog",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "ai": 0,
+    "why": "no landmark face found in the AI image"
+   },
+   "holesLeft": {
+    "count": 8,
+    "fixedOnly": 6
+   },
+   "map": {
+    "lines": 7,
+    "strands": 0,
+    "strandLines": 0,
+    "brows": 0,
+    "areas": 17,
+    "regions": 2
+   },
    "today": {
     "stones": 1683,
-    "ms": 444,
+    "ms": 417,
     "size": {
      "widthMm": 96.6,
      "heightMm": 160.6
-    },
-    "bySize": {
-     "2": 1530,
-     "1.5": 151,
-     "4.7": 2
     },
     "checks": {
      "gaps": {
@@ -2448,9 +1677,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 728,
+      "holes": 48,
       "largestMm": 1.65,
-      "at": 728,
+      "at": 48,
       "pass": false,
       "histogram": [
        1281,
@@ -2462,96 +1691,16 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 1702,
-    "ms": 2829,
-    "holes": 505,
-    "largestMm": 1.65,
-    "histogram": [
-     1135,
-     1541,
-     441,
-     74,
-     35
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 1700,
-    "ms": 1759,
-    "size": {
-     "widthMm": 95.7,
-     "heightMm": 159.9
-    },
-    "bySize": {
-     "2": 1449,
-     "1.5": 249,
-     "4.7": 2
-    },
-    "byRole": {
-     "feature": 73,
-     "line": 28,
-     "outline": 331,
-     "area": 951,
-     "seam": 317
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 7,
-      "clean": 6,
-      "offColour": 0,
-      "offSize": 0,
-      "breaks": 0,
-      "mixedLines": 0,
-      "brokenLines": 0,
-      "missing": 0,
-      "pass": false
-     },
-     "areas": {
-      "areas": 16,
-      "overTones": 4,
-      "maxTones": 6,
-      "patches": 67,
-      "smallPatches": 26,
-      "smallPatchStones": 31,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 488,
-      "largestMm": 1.68,
-      "at": 488,
-      "pass": false,
-      "histogram": [
-       1379,
-       1648,
-       444,
-       66,
-       14
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 1735,
-    "ms": 2647,
+   "noFaces": {
+    "stones": 1742,
+    "ms": 2983,
     "msParts": {
-     "map": 752,
-     "place": 1878
+     "map": 872,
+     "place": 2095
     },
     "size": {
      "widthMm": 95.6,
      "heightMm": 159.9
-    },
-    "bySize": {
-     "2": 1527,
-     "1.5": 206,
-     "4.7": 2
     },
     "byRole": {
      "feature": 68,
@@ -2559,25 +1708,21 @@
      "outline": 335,
      "area": 695,
      "hex": 234,
-     "seam": 369
+     "seam": 376
     },
-    "stats": {
-     "features": 68,
-     "brows": 0,
-     "lines": 34,
-     "lineChains": 7,
-     "linePiecesDropped": 0,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 335,
-     "outlineChains": 4,
-     "area": 695,
-     "hex": 234,
-     "seam": 369,
-     "recoloured": 3,
-     "settled": 7328,
-     "retoned": 5
+    "holeStep": {
+     "targeted": 45,
+     "closed": 13,
+     "opened": 7,
+     "left": 8
     },
+    "beforeHoleStep": [
+     1343,
+     1349,
+     321,
+     63,
+     32
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -2612,46 +1757,49 @@
       "pass": true
      },
      "holes": {
-      "holes": 375,
-      "largestMm": 1.66,
-      "at": 375,
+      "holes": 8,
+      "largestMm": 1.65,
+      "at": 8,
       "pass": false,
       "histogram": [
-       1343,
-       1349,
-       321,
-       63,
-       32
+       1341,
+       1347,
+       329,
+       72,
+       9
       ]
      }
-    },
-    "map": {
-     "lines": 7,
-     "darkLines": 5,
-     "lightLines": 2,
-     "brows": 0,
-     "areas": 17,
-     "faces": 2,
-     "discs": 1674
     }
    },
-   "closeUps": 6
+   "picture": "rs-dog.jpg"
   },
   {
    "name": "rs-einstein",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 1,
+    "ai": 1,
+    "why": null
+   },
+   "holesLeft": {
+    "count": 26,
+    "fixedOnly": 24
+   },
+   "map": {
+    "lines": 70,
+    "strands": 9,
+    "strandLines": 4,
+    "brows": 2,
+    "areas": 92,
+    "regions": 4
+   },
    "today": {
     "stones": 3594,
-    "ms": 821,
+    "ms": 806,
     "size": {
      "widthMm": 150.2,
      "heightMm": 143.2
-    },
-    "bySize": {
-     "2": 3252,
-     "1.5": 340,
-     "4.7": 2
     },
     "checks": {
      "gaps": {
@@ -2660,30 +1808,30 @@
       "pass": true
      },
      "lines": {
-      "lines": 64,
-      "clean": 33,
-      "offColour": 23,
-      "offSize": 28,
+      "lines": 70,
+      "clean": 37,
+      "offColour": 22,
+      "offSize": 29,
       "breaks": 0,
-      "mixedLines": 8,
+      "mixedLines": 7,
       "brokenLines": 0,
-      "missing": 7,
+      "missing": 6,
       "pass": false
      },
      "areas": {
-      "areas": 85,
-      "overTones": 40,
+      "areas": 88,
+      "overTones": 43,
       "maxTones": 11,
-      "patches": 580,
-      "smallPatches": 415,
-      "smallPatchStones": 605,
+      "patches": 633,
+      "smallPatches": 458,
+      "smallPatchStones": 673,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 648,
+      "holes": 58,
       "largestMm": 1.68,
-      "at": 648,
+      "at": 58,
       "pass": false,
       "histogram": [
        2868,
@@ -2692,126 +1840,81 @@
        148,
        66
       ]
-     }
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "outline": false,
+         "upper": 0.62,
+         "lower": 0.86,
+         "white": false,
+         "whites": 1,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 0.83,
+         "catchLight": true,
+         "side": 1
+        },
+        {
+         "outline": false,
+         "upper": 0.29,
+         "lower": 0.95,
+         "white": false,
+         "whites": 0,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 0.91,
+         "catchLight": true,
+         "side": 1
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "outline": true,
+        "outlineShare": 0.84,
+        "mouthLine": false,
+        "mouthLineShare": 0.33
+       },
+       "skinL": 77,
+       "pass": false
+      }
+     ]
     }
    },
-   "oneRow": {
-    "stones": 3367,
-    "ms": 4617,
-    "holes": 1060,
-    "largestMm": 1.67,
-    "histogram": [
-     2644,
-     3383,
-     877,
-     205,
-     82
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 3376,
-    "ms": 3298,
-    "size": {
-     "widthMm": 149.8,
-     "heightMm": 142.4
-    },
-    "bySize": {
-     "2": 2856,
-     "1.5": 518,
-     "4.7": 2
-    },
-    "byRole": {
-     "feature": 256,
-     "line": 318,
-     "outline": 266,
-     "area": 1738,
-     "seam": 798
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 64,
-      "clean": 42,
-      "offColour": 12,
-      "offSize": 9,
-      "breaks": 7,
-      "mixedLines": 3,
-      "brokenLines": 5,
-      "missing": 8,
-      "pass": false
-     },
-     "areas": {
-      "areas": 83,
-      "overTones": 7,
-      "maxTones": 6,
-      "patches": 331,
-      "smallPatches": 74,
-      "smallPatchStones": 125,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 1164,
-      "largestMm": 1.67,
-      "at": 1164,
-      "pass": false,
-      "histogram": [
-       2613,
-       3145,
-       947,
-       260,
-       91
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 3423,
-    "ms": 5056,
+   "noFaces": {
+    "stones": 3434,
+    "ms": 5764,
     "msParts": {
-     "map": 1746,
-     "place": 3256
+     "map": 1908,
+     "place": 3804
     },
     "size": {
      "widthMm": 149.8,
-     "heightMm": 142.4
-    },
-    "bySize": {
-     "2": 2949,
-     "1.5": 472,
-     "4.7": 2
+     "heightMm": 142.5
     },
     "byRole": {
      "feature": 256,
      "brow": 19,
-     "line": 401,
-     "outline": 257,
-     "area": 1561,
-     "hex": 240,
-     "seam": 689
+     "line": 414,
+     "outline": 247,
+     "area": 1564,
+     "hex": 216,
+     "seam": 718
     },
-    "stats": {
-     "features": 256,
-     "brows": 19,
-     "lines": 401,
-     "lineChains": 61,
-     "linePiecesDropped": 3,
-     "lineBreaks": 0,
-     "crossings": 1,
-     "outline": 257,
-     "outlineChains": 15,
-     "area": 1561,
-     "hex": 240,
-     "seam": 689,
-     "recoloured": 105,
-     "settled": 21391,
-     "retoned": 55
+    "holeStep": {
+     "targeted": 120,
+     "closed": 22,
+     "opened": 2,
+     "left": 32
     },
+    "beforeHoleStep": [
+     2871,
+     3215,
+     621,
+     160,
+     63
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -2819,73 +1922,346 @@
       "pass": true
      },
      "lines": {
-      "lines": 64,
+      "lines": 70,
       "clean": 58,
       "offColour": 2,
-      "offSize": 3,
-      "breaks": 0,
+      "offSize": 13,
+      "breaks": 1,
       "mixedLines": 2,
-      "brokenLines": 0,
-      "missing": 2,
+      "brokenLines": 1,
+      "missing": 3,
       "pass": false,
       "chains": {
-       "count": 79,
+       "count": 83,
        "wrongStones": 0,
        "short": 0,
        "pass": true
       }
      },
      "areas": {
-      "areas": 82,
+      "areas": 83,
+      "overTones": 3,
+      "maxTones": 4,
+      "patches": 238,
+      "smallPatches": 30,
+      "smallPatchStones": 53,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 31,
+      "largestMm": 1.67,
+      "at": 31,
+      "pass": false,
+      "histogram": [
+       2871,
+       3202,
+       641,
+       188,
+       36
+      ]
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "outline": false,
+         "upper": 0.62,
+         "lower": 0.86,
+         "white": false,
+         "whites": 1,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 0.83,
+         "catchLight": true,
+         "side": 1
+        },
+        {
+         "outline": false,
+         "upper": 0.29,
+         "lower": 0.95,
+         "white": false,
+         "whites": 0,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 0.91,
+         "catchLight": true,
+         "side": 1
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "outline": true,
+        "outlineShare": 0.76,
+        "mouthLine": false,
+        "mouthLineShare": 0.33
+       },
+       "skinL": 66,
+       "pass": false
+      }
+     ]
+    }
+   },
+   "withFaces": {
+    "stones": 3442,
+    "ms": 5983,
+    "msParts": {
+     "map": 1952,
+     "place": 3982
+    },
+    "size": {
+     "widthMm": 149.8,
+     "heightMm": 142.5
+    },
+    "byRole": {
+     "feature": 121,
+     "brow": 18,
+     "line": 418,
+     "outline": 249,
+     "area": 1638,
+     "hex": 239,
+     "seam": 759
+    },
+    "holeStep": {
+     "targeted": 95,
+     "closed": 10,
+     "opened": 7,
+     "left": 26
+    },
+    "beforeHoleStep": [
+     2831,
+     3425,
+     613,
+     131,
+     48
+    ],
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 70,
+      "clean": 63,
+      "offColour": 1,
+      "offSize": 3,
+      "breaks": 0,
+      "mixedLines": 1,
+      "brokenLines": 0,
+      "missing": 3,
+      "pass": false,
+      "chains": {
+       "count": 90,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 86,
       "overTones": 0,
       "maxTones": 3,
-      "patches": 229,
+      "patches": 234,
       "smallPatches": 1,
       "smallPatchStones": 3,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 788,
+      "holes": 29,
       "largestMm": 1.67,
-      "at": 788,
+      "at": 29,
       "pass": false,
       "histogram": [
-       2778,
-       3209,
-       625,
-       166,
-       69
+       2826,
+       3421,
+       627,
+       136,
+       29
       ]
-     }
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "outline": true,
+         "upper": 0.9,
+         "lower": 1,
+         "white": true,
+         "whites": 5,
+         "pupil": true,
+         "pupilD": 2,
+         "pupilShare": 0.35,
+         "catchLight": true,
+         "side": 1
+        },
+        {
+         "outline": true,
+         "upper": 0.71,
+         "lower": 1,
+         "white": true,
+         "whites": 2,
+         "pupil": true,
+         "pupilD": 2,
+         "pupilShare": 0.39,
+         "catchLight": true,
+         "side": 1
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "outline": true,
+        "outlineShare": 1,
+        "mouthLine": true,
+        "mouthLineShare": 1
+       },
+       "skinL": 66,
+       "pass": true
+      }
+     ]
     },
-    "map": {
-     "lines": 64,
-     "darkLines": 39,
-     "lightLines": 25,
-     "brows": 2,
-     "areas": 91,
-     "faces": 3,
-     "discs": 3612
-    }
+    "features": [
+     {
+      "ipdMm": 25.9,
+      "light": {
+       "side": "right",
+       "source": "unclear: upper right",
+       "diffL": 3.2
+      },
+      "skin": "rose-gold",
+      "eyes": [
+       {
+        "widthMm": 13.78,
+        "heightMm": 5.53,
+        "irisRMm": 2.84,
+        "pupilSnapMm": 1.03,
+        "upperLid": 9,
+        "lowerLid": 9,
+        "lowerLidSize": "ss4",
+        "pupil": {
+         "d": 2,
+         "offMm": 0,
+         "share": 0.35
+        },
+        "catchLight": {
+         "turnDeg": 0
+        },
+        "irisColour": "smoked-topaz",
+        "irisSource": "AI discs",
+        "ring": 5,
+        "irisFill": 0,
+        "lashes": {
+         "drawn": false,
+         "share": 0.12,
+         "innerShare": 0.35,
+         "stones": 0
+        },
+        "white": 5
+       },
+       {
+        "widthMm": 10.11,
+        "heightMm": 5.33,
+        "irisRMm": 2.59,
+        "pupilSnapMm": 0.95,
+        "upperLid": 7,
+        "lowerLid": 7,
+        "lowerLidSize": "ss4",
+        "pupil": {
+         "d": 2,
+         "offMm": 0,
+         "share": 0.39
+        },
+        "catchLight": {
+         "turnDeg": 0
+        },
+        "irisColour": "smoked-topaz",
+        "irisSource": "AI discs",
+        "ring": 3,
+        "irisFill": 0,
+        "lashes": {
+         "drawn": true,
+         "share": 0.55,
+         "innerShare": 0.2,
+         "stones": 4
+        },
+        "white": 2
+       }
+      ],
+      "widthRatio": 0.73,
+      "pupilSize": 2,
+      "nose": {
+       "nostrils": [
+        {
+         "side": "left",
+         "placed": true,
+         "size": "ss6",
+         "colour": "smoked-topaz"
+        },
+        {
+         "side": "right",
+         "placed": true,
+         "size": "ss6",
+         "colour": "jet"
+        }
+       ],
+       "shadow": null,
+       "shadowL": [
+        75.1,
+        76.7
+       ],
+       "shadowWhy": "not drawn"
+      },
+      "mouth": {
+       "open": false,
+       "colours": {
+        "upper": "smoked-topaz",
+        "lower": "colorado-topaz",
+        "outline": "jet",
+        "line": "jet"
+       },
+       "source": "AI discs",
+       "outline": 35,
+       "outlineSize": "ss4",
+       "line": 13,
+       "upper": 8,
+       "lower": 8
+      }
+     }
+    ],
+    "notBuilt": [
+     "face 1 nose shadow: not drawn"
+    ]
    },
-   "closeUps": 6
+   "picture": "rs-einstein.jpg"
   },
   {
    "name": "rs-jesus",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "ai": 0,
+    "why": "no landmark face found in the AI image"
+   },
+   "holesLeft": {
+    "count": 17,
+    "fixedOnly": 11
+   },
+   "map": {
+    "lines": 52,
+    "strands": 9,
+    "strandLines": 6,
+    "brows": 0,
+    "areas": 88,
+    "regions": 0
+   },
    "today": {
     "stones": 3307,
-    "ms": 693,
+    "ms": 689,
     "size": {
      "widthMm": 145.8,
      "heightMm": 163.9
-    },
-    "bySize": {
-     "2": 2880,
-     "4": 1,
-     "1.5": 426
     },
     "checks": {
      "gaps": {
@@ -2894,30 +2270,30 @@
       "pass": true
      },
      "lines": {
-      "lines": 46,
-      "clean": 17,
-      "offColour": 9,
-      "offSize": 43,
-      "breaks": 3,
-      "mixedLines": 6,
-      "brokenLines": 3,
+      "lines": 52,
+      "clean": 20,
+      "offColour": 11,
+      "offSize": 44,
+      "breaks": 4,
+      "mixedLines": 7,
+      "brokenLines": 4,
       "missing": 1,
       "pass": false
      },
      "areas": {
-      "areas": 82,
-      "overTones": 30,
+      "areas": 83,
+      "overTones": 31,
       "maxTones": 8,
-      "patches": 604,
-      "smallPatches": 341,
-      "smallPatchStones": 469,
+      "patches": 606,
+      "smallPatches": 344,
+      "smallPatchStones": 477,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 1466,
+      "holes": 165,
       "largestMm": 1.7,
-      "at": 1466,
+      "at": 165,
       "pass": false,
       "histogram": [
        2560,
@@ -2929,118 +2305,37 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 3302,
-    "ms": 4960,
-    "holes": 882,
-    "largestMm": 1.64,
-    "histogram": [
-     2452,
-     3268,
-     730,
-     140,
-     66
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 3179,
-    "ms": 3102,
-    "size": {
-     "widthMm": 145.4,
-     "heightMm": 162.7
-    },
-    "bySize": {
-     "2": 2665,
-     "1.5": 514
-    },
-    "byRole": {
-     "line": 155,
-     "outline": 271,
-     "area": 1770,
-     "seam": 983
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 46,
-      "clean": 13,
-      "offColour": 1,
-      "offSize": 35,
-      "breaks": 20,
-      "mixedLines": 1,
-      "brokenLines": 16,
-      "missing": 5,
-      "pass": false
-     },
-     "areas": {
-      "areas": 82,
-      "overTones": 4,
-      "maxTones": 4,
-      "patches": 377,
-      "smallPatches": 90,
-      "smallPatchStones": 137,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 1442,
-      "largestMm": 1.68,
-      "at": 1442,
-      "pass": false,
-      "histogram": [
-       2456,
-       3634,
-       1204,
-       240,
-       67
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 3315,
-    "ms": 4971,
+   "noFaces": {
+    "stones": 3335,
+    "ms": 5873,
     "msParts": {
-     "map": 1523,
-     "place": 3399
+     "map": 1961,
+     "place": 3864
     },
     "size": {
      "widthMm": 145.4,
      "heightMm": 162.7
     },
-    "bySize": {
-     "2": 2849,
-     "1.5": 466
-    },
     "byRole": {
-     "line": 364,
-     "outline": 263,
-     "area": 1545,
-     "hex": 335,
-     "seam": 808
+     "line": 388,
+     "outline": 254,
+     "area": 1544,
+     "hex": 339,
+     "seam": 810
     },
-    "stats": {
-     "features": 0,
-     "brows": 0,
-     "lines": 364,
-     "lineChains": 43,
-     "linePiecesDropped": 3,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 263,
-     "outlineChains": 11,
-     "area": 1545,
-     "hex": 335,
-     "seam": 808,
-     "recoloured": 95,
-     "settled": 23433,
-     "retoned": 91
+    "holeStep": {
+     "targeted": 69,
+     "closed": 16,
+     "opened": 2,
+     "left": 17
     },
+    "beforeHoleStep": [
+     2725,
+     3393,
+     515,
+     121,
+     38
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -3048,72 +2343,76 @@
       "pass": true
      },
      "lines": {
-      "lines": 46,
-      "clean": 43,
+      "lines": 52,
+      "clean": 49,
       "offColour": 0,
-      "offSize": 0,
+      "offSize": 3,
       "breaks": 0,
       "mixedLines": 0,
       "brokenLines": 0,
-      "missing": 3,
+      "missing": 2,
       "pass": false,
       "chains": {
-       "count": 54,
+       "count": 62,
        "wrongStones": 0,
        "short": 0,
        "pass": true
       }
      },
      "areas": {
-      "areas": 82,
+      "areas": 83,
       "overTones": 0,
       "maxTones": 3,
-      "patches": 234,
+      "patches": 228,
       "smallPatches": 0,
       "smallPatchStones": 0,
       "halftonePatches": 0,
       "pass": true
      },
      "holes": {
-      "holes": 647,
+      "holes": 18,
       "largestMm": 1.64,
-      "at": 647,
+      "at": 18,
       "pass": false,
       "histogram": [
-       2796,
-       3316,
-       555,
-       130,
-       48
+       2725,
+       3378,
+       535,
+       145,
+       19
       ]
      }
-    },
-    "map": {
-     "lines": 46,
-     "darkLines": 13,
-     "lightLines": 33,
-     "brows": 0,
-     "areas": 87,
-     "faces": 0,
-     "discs": 3333
     }
    },
-   "closeUps": 5
+   "picture": "rs-jesus.jpg"
   },
   {
    "name": "rs-lake",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "ai": 0,
+    "why": "no landmark face found in the AI image"
+   },
+   "holesLeft": {
+    "count": 28,
+    "fixedOnly": 20
+   },
+   "map": {
+    "lines": 84,
+    "strands": 3,
+    "strandLines": 1,
+    "brows": 0,
+    "areas": 115,
+    "regions": 0
+   },
    "today": {
     "stones": 4100,
-    "ms": 871,
+    "ms": 842,
     "size": {
      "widthMm": 154.7,
      "heightMm": 152.1
-    },
-    "bySize": {
-     "2": 3927,
-     "1.5": 173
     },
     "checks": {
      "gaps": {
@@ -3122,8 +2421,8 @@
       "pass": true
      },
      "lines": {
-      "lines": 83,
-      "clean": 45,
+      "lines": 84,
+      "clean": 46,
       "offColour": 13,
       "offSize": 19,
       "breaks": 2,
@@ -3136,16 +2435,16 @@
       "areas": 113,
       "overTones": 50,
       "maxTones": 11,
-      "patches": 819,
-      "smallPatches": 581,
-      "smallPatchStones": 806,
+      "patches": 818,
+      "smallPatches": 580,
+      "smallPatchStones": 805,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 1142,
+      "holes": 88,
       "largestMm": 1.7,
-      "at": 1142,
+      "at": 88,
       "pass": false,
       "histogram": [
        3053,
@@ -3157,118 +2456,37 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 3959,
-    "ms": 5176,
-    "holes": 1046,
-    "largestMm": 1.7,
-    "histogram": [
-     3190,
-     4020,
-     889,
-     207,
-     76
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 3857,
-    "ms": 3573,
-    "size": {
-     "widthMm": 153.3,
-     "heightMm": 151.3
-    },
-    "bySize": {
-     "2": 3346,
-     "1.5": 511
-    },
-    "byRole": {
-     "line": 252,
-     "outline": 408,
-     "area": 2177,
-     "seam": 1020
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 83,
-      "clean": 44,
-      "offColour": 1,
-      "offSize": 19,
-      "breaks": 6,
-      "mixedLines": 1,
-      "brokenLines": 5,
-      "missing": 16,
-      "pass": false
-     },
-     "areas": {
-      "areas": 113,
-      "overTones": 10,
-      "maxTones": 6,
-      "patches": 426,
-      "smallPatches": 78,
-      "smallPatchStones": 109,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 1564,
-      "largestMm": 1.62,
-      "at": 1564,
-      "pass": false,
-      "histogram": [
-       3214,
-       4121,
-       1366,
-       301,
-       75
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 4002,
-    "ms": 5327,
+   "noFaces": {
+    "stones": 4009,
+    "ms": 7337,
     "msParts": {
-     "map": 1645,
-     "place": 3615
+     "map": 2241,
+     "place": 5029
     },
     "size": {
      "widthMm": 153.7,
      "heightMm": 151.3
     },
-    "bySize": {
-     "2": 3505,
-     "1.5": 497
-    },
     "byRole": {
-     "line": 407,
-     "outline": 390,
-     "area": 2112,
-     "hex": 220,
-     "seam": 873
+     "line": 410,
+     "outline": 389,
+     "area": 2114,
+     "hex": 217,
+     "seam": 879
     },
-    "stats": {
-     "features": 0,
-     "brows": 0,
-     "lines": 407,
-     "lineChains": 75,
-     "linePiecesDropped": 8,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 390,
-     "outlineChains": 27,
-     "area": 2112,
-     "hex": 220,
-     "seam": 873,
-     "recoloured": 150,
-     "settled": 25528,
-     "retoned": 95
+    "holeStep": {
+     "targeted": 112,
+     "closed": 24,
+     "opened": 3,
+     "left": 28
     },
+    "beforeHoleStep": [
+     3470,
+     4049,
+     606,
+     143,
+     66
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -3276,8 +2494,8 @@
       "pass": true
      },
      "lines": {
-      "lines": 83,
-      "clean": 75,
+      "lines": 84,
+      "clean": 76,
       "offColour": 0,
       "offSize": 0,
       "breaks": 0,
@@ -3286,7 +2504,7 @@
       "missing": 7,
       "pass": false,
       "chains": {
-       "count": 102,
+       "count": 104,
        "wrongStones": 0,
        "short": 0,
        "pass": true
@@ -3296,53 +2514,55 @@
       "areas": 113,
       "overTones": 0,
       "maxTones": 3,
-      "patches": 290,
+      "patches": 316,
       "smallPatches": 0,
       "smallPatchStones": 0,
       "halftonePatches": 0,
       "pass": true
      },
      "holes": {
-      "holes": 728,
+      "holes": 29,
       "largestMm": 1.66,
-      "at": 728,
+      "at": 29,
       "pass": false,
       "histogram": [
-       3479,
-       4084,
-       616,
-       141,
-       58
+       3480,
+       4026,
+       630,
+       168,
+       36
       ]
      }
-    },
-    "map": {
-     "lines": 83,
-     "darkLines": 36,
-     "lightLines": 47,
-     "brows": 0,
-     "areas": 115,
-     "faces": 0,
-     "discs": 4097
     }
-   },
-   "closeUps": 5
+   }
   },
   {
    "name": "rs-leopard",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "ai": 0,
+    "why": "no landmark face found in the AI image"
+   },
+   "holesLeft": {
+    "count": 21,
+    "fixedOnly": 15
+   },
+   "map": {
+    "lines": 65,
+    "strands": 0,
+    "strandLines": 0,
+    "brows": 0,
+    "areas": 84,
+    "regions": 2
+   },
    "today": {
     "stones": 2436,
-    "ms": 569,
+    "ms": 546,
     "size": {
      "widthMm": 117.3,
      "heightMm": 153.7
-    },
-    "bySize": {
-     "2": 2206,
-     "1.5": 228,
-     "4.7": 2
     },
     "checks": {
      "gaps": {
@@ -3372,9 +2592,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 892,
+      "holes": 94,
       "largestMm": 1.68,
-      "at": 892,
+      "at": 94,
       "pass": false,
       "histogram": [
        1868,
@@ -3386,96 +2606,16 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 2393,
-    "ms": 3782,
-    "holes": 570,
-    "largestMm": 1.68,
-    "histogram": [
-     1897,
-     2486,
-     500,
-     117,
-     43
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 2338,
-    "ms": 2323,
-    "size": {
-     "widthMm": 116.3,
-     "heightMm": 152.7
-    },
-    "bySize": {
-     "2": 1962,
-     "1.5": 374,
-     "4.7": 2
-    },
-    "byRole": {
-     "feature": 118,
-     "line": 187,
-     "outline": 257,
-     "area": 1246,
-     "seam": 530
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 65,
-      "clean": 41,
-      "offColour": 0,
-      "offSize": 7,
-      "breaks": 1,
-      "mixedLines": 0,
-      "brokenLines": 1,
-      "missing": 12,
-      "pass": false
-     },
-     "areas": {
-      "areas": 81,
-      "overTones": 13,
-      "maxTones": 5,
-      "patches": 295,
-      "smallPatches": 83,
-      "smallPatchStones": 118,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 987,
-      "largestMm": 1.68,
-      "at": 987,
-      "pass": false,
-      "histogram": [
-       1871,
-       2397,
-       899,
-       183,
-       50
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 2403,
-    "ms": 3706,
+   "noFaces": {
+    "stones": 2405,
+    "ms": 4408,
     "msParts": {
-     "map": 1173,
-     "place": 2500
+     "map": 1487,
+     "place": 2890
     },
     "size": {
      "widthMm": 116.4,
      "heightMm": 152.7
-    },
-    "bySize": {
-     "2": 2050,
-     "1.5": 351,
-     "4.7": 2
     },
     "byRole": {
      "feature": 105,
@@ -3483,25 +2623,21 @@
      "outline": 249,
      "area": 1128,
      "hex": 156,
-     "seam": 494
+     "seam": 496
     },
-    "stats": {
-     "features": 105,
-     "brows": 0,
-     "lines": 271,
-     "lineChains": 58,
-     "linePiecesDropped": 8,
-     "lineBreaks": 1,
-     "crossings": 1,
-     "outline": 249,
-     "outlineChains": 19,
-     "area": 1128,
-     "hex": 156,
-     "seam": 494,
-     "recoloured": 69,
-     "settled": 16762,
-     "retoned": 43
+    "holeStep": {
+     "targeted": 76,
+     "closed": 11,
+     "opened": 2,
+     "left": 21
     },
+    "beforeHoleStep": [
+     2070,
+     2388,
+     487,
+     114,
+     37
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -3536,45 +2672,48 @@
       "pass": true
      },
      "holes": {
-      "holes": 549,
+      "holes": 26,
       "largestMm": 1.68,
-      "at": 549,
+      "at": 26,
       "pass": false,
       "histogram": [
-       2070,
-       2388,
-       487,
-       114,
-       37
+       2066,
+       2384,
+       497,
+       122,
+       23
       ]
      }
-    },
-    "map": {
-     "lines": 65,
-     "darkLines": 37,
-     "lightLines": 28,
-     "brows": 0,
-     "areas": 84,
-     "faces": 2,
-     "discs": 2433
     }
-   },
-   "closeUps": 6
+   }
   },
   {
    "name": "rs-logo",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "ai": 0,
+    "why": "no landmark face found in the AI image"
+   },
+   "holesLeft": {
+    "count": 37,
+    "fixedOnly": 31
+   },
+   "map": {
+    "lines": 8,
+    "strands": 25,
+    "strandLines": 8,
+    "brows": 0,
+    "areas": 22,
+    "regions": 0
+   },
    "today": {
     "stones": 833,
-    "ms": 294,
+    "ms": 267,
     "size": {
      "widthMm": 144.9,
      "heightMm": 79.1
-    },
-    "bySize": {
-     "2": 824,
-     "1.5": 9
     },
     "checks": {
      "gaps": {
@@ -3583,8 +2722,8 @@
       "pass": true
      },
      "lines": {
-      "lines": 0,
-      "clean": 0,
+      "lines": 8,
+      "clean": 8,
       "offColour": 0,
       "offSize": 0,
       "breaks": 0,
@@ -3604,10 +2743,10 @@
       "pass": true
      },
      "holes": {
-      "holes": 88,
+      "holes": 0,
       "largestMm": 1.37,
-      "at": 88,
-      "pass": false,
+      "at": 0,
+      "pass": true,
       "histogram": [
        118,
        167,
@@ -3618,115 +2757,36 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 773,
-    "ms": 1284,
-    "holes": 78,
-    "largestMm": 1.6,
-    "histogram": [
-     553,
-     359,
-     63,
-     36,
-     42
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 773,
-    "ms": 1022,
-    "size": {
-     "widthMm": 144.2,
-     "heightMm": 78.3
-    },
-    "bySize": {
-     "2": 353,
-     "1.5": 420
-    },
-    "byRole": {
-     "outline": 309,
-     "area": 5,
-     "seam": 459
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 0,
-      "clean": 0,
-      "offColour": 0,
-      "offSize": 0,
-      "breaks": 0,
-      "mixedLines": 0,
-      "brokenLines": 0,
-      "missing": 0,
-      "pass": true
-     },
-     "areas": {
-      "areas": 2,
-      "overTones": 0,
-      "maxTones": 1,
-      "patches": 7,
-      "smallPatches": 0,
-      "smallPatchStones": 0,
-      "halftonePatches": 0,
-      "pass": true
-     },
-     "holes": {
-      "holes": 75,
-      "largestMm": 1.6,
-      "at": 75,
-      "pass": false,
-      "histogram": [
-       550,
-       352,
-       59,
-       34,
-       46
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 773,
-    "ms": 1367,
+   "noFaces": {
+    "stones": 766,
+    "ms": 1678,
     "msParts": {
-     "map": 354,
-     "place": 1008
+     "map": 519,
+     "place": 1156
     },
     "size": {
      "widthMm": 144.2,
-     "heightMm": 78.3
-    },
-    "bySize": {
-     "2": 353,
-     "1.5": 420
+     "heightMm": 78.5
     },
     "byRole": {
-     "outline": 309,
-     "area": 6,
-     "seam": 458
+     "line": 30,
+     "outline": 303,
+     "area": 12,
+     "seam": 421
     },
-    "stats": {
-     "features": 0,
-     "brows": 0,
-     "lines": 0,
-     "lineChains": 0,
-     "linePiecesDropped": 0,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 309,
-     "outlineChains": 24,
-     "area": 6,
-     "hex": 0,
-     "seam": 458,
-     "recoloured": 0,
-     "settled": 813,
-     "retoned": 36
+    "holeStep": {
+     "targeted": 114,
+     "closed": 1,
+     "opened": 2,
+     "left": 37
     },
+    "beforeHoleStep": [
+     518,
+     345,
+     72,
+     47,
+     44
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -3734,17 +2794,17 @@
       "pass": true
      },
      "lines": {
-      "lines": 0,
-      "clean": 0,
+      "lines": 8,
+      "clean": 5,
       "offColour": 0,
-      "offSize": 0,
+      "offSize": 3,
       "breaks": 0,
       "mixedLines": 0,
       "brokenLines": 0,
       "missing": 0,
-      "pass": true,
+      "pass": false,
       "chains": {
-       "count": 24,
+       "count": 33,
        "wrongStones": 0,
        "short": 0,
        "pass": true
@@ -3761,46 +2821,48 @@
       "pass": true
      },
      "holes": {
-      "holes": 78,
+      "holes": 33,
       "largestMm": 1.6,
-      "at": 78,
+      "at": 33,
       "pass": false,
       "histogram": [
-       553,
-       359,
-       63,
-       36,
-       42
+       520,
+       345,
+       72,
+       48,
+       41
       ]
      }
-    },
-    "map": {
-     "lines": 0,
-     "darkLines": 0,
-     "lightLines": 0,
-     "brows": 0,
-     "areas": 6,
-     "faces": 0,
-     "discs": 833
     }
-   },
-   "closeUps": 4
+   }
   },
   {
    "name": "rs-parrot",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "ai": 0,
+    "why": "no landmark face found in the AI image"
+   },
+   "holesLeft": {
+    "count": 25,
+    "fixedOnly": 18
+   },
+   "map": {
+    "lines": 40,
+    "strands": 1,
+    "strandLines": 1,
+    "brows": 0,
+    "areas": 84,
+    "regions": 0
+   },
    "today": {
     "stones": 2552,
-    "ms": 616,
+    "ms": 591,
     "size": {
      "widthMm": 168.3,
      "heightMm": 151.6
-    },
-    "bySize": {
-     "2": 2307,
-     "4": 1,
-     "1.5": 244
     },
     "checks": {
      "gaps": {
@@ -3823,16 +2885,16 @@
       "areas": 83,
       "overTones": 42,
       "maxTones": 9,
-      "patches": 551,
-      "smallPatches": 367,
-      "smallPatchStones": 510,
+      "patches": 552,
+      "smallPatches": 368,
+      "smallPatchStones": 513,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 1017,
+      "holes": 114,
       "largestMm": 1.67,
-      "at": 1017,
+      "at": 114,
       "pass": false,
       "histogram": [
        1685,
@@ -3844,118 +2906,37 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 2510,
-    "ms": 3989,
-    "holes": 522,
-    "largestMm": 1.64,
-    "histogram": [
-     2131,
-     2415,
-     456,
-     83,
-     43
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 2407,
-    "ms": 2688,
-    "size": {
-     "widthMm": 167.8,
-     "heightMm": 150.5
-    },
-    "bySize": {
-     "2": 2079,
-     "1.5": 328
-    },
-    "byRole": {
-     "line": 148,
-     "outline": 378,
-     "area": 1190,
-     "seam": 691
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 40,
-      "clean": 17,
-      "offColour": 0,
-      "offSize": 21,
-      "breaks": 6,
-      "mixedLines": 0,
-      "brokenLines": 6,
-      "missing": 4,
-      "pass": false
-     },
-     "areas": {
-      "areas": 80,
-      "overTones": 3,
-      "maxTones": 6,
-      "patches": 318,
-      "smallPatches": 86,
-      "smallPatchStones": 135,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 1134,
-      "largestMm": 1.69,
-      "at": 1134,
-      "pass": false,
-      "histogram": [
-       1759,
-       2448,
-       1004,
-       227,
-       67
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 2528,
-    "ms": 3946,
+   "noFaces": {
+    "stones": 2514,
+    "ms": 4844,
     "msParts": {
-     "map": 1274,
-     "place": 2641
+     "map": 1580,
+     "place": 3236
     },
     "size": {
      "widthMm": 167.6,
-     "heightMm": 150.2
-    },
-    "bySize": {
-     "2": 2220,
-     "1.5": 308
+     "heightMm": 150.1
     },
     "byRole": {
      "line": 239,
-     "outline": 367,
-     "area": 975,
-     "hex": 304,
-     "seam": 643
+     "outline": 365,
+     "area": 977,
+     "hex": 255,
+     "seam": 678
     },
-    "stats": {
-     "features": 0,
-     "brows": 0,
-     "lines": 239,
-     "lineChains": 38,
-     "linePiecesDropped": 2,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 367,
-     "outlineChains": 31,
-     "area": 975,
-     "hex": 304,
-     "seam": 643,
-     "recoloured": 56,
-     "settled": 15149,
-     "retoned": 65
+    "holeStep": {
+     "targeted": 88,
+     "closed": 9,
+     "opened": 4,
+     "left": 25
     },
+    "beforeHoleStep": [
+     2144,
+     2462,
+     509,
+     118,
+     45
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -3973,7 +2954,7 @@
       "missing": 2,
       "pass": false,
       "chains": {
-       "count": 69,
+       "count": 67,
        "wrongStones": 0,
        "short": 0,
        "pass": true
@@ -3983,53 +2964,55 @@
       "areas": 80,
       "overTones": 0,
       "maxTones": 3,
-      "patches": 202,
+      "patches": 219,
       "smallPatches": 0,
       "smallPatchStones": 0,
       "halftonePatches": 0,
       "pass": true
      },
      "holes": {
-      "holes": 524,
-      "largestMm": 1.66,
-      "at": 524,
+      "holes": 23,
+      "largestMm": 1.62,
+      "at": 23,
       "pass": false,
       "histogram": [
-       2124,
-       2298,
-       446,
-       114,
-       40
+       2132,
+       2464,
+       513,
+       128,
+       29
       ]
      }
-    },
-    "map": {
-     "lines": 40,
-     "darkLines": 15,
-     "lightLines": 25,
-     "brows": 0,
-     "areas": 84,
-     "faces": 0,
-     "discs": 2496
     }
-   },
-   "closeUps": 5
+   }
   },
   {
    "name": "rs-portrait",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 1,
+    "ai": 1,
+    "why": null
+   },
+   "holesLeft": {
+    "count": 36,
+    "fixedOnly": 31
+   },
+   "map": {
+    "lines": 35,
+    "strands": 9,
+    "strandLines": 9,
+    "brows": 2,
+    "areas": 47,
+    "regions": 4
+   },
    "today": {
     "stones": 4045,
-    "ms": 799,
+    "ms": 749,
     "size": {
      "widthMm": 149.5,
      "heightMm": 166
-    },
-    "bySize": {
-     "2": 3591,
-     "1.5": 452,
-     "2.8": 2
     },
     "checks": {
      "gaps": {
@@ -4038,30 +3021,30 @@
       "pass": true
      },
      "lines": {
-      "lines": 26,
-      "clean": 4,
-      "offColour": 1,
-      "offSize": 33,
-      "breaks": 1,
-      "mixedLines": 1,
-      "brokenLines": 1,
-      "missing": 3,
+      "lines": 35,
+      "clean": 7,
+      "offColour": 2,
+      "offSize": 35,
+      "breaks": 4,
+      "mixedLines": 2,
+      "brokenLines": 3,
+      "missing": 4,
       "pass": false
      },
      "areas": {
-      "areas": 43,
-      "overTones": 21,
-      "maxTones": 10,
-      "patches": 781,
-      "smallPatches": 630,
-      "smallPatchStones": 887,
+      "areas": 46,
+      "overTones": 25,
+      "maxTones": 11,
+      "patches": 833,
+      "smallPatches": 674,
+      "smallPatchStones": 953,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 1064,
+      "holes": 223,
       "largestMm": 1.72,
-      "at": 1064,
+      "at": 223,
       "pass": false,
       "histogram": [
        3375,
@@ -4070,126 +3053,81 @@
        348,
        241
       ]
-     }
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "outline": false,
+         "upper": 0.62,
+         "lower": 0.33,
+         "white": true,
+         "whites": 8,
+         "pupil": true,
+         "pupilD": 2.8,
+         "pupilShare": 0.34,
+         "catchLight": true,
+         "side": 1
+        },
+        {
+         "outline": false,
+         "upper": 0.81,
+         "lower": 0.38,
+         "white": true,
+         "whites": 10,
+         "pupil": true,
+         "pupilD": 2.8,
+         "pupilShare": 0.32,
+         "catchLight": true,
+         "side": 1
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "outline": true,
+        "outlineShare": 0.94,
+        "mouthLine": false,
+        "mouthLineShare": 0.66
+       },
+       "skinL": 77,
+       "pass": false
+      }
+     ]
     }
    },
-   "oneRow": {
-    "stones": 3913,
-    "ms": 5345,
-    "holes": 1214,
-    "largestMm": 1.66,
-    "histogram": [
-     2723,
-     3502,
-     1050,
-     260,
-     106
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 3912,
-    "ms": 3252,
-    "size": {
-     "widthMm": 149.4,
-     "heightMm": 165.4
-    },
-    "bySize": {
-     "2": 3253,
-     "1.5": 657,
-     "2.8": 2
-    },
-    "byRole": {
-     "feature": 471,
-     "line": 96,
-     "outline": 351,
-     "area": 2221,
-     "seam": 773
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 26,
-      "clean": 18,
-      "offColour": 0,
-      "offSize": 4,
-      "breaks": 1,
-      "mixedLines": 0,
-      "brokenLines": 1,
-      "missing": 4,
-      "pass": false
-     },
-     "areas": {
-      "areas": 42,
-      "overTones": 4,
-      "maxTones": 5,
-      "patches": 174,
-      "smallPatches": 27,
-      "smallPatchStones": 39,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 1245,
-      "largestMm": 1.68,
-      "at": 1245,
-      "pass": false,
-      "histogram": [
-       3119,
-       3529,
-       1067,
-       264,
-       84
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 3946,
-    "ms": 5325,
+   "noFaces": {
+    "stones": 3999,
+    "ms": 7194,
     "msParts": {
-     "map": 1483,
-     "place": 3755
+     "map": 1945,
+     "place": 5173
     },
     "size": {
-     "widthMm": 149.4,
+     "widthMm": 149,
      "heightMm": 165.4
-    },
-    "bySize": {
-     "2": 3332,
-     "1.5": 612,
-     "2.8": 2
     },
     "byRole": {
      "feature": 466,
      "brow": 28,
-     "line": 112,
-     "outline": 354,
-     "area": 1341,
-     "hex": 592,
-     "seam": 1053
+     "line": 179,
+     "outline": 348,
+     "area": 1337,
+     "hex": 617,
+     "seam": 1024
     },
-    "stats": {
-     "features": 466,
-     "brows": 28,
-     "lines": 112,
-     "lineChains": 25,
-     "linePiecesDropped": 1,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 354,
-     "outlineChains": 12,
-     "area": 1341,
-     "hex": 592,
-     "seam": 1053,
-     "recoloured": 82,
-     "settled": 27328,
-     "retoned": 64
+    "holeStep": {
+     "targeted": 139,
+     "closed": 26,
+     "opened": 10,
+     "left": 34
     },
+    "beforeHoleStep": [
+     3011,
+     3451,
+     735,
+     194,
+     83
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -4197,8 +3135,8 @@
       "pass": true
      },
      "lines": {
-      "lines": 26,
-      "clean": 25,
+      "lines": 35,
+      "clean": 33,
       "offColour": 0,
       "offSize": 0,
       "breaks": 0,
@@ -4207,62 +3145,339 @@
       "missing": 1,
       "pass": false,
       "chains": {
-       "count": 41,
+       "count": 54,
        "wrongStones": 0,
        "short": 0,
        "pass": true
       }
      },
      "areas": {
-      "areas": 41,
-      "overTones": 0,
-      "maxTones": 3,
-      "patches": 141,
-      "smallPatches": 1,
-      "smallPatchStones": 3,
+      "areas": 40,
+      "overTones": 2,
+      "maxTones": 4,
+      "patches": 156,
+      "smallPatches": 15,
+      "smallPatchStones": 22,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 927,
+      "holes": 36,
       "largestMm": 1.66,
-      "at": 927,
+      "at": 36,
       "pass": false,
       "histogram": [
-       3115,
-       3615,
-       804,
-       173,
-       100
+       3020,
+       3434,
+       754,
+       227,
+       42
       ]
-     }
-    },
-    "map": {
-     "lines": 26,
-     "darkLines": 20,
-     "lightLines": 6,
-     "brows": 2,
-     "areas": 46,
-     "faces": 3,
-     "discs": 3653
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "outline": false,
+         "upper": 0.62,
+         "lower": 0.33,
+         "white": true,
+         "whites": 8,
+         "pupil": true,
+         "pupilD": 2.8,
+         "pupilShare": 0.34,
+         "catchLight": true,
+         "side": 1
+        },
+        {
+         "outline": false,
+         "upper": 0.81,
+         "lower": 0.38,
+         "white": true,
+         "whites": 10,
+         "pupil": true,
+         "pupilD": 2.8,
+         "pupilShare": 0.32,
+         "catchLight": true,
+         "side": 1
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "outline": true,
+        "outlineShare": 0.93,
+        "mouthLine": false,
+        "mouthLineShare": 0.66
+       },
+       "skinL": 77,
+       "pass": false
+      }
+     ]
     }
    },
-   "closeUps": 6
+   "withFaces": {
+    "stones": 4031,
+    "ms": 7019,
+    "msParts": {
+     "map": 1733,
+     "place": 5217
+    },
+    "size": {
+     "widthMm": 149,
+     "heightMm": 165.4
+    },
+    "byRole": {
+     "feature": 194,
+     "brow": 33,
+     "line": 176,
+     "outline": 348,
+     "area": 1326,
+     "hex": 781,
+     "seam": 1173
+    },
+    "holeStep": {
+     "targeted": 146,
+     "closed": 25,
+     "opened": 12,
+     "left": 36
+    },
+    "beforeHoleStep": [
+     3002,
+     3625,
+     726,
+     224,
+     88
+    ],
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 35,
+      "clean": 34,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false,
+      "chains": {
+       "count": 58,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 45,
+      "overTones": 0,
+      "maxTones": 3,
+      "patches": 147,
+      "smallPatches": 3,
+      "smallPatchStones": 6,
+      "halftonePatches": 0,
+      "pass": false
+     },
+     "holes": {
+      "holes": 34,
+      "largestMm": 1.65,
+      "at": 34,
+      "pass": false,
+      "histogram": [
+       2997,
+       3612,
+       749,
+       257,
+       43
+      ]
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "outline": true,
+         "upper": 1,
+         "lower": 1,
+         "white": true,
+         "whites": 6,
+         "pupil": true,
+         "pupilD": 4,
+         "pupilShare": 0.49,
+         "catchLight": true,
+         "side": 1
+        },
+        {
+         "outline": true,
+         "upper": 1,
+         "lower": 1,
+         "white": true,
+         "whites": 6,
+         "pupil": true,
+         "pupilD": 4,
+         "pupilShare": 0.46,
+         "catchLight": true,
+         "side": 1
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "outline": true,
+        "outlineShare": 1,
+        "mouthLine": true,
+        "mouthLineShare": 1
+       },
+       "skinL": 77,
+       "pass": true
+      }
+     ]
+    },
+    "features": [
+     {
+      "ipdMm": 36.6,
+      "light": {
+       "side": "right",
+       "source": "shading",
+       "diffL": 9.5
+      },
+      "skin": "crystal-clear",
+      "eyes": [
+       {
+        "widthMm": 14.39,
+        "heightMm": 7.46,
+        "irisRMm": 4.06,
+        "pupilSnapMm": 0.99,
+        "upperLid": 9,
+        "lowerLid": 9,
+        "lowerLidSize": "ss4",
+        "pupil": {
+         "d": 4,
+         "offMm": 0.45,
+         "share": 0.49
+        },
+        "catchLight": {
+         "turnDeg": 45
+        },
+        "irisColour": "grey",
+        "irisSource": "AI discs",
+        "ring": 0,
+        "ringSkipped": "ring does not fit (3 of 10)",
+        "lashes": {
+         "drawn": false,
+         "share": 0.62,
+         "innerShare": 0.8,
+         "stones": 0
+        },
+        "white": 6
+       },
+       {
+        "widthMm": 21.79,
+        "heightMm": 7.01,
+        "irisRMm": 4.39,
+        "pupilSnapMm": 0.53,
+        "upperLid": 12,
+        "lowerLid": 13,
+        "lowerLidSize": "ss4",
+        "pupil": {
+         "d": 4,
+         "offMm": 0,
+         "share": 0.46
+        },
+        "catchLight": {
+         "turnDeg": 30
+        },
+        "irisColour": "grey",
+        "irisSource": "AI discs",
+        "ring": 4,
+        "irisFill": 4,
+        "lashes": {
+         "drawn": false,
+         "share": 0.45,
+         "innerShare": 0.53,
+         "stones": 0
+        },
+        "white": 6
+       }
+      ],
+      "widthRatio": 0.66,
+      "pupilSize": 4,
+      "nose": {
+       "nostrils": [
+        {
+         "side": "left",
+         "placed": true,
+         "size": "ss6",
+         "colour": "jet"
+        },
+        {
+         "side": "right",
+         "placed": true,
+         "size": "ss6",
+         "colour": "jet"
+        }
+       ],
+       "shadow": {
+        "side": "left",
+        "stones": 14,
+        "colour": "silk"
+       },
+       "shadowL": [
+        46,
+        65.5
+       ]
+      },
+      "mouth": {
+       "open": false,
+       "colours": {
+        "upper": "light-siam",
+        "lower": "scarlet",
+        "outline": "indian-siam",
+        "line": "jet"
+       },
+       "source": "AI discs",
+       "outline": 43,
+       "outlineSize": "ss4",
+       "line": 15,
+       "upper": 23,
+       "lower": 30
+      }
+     }
+    ],
+    "notBuilt": [
+     "face 1 left eye iris ring: ring does not fit (3 of 10)"
+    ]
+   },
+   "picture": "rs-portrait.jpg"
   },
   {
    "name": "rs-rose",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "ai": 0,
+    "why": "no landmark face found in the AI image"
+   },
+   "holesLeft": {
+    "count": 3,
+    "fixedOnly": 2
+   },
+   "map": {
+    "lines": 34,
+    "strands": 1,
+    "strandLines": 0,
+    "brows": 0,
+    "areas": 47,
+    "regions": 0
+   },
    "today": {
     "stones": 1846,
-    "ms": 481,
+    "ms": 404,
     "size": {
      "widthMm": 121,
      "heightMm": 130.5
-    },
-    "bySize": {
-     "2": 1689,
-     "1.5": 157
     },
     "checks": {
      "gaps": {
@@ -4292,9 +3507,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 255,
+      "holes": 21,
       "largestMm": 1.65,
-      "at": 255,
+      "at": 21,
       "pass": false,
       "histogram": [
        1587,
@@ -4306,118 +3521,37 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 1706,
-    "ms": 2543,
-    "holes": 448,
-    "largestMm": 1.58,
-    "histogram": [
-     1213,
-     1651,
-     387,
-     71,
-     20
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 1673,
-    "ms": 1819,
-    "size": {
-     "widthMm": 120.1,
-     "heightMm": 130
-    },
-    "bySize": {
-     "2": 1485,
-     "1.5": 188
-    },
-    "byRole": {
-     "line": 156,
-     "outline": 250,
-     "area": 879,
-     "seam": 388
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 34,
-      "clean": 28,
-      "offColour": 0,
-      "offSize": 6,
-      "breaks": 3,
-      "mixedLines": 0,
-      "brokenLines": 3,
-      "missing": 1,
-      "pass": false
-     },
-     "areas": {
-      "areas": 39,
-      "overTones": 0,
-      "maxTones": 2,
-      "patches": 100,
-      "smallPatches": 0,
-      "smallPatchStones": 0,
-      "halftonePatches": 0,
-      "pass": true
-     },
-     "holes": {
-      "holes": 526,
-      "largestMm": 1.69,
-      "at": 526,
-      "pass": false,
-      "histogram": [
-       1306,
-       1800,
-       474,
-       94,
-       32
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 1720,
-    "ms": 2424,
+   "noFaces": {
+    "stones": 1722,
+    "ms": 2938,
     "msParts": {
-     "map": 705,
-     "place": 1703
+     "map": 859,
+     "place": 2066
     },
     "size": {
      "widthMm": 120.1,
      "heightMm": 130
-    },
-    "bySize": {
-     "2": 1522,
-     "1.5": 198
     },
     "byRole": {
      "line": 182,
      "outline": 231,
      "area": 849,
      "hex": 107,
-     "seam": 351
+     "seam": 353
     },
-    "stats": {
-     "features": 0,
-     "brows": 0,
-     "lines": 182,
-     "lineChains": 33,
-     "linePiecesDropped": 1,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 231,
-     "outlineChains": 14,
-     "area": 849,
-     "hex": 107,
-     "seam": 351,
-     "recoloured": 6,
-     "settled": 10443,
-     "retoned": 52
+    "holeStep": {
+     "targeted": 19,
+     "closed": 9,
+     "opened": 1,
+     "left": 3
     },
+    "beforeHoleStep": [
+     1447,
+     1685,
+     308,
+     52,
+     14
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -4435,7 +3569,7 @@
       "missing": 0,
       "pass": false,
       "chains": {
-       "count": 47,
+       "count": 46,
        "wrongStones": 0,
        "short": 0,
        "pass": true
@@ -4452,45 +3586,48 @@
       "pass": true
      },
      "holes": {
-      "holes": 332,
-      "largestMm": 1.59,
-      "at": 332,
+      "holes": 4,
+      "largestMm": 1.49,
+      "at": 4,
       "pass": false,
       "histogram": [
-       1441,
-       1676,
-       304,
-       56,
-       17
+       1449,
+       1668,
+       318,
+       60,
+       6
       ]
      }
-    },
-    "map": {
-     "lines": 34,
-     "darkLines": 29,
-     "lightLines": 5,
-     "brows": 0,
-     "areas": 47,
-     "faces": 0,
-     "discs": 1849
     }
-   },
-   "closeUps": 5
+   }
   },
   {
    "name": "rs-tulips",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 0,
+    "ai": 0,
+    "why": "no landmark face found in the AI image"
+   },
+   "holesLeft": {
+    "count": 26,
+    "fixedOnly": 20
+   },
+   "map": {
+    "lines": 42,
+    "strands": 8,
+    "strandLines": 3,
+    "brows": 0,
+    "areas": 74,
+    "regions": 0
+   },
    "today": {
     "stones": 2675,
-    "ms": 625,
+    "ms": 558,
     "size": {
      "widthMm": 140.3,
      "heightMm": 141.7
-    },
-    "bySize": {
-     "2": 2547,
-     "1.5": 128
     },
     "checks": {
      "gaps": {
@@ -4499,13 +3636,13 @@
       "pass": true
      },
      "lines": {
-      "lines": 38,
-      "clean": 27,
+      "lines": 42,
+      "clean": 30,
       "offColour": 3,
       "offSize": 12,
-      "breaks": 0,
+      "breaks": 1,
       "mixedLines": 2,
-      "brokenLines": 0,
+      "brokenLines": 1,
       "missing": 0,
       "pass": false
      },
@@ -4520,9 +3657,9 @@
       "pass": false
      },
      "holes": {
-      "holes": 698,
+      "holes": 50,
       "largestMm": 1.66,
-      "at": 698,
+      "at": 50,
       "pass": false,
       "histogram": [
        2002,
@@ -4534,118 +3671,37 @@
      }
     }
    },
-   "oneRow": {
-    "stones": 2565,
-    "ms": 4095,
-    "holes": 626,
-    "largestMm": 1.66,
-    "histogram": [
-     1944,
-     2519,
-     535,
-     109,
-     64
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 2537,
-    "ms": 2603,
-    "size": {
-     "widthMm": 139.9,
-     "heightMm": 141.1
-    },
-    "bySize": {
-     "2": 2238,
-     "1.5": 299
-    },
-    "byRole": {
-     "line": 286,
-     "outline": 441,
-     "area": 1199,
-     "seam": 611
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 38,
-      "clean": 30,
-      "offColour": 0,
-      "offSize": 7,
-      "breaks": 4,
-      "mixedLines": 0,
-      "brokenLines": 4,
-      "missing": 1,
-      "pass": false
-     },
-     "areas": {
-      "areas": 68,
-      "overTones": 1,
-      "maxTones": 5,
-      "patches": 228,
-      "smallPatches": 13,
-      "smallPatchStones": 18,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 720,
-      "largestMm": 1.67,
-      "at": 720,
-      "pass": false,
-      "histogram": [
-       2130,
-       2521,
-       648,
-       145,
-       63
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 2599,
-    "ms": 4079,
+   "noFaces": {
+    "stones": 2596,
+    "ms": 4995,
     "msParts": {
-     "map": 1214,
-     "place": 2834
+     "map": 1566,
+     "place": 3398
     },
     "size": {
      "widthMm": 139.9,
-     "heightMm": 141.1
-    },
-    "bySize": {
-     "2": 2291,
-     "1.5": 308
+     "heightMm": 141
     },
     "byRole": {
-     "line": 328,
-     "outline": 429,
-     "area": 1139,
-     "hex": 133,
-     "seam": 570
+     "line": 338,
+     "outline": 420,
+     "area": 1136,
+     "hex": 141,
+     "seam": 561
     },
-    "stats": {
-     "features": 0,
-     "brows": 0,
-     "lines": 328,
-     "lineChains": 37,
-     "linePiecesDropped": 1,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 429,
-     "outlineChains": 28,
-     "area": 1139,
-     "hex": 133,
-     "seam": 570,
-     "recoloured": 9,
-     "settled": 12868,
-     "retoned": 75
+    "holeStep": {
+     "targeted": 94,
+     "closed": 14,
+     "opened": 2,
+     "left": 26
     },
+    "beforeHoleStep": [
+     2169,
+     2377,
+     387,
+     98,
+     44
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -4653,17 +3709,17 @@
       "pass": true
      },
      "lines": {
-      "lines": 38,
-      "clean": 37,
+      "lines": 42,
+      "clean": 40,
       "offColour": 0,
-      "offSize": 0,
+      "offSize": 2,
       "breaks": 0,
       "mixedLines": 0,
       "brokenLines": 0,
       "missing": 1,
       "pass": false,
       "chains": {
-       "count": 65,
+       "count": 75,
        "wrongStones": 0,
        "short": 0,
        "pass": true
@@ -4673,53 +3729,55 @@
       "areas": 68,
       "overTones": 0,
       "maxTones": 2,
-      "patches": 169,
+      "patches": 177,
       "smallPatches": 0,
       "smallPatchStones": 0,
       "halftonePatches": 0,
       "pass": true
      },
      "holes": {
-      "holes": 496,
+      "holes": 26,
       "largestMm": 1.66,
-      "at": 496,
+      "at": 26,
       "pass": false,
       "histogram": [
-       2140,
-       2365,
-       425,
-       103,
-       53
+       2173,
+       2369,
+       402,
+       108,
+       29
       ]
      }
-    },
-    "map": {
-     "lines": 38,
-     "darkLines": 30,
-     "lightLines": 8,
-     "brows": 0,
-     "areas": 70,
-     "faces": 0,
-     "discs": 2677
     }
-   },
-   "closeUps": 5
+   }
   },
   {
    "name": "rs-woman",
    "set": "RS",
    "style": "colour",
+   "faces": {
+    "count": 1,
+    "ai": 1,
+    "why": null
+   },
+   "holesLeft": {
+    "count": 19,
+    "fixedOnly": 15
+   },
+   "map": {
+    "lines": 14,
+    "strands": 0,
+    "strandLines": 0,
+    "brows": 2,
+    "areas": 38,
+    "regions": 4
+   },
    "today": {
     "stones": 2627,
-    "ms": 598,
+    "ms": 607,
     "size": {
      "widthMm": 143.9,
      "heightMm": 146.7
-    },
-    "bySize": {
-     "2": 2411,
-     "1.5": 214,
-     "4.7": 2
     },
     "checks": {
      "gaps": {
@@ -4728,8 +3786,8 @@
       "pass": true
      },
      "lines": {
-      "lines": 13,
-      "clean": 5,
+      "lines": 14,
+      "clean": 6,
       "offColour": 4,
       "offSize": 5,
       "breaks": 1,
@@ -4739,19 +3797,19 @@
       "pass": false
      },
      "areas": {
-      "areas": 37,
-      "overTones": 9,
-      "maxTones": 5,
-      "patches": 202,
-      "smallPatches": 135,
-      "smallPatchStones": 190,
+      "areas": 38,
+      "overTones": 13,
+      "maxTones": 6,
+      "patches": 231,
+      "smallPatches": 157,
+      "smallPatchStones": 217,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 447,
+      "holes": 39,
       "largestMm": 1.65,
-      "at": 447,
+      "at": 39,
       "pass": false,
       "histogram": [
        2227,
@@ -4760,99 +3818,58 @@
        85,
        42
       ]
-     }
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "outline": false,
+         "upper": 0.57,
+         "lower": 0.14,
+         "white": true,
+         "whites": 2,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 1.12,
+         "catchLight": true,
+         "side": -1
+        },
+        {
+         "outline": false,
+         "upper": 0.24,
+         "lower": 0,
+         "white": false,
+         "whites": 0,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 1.41,
+         "catchLight": false,
+         "side": null
+        }
+       ],
+       "sameSide": null,
+       "lips": {
+        "outline": false,
+        "outlineShare": 0.63,
+        "mouthLine": false,
+        "mouthLineShare": 0.42
+       },
+       "skinL": 77,
+       "pass": false
+      }
+     ]
     }
    },
-   "oneRow": {
-    "stones": 2515,
-    "ms": 3429,
-    "holes": 696,
-    "largestMm": 1.69,
-    "histogram": [
-     1558,
-     2009,
-     524,
-     170,
-     86
-    ],
-    "gaps": true
-   },
-   "before": {
-    "stones": 2494,
-    "ms": 2343,
-    "size": {
-     "widthMm": 143.1,
-     "heightMm": 145.9
-    },
-    "bySize": {
-     "2": 2109,
-     "1.5": 383,
-     "4.7": 2
-    },
-    "byRole": {
-     "feature": 141,
-     "line": 41,
-     "outline": 243,
-     "area": 1523,
-     "seam": 546
-    },
-    "checks": {
-     "gaps": {
-      "violations": 0,
-      "minGapMm": 0.1,
-      "pass": true
-     },
-     "lines": {
-      "lines": 13,
-      "clean": 8,
-      "offColour": 0,
-      "offSize": 1,
-      "breaks": 1,
-      "mixedLines": 0,
-      "brokenLines": 1,
-      "missing": 2,
-      "pass": false
-     },
-     "areas": {
-      "areas": 36,
-      "overTones": 0,
-      "maxTones": 3,
-      "patches": 115,
-      "smallPatches": 22,
-      "smallPatchStones": 30,
-      "halftonePatches": 0,
-      "pass": false
-     },
-     "holes": {
-      "holes": 616,
-      "largestMm": 1.69,
-      "at": 616,
-      "pass": false,
-      "histogram": [
-       2198,
-       2331,
-       551,
-       109,
-       38
-      ]
-     }
-    }
-   },
-   "engine": {
-    "stones": 2529,
-    "ms": 3407,
+   "noFaces": {
+    "stones": 2536,
+    "ms": 5070,
     "msParts": {
-     "map": 1006,
-     "place": 2368
+     "map": 1374,
+     "place": 3666
     },
     "size": {
      "widthMm": 143.1,
      "heightMm": 145.9
-    },
-    "bySize": {
-     "2": 2238,
-     "1.5": 289,
-     "4.7": 2
     },
     "byRole": {
      "feature": 138,
@@ -4861,25 +3878,21 @@
      "outline": 243,
      "area": 718,
      "hex": 593,
-     "seam": 756
+     "seam": 763
     },
-    "stats": {
-     "features": 138,
-     "brows": 14,
-     "lines": 67,
-     "lineChains": 11,
-     "linePiecesDropped": 2,
-     "lineBreaks": 0,
-     "crossings": 0,
-     "outline": 243,
-     "outlineChains": 8,
-     "area": 718,
-     "hex": 593,
-     "seam": 756,
-     "recoloured": 46,
-     "settled": 14201,
-     "retoned": 25
+    "holeStep": {
+     "targeted": 98,
+     "closed": 19,
+     "opened": 7,
+     "left": 24
     },
+    "beforeHoleStep": [
+     1815,
+     2091,
+     374,
+     101,
+     54
+    ],
     "checks": {
      "gaps": {
       "violations": 0,
@@ -4887,10 +3900,10 @@
       "pass": true
      },
      "lines": {
-      "lines": 13,
+      "lines": 14,
       "clean": 11,
       "offColour": 0,
-      "offSize": 1,
+      "offSize": 6,
       "breaks": 0,
       "mixedLines": 0,
       "brokenLines": 0,
@@ -4904,40 +3917,308 @@
       }
      },
      "areas": {
-      "areas": 36,
-      "overTones": 0,
-      "maxTones": 3,
-      "patches": 91,
-      "smallPatches": 1,
-      "smallPatchStones": 1,
+      "areas": 37,
+      "overTones": 1,
+      "maxTones": 4,
+      "patches": 97,
+      "smallPatches": 4,
+      "smallPatchStones": 5,
       "halftonePatches": 0,
       "pass": false
      },
      "holes": {
-      "holes": 472,
+      "holes": 26,
       "largestMm": 1.69,
-      "at": 472,
+      "at": 26,
       "pass": false,
       "histogram": [
-       1815,
-       2091,
-       374,
-       101,
-       54
+       1825,
+       2070,
+       409,
+       122,
+       24
       ]
-     }
-    },
-    "map": {
-     "lines": 13,
-     "darkLines": 8,
-     "lightLines": 5,
-     "brows": 1,
-     "areas": 38,
-     "faces": 3,
-     "discs": 2629
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "outline": false,
+         "upper": 0.57,
+         "lower": 0.14,
+         "white": true,
+         "whites": 2,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 1.12,
+         "catchLight": true,
+         "side": -1
+        },
+        {
+         "outline": false,
+         "upper": 0.24,
+         "lower": 0,
+         "white": false,
+         "whites": 0,
+         "pupil": true,
+         "pupilD": 4.7,
+         "pupilShare": 1.41,
+         "catchLight": false,
+         "side": null
+        }
+       ],
+       "sameSide": null,
+       "lips": {
+        "outline": false,
+        "outlineShare": 0.63,
+        "mouthLine": false,
+        "mouthLineShare": 0.42
+       },
+       "skinL": 77,
+       "pass": false
+      }
+     ]
     }
    },
-   "closeUps": 6
+   "withFaces": {
+    "stones": 2549,
+    "ms": 4536,
+    "msParts": {
+     "map": 1230,
+     "place": 3280
+    },
+    "size": {
+     "widthMm": 143.1,
+     "heightMm": 145.9
+    },
+    "byRole": {
+     "feature": 75,
+     "brow": 13,
+     "line": 77,
+     "outline": 242,
+     "area": 699,
+     "hex": 651,
+     "seam": 792
+    },
+    "holeStep": {
+     "targeted": 78,
+     "closed": 16,
+     "opened": 5,
+     "left": 19
+    },
+    "beforeHoleStep": [
+     1757,
+     2011,
+     415,
+     101,
+     47
+    ],
+    "checks": {
+     "gaps": {
+      "violations": 0,
+      "minGapMm": 0.1,
+      "pass": true
+     },
+     "lines": {
+      "lines": 14,
+      "clean": 13,
+      "offColour": 0,
+      "offSize": 0,
+      "breaks": 0,
+      "mixedLines": 0,
+      "brokenLines": 0,
+      "missing": 1,
+      "pass": false,
+      "chains": {
+       "count": 29,
+       "wrongStones": 0,
+       "short": 0,
+       "pass": true
+      }
+     },
+     "areas": {
+      "areas": 37,
+      "overTones": 0,
+      "maxTones": 2,
+      "patches": 108,
+      "smallPatches": 0,
+      "smallPatchStones": 0,
+      "halftonePatches": 0,
+      "pass": true
+     },
+     "holes": {
+      "holes": 18,
+      "largestMm": 1.63,
+      "at": 18,
+      "pass": false,
+      "histogram": [
+       1760,
+       2002,
+       426,
+       117,
+       21
+      ]
+     },
+     "faces": [
+      {
+       "eyes": [
+        {
+         "outline": true,
+         "upper": 0.86,
+         "lower": 1,
+         "white": true,
+         "whites": 5,
+         "pupil": true,
+         "pupilD": 2,
+         "pupilShare": 0.48,
+         "catchLight": true,
+         "side": -1
+        },
+        {
+         "outline": true,
+         "upper": 0.76,
+         "lower": 1,
+         "white": false,
+         "whites": 1,
+         "pupil": true,
+         "pupilD": 2,
+         "pupilShare": 0.6,
+         "catchLight": true,
+         "side": -1
+        }
+       ],
+       "sameSide": true,
+       "lips": {
+        "outline": true,
+        "outlineShare": 0.99,
+        "mouthLine": true,
+        "mouthLineShare": 0.97
+       },
+       "skinL": 77,
+       "pass": false
+      }
+     ]
+    },
+    "features": [
+     {
+      "ipdMm": 19.6,
+      "light": {
+       "side": "left",
+       "source": "shading",
+       "diffL": -10.7
+      },
+      "skin": "silk",
+      "eyes": [
+       {
+        "widthMm": 10.96,
+        "heightMm": 5.2,
+        "irisRMm": 2.1,
+        "pupilSnapMm": 2.85,
+        "upperLid": 8,
+        "lowerLid": 7,
+        "lowerLidSize": "ss4",
+        "pupil": {
+         "d": 2,
+         "offMm": 0,
+         "share": 0.48
+        },
+        "catchLight": {
+         "turnDeg": 0
+        },
+        "irisColour": "smoked-topaz",
+        "irisSource": "default",
+        "ring": 0,
+        "ringSkipped": "iris too small for a ring",
+        "lashes": {
+         "drawn": false,
+         "share": 0.2,
+         "innerShare": 0.48,
+         "stones": 0
+        },
+        "white": 5
+       },
+       {
+        "widthMm": 6.46,
+        "heightMm": 4.45,
+        "irisRMm": 1.66,
+        "pupilSnapMm": 1.57,
+        "upperLid": 5,
+        "lowerLid": 5,
+        "lowerLidSize": "ss4",
+        "pupil": {
+         "d": 2,
+         "offMm": 0,
+         "share": 0.6
+        },
+        "catchLight": {
+         "turnDeg": -15
+        },
+        "irisColour": "smoked-topaz",
+        "irisSource": "default",
+        "ring": 0,
+        "ringSkipped": "iris too small for a ring",
+        "lashes": {
+         "drawn": true,
+         "share": 0.58,
+         "innerShare": 0.35,
+         "stones": 0,
+         "why": "no room (outside the subject or against other stones)"
+        },
+        "white": 1
+       }
+      ],
+      "widthRatio": 0.59,
+      "pupilSize": 2,
+      "nose": {
+       "nostrils": [
+        {
+         "side": "left",
+         "placed": true,
+         "size": "ss6",
+         "colour": "jet"
+        },
+        {
+         "side": "right",
+         "placed": true,
+         "size": "ss6",
+         "colour": "jet"
+        }
+       ],
+       "shadow": {
+        "side": "left",
+        "stones": 8,
+        "colour": "colorado-topaz"
+       },
+       "shadowL": [
+        59.9,
+        72.8
+       ]
+      },
+      "mouth": {
+       "open": false,
+       "colours": {
+        "upper": "vintage-rose",
+        "lower": "silk",
+        "outline": "copper",
+        "line": "colorado-topaz"
+       },
+       "source": "AI discs",
+       "outline": 20,
+       "outlineSize": "ss4",
+       "line": 5,
+       "upper": 2,
+       "lower": 3
+      }
+     }
+    ],
+    "notBuilt": [
+     "face 1 left eye iris ring: iris too small for a ring",
+     "face 1 right eye iris ring: iris too small for a ring",
+     "face 1 right eye white: room for 1 stone only (6.46 x 4.45 mm)",
+     "face 1 right eye lashes: no room (outside the subject or against other stones)"
+    ]
+   },
+   "picture": "rs-woman.jpg"
   }
  ]
 }

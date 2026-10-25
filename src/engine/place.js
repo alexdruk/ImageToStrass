@@ -1,15 +1,19 @@
-import { PALETTE, deltaE2000, findHoles, neighbourVote } from "../pipeline/holes.js";
+import { PALETTE, deltaE2000, findHoles, lightnessOnWhite, neighbourVote, sampleLab } from "../pipeline/holes.js";
 import { MIN_GAP_MM } from "../pipeline/tiers.js";
 import { computeInwardRingPolygons, computeSingleDistanceRing } from "./ContourRingSampler.js";
 import { createIncrementalHash, densifyRingForWalk, resampleByChordDistance, smoothPolyline } from "./LineDesignSampler.js";
-import { inAnyRegion, inRegion } from "./faces.js";
-import { JET, MIN_LINE_STONES, MIN_PATCH, ROW_GAP_MM, SS6_MM, traceSpacing } from "./map.js";
+import { blocksLine, inAnyRegion, inRegion } from "./faces.js";
+import { buildFace } from "./features.js";
+import { JET, MIN_LINE_STONES, MIN_PATCH, ROW_GAP_MM, SS4_MM, SS6_MM, traceSpacing } from "./map.js";
 
 // Placement (exp-engine, design concept section 7; docs/exp-engine.md section 2): IS places every
 // stone itself from the map, in the concept's priority order, and a stone of a higher rule is never
 // removed for a lower one (each later stone must keep MIN_GAP_MM to every earlier one):
 //
-//   1. Features (build 1): today's stones whose centre lies in an eye or mouth region, unchanged.
+//   1. Features. Landmark faces (build 3): every face's features built by the concept (features.js
+//      buildFace: eyes, lips, teeth, nose), role "feature" with its part, the lines among them
+//      chains. Pupil regions (faces without landmarks, builds 1 and 2): today's stones whose centre
+//      lies in an eye or mouth region, unchanged.
 //   1b. Brows (map.js findBrows): each row a chain along its path, inner end first, in the brow's
 //      colour, SS6 (a piece of at least MIN_LINE_STONES stones).
 //   2. Lines, dark and light, longest first: stones along each smoothed path at an even chord step
@@ -38,11 +42,19 @@ import { JET, MIN_LINE_STONES, MIN_PATCH, ROW_GAP_MM, SS6_MM, traceSpacing } fro
 //      (holes.neighbourVote; lines, outline and features do not vote).
 //   5b. Settle: the area and seam stones around an empty circle wider than SETTLE_HOLE_MM move
 //      towards it as far as the gaps allow (settle below); then the hole fill once more.
+//   5c. Holes (build 3, check 4): every empty circle of HOLE_LIMIT_MM or more is targeted by moving
+//      the area and seam stones around it (closeHoles below; lines, the outline, brows and features
+//      never move), keeping MIN_GAP_MM: closed, or opened until an SS4 stone fits in it.
 //   6. Patches: area stones of one colour in a patch of fewer than MIN_PATCH take their neighbours'
 //      most common colour within the area (not in halftone areas, whose pattern is meant).
 //
-// Stones are plain { x, y, d, color, role, chain, area } in layout mm; role is "feature", "brow",
-// "line", "outline", "area", "hex" (honeycomb) or "seam".
+// Strands (map.js, build 3): the lines in them are placed like any line (their stones may reach to
+// within 0.4 of their radius of the subject's edge, a strand being about one stone wide); the
+// outline runs along the subject's body, and no area row or honeycomb goes into a strand (the seam
+// fill does, where a stone still fits beside the strand's line or the strand has none).
+//
+// Stones are plain { x, y, d, color, role, chain, area } in layout mm; role is "feature" (with part),
+// "brow", "line", "outline", "area", "hex" (honeycomb) or "seam".
 
 export const RING_STEP_MM = 0.9 * (SS6_MM + ROW_GAP_MM);
 export const BREAK_FACTOR = 1.5;
@@ -109,15 +121,23 @@ function calmColours(colours, closed) {
 
 // map (map.js) + today's stones (plain { x, y, d, color } in layout mm) -> { stones, chains, stats }.
 // ai: the AI image (holes.findHoles reads the subject from it).
-export function placeStones(map, ai, { today = [], debug = null, bandRows = BAND_ROWS, packing = PACKING, hexFirst = HEX_FIRST } = {}) {
+// photoLab: (x, y) -> CIE Lab of the prepared photo there (layout mm), or null (iris colours).
+// closeHoles: false skips step 5c (the experiment measures the design without it).
+export function placeStones(map, ai, { today = [], debug = null, bandRows = BAND_ROWS, packing = PACKING, hexFirst = HEX_FIRST, photoLab = null, closeHoles: targetHoles = true } = {}) {
   const { grid, subject, subjectDist, regions, areas, areaOf, toneOf, borderDist } = map;
+  const protrusion = map.protrusion ?? new Uint8Array(grid.n);
+  const body = map.body ?? subject;
   const stones = [];
   const chains = [];
   const hash = createIncrementalHash(HASH_CELL_MM);
   const chainIndex = new Map();
+  const cellIndex = new Map();
   const add = (st) => {
     stones.push(st);
     hash.add({ xMm: st.x, yMm: st.y, sizeMm: st.d });
+    const ck = `${Math.floor(st.x / HASH_CELL_MM)},${Math.floor(st.y / HASH_CELL_MM)}`;
+    if (!cellIndex.has(ck)) cellIndex.set(ck, []);
+    cellIndex.get(ck).push(st);
     if (st.chain != null) {
       const key = `${Math.floor(st.x / HASH_CELL_MM)},${Math.floor(st.y / HASH_CELL_MM)}`;
       if (!chainIndex.has(key)) chainIndex.set(key, []);
@@ -135,22 +155,61 @@ export function placeStones(map, ai, { today = [], debug = null, bandRows = BAND
     return false;
   };
   const insideSubject = (x, y, r) => { const k = grid.at(x, y); return k >= 0 && subject[k] && subjectDist[k] >= r; };
-  const stats = { features: 0, brows: 0, lines: 0, lineChains: 0, linePiecesDropped: 0, lineBreaks: 0, crossings: 0, outline: 0, outlineChains: 0, area: 0, hex: 0, seam: 0, recoloured: 0 };
+  // A line's stone: in a strand it may reach closer to the edge.
+  const insideLine = (x, y, r) => { const k = grid.at(x, y); return k >= 0 && subject[k] && subjectDist[k] >= (protrusion[k] ? 0.4 * r : r); };
+  const stats = { features: 0, keptToday: 0, brows: 0, lines: 0, lineChains: 0, linePiecesDropped: 0, lineBreaks: 0, crossings: 0, outline: 0, outlineChains: 0, area: 0, hex: 0, seam: 0, recoloured: 0 };
 
-  // 1. Features.
+  const chainOf = (kind, colour, d, points, closed, role = kind, part = undefined) => {
+    const id = chains.length;
+    chains.push({ id, kind, colour, d, closed, stones: [] });
+    chains[id].stones = points.map((p) => add({ x: p.xMm, y: p.yMm, d, color: colour, role, chain: id, area: null, ...(part ? { part } : {}) }));
+    return id;
+  };
+
+  // 1. Features: today's stones in the pupil regions; the landmark faces' features.
   for (const st of today) {
-    if (!regions.some((r) => inRegion(r, st.x, st.y))) continue;
-    add({ x: st.x, y: st.y, d: st.d, color: st.color, role: "feature", chain: null, area: null });
-    stats.features++;
+    if (!regions.some((r) => !r.poly && inRegion(r, st.x, st.y))) continue;
+    add({ x: st.x, y: st.y, d: st.d, color: st.color, role: "feature", part: "kept", chain: null, area: null });
+    stats.keptToday++;
+  }
+  if (map.faces?.length) {
+    const s = Number(map.report.mmPerPx), [ox, oy] = map.report.offsetMm;
+    const fits = (x, y, d) => insideSubject(x, y, d / 2 - 0.05) && !hash.overlaps(x, y, d, MIN_GAP_MM);
+    const env = {
+      mode: map.mode, threshold: map.threshold, discs: map.discs, photoLab, fits,
+      put: (x, y, d, colour, part) => { stats.features++; return add({ x, y, d, color: colour, role: "feature", part, chain: null, area: null }); },
+      chain: (part, colour, d, pts, closed, minStones = MIN_LINE_STONES) => {
+        const pitch = d + ROW_GAP_MM;
+        const placed = resampleByChordDistance(pts.map(([x, y]) => ({ xMm: x, yMm: y })), pitch, closed, (p) => fits(p.xMm, p.yMm, d));
+        const runs = splitAtBreaks(placed, pitch);
+        let n = 0;
+        for (const run of runs) {
+          if (run.length < minStones) continue;
+          const ring = closed && runs.length === 1 && run.length > 2 &&
+            Math.hypot(run[0].xMm - run[run.length - 1].xMm, run[0].yMm - run[run.length - 1].yMm) <= BREAK_FACTOR * pitch;
+          chainOf(part, colour, d, run, ring, "feature", part);
+          n += run.length;
+        }
+        stats.features += n;
+        return n;
+      },
+      clearance: (x, y) => {
+        let m = 6;
+        const gx = Math.floor(x / HASH_CELL_MM), gy = Math.floor(y / HASH_CELL_MM);
+        for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) {
+          for (const st of cellIndex.get(`${gx + a},${gy + b}`) || []) m = Math.min(m, Math.hypot(st.x - x, st.y - y) - st.d / 2);
+        }
+        return m;
+      },
+      aiL: (x, y, d) => lightnessOnWhite(ai, (x + ox) / s, (y + oy) / s, d, s),
+      aiLab: (x, y, d) => sampleLab(ai, (x + ox) / s, (y + oy) / s, d, s),
+      areaColourAt: (x, y) => { const k = grid.at(x, y); return k >= 0 && areaOf[k] >= 0 ? areas[areaOf[k]].tones[Math.max(0, toneOf[k])] : null; },
+      areaTonesAt: (x, y) => { const k = grid.at(x, y); return k >= 0 && areaOf[k] >= 0 ? areas[areaOf[k]].tones : null; }
+    };
+    stats.faces = map.faces.map((face) => buildFace(face, env));
   }
 
   // 1b. Brows; 2. Lines.
-  const chainOf = (kind, colour, d, points, closed) => {
-    const id = chains.length;
-    chains.push({ id, kind, colour, d, closed, stones: [] });
-    chains[id].stones = points.map((p) => add({ x: p.xMm, y: p.yMm, d, color: colour, role: kind, chain: id, area: null }));
-    return id;
-  };
   for (const brow of map.brows || []) {
     for (const row of brow.rows) {
       const pitch = row.d + ROW_GAP_MM;
@@ -164,7 +223,7 @@ export function placeStones(map, ai, { today = [], debug = null, bandRows = BAND
   }
   for (const line of [...map.lines].sort((a, b) => b.lengthMm - a.lengthMm)) {
     const pitch = line.d + ROW_GAP_MM;
-    const accept = (p) => insideSubject(p.xMm, p.yMm, line.d / 2) && !inAnyRegion(regions, p.xMm, p.yMm, line.d / 2) &&
+    const accept = (p) => insideLine(p.xMm, p.yMm, line.d / 2) && !blocksLine(regions, p.xMm, p.yMm, line.d / 2) &&
       !hash.overlaps(p.xMm, p.yMm, line.d, MIN_GAP_MM);
     const placed = resampleByChordDistance(line.points, pitch, line.closed, accept);
     const runs = splitAtBreaks(placed, pitch, (a, b) => { const yes = bridged(a, b, null); if (yes) stats.crossings++; return yes; });
@@ -182,7 +241,7 @@ export function placeStones(map, ai, { today = [], debug = null, bandRows = BAND
   // 3. Subject outline.
   const box = { minXmm: grid.x0, minYmm: grid.y0, maxXmm: grid.x0 + grid.w / grid.ppmm, maxYmm: grid.y0 + grid.h / grid.ppmm };
   const r6 = SS6_MM / 2, pitch6 = SS6_MM + ROW_GAP_MM;
-  const loops = computeSingleDistanceRing({ insideAt: (x, y) => { const k = grid.at(x, y); return k >= 0 && subject[k] === 1; }, boundingBox: box, spacingMm: traceSpacing(box), thresholdMm: r6 + 0.02 });
+  const loops = computeSingleDistanceRing({ insideAt: (x, y) => { const k = grid.at(x, y); return k >= 0 && body[k] === 1; }, boundingBox: box, spacingMm: traceSpacing(box), thresholdMm: r6 + 0.02 });
   const outlineColourAt = (x, y) => { const k = grid.at(x, y); return k >= 0 && areaOf[k] >= 0 ? areas[areaOf[k]].outlineColour : JET; };
   for (const loop of loops) {
     if (loop.length < 8) continue;
@@ -256,7 +315,7 @@ export function placeStones(map, ai, { today = [], debug = null, bandRows = BAND
   }
   const free = new Float32Array(grid.n).fill(-1);
   for (let k = 0; k < grid.n; k++) {
-    if (!subject[k] || areaOf[k] < 0) continue;
+    if (!subject[k] || areaOf[k] < 0 || protrusion[k]) continue;
     const own = Math.min(clear[k] - (r6 + ROW_GAP_MM), subjectDist[k] - r6);
     free[k] = packing === "shared" ? own : Math.min(own, borderDist[k] - (r6 + ROW_GAP_MM / 2));
   }
@@ -419,6 +478,15 @@ export function placeStones(map, ai, { today = [], debug = null, bandRows = BAND
   fill();
   stats.settled = settle(map, stones);
   fill();
+  const beforeHoles = stones.map(({ x, y, d, color, role }) => ({ x, y, d, color, role }));
+  if (targetHoles) stats.holes = closeHoles(map, stones, (h) => {
+    // An opened spot's SS4: its neighbours' colour among the area stones of its area.
+    const a = areaAt(h.x, h.y);
+    const voters = stones.filter((s) => (s.role === "area" || s.role === "hex" || s.role === "seam") && Math.hypot(s.x - h.x, s.y - h.y) < 4 && (a == null || s.area === a));
+    const colour = voters.length ? neighbourVote([...voters, h], new Set([voters.length]), (st) => st.color).get(voters.length) : null;
+    stones.push({ x: h.x, y: h.y, d: h.d, color: colour ?? voters[0]?.color ?? JET, role: "seam", chain: null, area: a });
+    stats.seam++;
+  });
 
   // 6. Every area and seam stone takes a tone of the area under its centre (the nearest by ΔE2000 if
   // its colour is not one), then patches below MIN_PATCH within an area take their neighbours' colour.
@@ -433,7 +501,7 @@ export function placeStones(map, ai, { today = [], debug = null, bandRows = BAND
     stats.retoned = (stats.retoned || 0) + 1;
   }
   stats.recoloured = joinPatches(stones, areas);
-  return { stones, chains, stats };
+  return { stones, chains, stats, beforeHoles };
 }
 
 // Settle (step 5b): rows nest imperfectly where they bend, and seams leave spots a little too wide
@@ -525,6 +593,214 @@ function settle(map, stones) {
     if (!moved) break;
   }
   return moves;
+}
+
+// Holes (step 5c, check 4): the empty circles of HOLE_LIMIT_MM or more inside the subject (local
+// maxima of the clearance to every stone edge and the subject's edge on the map grid), largest
+// first. The area and seam stones whose edge lies within MOVE_REACH_MM of a hole are moved, every
+// other stone within reach holding still (lines, outline, brows, features never move), by a few
+// rounds of small steps (position-based: a step, then every pair closer than MIN_GAP_MM pushed apart,
+// a stone that would leave the subject or enter a face region held back), each stone at most
+// MAX_MOVE_MM from where it was:
+//
+//   close: the stones on the hole's rim step towards its centre until it is below HOLE_LIMIT_MM;
+//   open:  an SS4 stone is set at the hole's centre and the stones around it pushed out until it
+//          keeps MIN_GAP_MM; it then takes its neighbours' colour (insert).
+//
+// A try is kept only if every gap is at least MIN_GAP_MM, the hole is gone and the window around it
+// (HOLE_WINDOW_MM) holds fewer circles of HOLE_LIMIT_MM or more than before (so moving stones never
+// just shifts a hole elsewhere); else every stone goes back. HOLE_ROUNDS passes. -> { targeted,
+// closed, opened, left }.
+export const HOLE_LIMIT_MM = 1.4;
+export const HOLE_ROUNDS = 3;
+export const MOVE_REACH_MM = 2.6;
+export const MAX_MOVE_MM = 0.6;
+export const HOLE_WINDOW_MM = 4;
+const MOVABLE = new Set(["area", "hex", "seam"]);
+
+function closeHoles(map, stones, insert) {
+  const { grid, subject, subjectDist, regions } = map;
+  const limit = HOLE_LIMIT_MM / 2;
+  const out = { targeted: 0, closed: 0, opened: 0, left: 0 };
+  const sd = (x, y) => { const k = grid.at(x, y); return k >= 0 && subject[k] ? subjectDist[k] : -1; };
+  for (let round = 0; round < HOLE_ROUNDS; round++) {
+    const cell = 5;
+    let index = new Map();
+    const reindex = () => {
+      index = new Map();
+      stones.forEach((st, i) => { const k = `${Math.floor(st.x / cell)},${Math.floor(st.y / cell)}`; if (!index.has(k)) index.set(k, []); index.get(k).push(i); });
+    };
+    reindex();
+    const near = (x, y, reach) => {
+      const r = Math.ceil(reach / cell) + 1, gx = Math.floor(x / cell), gy = Math.floor(y / cell), list = [];
+      for (let a = -r; a <= r; a++) for (let b = -r; b <= r; b++) for (const i of index.get(`${gx + a},${gy + b}`) || []) {
+        if (Math.hypot(stones[i].x - x, stones[i].y - y) <= reach) list.push(i);
+      }
+      return list;
+    };
+    // The largest clearance within radius R of (x, y) (0.1 mm steps), against the given stones.
+    const windowMax = (x, y, R, list, extra = null) => {
+      let best = 0;
+      for (let dy = -R; dy <= R; dy += 0.1) {
+        for (let dx = -R; dx <= R; dx += 0.1) {
+          if (dx * dx + dy * dy > R * R) continue;
+          const px = x + dx, py = y + dy;
+          let c = sd(px, py);
+          if (c <= best) continue;
+          for (const i of list) { const st = stones[i]; c = Math.min(c, Math.hypot(st.x - px, st.y - py) - st.d / 2); if (c <= best) break; }
+          if (extra && c > best) c = Math.min(c, Math.hypot(extra.x - px, extra.y - py) - extra.d / 2);
+          if (c > best) best = c;
+        }
+      }
+      return best;
+    };
+    // The circles of `limit` or more within radius R (local maxima of the clearance, 0.1 mm grid).
+    const windowHoles = (x, y, R, list, extra = null) => {
+      const n = Math.round(R / 0.1), side = 2 * n + 1, val = new Float32Array(side * side).fill(-1);
+      for (let b = 0; b < side; b++) {
+        for (let a = 0; a < side; a++) {
+          const dx = (a - n) * 0.1, dy = (b - n) * 0.1;
+          if (dx * dx + dy * dy > R * R) continue;
+          const px = x + dx, py = y + dy;
+          let c = sd(px, py);
+          for (const i of list) { const st = stones[i]; c = Math.min(c, Math.hypot(st.x - px, st.y - py) - st.d / 2); if (c < limit) break; }
+          if (extra && c >= limit) c = Math.min(c, Math.hypot(extra.x - px, extra.y - py) - extra.d / 2);
+          val[b * side + a] = c;
+        }
+      }
+      let count = 0;
+      for (let b = 1; b < side - 1; b++) {
+        for (let a = 1; a < side - 1; a++) {
+          const k = b * side + a, v = val[k];
+          if (v < limit) continue;
+          let top = true;
+          for (const [m, before] of [[k - side - 1, 1], [k - side, 1], [k - side + 1, 1], [k - 1, 1], [k + 1, 0], [k + side - 1, 0], [k + side, 0], [k + side + 1, 0]]) {
+            if (before ? val[m] >= v : val[m] > v) { top = false; break; }
+          }
+          if (top) count++;
+        }
+      }
+      return count;
+    };
+    const holes = holeCentres(map, stones, limit);
+    if (!holes.length) break;
+    for (const h of holes) {
+      const list = near(h.x, h.y, h.c + HOLE_WINDOW_MM + 5);
+      const c0 = windowMax(h.x, h.y, 0.4, list);
+      if (c0 < limit) continue;
+      out.targeted++;
+      const before = windowHoles(h.x, h.y, HOLE_WINDOW_MM, list);
+      let done = null;
+      for (const mode of ["close", "open"]) {
+        if (tryMove(mode)) { done = mode; break; }
+      }
+      if (done === "close") out.closed++;
+      else if (done === "open") out.opened++;
+      if (done) reindex();
+      function tryMove(mode) {
+        const movable = list.filter((i) => MOVABLE.has(stones[i].role) && Math.hypot(stones[i].x - h.x, stones[i].y - h.y) - stones[i].d / 2 <= h.c + MOVE_REACH_MM);
+        if (!movable.length) return false;
+        const isMovable = new Set(movable);
+        const start = movable.map((i) => [stones[i].x, stones[i].y]);
+        const restore = () => movable.forEach((i, q) => { stones[i].x = start[q][0]; stones[i].y = start[q][1]; });
+        const ss4 = mode === "open" ? { x: h.x, y: h.y, d: SS4_MM } : null;
+        const allowed = (i, x, y) => {
+          const q = movable.indexOf(i);
+          return sd(x, y) >= stones[i].d / 2 - 0.05 && !inAnyRegion(regions, x, y) && Math.hypot(x - start[q][0], y - start[q][1]) <= MAX_MOVE_MM;
+        };
+        const gapOk = () => {
+          for (const i of movable) {
+            const a = stones[i];
+            for (const j of list) {
+              if (j === i) continue;
+              const b = stones[j];
+              if (Math.hypot(a.x - b.x, a.y - b.y) - (a.d + b.d) / 2 < MIN_GAP_MM - 1e-9) return false;
+            }
+            if (ss4 && Math.hypot(a.x - ss4.x, a.y - ss4.y) - (a.d + ss4.d) / 2 < MIN_GAP_MM - 1e-9) return false;
+          }
+          if (ss4) for (const j of list) {
+            if (isMovable.has(j)) continue;
+            const b = stones[j];
+            if (Math.hypot(b.x - ss4.x, b.y - ss4.y) - (b.d + ss4.d) / 2 < MIN_GAP_MM - 1e-9) return false;
+          }
+          return true;
+        };
+        if (ss4 && sd(ss4.x, ss4.y) < ss4.d / 2 - 0.05) return false;
+        for (let it = 0; it < 40; it++) {
+          if (mode === "close") {
+            for (const i of movable) {
+              const st = stones[i], dd = Math.hypot(h.x - st.x, h.y - st.y);
+              if (dd < 1e-6 || dd - st.d / 2 > h.c + 0.25) continue;
+              const want = Math.min(0.04, dd - st.d / 2 - (limit - 0.08));
+              if (want <= 0) continue;
+              const nx = st.x + ((h.x - st.x) / dd) * want, ny = st.y + ((h.y - st.y) / dd) * want;
+              if (allowed(i, nx, ny)) { st.x = nx; st.y = ny; }
+            }
+          }
+          for (let pass = 0; pass < 6; pass++) {
+            let moved = false;
+            for (const i of movable) {
+              const a = stones[i];
+              for (const j of ss4 ? [...list, -1] : list) {
+                if (j === i) continue;
+                const b = j < 0 ? ss4 : stones[j];
+                const dx = a.x - b.x, dy = a.y - b.y, dd = Math.hypot(dx, dy);
+                const gap = dd - (a.d + b.d) / 2;
+                if (gap >= MIN_GAP_MM + 1e-4 || dd < 1e-9) continue;
+                const push = MIN_GAP_MM + 2e-4 - gap;
+                const share = j >= 0 && isMovable.has(j) ? 0.5 : 1;
+                const nx = a.x + (dx / dd) * push * share, ny = a.y + (dy / dd) * push * share;
+                if (allowed(i, nx, ny)) { a.x = nx; a.y = ny; moved = true; }
+              }
+            }
+            if (!moved) break;
+          }
+          if (gapOk() && (ss4 || windowMax(h.x, h.y, 0.4, list) < limit)) break;
+        }
+        if (gapOk() && windowMax(h.x, h.y, 0.4, list, ss4) < limit && windowHoles(h.x, h.y, HOLE_WINDOW_MM, list, ss4) < before) {
+          if (ss4) insert(ss4);
+          return true;
+        }
+        restore();
+        return false;
+      }
+    }
+  }
+  out.left = holeCentres(map, stones, limit).length;
+  return out;
+}
+
+// The centres of the empty circles of clearance `limit` or more (local maxima on the map grid),
+// largest first: [{ x, y, c }].
+function holeCentres(map, stones, limit) {
+  const { grid, subject, subjectDist } = map;
+  const cap = 2;
+  const clear = new Float32Array(grid.n).fill(cap);
+  for (const st of stones) {
+    const r = st.d / 2, { i0, i1, j0, j1 } = grid.span(st.x, st.y, r + cap);
+    for (let j = j0; j <= j1; j++) {
+      for (let i = i0; i <= i1; i++) {
+        const k = j * grid.w + i;
+        const c = Math.hypot(grid.cx(k) - st.x, grid.cy(k) - st.y) - r;
+        if (c < clear[k]) clear[k] = c;
+      }
+    }
+  }
+  const val = (k) => (subject[k] ? Math.min(clear[k], subjectDist[k]) : -1);
+  const out = [];
+  for (let k = 0; k < grid.n; k++) {
+    const v = val(k);
+    if (v < limit) continue;
+    const i = k % grid.w;
+    let top = true;
+    for (const [m, before] of [[k - grid.w - 1, 1], [k - grid.w, 1], [k - grid.w + 1, 1], [k - 1, 1], [k + 1, 0], [k + grid.w - 1, 0], [k + grid.w, 0], [k + grid.w + 1, 0]]) {
+      if (m < 0 || m >= grid.n || Math.abs((m % grid.w) - i) > 1) continue;
+      const w = val(m);
+      if (before ? w >= v : w > v) { top = false; break; }
+    }
+    if (top) out.push({ x: grid.cx(k), y: grid.cy(k), c: v });
+  }
+  return out.sort((a, b) => b.c - a.c);
 }
 
 // Neighbour lists (rim gap below PATCH_GAP_MM) of the stones at the given indices.

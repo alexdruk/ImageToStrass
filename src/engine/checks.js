@@ -1,9 +1,10 @@
+import { PALETTE } from "../pipeline/holes.js";
 import { MIN_GAP_MM } from "../pipeline/tiers.js";
-import { inAnyRegion } from "./faces.js";
+import { inRegion, insidePolygon } from "./faces.js";
 import { MIN_PATCH, MAX_TONES } from "./map.js";
 import { neighbourLists } from "./place.js";
 
-// The checks of the design concept (docs/IS-DESIGN-CONCEPT.md section 8), 1 to 4, for any design:
+// The checks of the design concept (docs/IS-DESIGN-CONCEPT.md section 8), 1 to 5, for any design:
 // today's and the engine's alike, both measured against the engine's map of the same AI image (so
 // the lines and areas are the same for both). Stones: plain { x, y, d, color } in layout mm.
 //
@@ -15,17 +16,25 @@ import { neighbourLists } from "./place.js";
 //      BREAK_PITCHES stone steps without a stone. Engine
 //      designs also report their own chains (every stone the chain's colour and size, at least 3).
 //   3. Areas: the stones of each map area (not on a line or a brow, not in the outline band along
-//      the edge, not in a face region) have at most MAX_TONES colours, and no patch (stones of one colour
+//      the edge, not in a face region, not a feature) have at most MAX_TONES colours, and no patch (stones of one colour
 //      touching, rim gap below PATCH_GAP_MM, in one area) has fewer than MIN_PATCH stones. A
 //      halftone area's pattern is meant (concept section 6), so its patches are counted apart.
 //   4. Holes: empty circles inside the subject (the AI image's closed alpha, as the hole fill
-//      reads it) wider than MAX_HOLE_MM, by the cells (map grid) whose distance to every stone edge
-//      and to the subject's edge is above MAX_HOLE_MM / 2; each connected piece is one hole.
+//      reads it) of MAX_HOLE_MM or more (build 3; 1.0 mm before), by the cells (map grid) whose
+//      distance to every stone edge and to the subject's edge is at least MAX_HOLE_MM / 2; each
+//      connected piece is one hole.
+//   5. Faces (checkFaces), per landmark face: each eye has its outline (the upper lid dark along
+//      UPPER_COVER of it, the lower lid darker than the skin along LOWER_COVER), its white (at least
+//      two light stones in the opening, not the catch-light) and its pupil (a dark stone of SS6 or
+//      more at the iris centre), and usually a catch-light (the highest of the smallest light stones
+//      touching the pupil); the lips have an outline (10 L* darker than the skin along LIP_COVER of it) and
+//      usually a mouth line (8 L* darker than the lower lip and the skin along LIP_COVER of it).
+//      Measured on any design, against the landmarks; black & white: dark is Jet.
 
 export const ON_LINE_MM = 0.8;
 export const BREAK_PITCHES = 1.5;
 export const OUTLINE_BAND_MM = 1.6;
-export const MAX_HOLE_MM = 1.0;
+export const MAX_HOLE_MM = 1.4;
 export const PATCH_GAP_MM = 0.6;
 
 const EPS = 1e-9;
@@ -120,7 +129,7 @@ export function checkLines(stones, map, chains = null) {
   if (chains) {
     let wrong = 0, short = 0;
     for (const ch of chains) {
-      if (ch.stones.length < 3) short++;
+      if (ch.stones.length < (ch.kind === "lash" ? 2 : 3)) short++;
       for (const i of ch.stones) if (stones[i].color !== ch.colour || Math.abs(stones[i].d - ch.d) > 1e-6) wrong++;
     }
     out.chains = { count: chains.length, wrongStones: wrong, short, pass: !wrong && !short };
@@ -133,7 +142,8 @@ export function checkAreas(stones, map, onLine) {
   const browPoints = (map.brows || []).flatMap((b) => b.rows.flatMap((r) => r.points));
   const onBrow = (s) => browPoints.some((p) => Math.hypot(p.xMm - s.x, p.yMm - s.y) <= ON_LINE_MM);
   const areaOfStone = stones.map((s, i) => {
-    if (onLine[i] >= 0 || inAnyRegion(regions, s.x, s.y) || onBrow(s)) return -1;
+    // Features are no area: stones in any face region (the nose's too) or placed as features.
+    if (onLine[i] >= 0 || s.role === "feature" || regions.some((r) => inRegion(r, s.x, s.y)) || onBrow(s)) return -1;
     const k = grid.at(s.x, s.y);
     if (k < 0 || areaOf[k] < 0 || subjectDist[k] < OUTLINE_BAND_MM) return -1;
     return areaOf[k];
@@ -231,7 +241,7 @@ export function checkHoles(stones, map) {
     if (!subject[k]) continue;
     const c = Math.min(clear[k], subjectDist[k]);
     if (c > largest) largest = c;
-    if (c > cap / 2) open[k] = 1;
+    if (c >= cap / 2) open[k] = 1;
   }
   let holes = 0;
   const at = [];
@@ -255,13 +265,92 @@ export function checkHoles(stones, map) {
   return { holes, largestMm: Math.round(2 * Math.min(largest, cap + 1) * 100) / 100, at, pass: holes === 0 };
 }
 
-// Checks 1-4 of a design. chains: the engine's chains (place.js), or null for today's designs.
-export function runChecks(stones, map, { chains = null } = {}) {
+// --- Check 5 -------------------------------------------------------------------------------------
+
+export const FACE_REACH_MM = 1.3;
+export const UPPER_COVER = 0.7;
+export const LOWER_COVER = 0.6;
+export const LIP_COVER = 0.7;
+export const LIGHT_L = 80;
+export const DARK_L = 25;
+export const TOUCH_MM = 0.35;
+const LIGHTNESS = Object.fromEntries(PALETTE.map((p) => [p.id, p.lab[0]]));
+
+// Points every step mm along a polyline of [x, y] (closed: back to its start).
+function walkXY(line, step, closed = false) {
+  const pts = closed ? [...line, line[0]] : line, out = [];
+  for (let q = 0; q + 1 < pts.length; q++) {
+    const a = pts[q], b = pts[q + 1], n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / step));
+    for (let t = 0; t < n; t++) out.push([a[0] + (b[0] - a[0]) * t / n, a[1] + (b[1] - a[1]) * t / n]);
+  }
+  return out;
+}
+
+const middle = (pts, from = 0.1, to = 0.9) => pts.slice(Math.floor(from * pts.length), Math.ceil(to * pts.length));
+const medianOf = (v) => { const s = [...v].sort((a, b) => a - b); return s.length ? s[s.length >> 1] : null; };
+
+// stones (plain, layout mm) + landmark faces (faces.js faceGeometry) -> per face { eyes: [{ outline,
+// upper, lower, white, pupil, pupilD, pupilShare, catchLight, side }], sameSide, lips: { outline,
+// mouthLine }, pass }. mode: "bw" judges dark as Jet and light as Crystal.
+export function checkFaces(stones, faces, { mode = "colour" } = {}) {
+  const h = hashOf(stones);
+  const Ls = stones.map((s) => LIGHTNESS[s.color] ?? 50);
+  const near = (p, reach) => h.near(p[0], p[1], reach + 3).filter((i) => Math.hypot(stones[i].x - p[0], stones[i].y - p[1]) <= reach);
+  const share = (samples, test, reach = FACE_REACH_MM) => (samples.length ? samples.filter((p) => near(p, reach).some((i) => test(i))).length / samples.length : 0);
+  const r2 = (v) => Math.round(v * 100) / 100;
+  return faces.map((face) => {
+    const cheek = new Set(face.cheeks.flatMap((p) => near(p, 0.12 * face.ipd)));
+    const skinL = medianOf([...cheek].map((i) => Ls[i])) ?? 70;
+    const dark = (i, below) => (mode === "bw" ? stones[i].color === "jet" : Ls[i] <= below);
+    const eyes = face.eyes.map((eye) => {
+      const upper = share(middle(eye.upper), (i) => dark(i, Math.max(30, skinL - 25)));
+      const lower = share(middle(eye.lower), (i) => dark(i, skinL - 8));
+      const { c, r } = eye.iris;
+      const pupil = near(c, Math.max(1.0, 0.6 * r)).filter((i) => Ls[i] <= DARK_L && stones[i].d >= 1.9).sort((a, b) => stones[b].d - stones[a].d)[0];
+      const rim = (i) => (pupil == null ? Infinity : Math.hypot(stones[i].x - stones[pupil].x, stones[i].y - stones[pupil].y) - (stones[i].d + stones[pupil].d) / 2);
+      const inOpening = near(c, eye.widthMm).filter((i) => insidePolygon([stones[i].x, stones[i].y], eye.opening));
+      // The catch-light: of the smallest light stones touching the pupil, the highest; other light
+      // stones are white.
+      const up = (i) => (stones[i].x - c[0]) * face.v[0] + (stones[i].y - c[1]) * face.v[1];
+      const catchLight = [...new Set(inOpening.concat(near(c, 6)))].filter((i) => Ls[i] >= LIGHT_L && stones[i].d <= 2.05 && rim(i) <= TOUCH_MM)
+        .sort((a, b) => stones[a].d - stones[b].d || up(a) - up(b))[0];
+      const whites = inOpening.filter((i) => Ls[i] >= LIGHT_L && i !== catchLight);
+      const side = catchLight == null ? null : Math.sign((stones[catchLight].x - stones[pupil].x) * face.u[0] + (stones[catchLight].y - stones[pupil].y) * face.u[1]) || 0;
+      return {
+        outline: upper >= UPPER_COVER && lower >= LOWER_COVER, upper: r2(upper), lower: r2(lower),
+        white: whites.length >= 2, whites: whites.length,
+        pupil: pupil != null, pupilD: pupil == null ? null : stones[pupil].d, pupilShare: pupil == null ? null : r2(stones[pupil].d / (2 * r)),
+        catchLight: catchLight != null, side
+      };
+    });
+    const sides = eyes.map((e) => e.side);
+    const lips = face.lips;
+    // Outline: darker than the skin; mouth line: darker than the lower lip (the lighter one).
+    const lowerL = medianOf(near(face.lips.line[5], lips.widthMm).filter((i) => insidePolygon([stones[i].x, stones[i].y], lips.lower)).map((i) => Ls[i])) ?? skinL;
+    const outline = share(walkXY(lips.outer, 0.3, true), (i) => dark(i, skinL - 10));
+    const lineSamples = lips.open ? [...middle(walkXY(lips.upperInner, 0.3), 0.15, 0.85), ...middle(walkXY(lips.lowerInner, 0.3), 0.15, 0.85)] : middle(walkXY(lips.line, 0.3), 0.15, 0.85);
+    const mouthLine = share(lineSamples, (i) => dark(i, Math.min(lowerL, skinL) - 8), 1.0);
+    const faceOut = {
+      eyes,
+      sameSide: sides.every((s) => s != null) ? sides[0] === sides[1] : null,
+      lips: { outline: outline >= LIP_COVER, outlineShare: r2(outline), mouthLine: mouthLine >= LIP_COVER, mouthLineShare: r2(mouthLine) },
+      skinL: Math.round(skinL)
+    };
+    faceOut.pass = eyes.every((e) => e.outline && e.white && e.pupil) && faceOut.lips.outline;
+    return faceOut;
+  });
+}
+
+// Checks 1-5 of a design. chains: the engine's chains (place.js), or null for today's designs.
+// faces: landmark faces for check 5 (the map's, when it has them).
+export function runChecks(stones, map, { chains = null, faces = map.faces ?? [] } = {}) {
   const gaps = checkGapsOf(stones);
   const lines = checkLines(stones, map, chains);
   const areas = checkAreas(stones, map, lines.onLine);
   const holes = checkHoles(stones, map);
   holes.histogram = holeHistogram(stones, map);
   delete lines.onLine;
-  return { gaps, lines, areas, holes };
+  const out = { gaps, lines, areas, holes };
+  if (faces.length) out.faces = checkFaces(stones, faces, { mode: map.mode });
+  return out;
 }

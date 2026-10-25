@@ -1,6 +1,7 @@
 # IS design concept (v1)
 
-Status: concept, 25 Oct 2026. Every IS design must follow these rules. The engine that places
+Status: concept, 25 Oct 2026. Revised 25 Oct 2026 (exp-engine build 3): check 4 counts holes of 1.4 mm
+or more. Every IS design must follow these rules. The engine that places
 stones (spec section 7) implements them; the checks in section 8 below measure them.
 
 Why: until now IS copied the stones the AI drew and fixed faults one by one. The result has no
@@ -95,6 +96,7 @@ A stone of a higher rule is never removed for a lower one.
 1. Gap check: 0 violations, smallest gap 0.1 mm.
 2. Lines: every stone of a chain has the chain's colour and size; no chain is broken.
 3. Areas: no patch smaller than 4 stones; at most 3 tones per area.
-4. Holes: no empty circle over 1.0 mm inside the subject.
+4. Holes: no hole of 1.4 mm or more inside the subject (an empty circle of that diameter between
+   stones, or between stones and the subject's edge).
 5. Faces: each eye has its outline, white and pupil, and usually a catch-light; lips have an
    outline and usually a mouth line.

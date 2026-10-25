@@ -7,6 +7,9 @@ data/*
 services/strass/.venv/
 services/strass/models/shape_predictor_68_face_landmarks.dat
 services/strass/models/rembg/
+# exp-faces / exp-engine: the landmark tool's own environment and model (scripts/face_landmarks.py)
+services/strass/.venv-faces/
+services/strass/models/mediapipe/
 __pycache__/
 # local logs
 logs/

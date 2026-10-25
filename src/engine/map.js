@@ -5,7 +5,7 @@ import { STONE_COLORS } from "../stones/StoneColors.js";
 import { getStoneSize } from "../stones/StoneSizes.js";
 import { computeSingleDistanceRing } from "./ContourRingSampler.js";
 import { dilateMask, erodeMask, labelComponents8, polylineLengthMm, smoothPolyline, traceSkeletonPaths, zhangSuenThin } from "./LineDesignSampler.js";
-import { faceRegions, inAnyRegion } from "./faces.js";
+import { blocksLine, faceGeometry, faceRegions } from "./faces.js";
 import { Grid } from "./grid.js";
 
 // The map (exp-engine, design concept sections 2-4; docs/exp-engine.md section 2). The AI image is
@@ -27,7 +27,16 @@ import { Grid } from "./grid.js";
 //      itself left out) is at most HALFTONE_LINE_SHARE, so the halftone pattern itself is no line.
 //      Light ink likewise (markInk): discs clearly lighter than the ones around them (Crystal in
 //      black & white), for light lines (whiskers, lace, white stripes, light strands).
-//   3b. Face regions (faces.js) and brows (findBrows): a brow is a chain, never an area or a line.
+//   1b. Strands (build 3): thin, long parts of the subject (STRAND_*: what an opening of the subject
+//      by STRAND_OPEN_MM removes, at least STRAND_MIN_LEN_MM long and at most STRAND_MAX_WIDTH_MM
+//      wide on average) are lines leaving the subject (whiskers, hair strands, lashes over the
+//      background), not part of its body. The subject outline runs along the body (place.js), and
+//      the strands' discs are ink or light ink by their lightness, so a line runs on from inside
+//      the body through the outline band (within LEAVE_MM of a strand, the edge does not cut it)
+//      and out along the strand as one chain.
+//   3b. Face regions (faces.js) and brows: a brow is a chain, never an area or a line. With landmark
+//      faces (build 3), the regions are the features' polygons and the brows follow the landmarks
+//      (browsFromFaces); else the pupil regions and findBrows.
 //   4. Lines, dark and light alike: the thin ink (ink without the discs along the subject's edge, EDGE_DISC_MM, and
 //      without the parts at least 2 x LINE_HALF_WIDTH_MM wide), thinned to
 //      its centre line (Zhang-Suen, RS LineDesignSampler) away from the subject's edge (the AI's
@@ -78,6 +87,10 @@ export const OUTLINE_JET_L = 35;
 export const MIN_PART_MM2 = 3;
 export const AREA_SMOOTH_MM = 0.6;
 export const TONE_SMOOTH_MM = 0.5;
+export const STRAND_OPEN_MM = 1.6;
+export const STRAND_MIN_LEN_MM = 4;
+export const STRAND_MAX_WIDTH_MM = 3.2;
+export const LEAVE_MM = 2.5;
 export const JET = "jet";
 export const CRYSTAL = "crystal-clear";
 
@@ -336,7 +349,7 @@ function joinSkeletonPaths(paths) {
   ];
 }
 
-function findLines(grid, subject, subjectDist, owner, discs, regions, mode, key = "ink") {
+function findLines(grid, subject, cut, owner, discs, regions, mode, key = "ink") {
   // The AI's own outline along the subject's edge (discs centred within EDGE_DISC_MM of it) is the
   // subject outline's job; left in, it glues every contour that touches it into a wide band.
   const edgeDisc = discs.map((d) => (key === "ink" ? d.edge : d.lightEdge));
@@ -368,7 +381,7 @@ function findLines(grid, subject, subjectDist, owner, discs, regions, mode, key 
   for (let q = 0; q < skeleton.length; q++) {
     if (!skeleton[q]) continue;
     const k = toK(q);
-    if (!subject[k] || subjectDist[k] < LINE_EDGE_MM || inAnyRegion(regions, grid.cx(k), grid.cy(k), SS6_MM / 2)) skeleton[q] = 0;
+    if (!subject[k] || cut[k] || blocksLine(regions, grid.cx(k), grid.cy(k), SS6_MM / 2)) skeleton[q] = 0;
   }
   const lines = [];
   for (const comp of labelComponents8(skeleton, cols, rows)) {
@@ -493,6 +506,94 @@ function findBrows(discs, nb, regions, mode) {
     brows.push({ eye: e, colour: mode === "colour" ? modeOf(best.map((o) => discs[o].snap)) : JET, discs: best, rows, thickness: Math.round(thick * 10) / 10 });
   });
   return brows;
+}
+
+// Brows from landmark faces (build 3): each brow's centre line runs between the Face Mesh's upper and
+// lower brow edges, as a quadratic on the face's axes (s across, t down from its eye's iris), moved
+// across by the median offset of the AI's dark discs beside it (BROW_SNAP_MM at most; at least
+// BROW_MIN_DISCS discs within its half-width plus 1.5 mm), since the AI's brow is the one drawn. The
+// rows as findBrows: one along all of it, a second on the inner BROW_INNER share where the brow is
+// thicker than BROW_TWO_ROWS stones. Colour: the most common colour of those dark discs (black &
+// white Jet); a brow with no dark disc beside it is not drawn by the AI and gets no chain (reported in
+// notes). Returns { brows (as findBrows), notes }.
+export const BROW_SNAP_MM = 2.5;
+
+function browsFromFaces(faces, discs, mode) {
+  const pitch = SS6_MM + ROW_GAP_MM;
+  const brows = [], notes = [];
+  faces.forEach((face, fi) => face.eyes.forEach((eye, e) => {
+    const P = face.points, { u, v } = face;
+    const o = eye.iris.c;
+    const local = (p) => [(p[0] - o[0]) * u[0] + (p[1] - o[1]) * u[1], (p[0] - o[0]) * v[0] + (p[1] - o[1]) * v[1]];
+    const upper = eye.brow.upper.map((i) => P[i]), lower = eye.brow.lower.map((i) => P[i]);
+    const pts = upper.map((p, i) => local([(p[0] + lower[i][0]) / 2, (p[1] + lower[i][1]) / 2]));
+    const thickMm = upper.reduce((s, p, i) => s + Math.hypot(p[0] - lower[i][0], p[1] - lower[i][1]), 0) / upper.length;
+    const sMin = Math.min(...pts.map((t) => t[0])), sMax = Math.max(...pts.map((t) => t[0]));
+    if (sMax - sMin < 2 * pitch) { notes.push({ face: fi, eye: e, why: "brow too short" }); return; }
+    const fit = polyFit(pts, sMax - sMin > 5 * pitch ? 2 : 1);
+    const dark = (d) => (mode === "colour" ? d.ink || d.lab[0] < 45 : d.snap === JET);
+    const beside = discs.filter((d) => {
+      if (!dark(d) || d.edge) return false;
+      const [a, b] = local([d.x, d.y]);
+      return a >= sMin - 1 && a <= sMax + 1 && Math.abs(b - fit(a)) <= thickMm / 2 + 1.5;
+    });
+    if (beside.length < BROW_MIN_DISCS) { notes.push({ face: fi, eye: e, why: "the AI drew no brow there" }); return; }
+    const res = beside.map((d) => { const [a, b] = local([d.x, d.y]); return b - fit(a); }).sort((p, q) => p - q);
+    const shift = Math.max(-BROW_SNAP_MM, Math.min(BROW_SNAP_MM, res[res.length >> 1]));
+    const other = face.eyes[1 - e].iris.c;
+    const inner = Math.sign((other[0] - o[0]) * u[0] + (other[1] - o[1]) * u[1]) || 1;
+    const [s0, s1] = inner > 0 ? [sMax, sMin] : [sMin, sMax];
+    const along = (s, off) => { const t = fit(s) + shift + off; return { xMm: o[0] + s * u[0] + t * v[0], yMm: o[1] + s * u[1] + t * v[1] }; };
+    const path = (from, to, off) => {
+      const n = Math.max(2, Math.ceil(Math.abs(to - from) / 0.2));
+      return Array.from({ length: n + 1 }, (_, k) => along(from + (to - from) * k / n, off));
+    };
+    const thick = thickMm / pitch;
+    const rows = [];
+    if (thick >= BROW_TWO_ROWS) {
+      const half = 0.45 * pitch;
+      rows.push({ points: path(s0, s1, half), d: SS6_MM, closed: false });
+      rows.push({ points: path(s0, s0 + (s1 - s0) * BROW_INNER, -half), d: SS6_MM, closed: false });
+    } else {
+      rows.push({ points: path(s0, s1, 0), d: SS6_MM, closed: false });
+    }
+    brows.push({ eye: e, face: fi, colour: mode === "colour" ? modeOf(beside.map((d) => d.snap)) : JET, discs: beside.map((d) => d.id), rows, thickness: Math.round(thick * 10) / 10, shiftMm: Math.round(shift * 100) / 100 });
+  }));
+  return { brows, notes };
+}
+
+// Strands (step 1b): the subject's thin, long parts. -> { protrusion (Uint8Array, 1 on strand cells),
+// body (subject without them), bodyDist (distance to the body's edge), strandDist (to a strand) }.
+function findStrands(grid, subject, subjectDist) {
+  const core = new Uint8Array(grid.n);
+  for (let k = 0; k < grid.n; k++) core[k] = subject[k] && subjectDist[k] >= STRAND_OPEN_MM ? 1 : 0;
+  const coreDist = grid.distanceTo(core);
+  const protrusion = new Uint8Array(grid.n);
+  const seen = new Uint8Array(grid.n);
+  let strands = 0;
+  for (let k0 = 0; k0 < grid.n; k0++) {
+    if (seen[k0] || !subject[k0] || coreDist[k0] <= STRAND_OPEN_MM) continue;
+    const cells = [k0];
+    seen[k0] = 1;
+    let reach = 0, i0 = Infinity, i1 = -Infinity, j0 = Infinity, j1 = -Infinity;
+    for (let q = 0; q < cells.length; q++) {
+      const c = cells[q], i = c % grid.w, j = (c - i) / grid.w;
+      reach = Math.max(reach, coreDist[c]);
+      i0 = Math.min(i0, i); i1 = Math.max(i1, i); j0 = Math.min(j0, j); j1 = Math.max(j1, j);
+      for (const m of [i > 0 ? c - 1 : -1, i < grid.w - 1 ? c + 1 : -1, j > 0 ? c - grid.w : -1, j < grid.h - 1 ? c + grid.w : -1]) {
+        if (m >= 0 && !seen[m] && subject[m] && coreDist[m] > STRAND_OPEN_MM) { seen[m] = 1; cells.push(m); }
+      }
+    }
+    // Length: how far it reaches from the body (a piece with no body at all: its box's diagonal).
+    const length = Number.isFinite(reach) ? reach : Math.hypot(i1 - i0 + 1, j1 - j0 + 1) / grid.ppmm;
+    const areaMm2 = cells.length / (grid.ppmm * grid.ppmm);
+    if (length < STRAND_MIN_LEN_MM || areaMm2 / length > STRAND_MAX_WIDTH_MM) continue;
+    strands++;
+    for (const c of cells) protrusion[c] = 1;
+  }
+  const body = new Uint8Array(grid.n), notBody = new Uint8Array(grid.n);
+  for (let k = 0; k < grid.n; k++) { body[k] = subject[k] && !protrusion[k] ? 1 : 0; notBody[k] = body[k] ? 0 : 1; }
+  return { protrusion, body, bodyDist: grid.distanceTo(notBody), strandDist: grid.distanceTo(protrusion), strands };
 }
 
 // Least-squares polynomial t(s) of the given degree (1 or 2) through [s, t] points.
@@ -758,7 +859,8 @@ const thin = (points, step) => {
 
 // /layout answer + AI image ({ data, width, height } RGBA) -> the map. mode "colour" or "bw";
 // style "halftone" or "stencil" (black & white only); threshold: the B&W L* threshold.
-export function buildMap(layout, ai, { mode = "colour", style = "halftone", threshold = DEFAULT_BW_THRESHOLD } = {}) {
+// faces: landmark faces (each 478 [x, y] in layout mm; tools/exp-engine.mjs), or none.
+export function buildMap(layout, ai, { mode = "colour", style = "halftone", threshold = DEFAULT_BW_THRESHOLD, faces = [] } = {}) {
   const report = layout.report;
   if (!(Number(report?.mmPerPx) > 0) || !Array.isArray(report?.offsetMm)) throw new Error("The layout has no frame (mmPerPx, offsetMm).");
   const on = subjectOnGrid(ai, report);
@@ -774,22 +876,47 @@ export function buildMap(layout, ai, { mode = "colour", style = "halftone", thre
   const owner = discCells(grid, subject, discs);
   const nb = discGraph(grid, owner, discs.length);
   markInk(discs, nb, mode, style);
-  const regions = faceRegions(report, discs);
-  // The AI's own dark outline along the subject's edge: the subject outline's job, neither line nor
-  // area (its cells take the areas inside it). Light discs there are no light line either.
+  const pupils = Array.isArray(report.pupilsAtMm) ? report.pupilsAtMm : [];
+  const geo = faces.map((points) => faceGeometry(points, { pupils }));
+  const regions = faceRegions(report, discs, geo);
+  const { protrusion, body, bodyDist, strandDist, strands } = findStrands(grid, subject, subjectDist);
+  // The AI's own dark outline along the body's edge: the subject outline's job, neither line nor
+  // area (its cells take the areas inside it). Light discs there are no light line either. A strand's
+  // discs are line ink by their lightness, and the edge discs that join a strand to the body (up to
+  // three steps, of the same kind) are no edge.
   for (const d of discs) {
-    const k = grid.at(d.x, d.y), near = k < 0 || subjectDist[k] < EDGE_DISC_MM;
+    const k = grid.at(d.x, d.y);
+    d.strand = k >= 0 && protrusion[k] === 1;
+    if (d.strand) {
+      const lightOne = mode === "colour" ? d.lab[0] >= INK_MAX_L : d.snap === CRYSTAL;
+      d.ink = !lightOne; d.light = lightOne; d.edge = false; d.lightEdge = false;
+      continue;
+    }
+    const near = k < 0 || bodyDist[k] < EDGE_DISC_MM;
     d.edge = d.ink && near;
     d.lightEdge = d.light && near;
   }
+  for (const key of ["ink", "light"]) {
+    const flag = key === "ink" ? "edge" : "lightEdge";
+    let front = discs.filter((d) => d.strand && d[key]).map((d) => d.id);
+    for (let step = 0; step < 3 && front.length; step++) {
+      const next = [];
+      for (const id of front) for (const o of nb[id]) if (discs[o][flag] && discs[o][key]) { discs[o][flag] = false; next.push(o); }
+      front = next;
+    }
+  }
+  const cut = new Uint8Array(grid.n);
+  for (let k = 0; k < grid.n; k++) cut[k] = body[k] && bodyDist[k] < LINE_EDGE_MM && strandDist[k] > LEAVE_MM ? 1 : 0;
 
   // Brows (concept section 5): never an area, never an ordinary line.
-  const brows = report.face === "human" ? findBrows(discs, nb, regions, mode) : [];
+  let brows = [], browNotes = [];
+  if (geo.length) ({ brows, notes: browNotes } = browsFromFaces(geo, discs, mode));
+  else if (report.face === "human") brows = findBrows(discs, nb, regions, mode);
   for (const b of brows) for (const o of b.discs) { discs[o].line = true; discs[o].ink = false; discs[o].light = false; }
 
   const lines = dropDoubled([
-    ...findLines(grid, subject, subjectDist, owner, discs, regions, mode, "ink"),
-    ...findLines(grid, subject, subjectDist, owner, discs, regions, mode, "light")
+    ...findLines(grid, subject, cut, owner, discs, regions, mode, "ink"),
+    ...findLines(grid, subject, cut, owner, discs, regions, mode, "light")
   ]).filter((l) => !brows.some((b) => l.points.filter((p) => b.rows[0].points.some((q) => Math.hypot(p.xMm - q.xMm, p.yMm - q.yMm) < 2.5)).length > 0.3 * l.points.length))
     .map((l, id) => ({ ...l, id }));
   // A line's discs: the ink discs whose cells lie within LINE_BAND_MM of its path, so the areas on
@@ -867,7 +994,7 @@ export function buildMap(layout, ai, { mode = "colour", style = "halftone", thre
 
   return {
     mode, style: mode === "colour" ? null : style, threshold, report, grid, subject, part, parts, subjectDist, regions,
-    discs, owner, lines, brows, areas, areaOf, toneOf, borderDist
+    discs, owner, lines, brows, browNotes, areas, areaOf, toneOf, borderDist, faces: geo, body, bodyDist, protrusion, strands
   };
 }
 
@@ -918,7 +1045,10 @@ export function mapToJSON(map) {
     }),
     lines: map.lines.map((l) => ({ id: l.id, tone: l.tone, size: l.size, colour: l.colour, closed: l.closed, lengthMm: Math.round(l.lengthMm * 10) / 10, points: thin(l.points, 0.4) })),
     brows: (map.brows || []).map((b) => ({ eye: b.eye, colour: b.colour, thickness: b.thickness, rows: b.rows.map((r) => thin(r.points, 0.4)) })),
-    faces: map.regions.map((r) => ({ kind: r.kind, x: +r.x.toFixed(2), y: +r.y.toFixed(2), ax: +r.ax.toFixed(2), ay: +r.ay.toFixed(2), angle: +r.angle.toFixed(4) }))
+    strands: map.strands ?? 0,
+    faces: map.regions.map((r) => (r.poly
+      ? { kind: r.kind, poly: r.poly.map(([x, y]) => [Math.round(x * 100) / 100, Math.round(y * 100) / 100]) }
+      : { kind: r.kind, x: +r.x.toFixed(2), y: +r.y.toFixed(2), ax: +r.ax.toFixed(2), ay: +r.ay.toFixed(2), angle: +r.angle.toFixed(4) }))
   };
 }
 
@@ -974,7 +1104,8 @@ export function mapPicture(map, ppmm = 6) {
   ctx.strokeStyle = "#00b7ff"; ctx.lineWidth = Math.max(1, 0.3 * ppmm);
   for (const r of map.regions) {
     ctx.beginPath();
-    ctx.ellipse(X(r.x), Y(r.y), r.ax * ppmm, r.ay * ppmm, r.angle, 0, 2 * Math.PI);
+    if (r.poly) { r.poly.forEach(([x, y], i) => (i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y)))); ctx.closePath(); }
+    else ctx.ellipse(X(r.x), Y(r.y), r.ax * ppmm, r.ay * ppmm, r.angle, 0, 2 * Math.PI);
     ctx.stroke();
   }
   return canvas.toBuffer("image/png");

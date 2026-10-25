@@ -1,6 +1,6 @@
 # exp-engine — a stone placement engine for the design concept
 
-Status: experiment, branch `exp-engine`, two builds on 25 Oct 2026. Production is unchanged: the
+Status: experiment, branch `exp-engine`, three builds on 25 Oct 2026. Production is unchanged: the
 engine runs only with `IS_ENGINE=concept` (spec 7.8); the default stays today's pipeline (spec 7.5,
 7.6). The strass service is unchanged: it still gives the detections (`report.discsAtMm`), the pupils
 and face, and the natural size (`mmPerPx`, `offsetMm`), so designs keep their size and frame.
@@ -11,9 +11,261 @@ B&W halftone, B&W stencil2), with the /layout answers saved in exp-faces (the th
 images laid out once by the local service, `data/exp-engine/layouts/`). Private results only in
 `data/private-portraits/engine.html`.
 
-Build 2 (this section) answers Alex's review of build 1: holes everywhere, brows unfinished, faces not
+Build 2 (sections 1-6) answers Alex's review of build 1: holes everywhere, brows unfinished, faces not
 as the concept says. Faces stay for build 3; build 2 fixes the engine underneath them. Build 1 is kept
 below as history.
+
+## Build 3: faces, holes, lines leaving the subject
+
+Build 3 (this section) adds the faces of concept section 5, check 5, the hole step and the new check 4
+(holes of 1.4 mm or more), and keeps lines that leave the subject. Builds 2 and 1 follow as history.
+Production is unchanged: the pipeline still runs the engine only with `IS_ENGINE=concept`, and it has
+no landmark source, so in the pipeline faces keep today's eye and mouth stones (spec 7.8).
+
+### B3.1 What was built
+
+1. **Landmarks** (exp-faces setup, its files checked out singly, the branch not merged):
+   `services/strass/scripts/face_landmarks.py` (MediaPipe Face Landmarker, Face Mesh V2, Apache 2.0,
+   own venv `services/strass/.venv-faces`, model `services/strass/models/mediapipe/`, both
+   git-ignored). `tools/exp-engine.mjs` finds the faces as exp-faces did: the AI image blurred by
+   0.6 mm; with a prepared photo, the AI's faces matched to the photo's (iris centres within 0.6 eye
+   distances; false finds dropped, a photo face with no AI face used as mapped); RS images without a
+   photo at confidence 0.7. Each eye moves to the service's pupil where one lies within 1.5 iris radii
+   (at least 1.5 mm) of the landmark iris. The cached landmarks of exp-faces are reused.
+2. **Geometry and regions** (`src/engine/faces.js`): each eye's lids fitted as an almond (a cubic
+   through both corners, least squares to the lid landmarks), its iris, the brows' upper and lower
+   edges, the nose (bridge, tip, base, alae), the lips, the face oval. Polygon regions: each eye and
+   the mouth (the path of their outer chains: areas, outline and lines stay out; map lines also 2.5 /
+   1.5 mm around them) and the nose (lines only). An eye under 5 mm wide or 1.6 mm high keeps today's
+   stones (a pupil region around it). Faces without landmarks (animals, Jesus) keep build 2's pupil
+   regions.
+3. **Features** (`src/engine/features.js`, by concept section 5): upper lid an SS6 Jet chain; lower lid
+   an SS4 chain (SS6 on eyes 18 mm wide) in a tone 20 L\* darker than the skin (the skin area's own
+   tone, else its ramp's); both half a stone radius outside the curves (a whole radius on eyes under
+   6 mm high, so the white keeps room). Pupil one Jet stone, the largest of SS20, SS16, SS10, SS6 at
+   most half the iris width that fits in both eyes (both the same size), at the iris centre or up to
+   0.4 iris radii off, preferring a spot where the catch-light fits too. Catch-light one Crystal SS4
+   touching the pupil, 45° up towards the light (turning to straight up or 30° below the horizontal
+   if blocked, always on the light's side). Light side: the cheek band's mean L\* left against right
+   in the AI image; 4 L\* or more decides, else upper right. Iris ring of SS4 in the iris colour (the
+   photo's, else the AI's mid-tone iris discs) when it fits within 0.5 mm of the iris and a third of
+   it (3 stones at least) shows between the lids, the rest of the iris SS4 in that colour. Eye white
+   Crystal, packed (SS6 lattice along the eye, then SS6 and SS4 farthest-first). Lashes when the AI drew
+   them (dark share above the outer half of the upper lid at least 0.35 and 0.15 above the inner
+   half): a chain of 2–5 SS4 Jet from the outer corner, turned up. Brows from the landmarks (between
+   the upper and lower brow edges, moved to the AI's dark discs beside them by up to 2.5 mm; one row,
+   a second on the inner 55 % where thicker than 1.4 stones; the colour of those discs; no brow where
+   the AI drew none). Nose: each nostril one dark stone (SS6 or SS4) at the darkest spot near it where
+   the AI drew it 6 L\* darker than the cheeks; a shadow chain of SS4 from the bridge towards the tip on
+   the darker side, a tone 8 L\* darker than the skin, only where the AI's side is 8 L\* darker than the
+   cheeks and 3 darker than the other side. Lips: outline a closed chain (SS4, SS6 on mouths 35 mm
+   wide) in a lip tone 10 L\* darker than the upper lip; mouth line SS4 a further 6 L\* darker (open
+   mouth: one along each inner lip); upper lip packed in the darker tone (at least 6 L\* darker than
+   the lower), lower lip in the lighter one; the tones from the AI's lip discs (L\* 35 or more, so not
+   its dark outline) and their ramp. Teeth: Crystal on a lattice along the mouth where the AI is light
+   (L\* 62 or more over 15 % of the opening), the rest of the opening the darkest lip tone. Black &
+   white: lids, lashes, pupil, iris, nostrils, nose shadow, lip outline, mouth line and upper lip Jet;
+   white, catch-light, lower lip and teeth Crystal. The face contour is not built in this build (the
+   subject outline and the map's lines carry it).
+4. **Check 5** (`checks.js checkFaces`), measured on any design against the landmarks: per eye the
+   outline (the upper lid's middle 80 % within 1.3 mm of a stone 25 L\* darker than the cheeks' stones,
+   at least 70 %; the lower lid's 8 L\* darker, at least 60 %), the white (two light stones, L\* 80 or
+   more, in the opening besides the catch-light), the pupil (a stone of L\* 25 or less and SS6 or more
+   at the iris centre), the catch-light (the highest of the smallest light stones touching the pupil)
+   and its side; the lips' outline (10 L\* darker than the skin along 70 %) and mouth line (8 L\*
+   darker than the lower lip and the skin along 70 % of its middle). In black & white dark means Jet. A
+   face passes with every eye's outline, white and pupil and the lips' outline.
+5. **Check 4 and the hole step.** Check 4 now counts holes of 1.4 mm or more (the concept's wording
+   is updated). The hole step (`place.js closeHoles`), after the settle step and fill: every hole of
+   1.4 mm or more, largest first; the area and seam stones within 2.6 mm of it move in small steps
+   (each at most 0.6 mm), every pair closer than 0.1 mm pushed apart, a stone that would leave the
+   subject or enter a face region held back, lines, outline, brows and features fixed: first *close*
+   (the rim stones step towards the centre), else *open* (an SS4 at the centre, the stones pushed out;
+   it takes its neighbours' colour). A try is kept only with every gap at least 0.1 mm, the hole gone
+   and fewer holes of 1.4 mm or more within 4 mm than before; three passes.
+6. **Lines that leave the subject** (`map.js`): the subject's thin, long parts (what an opening by
+   1.6 mm removes, at least 4 mm long and at most 3.2 mm wide on average) are strands, not body. Their
+   discs are line ink by their lightness, the edge discs joining them to the body are no edge, and the
+   edge does not cut a line within 2.5 mm of a strand, so a whisker runs on from the face out along the
+   strand as one chain (its stones may come to 0.4 of their radius of the edge). The subject outline
+   follows the body, so it no longer runs round the whiskers' shapes and cuts them; where a whisker
+   leaves, the outline stops at the whisker chain and goes on beyond it. No area row or honeycomb
+   goes into a strand; the seam fill does where a stone still fits.
+7. A tools fix: `tools/exp-holes.mjs tintedPng` cropped renders by an SS6 margin; where SS4 are the
+   main stone (an eye) the crop was shifted. It uses the render's own canvas now.
+
+### B3.2 Results (CC0 and RS)
+
+"engine, no faces" is the engine with build 2's face handling (today's eye and mouth stones kept) and
+build 3's other changes; "engine, faces" builds the faces (the same design where there is no landmark
+face). All three designs are checked against the map with faces. "Before the hole step" is the
+engine's histogram of empty circles just before step 5c.
+
+| Set | Designs | Who | Gap pass | Clean lines | Other colour | Breaks | Missing | Patches <4 | Holes ≥1.4 mm (designs passing) | Holes 0.6 · 0.8 · 1.0 · 1.2 · 1.4+ mm | Before the hole step | Faces passing check 5 | Eyes: outline · white · pupil · catch-light (of) | Same side | Lips: outline · mouth line | ms mean / max |
+| --- | ---: | --- | ---: | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | ---: | --- | --- |
+| CC0 | 9 | today | 9/9 | 71/176 | 81 | 8 | 8 | 2817 | 941 (0) | 16926 · 9984 · 5048 · 2131 · 951 |  | – | – | – | – | 529 / 711 |
+|  |  | engine, no faces | 9/9 | 165/176 | 1 | 0 | 7 | 0 | 112 (0) | 17134 · 18697 · 3374 · 919 · 165 | 17105 · 18769 · 3250 · 801 · 370 | – | – | – | – | 4155 / 5635 |
+|  |  | engine, faces | 9/9 | 165/176 | 1 | 0 | 7 | 0 | 112 (0) | 17134 · 18697 · 3374 · 919 · 165 | 17105 · 18769 · 3250 · 801 · 370 | – | – | – | – | 4155 / 5635 |
+| RS | 12 | today | 12/12 | 228/486 | 71 | 24 | 30 | 3894 | 981 (1) | 24314 · 15275 · 6975 · 2441 · 1008 |  | 0/3 | 0 · 3 · 6 · 5 (6) | 2 | 2 · 0 | 577 / 842 |
+|  |  | engine, no faces | 12/12 | 435/486 | 2 | 2 | 30 | 50 | 280 (0) | 25346 · 28388 · 5440 · 1501 · 315 | 25338 · 28514 · 5259 · 1310 · 562 | 0/3 | 0 · 3 · 6 · 5 (6) | 2 | 2 · 0 | 4718 / 7337 |
+|  |  | engine, faces | 12/12 | 443/486 | 1 | 1 | 30 | 5 | 268 (0) | 25213 · 28717 · 5438 · 1474 · 306 | 25231 · 28818 · 5283 · 1311 · 545 | 2/3 | 6 · 5 · 6 · 6 (6) | 3 | 3 · 3 | 4677 / 7337 |
+
+Check 5 per face:
+
+| Design | Face | Who | Pass | Eyes (left · right): outline (upper/lower cover) · white · pupil (SS mm, share of iris width) · catch-light | Same side | Lips: outline · mouth line |
+| --- | ---: | --- | --- | --- | --- | --- |
+| rs-einstein | 1 | today | fail | no (0.62/0.86) · no · 4.7 (0.83) · yes — no (0.29/0.95) · no · 4.7 (0.91) · yes | yes | yes (0.84) · no (0.33) |
+|  |  | engine, no faces | fail | no (0.62/0.86) · no · 4.7 (0.83) · yes — no (0.29/0.95) · no · 4.7 (0.91) · yes | yes | yes (0.76) · no (0.33) |
+|  |  | engine, faces | **pass** | yes (0.9/1) · yes · 2 (0.35) · yes — yes (0.71/1) · yes · 2 (0.39) · yes | yes | yes (1) · yes (1) |
+| rs-portrait | 1 | today | fail | no (0.62/0.33) · yes · 2.8 (0.34) · yes — no (0.81/0.38) · yes · 2.8 (0.32) · yes | yes | yes (0.94) · no (0.66) |
+|  |  | engine, no faces | fail | no (0.62/0.33) · yes · 2.8 (0.34) · yes — no (0.81/0.38) · yes · 2.8 (0.32) · yes | yes | yes (0.93) · no (0.66) |
+|  |  | engine, faces | **pass** | yes (1/1) · yes · 4 (0.49) · yes — yes (1/1) · yes · 4 (0.46) · yes | yes | yes (1) · yes (1) |
+| rs-woman | 1 | today | fail | no (0.57/0.14) · yes · 4.7 (1.12) · yes — no (0.24/0) · no · 4.7 (1.41) · no | – | no (0.63) · no (0.42) |
+|  |  | engine, no faces | fail | no (0.57/0.14) · yes · 4.7 (1.12) · yes — no (0.24/0) · no · 4.7 (1.41) · no | – | no (0.63) · no (0.42) |
+|  |  | engine, faces | fail | yes (0.86/1) · yes · 2 (0.48) · yes — yes (0.76/1) · no · 2 (0.6) · yes | yes | yes (0.99) · yes (0.97) |
+
+Features that could not be built, and why:
+
+- **rs-cat**: no features built: no landmark face found in the AI image.
+- **rs-dog**: no features built: no landmark face found in the AI image.
+- **rs-einstein** (1 face): face 1 nose shadow: not drawn.
+- **rs-jesus**: no features built: no landmark face found in the AI image.
+- **rs-portrait** (1 face): face 1 left eye iris ring: ring does not fit (3 of 10).
+- **rs-woman** (1 face): face 1 left eye iris ring: iris too small for a ring; face 1 right eye iris ring: iris too small for a ring; face 1 right eye white: room for 1 stone only (6.46 x 4.45 mm); face 1 right eye lashes: no room (outside the subject or against other stones).
+
+What met the rules:
+
+- **Check 1** on every design (0 violations, smallest gap 0.1 mm), faces and hole step included.
+- **Check 5**: RS Einstein and the RS portrait pass with faces; today and the engine without faces
+  pass none (the AI's eyes have no lower lid outline, and the SS20 pupils fill the eye). RS woman fails
+  on the far eye of her turned face: 6.5 × 4.5 mm, room for one white stone beside the lids, pupil and
+  catch-light. Pupils are SS6 (Einstein, woman) and SS16 (portrait): at most half the iris width, as
+  the concept says, much smaller than the AI's and today's SS20. Catch-lights on the same side on all
+  three faces; the light side came from the shading on the woman (left) and the portrait (right), and
+  was unclear on Einstein (upper right).
+- **Holes (new check 4)**: no design passes yet, but holes of 1.4 mm or more fall from today's 1922
+  to 380 (check 4, CC0 and RS, engine with faces); by the histogram's 1.4 mm bin from 1959 to 471, 915
+  just before the hole step. The step targeted 1596 holes,
+  closed 291 and opened 108. Of the 397 holes left, 319 have only stones on their rim that may not
+  move (lines, outline, brows, features, kept face stones): the step cannot reach them without moving
+  line or feature stones, which this build does not do.
+- **Lines leaving the subject**: strands on cc0-cat-norule and cc0-cat-rule (5 each; 4 and 5 with a
+  whisker chain), rs-portrait, Einstein and Jesus (hair), rs-tulips, rs-logo (25 thin letter strokes,
+  8 with a chain). The dogs and rs-cat have none: their AI images draw no whisker or strand over the
+  background, so the fix changes nothing there.
+
+Not met, or open:
+
+- Faces only where landmarks exist: Jesus is a profile (the service calls it an animal with one
+  pupil) and MediaPipe finds no face, so it keeps today's stones; animals keep build 2's handling.
+- The pipeline has no landmark source; faces in production need one (the strass service, or the
+  direct path), a decision of its own (exp-faces section 3).
+- Look: the concept's eye has a small pupil (half the iris), lids on both sides and a white, where
+  the AI draws a large dark pupil; on Einstein's deep-set eyes it reads busier than the AI's. Under a
+  moustache (Einstein) the lips are built where the landmarks put them, over the moustache.
+- The private photos (`data/private-portraits/engine.html`) show the same in all three styles; their
+  faces are mostly small (eyes 6–10 mm wide, some under 5 mm, which keep today's stones), and there
+  the eye white most often does not fit: a narrow eye's opening is little higher than an SS6 pupil.
+
+Per design:
+
+| Design | | Stones | ms | Size mm | 1 Gaps: viol. / min | 2 Lines: clean · other colour · other size · breaks · missing | 3 Areas: >3 tones (max) · patches <4 | 4 Holes ≥1.4 mm / largest | Holes 0.6 · 0.8 · 1.0 · 1.2 · 1.4+ mm | Before the hole step: 0.6 · … · 1.4+ |
+| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |
+| cc0-car-rule | today | 3548 | 710 | 260 × 87.4 | 0 / 0.1 | 14/35 · 21 · 30 · 2 · 0 | 14 (10) · 315 | 210 / 1.7 | 2044 · 1732 · 1176 · 568 · 220 |  |
+|  | engine, no faces | 3709 | 5635 | 259 × 86.7 | 0 / 0.1 | 33/35 · 0 · 0 · 0 · 1 | 0 (3) · 0 | 10 / 1.69 | 2865 · 3093 · 499 · 115 · 23 | 2878 · 3092 · 471 · 99 · 51 |
+| cc0-cat-norule | today | 3148 | 578 | 158.4 × 120.8 | 0 / 0.101 | 13/33 · 7 · 34 · 2 · 0 | 32 (10) · 701 | 95 / 1.7 | 2463 · 1800 · 787 · 264 · 95 |  |
+|  | engine, no faces | 3168 | 5108 | 157.6 × 120 | 0 / 0.1 | 31/33 · 0 · 0 · 0 · 2 | 0 (3) · 0 | 21 / 1.64 | 2401 · 2713 · 541 · 138 · 23 | 2397 · 2721 · 528 · 119 · 56 |
+| cc0-cat-rule | today | 3579 | 711 | 167.8 × 125.7 | 0 / 0.101 | 5/29 · 20 · 81 · 1 · 2 | 37 (10) · 574 | 80 / 1.68 | 3482 · 1286 · 391 · 144 · 78 |  |
+|  | engine, no faces | 3531 | 5336 | 167.1 × 125.2 | 0 / 0.1 | 25/29 · 0 · 1 · 0 · 3 | 0 (3) · 0 | 17 / 1.65 | 2628 · 3210 · 560 · 134 · 25 | 2604 · 3235 · 542 · 130 · 54 |
+| cc0-dachshund-rule | today | 1633 | 370 | 159.2 × 106.4 | 0 / 0.102 | 5/13 · 1 · 13 · 0 · 0 | 11 (7) · 110 | 15 / 1.65 | 1299 · 710 · 229 · 58 · 16 |  |
+|  | engine, no faces | 1549 | 2819 | 157.4 × 105.8 | 0 / 0.1 | 13/13 · 0 · 0 · 0 · 0 | 0 (3) · 0 | 8 / 1.65 | 1247 · 1328 · 250 · 73 · 14 | 1242 · 1322 · 250 · 70 · 22 |
+| cc0-dog-norule | today | 2084 | 484 | 87 × 203.1 | 0 / 0.1 | 6/12 · 0 · 2 · 0 · 2 | 22 (13) · 238 | 94 / 1.66 | 1284 · 1072 · 714 · 225 · 76 |  |
+|  | engine, no faces | 2120 | 3862 | 86.2 × 202.3 | 0 / 0.1 | 12/12 · 0 · 0 · 0 · 0 | 0 (3) · 0 | 11 / 1.61 | 1696 · 1934 · 371 · 93 · 9 | 1694 · 1943 · 364 · 79 · 24 |
+| cc0-dog-rule | today | 2050 | 495 | 83.8 × 200.8 | 0 / 0.101 | 3/8 · 3 · 7 · 0 · 0 | 22 (8) · 247 | 65 / 1.72 | 1295 · 1122 · 664 · 176 · 73 |  |
+|  | engine, no faces | 2074 | 3531 | 83.2 × 200 | 0 / 0.1 | 7/8 · 0 · 0 · 0 · 0 | 0 (3) · 0 | 13 / 1.66 | 1709 · 1754 · 329 · 99 · 17 | 1715 · 1759 · 318 · 89 · 33 |
+| cc0-giraffe-rule | today | 2327 | 556 | 79.8 × 307.5 | 0 / 0.101 | 21/32 · 6 · 7 · 3 · 0 | 15 (12) · 497 | 377 / 1.71 | 1423 · 1167 · 911 · 656 · 388 |  |
+|  | engine, no faces | 2395 | 4334 | 78.4 × 307.1 | 0 / 0.1 | 31/32 · 0 · 0 · 0 · 1 | 0 (3) · 0 | 24 / 1.63 | 1996 · 2072 · 359 · 127 · 38 | 1995 · 2088 · 339 · 109 · 58 |
+| cc0-mug-norule | today | 2224 | 448 | 146.5 × 109.6 | 0 / 0.102 | 4/14 · 23 · 16 · 0 · 4 | 5 (5) · 99 | 4 / 1.63 | 2199 · 697 · 108 · 27 · 4 |  |
+|  | engine, no faces | 2105 | 3429 | 145.9 × 109.1 | 0 / 0.1 | 13/14 · 1 · 0 · 0 · 0 | 0 (1) · 0 | 3 / 1.67 | 1660 · 1719 · 232 · 54 · 10 | 1662 · 1722 · 228 · 45 · 21 |
+| cc0-mug-rule | today | 1751 | 410 | 130.4 × 96 | 0 / 0.103 | 0/0 · 0 · 0 · 0 · 0 | 2 (5) · 36 | 1 / 1.41 | 1437 · 398 · 68 · 13 · 1 |  |
+|  | engine, no faces | 1737 | 3338 | 130.3 × 96.4 | 0 / 0.1 | 0/0 · 0 · 0 · 0 · 0 | 0 (2) · 0 | 5 / 1.52 | 932 · 874 · 233 · 86 · 6 | 918 · 887 · 210 · 61 · 51 |
+| rs-cat | today | 2162 | 444 | 103 × 130.8 | 0 / 0.1 | 11/35 · 5 · 32 · 3 · 0 | 40 (9) · 367 | 81 / 1.7 | 1690 · 1093 · 485 · 192 · 80 |  |
+|  | engine, no faces | 2159 | 3531 | 102.4 × 130.4 | 0 / 0.1 | 27/35 · 0 · 0 · 1 · 6 | 0 (3) · 1 | 20 / 1.59 | 1744 · 1701 · 340 · 113 · 21 | 1755 · 1709 · 324 · 99 · 42 |
+| rs-dog | today | 1683 | 417 | 96.6 × 160.6 | 0 / 0.102 | 4/7 · 0 · 4 · 0 · 0 | 7 (10) · 152 | 48 / 1.65 | 1281 · 1117 · 564 · 160 · 44 |  |
+|  | engine, no faces | 1742 | 2983 | 95.6 × 159.9 | 0 / 0.1 | 7/7 · 0 · 0 · 0 · 0 | 0 (2) · 0 | 8 / 1.65 | 1341 · 1347 · 329 · 72 · 9 | 1343 · 1349 · 321 · 63 · 32 |
+| rs-einstein | today | 3594 | 806 | 150.2 × 143.2 | 0 / 0.1 | 37/70 · 22 · 29 · 0 · 6 | 43 (11) · 458 | 58 / 1.68 | 2868 · 1680 · 544 · 148 · 66 |  |
+|  | engine, no faces | 3434 | 5764 | 149.8 × 142.5 | 0 / 0.1 | 58/70 · 2 · 13 · 1 · 3 | 3 (4) · 30 | 31 / 1.67 | 2871 · 3202 · 641 · 188 · 36 | 2871 · 3215 · 621 · 160 · 63 |
+|  | engine, faces | 3442 | 5983 | 149.8 × 142.5 | 0 / 0.1 | 63/70 · 1 · 3 · 0 · 3 | 0 (3) · 1 | 29 / 1.67 | 2826 · 3421 · 627 · 136 · 29 | 2831 · 3425 · 613 · 131 · 48 |
+| rs-jesus | today | 3307 | 689 | 145.8 × 163.9 | 0 / 0.1 | 20/52 · 11 · 44 · 4 · 1 | 31 (8) · 344 | 165 / 1.7 | 2560 · 1783 · 1060 · 518 · 158 |  |
+|  | engine, no faces | 3335 | 5873 | 145.4 × 162.7 | 0 / 0.1 | 49/52 · 0 · 3 · 0 · 2 | 0 (3) · 0 | 18 / 1.64 | 2725 · 3378 · 535 · 145 · 19 | 2725 · 3393 · 515 · 121 · 38 |
+| rs-lake | today | 4100 | 842 | 154.7 × 152.1 | 0 / 0.1 | 46/84 · 13 · 19 · 2 · 2 | 50 (11) · 580 | 88 / 1.7 | 3053 · 2030 · 853 · 240 · 83 |  |
+|  | engine, no faces | 4009 | 7337 | 153.7 × 151.3 | 0 / 0.1 | 76/84 · 0 · 0 · 0 · 7 | 0 (3) · 0 | 29 / 1.66 | 3480 · 4026 · 630 · 168 · 36 | 3470 · 4049 · 606 · 143 · 66 |
+| rs-leopard | today | 2436 | 546 | 117.3 × 153.7 | 0 / 0.101 | 22/65 · 5 · 17 · 6 · 9 | 51 (9) · 596 | 94 / 1.68 | 1868 · 1229 · 679 · 230 · 100 |  |
+|  | engine, no faces | 2405 | 4408 | 116.4 × 152.7 | 0 / 0.1 | 58/65 · 0 · 0 · 0 · 7 | 0 (3) · 0 | 26 / 1.68 | 2066 · 2384 · 497 · 122 · 23 | 2070 · 2388 · 487 · 114 · 37 |
+| rs-logo | today | 833 | 267 | 144.9 × 79.1 | 0 / 0.102 | 8/8 · 0 · 0 · 0 · 0 | 0 (1) · 0 | 0 / 1.37 | 118 · 167 · 84 · 6 · 0 |  |
+|  | engine, no faces | 766 | 1678 | 144.2 × 78.5 | 0 / 0.1 | 5/8 · 0 · 3 · 0 · 0 | 0 (1) · 0 | 33 / 1.6 | 520 · 345 · 72 · 48 · 41 | 518 · 345 · 72 · 47 · 44 |
+| rs-parrot | today | 2552 | 591 | 168.3 × 151.6 | 0 / 0.101 | 13/40 · 6 · 4 · 1 · 8 | 42 (9) · 368 | 114 / 1.67 | 1685 · 1392 · 780 · 274 · 121 |  |
+|  | engine, no faces | 2514 | 4844 | 167.6 × 150.1 | 0 / 0.1 | 38/40 · 0 · 0 · 0 · 2 | 0 (3) · 0 | 23 / 1.62 | 2132 · 2464 · 513 · 128 · 29 | 2144 · 2462 · 509 · 118 · 45 |
+| rs-portrait | today | 4045 | 749 | 149.5 × 166 | 0 / 0.1 | 7/35 · 2 · 35 · 4 · 4 | 25 (11) · 674 | 223 / 1.72 | 3375 · 1509 · 782 · 348 · 241 |  |
+|  | engine, no faces | 3999 | 7194 | 149 × 165.4 | 0 / 0.1 | 33/35 · 0 · 0 · 0 · 1 | 2 (4) · 15 | 36 / 1.66 | 3020 · 3434 · 754 · 227 · 42 | 3011 · 3451 · 735 · 194 · 83 |
+|  | engine, faces | 4031 | 7019 | 149 × 165.4 | 0 / 0.1 | 34/35 · 0 · 0 · 0 · 1 | 0 (3) · 3 | 34 / 1.65 | 2997 · 3612 · 749 · 257 · 43 | 3002 · 3625 · 726 · 224 · 88 |
+| rs-rose | today | 1846 | 404 | 121 × 130.5 | 0 / 0.101 | 24/34 · 0 · 15 · 2 · 0 | 3 (5) · 65 | 21 / 1.65 | 1587 · 782 · 226 · 53 · 25 |  |
+|  | engine, no faces | 1722 | 2938 | 120.1 × 130 | 0 / 0.1 | 33/34 · 0 · 0 · 0 · 0 | 0 (2) · 0 | 4 / 1.49 | 1449 · 1668 · 318 · 60 · 6 | 1447 · 1685 · 308 · 52 · 14 |
+| rs-tulips | today | 2675 | 558 | 140.3 × 141.7 | 0 / 0.101 | 30/42 · 3 · 12 · 1 · 0 | 9 (7) · 133 | 50 / 1.66 | 2002 · 1286 · 552 · 187 · 48 |  |
+|  | engine, no faces | 2596 | 4995 | 139.9 × 141 | 0 / 0.1 | 40/42 · 0 · 2 · 0 · 1 | 0 (2) · 0 | 26 / 1.66 | 2173 · 2369 · 402 · 108 · 29 | 2169 · 2377 · 387 · 98 · 44 |
+| rs-woman | today | 2627 | 607 | 143.9 × 146.7 | 0 / 0.1 | 6/14 · 4 · 5 · 1 · 0 | 13 (6) · 157 | 39 / 1.65 | 2227 · 1207 · 366 · 85 · 42 |  |
+|  | engine, no faces | 2536 | 5070 | 143.1 × 145.9 | 0 / 0.1 | 11/14 · 0 · 6 · 0 · 1 | 1 (4) · 4 | 26 / 1.69 | 1825 · 2070 · 409 · 122 · 24 | 1815 · 2091 · 374 · 101 · 54 |
+|  | engine, faces | 2549 | 4536 | 143.1 × 145.9 | 0 / 0.1 | 13/14 · 0 · 0 · 0 · 1 | 0 (2) · 0 | 18 / 1.63 | 1760 · 2002 · 426 · 117 · 21 | 1757 · 2011 · 415 · 101 · 47 |
+
+### B3.3 Pictures
+
+Each design: original | AI image | today | engine without faces | engine with faces (whole); then
+per face the eyes, nose and mouth; for designs with a strand, the strand; for animals, the face around
+the service's pupils (the cats' whiskers).
+
+### rs-woman
+
+![rs-woman](exp-engine/b3/rs-woman.jpg)
+
+### rs-portrait
+
+![rs-portrait](exp-engine/b3/rs-portrait.jpg)
+
+### rs-einstein
+
+![rs-einstein](exp-engine/b3/rs-einstein.jpg)
+
+### rs-jesus
+
+![rs-jesus](exp-engine/b3/rs-jesus.jpg)
+
+### cc0-cat-norule
+
+![cc0-cat-norule](exp-engine/b3/cc0-cat-norule.jpg)
+
+### cc0-cat-rule
+
+![cc0-cat-rule](exp-engine/b3/cc0-cat-rule.jpg)
+
+### cc0-dachshund-rule
+
+![cc0-dachshund-rule](exp-engine/b3/cc0-dachshund-rule.jpg)
+
+### cc0-dog-norule
+
+![cc0-dog-norule](exp-engine/b3/cc0-dog-norule.jpg)
+
+### cc0-dog-rule
+
+![cc0-dog-rule](exp-engine/b3/cc0-dog-rule.jpg)
+
+### rs-cat
+
+![rs-cat](exp-engine/b3/rs-cat.jpg)
+
+### rs-dog
+
+![rs-dog](exp-engine/b3/rs-dog.jpg)
 
 ## 1. Build 2: what changed
 
@@ -224,6 +476,8 @@ Other limits:
 - `src/render/offthread.js`, `offthread-worker.js`: the engine job; `src/pipeline/design.js`,
   `src/server/config.js`: `IS_ENGINE=concept`.
 - `tools/exp-engine.mjs` (`public`, `private`, `tables`, `page`), `tools/test-engine.mjs`.
+- Build 3: `src/engine/features.js`, landmark geometry in `faces.js`, `services/strass/scripts/face_landmarks.py`,
+  `tools/fixtures/face-landmarks.json` (the RS portrait's landmarks, for the tests), pictures in `docs/exp-engine/b3/`.
 - `docs/exp-engine/`: pictures and `results.json`; maps in `data/exp-engine/maps/`, build 1's
   stones in `data/exp-engine/before/`.
 

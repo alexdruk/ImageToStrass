@@ -26,7 +26,8 @@ the disc reading `IS_BW_FROM_DISCS` is removed (7.6; the service keeps `report.d
 check skips random tokens (section 12). Revised 25 Oct 2026 (exp-engine): the design-concept engine
 (`docs/IS-DESIGN-CONCEPT.md`) behind `IS_ENGINE=concept` (7.8); today's pipeline stays the default.
 Revised 25 Oct 2026 (exp-engine, build 2): band and honeycomb packing, brows, light lines, the outline
-colour from the area's ramp, the engine in the render worker (7.8).
+colour from the area's ramp, the engine in the render worker (7.8). Revised 25 Oct 2026 (exp-engine, build 3):
+face features from landmarks (tools only), lines leaving the subject, the hole step, checks 4 (1.4 mm) and 5 (7.8).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -432,6 +433,15 @@ fill of 7.5 for seams, a settle step, and patches below 4 stones joined to their
 and natural size are the service's. The map is archived as `attempt-<n>/map.json` and `map.png`
 (server only). If the engine fails, or its gap check finds a violation, today's design is
 delivered. The service is unchanged.
+
+Build 3 (`docs/exp-engine.md` section 7). Thin, long parts of the subject (whiskers, strands over the
+background) are lines: their chains run on out of the body, and the subject outline follows the body
+instead of cutting them. After the settle step a hole step moves the area and seam stones around every
+hole of 1.4 mm or more (0.1 mm gaps kept; lines, outline, brows and features never move) until it is
+closed or an SS4 fits in it. Faces by the concept's section 5 (eyes, brows, nose, lips, teeth; both
+eyes alike, catch-lights on the light's side) need face landmarks (MediaPipe Face Landmarker), which
+only the experiment tools have (`tools/exp-engine.mjs`, its own Python environment outside the
+service); the pipeline passes none, so its faces keep today's eye and mouth stones.
 
 ## 8. Tinted view (D4)
 

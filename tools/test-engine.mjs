@@ -1,10 +1,11 @@
 // The concept engine (src/engine/, exp-engine): face regions, the map, the placement rules and the
-// checks of the design concept (section 8, 1-4), on the fake design (src/pipeline/fake/).
+// checks of the design concept (section 8, 1-5), on the fake design (src/pipeline/fake/); build 3's
+// faces from a saved landmark set (tools/fixtures/face-landmarks.json) and a synthetic strand.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import sharp from "sharp";
-import { HIST_BINS, runChecks, checkGapsOf, checkHoles, holeHistogram } from "../src/engine/checks.js";
+import { HIST_BINS, MAX_HOLE_MM, runChecks, checkGapsOf, checkHoles, holeHistogram } from "../src/engine/checks.js";
 import { RAMPS, rampOf } from "../src/engine/map.js";
 import { ditherJet } from "../src/engine/place.js";
 import { faceRegions, inRegion } from "../src/engine/faces.js";
@@ -156,4 +157,96 @@ test("engine: band, honeycomb and the hole histogram", () => {
   assert.equal(hist.length, HIST_BINS.length);
   const holes = checkHoles(engine.stones, engine.map).holes;
   assert.ok(hist[2] + hist[3] + hist[4] >= holes, "every hole of check 4 holds at least one gap of 1.0 mm or more");
+});
+
+// --- Build 3: faces from landmarks, check 5, holes, strands ---------------------------------------
+
+// A real landmark set (the RS portrait's AI image, tools/fixtures/face-landmarks.json) moved onto the
+// fake design's centre at a pupil distance of 24 mm.
+const MESH_POINTS = (() => {
+  const { points } = JSON.parse(readFileSync(new URL("./fixtures/face-landmarks.json", import.meta.url), "utf8"));
+  const [a, b] = [points[468], points[473]];
+  const k = 24 / Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  return points.map(([x, y]) => [centre[0] + (x - m[0]) * k, centre[1] - 6 + (y - m[1]) * k]);
+})();
+
+for (const [mode, style] of [["colour", "halftone"], ["bw", "stencil"]]) {
+  test(`engine faces (${mode}): the concept's features from landmarks, check 5`, () => {
+    const today = todaysDesign(LAYOUT, AI, { mode });
+    const engine = engineLayout(LAYOUT, AI, { mode, style, today: today.stones, faces: [MESH_POINTS] });
+    assert.equal(engine.gaps.ok, true);
+    assert.equal(engine.map.faces.length, 1);
+    assert.ok(engine.map.regions.some((r) => r.poly && r.kind === "eye"), "polygon regions from the landmarks");
+    const part = (p) => engine.stones.filter((s) => s.part === p);
+    const upper = part("upper-lid");
+    assert.ok(upper.length >= 6 && upper.every((s) => s.color === "jet" && s.d === 2), "upper lids: SS6 Jet");
+    const pupils = part("pupil");
+    assert.equal(pupils.length, 2);
+    assert.equal(pupils[0].d, pupils[1].d, "both pupils the same size");
+    assert.ok(pupils.every((s) => s.color === "jet"));
+    const catches = part("catch-light");
+    assert.equal(catches.length, 2);
+    for (const c of catches) {
+      const p = pupils.sort((q, r) => Math.hypot(q.x - c.x, q.y - c.y) - Math.hypot(r.x - c.x, r.y - c.y))[0];
+      assert.ok(Math.hypot(c.x - p.x, c.y - p.y) - (c.d + p.d) / 2 < 0.11, "the catch-light touches the pupil");
+      assert.equal(c.d, 1.5);
+      assert.equal(c.color, "crystal-clear");
+    }
+    const side = catches.map((c) => Math.sign(c.x - pupils.sort((q, r) => Math.hypot(q.x - c.x, q.y - c.y) - Math.hypot(r.x - c.x, r.y - c.y))[0].x));
+    assert.equal(side[0], side[1], "catch-lights on the same side");
+    assert.ok(part("white").length >= 2 && part("white").every((s) => s.color === "crystal-clear"));
+    assert.ok(part("lip-outline").length >= 6);
+    assert.ok(part("mouth-line").length >= 3);
+    for (const ch of engine.chains.filter((c) => c.kind === "upper-lid" || c.kind === "lip-outline")) {
+      for (const i of ch.stones) assert.equal(engine.stones[i].color, ch.colour);
+    }
+    if (mode === "bw") assert.ok(engine.stones.every((s) => s.color === "jet" || s.color === "crystal-clear"));
+    const checks = runChecks(engine.stones, engine.map, { chains: engine.chains });
+    assert.equal(checks.lines.chains.pass, true);
+    assert.equal(checks.faces.length, 1);
+    const [f] = checks.faces;
+    assert.ok(f.eyes.every((e) => e.outline && e.white && e.pupil), "check 5: every eye has outline, white and pupil");
+    assert.ok(f.lips.outline, "check 5: the lips have an outline");
+    assert.equal(f.sameSide, true);
+    // Today's design measured against the same landmarks: check 5 runs on any design.
+    assert.equal(runChecks(today.stones, engine.map).faces.length, 1);
+  });
+}
+
+test("checks: check 4 counts holes of 1.4 mm or more; the hole step only reduces them", () => {
+  assert.equal(MAX_HOLE_MM, 1.4);
+  const engine = engineLayout(LAYOUT, AI, { mode: "colour", today: [] });
+  const without = engineLayout(LAYOUT, AI, { mode: "colour", today: [], closeHoles: false });
+  assert.equal(without.stats.holes, undefined);
+  assert.ok(engine.stats.holes.targeted >= engine.stats.holes.closed + engine.stats.holes.opened);
+  assert.ok(checkHoles(engine.stones, engine.map).holes <= checkHoles(without.stones, engine.map).holes);
+  assert.equal(engine.gaps.ok, true);
+  // The step moves only area and seam stones.
+  const fixed = (st) => st.filter((s) => !["area", "hex", "seam"].includes(s.role)).map((s) => `${s.x},${s.y},${s.d}`).sort();
+  assert.deepEqual(fixed(engine.stones), fixed(engine.beforeHoles));
+});
+
+test("map: a thin long part of the subject is a strand; its line is a chain, the outline stays on the body", () => {
+  // A grey disc (r 15 mm) with a white bar (1.5 mm wide, 12 mm long) leaving it, at 0.15 mm per px.
+  const s = 0.15, W = 420, H = 300, data = new Uint8Array(W * H * 4);
+  const cx = 150, cy = 150;
+  const paint = (x, y, v) => { const p = (y * W + x) * 4; data[p] = data[p + 1] = data[p + 2] = v; data[p + 3] = 255; };
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (Math.hypot(x - cx, y - cy) <= 100) paint(x, y, 110);
+    else if (x > cx && x <= cx + 100 + 80 && Math.abs(y - cy) <= 5) paint(x, y, 245);
+  }
+  const discs = [];
+  for (let y = -14; y <= 14; y += 2.15) for (let x = -14; x <= 14; x += 2.15) if (Math.hypot(x, y) <= 13.5) discs.push([cx * s + x, cy * s + y, 2]);
+  for (let x = 15.8; x <= 26.5; x += 1.65) discs.push([cx * s + x, cy * s, 1.5]);
+  const layout = { stones: discs.map(([x, y]) => [x, y, "ss6", "grey"]), report: { mmPerPx: s, offsetMm: [0, 0], discsAtMm: discs, face: null } };
+  const ai = { data, width: W, height: H };
+  const engine = engineLayout(layout, ai, { mode: "colour", today: [] });
+  assert.ok(engine.map.strands >= 1, "the bar is a strand");
+  const { grid, protrusion } = engine.map;
+  const inStrand = (st) => { const k = grid.at(st.x, st.y); return k >= 0 && protrusion[k] === 1; };
+  const strandStones = engine.stones.filter(inStrand);
+  assert.ok(strandStones.length >= 4, "the strand's line is placed");
+  assert.ok(strandStones.every((st) => st.role === "line"), "only its line, no area, seam or outline stones");
+  assert.equal(engine.gaps.ok, true);
 });

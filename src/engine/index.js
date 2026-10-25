@@ -28,15 +28,18 @@ export function todaysDesign(layout, ai, { mode = "colour", threshold = 55, fill
 // at the origin, as today's), originMm, gaps, ms }. mode "colour" or "bw"; style: the black & white
 // style ("halftone" or "stencil", spec 7.2 BW_STYLE). bandRows: rows along each area's outline
 // before the honeycomb (place.js BAND_ROWS when not given; "all" is build 1's rows all the way in).
-export function engineLayout(layout, ai, { mode = "colour", style = "halftone", threshold = 55, today = [], bandRows, packing, hexFirst } = {}) {
+// faces: landmark faces (each 478 [x, y] in layout mm) whose features the engine builds (build 3;
+// the pipeline has no landmark source and passes none, so its faces keep today's stones);
+// photoLab: (x, y) -> Lab of the prepared photo (iris colours); closeHoles: false skips the hole step.
+export function engineLayout(layout, ai, { mode = "colour", style = "halftone", threshold = 55, today = [], bandRows, packing, hexFirst, faces = [], photoLab = null, closeHoles = true } = {}) {
   const t0 = performance.now();
-  const map = buildMap(layout, ai, { mode, style, threshold });
+  const map = buildMap(layout, ai, { mode, style, threshold, faces });
   const t1 = performance.now();
-  const { stones, chains, stats } = placeStones(map, ai, { today, bandRows, packing, hexFirst });
+  const { stones, chains, stats, beforeHoles } = placeStones(map, ai, { today, bandRows, packing, hexFirst, photoLab, closeHoles });
   const t2 = performance.now();
   const { stoneLayout, stones: placed, originMm } = toStoneLayout(stones, 1);
   return {
-    map, stones, chains, stats, stoneLayout, originMm,
+    map, stones, chains, stats, stoneLayout, originMm, beforeHoles,
     gaps: checkGaps(placed),
     ms: { map: Math.round(t1 - t0), place: Math.round(t2 - t1) }
   };

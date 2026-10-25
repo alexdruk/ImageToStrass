@@ -22,7 +22,7 @@ import { cleanedLayout, removeCloseStones } from "../src/pipeline/cleanup.js";
 import { acceptLayout } from "../src/pipeline/design.js";
 import { deltaE2000, findHoles, fillHoles, srgbToLab, subjectMask } from "../src/pipeline/holes.js";
 import { capStoneSizes, pupilCentres, stonesOfLayout } from "../src/pipeline/tiers.js";
-import { renderTinted } from "../src/render/tinted.js";
+import { renderTinted, tintCanvasMm } from "../src/render/tinted.js";
 import { Stone } from "../src/stones/Stone.js";
 import { StoneLayout } from "../src/stones/StoneLayout.js";
 import { STONE_COLORS } from "../src/stones/StoneColors.js";
@@ -205,10 +205,10 @@ export async function tintedPng(layout, view, ppmm, options = {}) {
   const near = layout.stones.filter((s) => s.xMm > view.x0 - 4 && s.xMm < view.x0 + view.w + 4 && s.yMm > view.y0 - 4 && s.yMm < view.y0 + view.h + 4);
   if (!near.length) return plainPng(asLayout([], "colour"), view, ppmm);
   const sub = new StoneLayout({ layerId: "design", sourceMode: "is", stones: near });
-  const box = sub.getBoundingBox();
-  const main = 2;
-  const minX = box.minXmm - 2 * main, minY = box.minYmm - 2 * main;
-  const span = Math.max(box.widthMm, box.heightMm) + 4 * main;
+  // The render's own canvas (its margin follows the subset's main stone, which is SS4 in an eye).
+  const canvas = tintCanvasMm(sub);
+  const minX = canvas.minXmm, minY = canvas.minYmm;
+  const span = Math.max(canvas.widthMm, canvas.heightMm);
   const { png, scale } = renderTinted(sub, { ...options, longSidePx: Math.round(span * ppmm), background: "white" });
   const meta = await sharp(png).metadata();
   const left = Math.round((view.x0 - minX) * scale), top = Math.round((view.y0 - minY) * scale);
