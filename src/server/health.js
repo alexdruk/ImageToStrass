@@ -75,3 +75,16 @@ export async function checkHealth({ db, config, loadTokens, fetch }) {
     etsy
   };
 }
+
+// launchd start (com.is.server, spec section 15): polls the strass service until it is healthy.
+// Resolves true when it is (at once in fake mode), false after timeoutMs.
+export async function waitForStrass({
+  config, fetch, timeoutMs = 5 * 60 * 1000, intervalMs = 2000, sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+}) {
+  const until = Date.now() + timeoutMs;
+  for (;;) {
+    if ((await checkStrass(config, fetch)).ok) return true;
+    if (Date.now() + intervalMs > until) return false;
+    await sleep(intervalMs);
+  }
+}

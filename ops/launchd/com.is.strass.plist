@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Template (spec section 15): tools/install-agents.sh fills in __REPO__, __HOME__, __NODE__,
+     __CLOUDFLARED__ and __PATH__ and installs it in ~/Library/LaunchAgents. -->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.is.strass</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/caffeinate</string>
+		<string>-i</string>
+		<string>__REPO__/services/strass/scripts/start.sh</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>__REPO__</string>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>__PATH__</string>
+		<key>HOME</key>
+		<string>__HOME__</string>
+	</dict>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ThrottleInterval</key>
+	<integer>10</integer>
+	<key>StandardOutPath</key>
+	<string>__REPO__/logs/strass.log</string>
+	<key>StandardErrorPath</key>
+	<string>__REPO__/logs/strass.log</string>
+</dict>
+</plist>

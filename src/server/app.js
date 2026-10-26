@@ -14,6 +14,7 @@ import { etsyRoutes } from "./etsy-routes.js";
 import { createTurnstile } from "./turnstile.js";
 import { uploadRoutes } from "./upload.js";
 import { webappRoutes } from "./webapp.js";
+import { wwwRedirect } from "./www-redirect.js";
 
 // deps (tests): pipeline, background, verifyTurnstile, hashIp, fetch, loadTokens; Etsy: request (the
 // Etsy API, for the poller and the routes), exchange, saveTokens, saveShop, loadShop, poller.
@@ -41,6 +42,8 @@ app.disable("x-powered-by");
 app.locals.background = background;
 app.locals.pipeline = pipeline;
 app.locals.poller = poller;
+
+app.use(wwwRedirect(config));
 
 app.use(uploadRoutes({
   q,

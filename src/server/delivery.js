@@ -82,6 +82,16 @@ export function createDelivery({ q, config, log = console, buildZipFile = buildD
       return changed(code, "refunded", { how, receiptId, transactionId });
     },
 
+    // Nightly job: a paid code whose delivery_expires_at has passed becomes expired. Returns the row
+    // when it changed, else null.
+    markExpired(code, { now = new Date() } = {}) {
+      const row = q.getCode(code);
+      if (!row || row.status !== "paid" || !row.delivery_expires_at ||
+        Date.parse(row.delivery_expires_at) > now.getTime()) return null;
+      q.updateCode(code, { status: "expired" });
+      return changed(code, "expired", { how: "nightly" });
+    },
+
     // Admin "unlock": the code is paid (whatever its state) and downloadable for 30 days from now.
     unlock(code, { now = new Date() } = {}) {
       const row = q.getCode(code);

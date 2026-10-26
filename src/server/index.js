@@ -2,8 +2,19 @@ import "dotenv/config";
 import { openDatabase } from "../db/index.js";
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
+import { waitForStrass } from "./health.js";
 
 const config = loadConfig();
+
+// launchd (com.is.server) starts the server with --wait-for-strass: it waits for the strass
+// service's health check, and after 5 minutes without one exits non-zero so launchd tries again.
+if (process.argv.includes("--wait-for-strass")) {
+  if (!(await waitForStrass({ config, fetch }))) {
+    console.error(`The strass service at ${config.strassServiceUrl} was not healthy within 5 minutes.`);
+    process.exit(1);
+  }
+}
+
 const db = openDatabase(config.dbFile);
 const app = createApp({ db, config });
 

@@ -29,7 +29,8 @@ production (7.4, 16). Revised 26 Oct 2026 (IS-07b): the buyer picks the Black & 
 (stencil, the default) or Shaded (halftone), stored in the attempt's settings; the `BW_STYLE` setting is
 gone (6.4, 7.2, 7.7, 10, 18); the expectations line on Prepare and Result and in the listing (10, 11.1).
 Revised 26 Oct 2026 (PN-01): public name PatternNifty, domain patternnifty.com, codes PN-XXXX-XXXX
-(1, 5, 8, 9, 10, 11.1, 12); IS stays the internal project name.
+(1, 5, 8, 9, 10, 11.1, 12); IS stays the internal project name. Revised 26 Oct 2026 (PN-02): hosting on
+the laptop on patternnifty.com (15, 19).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -112,10 +113,12 @@ src/
                new: aiExport, epsExport, pngExport, zip
   etsy/        existing oauth, token store, api + new poller and matcher
   units/       copied from RS
+  ops/         the nightly job (PN-02, section 15)
 public/        the web app (index.html, app.js, styles.css, adjust.js symlink/copy)
 services/strass/   copied from RS services/strass-layout + new background endpoint
 data/          is.sqlite, archive/, delivery/, etsy tokens (git-ignored)
 docs/          this spec, listing texts, runbook
+ops/           launchd and cloudflared templates (section 15)
 ```
 
 Stage names shown to the buyer (never anything else): "Preparing image", "Designing layout",
@@ -183,6 +186,7 @@ data/archive/<code>/                         kept forever (D7)
   attempt-<n>/stones.json                    final StoneLayout at natural size, after bw mapping
   attempt-<n>/tinted.png                     full-resolution tinted render
 data/delivery/<code>/PN-XXXX-XXXX.zip        deleted 30 days after payment
+data/backup/is-YYYY-MM-DD.sqlite             nightly database copy, the last 30 kept (PN-02, 15)
 ```
 
 All of `data/` is git-ignored (already the case). The archive is written before anything is shown
@@ -743,24 +747,57 @@ which then becomes paid (or refunded, if the order was).
 
 ## 15. Hosting on the Mac
 
-- The server binds to `127.0.0.1:3003` only. cloudflared's origin is `http://127.0.0.1:3003`
-  (quick tunnel and named tunnel alike), never `localhost`, which can resolve to `::1` where
-  nothing listens.
-- `launchd` agents in `ops/launchd/`:
-  - `com.is.strass` — `caffeinate -i services/strass/scripts/start.sh` (127.0.0.1:8000);
-  - `com.is.server` — `node src/server/index.js` (binds 127.0.0.1:3003), starts after strass is healthy;
-  - `com.is.tunnel` — `cloudflared tunnel run is` (named tunnel, after the domain exists; ingress
-    service `http://127.0.0.1:3003`).
-- `pmset` advice in the runbook: no sleep on power adapter; lid-closed operation needs external
-  power.
-- `GET /health` (server) checks the database, the strass service and the Etsy token age.
-- Nightly at 03:30: delete expired delivery ZIPs, mark expired codes, rotate logs, copy
-  `data/is.sqlite` to `data/backup/`.
-- Runbook `docs/RUNBOOK.md`: start/stop, check health, reconnect Etsy, what to do when the Mac was
-  off (the poller catches up with `min_last_modified`).
+As built (PN-02): one always-on Mac (first Alex's Apple Silicon laptop, later the iMac) serves
+`https://patternnifty.com` through the named Cloudflare tunnel `is`. Only one Mac at a time runs the
+server, the Etsy poller and the tunnel (runbook).
+
+- The server binds to `127.0.0.1:3003` only. cloudflared's origin is `http://127.0.0.1:3003`, never
+  `localhost`, which can resolve to `::1` where nothing listens.
+- `launchd` user agents, templates in `ops/launchd/` (`__REPO__`, `__HOME__`, `__NODE__`,
+  `__CLOUDFLARED__`, `__PATH__`); all RunAtLoad, absolute paths, a PATH with node's and cloudflared's
+  folders, Homebrew and the system, stdout and stderr to `logs/<agent>.log` (git-ignored, outside
+  `public/`):
+  - `com.is.strass` — `/usr/bin/caffeinate -i services/strass/scripts/start.sh` (127.0.0.1:8000), KeepAlive;
+  - `com.is.server` — `node src/server/index.js --wait-for-strass`, KeepAlive. With that flag the server
+    polls the strass `/health` (models loaded) every 2 s before it opens the database and listens; after
+    5 minutes without it, it exits non-zero and launchd starts it again (in fake mode it does not wait);
+  - `com.is.tunnel` — `cloudflared tunnel --config ~/.cloudflared/config.yml run is`, KeepAlive. Ingress:
+    `patternnifty.com` and `www.patternnifty.com` → `http://127.0.0.1:3003`, everything else
+    `http_status:404` (template `ops/cloudflared/config.yml.template`);
+  - `com.is.nightly` — `node src/ops/nightly.js` at 03:30 (StartCalendarInterval) and at load; no KeepAlive.
+- `tools/install-agents.sh` fills the templates (repository folder, `$HOME`, `which node`, `which
+  cloudflared`), checks them with `plutil -lint`, copies them to `~/Library/LaunchAgents` and loads them
+  with `launchctl bootstrap gui/$UID` (a loaded agent is booted out first). It writes
+  `~/.cloudflared/config.yml` with the id of the tunnel `is` from `cloudflared tunnel list` only when the
+  file does not exist; it never overwrites it. `tools/uninstall-agents.sh` boots the agents out and
+  removes their plists. Both are safe to run twice, run no sudo and do not touch `data/`.
+- `www.patternnifty.com` → 301 to `https://patternnifty.com` with the same path and query. The address is
+  `PUBLIC_BASE_URL`; the redirect is for its `www.` name only.
+- Through the tunnel (`CF-Connecting-IP` present, public `Host`), `/admin`, `/auth/etsy`, the Etsy read
+  routes and `/oauth/callback` without a pending state (11.2) answer the plain 404; on the Mac itself they
+  work (11.2, 13).
+- `GET /health` (server) checks the database, the strass service and the Etsy token age. The tunnel cannot
+  be checked from inside; the runbook says how to check it from outside.
+- Nightly job (`src/ops/nightly.js`, also run by hand with `node src/ops/nightly.js`): paid codes whose
+  `delivery_expires_at` has passed become `expired` (code.json and event as at every change); delivery
+  ZIPs of codes whose `delivery_expires_at` has passed are deleted, and their folder when empty; nothing
+  under `data/archive/` is read, deleted or moved; non-empty `logs/*.log` are copied to
+  `<name>.log.YYYY-MM-DD` and emptied, rotated files kept 14 days; `data/is.sqlite` is copied with
+  SQLite's online backup to `data/backup/is-YYYY-MM-DD.sqlite` (single file, not WAL), the last 30 kept;
+  one summary line (counts only) is appended to `logs/nightly.log`. A failed step does not stop the
+  others; the job then exits non-zero.
+- `pmset` advice in the runbook (the commands; no script runs sudo): no sleep on the power adapter;
+  lid-closed operation needs external power (and an external display).
+- Runbook `docs/RUNBOOK.md`: install, start/stop/restart, logs, health from inside and outside, power,
+  one Mac at a time, moving to the iMac, reconnecting Etsy, backups (and that `data/archive/` should
+  also be in Time Machine or copied to the iMac; Alex decides, no automatic copy), what happens when the
+  Mac was off (the poller catches up with `min_last_modified`).
 - Tools to install: Node 20+, `brew install cloudflared`, Python 3.12 (already there for the RS
   layout service). No PDF or PostScript tools are needed: IS writes the EPS itself, and the tests
   open the PDFs with pdf.js (`pdfjs-dist`, a dev dependency).
+- Tests: `tools/test-nightly.mjs` (expired ZIP deleted, current one kept, archive untouched, backup
+  row counts, log rotation) and `tools/test-hosting.mjs` (www redirect, the tunnel's 404s, the strass
+  wait, `install-agents.sh` with a fake `HOME` and stub `launchctl` and `cloudflared`).
 
 ## 16. Code taken from RS (at `38cd831`)
 
@@ -872,8 +909,8 @@ ETSY_POLL_SECONDS=180
 
 ## 19. Open items
 
-- Domain: `patternnifty.com` (PN-01); the named tunnel and the Etsy callback on it are still to be
-  set up (11.2, 15).
+- ~~Domain~~: closed in PN-02. `patternnifty.com` and `www.patternnifty.com` are served through the
+  named tunnel `is` (15); the Etsy callback is `https://patternnifty.com/oauth/callback` (runbook).
 - Etsy listing photos and price.
 
 ## Appendix A — Black & white section 4 and final check of the prompt
