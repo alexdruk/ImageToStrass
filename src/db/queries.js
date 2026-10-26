@@ -96,6 +96,10 @@ export function createQueries(db) {
     listRecentFailures: db.prepare(
       "SELECT * FROM attempts WHERE status IN ('failed', 'declined') ORDER BY finished_at DESC LIMIT ?"
     ),
+    // ISO times compare as text. Nightly job: paid codes whose 30 days are over.
+    listExpiredPaidCodes: db.prepare(
+      "SELECT code FROM codes WHERE status = 'paid' AND delivery_expires_at IS NOT NULL AND delivery_expires_at <= ?"
+    ).pluck(),
     insertEvent: db.prepare("INSERT INTO events (at, code, kind, detail) VALUES (?, ?, ?, ?)"),
     listEvents: db.prepare("SELECT * FROM events WHERE code = ? ORDER BY at, rowid")
   };
@@ -197,6 +201,7 @@ export function createQueries(db) {
       statements.insertEvent.run(now(), code, kind, text);
     },
 
+    listExpiredPaidCodes: (iso) => statements.listExpiredPaidCodes.all(iso),
     listEvents: (code) => statements.listEvents.all(code)
   };
 }
