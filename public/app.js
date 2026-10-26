@@ -1,6 +1,6 @@
-// IS web app (spec section 10): one page, one screen per URL (history API), no framework.
+// PatternNifty web app (spec section 10): one page, one screen per URL (history API), no framework.
 // The browser only ever sees the uploaded/prepared image, the watermarked tinted preview, stats and
-// codes (CLAUDE.md). Errors are shown from IS error codes only (spec section 12).
+// codes (CLAUDE.md). Errors are shown from the app's own error codes only (spec section 12).
 
 import { DEFAULT_SETTINGS, applyAdjustments } from "/adjust.js";
 
@@ -25,14 +25,14 @@ const TEXTS = {
   "too-large": "This file is larger than 50 MB. Please upload a smaller image.",
   declined: "This image can't be turned into a design. Please try another image.",
   failed: "Something went wrong while making your design. It didn't count — please try again.",
-  busy: "IS is very busy, please try again in a few minutes.",
+  busy: "PatternNifty is very busy, please try again in a few minutes.",
   limit: "This code has used all 3 designs. Pick one of your designs, or start again with a new image.",
   consent: "Please tick the box to agree to the privacy policy first.",
   verification: "The security check didn't pass. Please try again.",
   "not-found": "We couldn't find this code. Please check it and try again.",
   "not-ready": "The background is still being removed. Please wait a moment and try again.",
   paid: "This code is already paid, so its design can no longer be changed.",
-  network: "We couldn't reach IS. Please check your connection and try again."
+  network: "We couldn't reach PatternNifty. Please check your connection and try again."
 };
 const errorText = (code) => TEXTS[code] || TEXTS.failed;
 
@@ -263,7 +263,7 @@ async function uploadScreen() {
 
   const panel = render(html`
     <h1>Turn any image into a rhinestone template</h1>
-    <p class="lede">Upload a photo, logo or drawing. IS lays out every stone and gives you production-ready files.</p>
+    <p class="lede">Upload a photo, logo or drawing. PatternNifty lays out every stone and gives you production-ready files.</p>
     ${raw(resume ? html`
       <div class="card flat resume">
         <div><b>Welcome back.</b> Your code is <code>${session.code}</code>.</div>
@@ -291,7 +291,7 @@ async function uploadScreen() {
       </div>
       <ol class="how">
         <li><span class="n">1</span><p><b>Upload and prepare</b>Remove the background, crop, rotate and adjust the colours.</p></li>
-        <li><span class="n">2</span><p><b>See your design</b>IS shows your image and the finished stone design side by side. Not happy? Try again — up to 3 designs.</p></li>
+        <li><span class="n">2</span><p><b>See your design</b>PatternNifty shows your image and the finished stone design side by side. Not happy? Try again — up to 3 designs.</p></li>
         <li><span class="n">3</span><p><b>Get your code</b>Enter your code on Etsy and check out. Nothing is charged before that.</p></li>
         <li><span class="n">4</span><p><b>Download</b>SVG, production sheet (PDF), AI, EPS, DXF and PNG, at the design's natural size.</p></li>
       </ol>
@@ -995,7 +995,7 @@ async function doneScreen(code) {
       <div class="card">
         <h2>Three steps to your files</h2>
         <ol class="numbered" id="steps-list">
-          <li><div><b>Enter the code on Etsy</b><p>On the IS listing, paste <code>${session.code}</code> into the <b>Personalization</b> field.</p></div></li>
+          <li><div><b>Enter the code on Etsy</b><p>On the PatternNifty listing, paste <code>${session.code}</code> into the <b>Personalization</b> field.</p></div></li>
           <li><div><b>Check out on Etsy</b><p>You pay on Etsy only. Nothing is charged here.</p></div></li>
           <li><div><b>Come back to download</b><p>Go to <a href="/download?code=${session.code}" data-link>${downloadUrl}</a> and enter your code. Payments usually appear within 10 minutes.</p></div></li>
         </ol>
@@ -1020,7 +1020,7 @@ async function downloadScreen(params) {
         <p class="lede">Enter the code you put in the Etsy Personalization field.</p>
         <form class="code-form" id="form" novalidate>
           <label class="visually-hidden" for="code">Your code</label>
-          <input id="code" name="code" placeholder="IS-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${initial}">
+          <input id="code" name="code" placeholder="PN-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${initial}">
           <button class="btn primary" type="submit">Check</button>
         </form>
         <div class="state" id="state" aria-live="polite"></div>
@@ -1045,7 +1045,7 @@ async function downloadScreen(params) {
       return;
     }
     const states = {
-      unknown: html`<div class="notice error"><b>We couldn't find this code.</b> Please check it — it looks like IS-7K3Q-9XPA.</div>`,
+      unknown: html`<div class="notice error"><b>We couldn't find this code.</b> Please check it — it looks like PN-7K3Q-9XPA.</div>`,
       unpaid: html`<div class="notice warn"><b>Not paid yet.</b> Payments usually appear within 10 minutes of checkout. This page checks again automatically.</div>`,
       ready: html`
         <div class="notice ok"><b>Your files are ready.</b> SVG, production sheets (PDF), AI, EPS, DXF and PNG in one ZIP.</div>
@@ -1079,12 +1079,12 @@ function staticPage(markup) {
 function privacyScreen() {
   staticPage(`
     <h1>Privacy policy</h1>
-    <p class="lede">How IS handles your images and your code.</p>
+    <p class="lede">How PatternNifty handles your images and your code.</p>
     <h2>What we store</h2>
     <ul>
       <li>The images you upload, and the images made from them while creating your design.</li>
       <li>Your designs (the stone layouts and their previews).</li>
-      <li>Your IS code, with the time it was created.</li>
+      <li>Your PatternNifty code, with the time it was created.</li>
       <li>Your Etsy order number, once you check out with your code.</li>
     </ul>
     <h2>Why</h2>
@@ -1099,14 +1099,14 @@ function privacyScreen() {
     <h2>Who processes your images</h2>
     <p>Your images are processed by a third-party image processing provider on our behalf. We will tell you the provider's name on request.</p>
     <h2>Deletion and questions</h2>
-    <p>To have your images and designs deleted, <a href="/contact" data-link>contact us</a> with your IS code. We delete them by hand.</p>`);
+    <p>To have your images and designs deleted, <a href="/contact" data-link>contact us</a> with your PatternNifty code. We delete them by hand.</p>`);
 }
 
 function termsScreen() {
   staticPage(`
     <h1>Terms</h1>
     <ul>
-      <li>IS sells a digital item: a rhinestone template made from your image, delivered as files to download.</li>
+      <li>PatternNifty sells a digital item: a rhinestone template made from your image, delivered as files to download.</li>
       <li>You pay on Etsy. Under Etsy's rules for digital items there are no refunds once you have downloaded your files.</li>
       <li>You confirm that you own the image you upload or have the right to use it.</li>
       <li>Do not upload illegal images, or images that infringe anyone else's rights.</li>
@@ -1117,8 +1117,8 @@ function termsScreen() {
 function contactScreen() {
   staticPage(`
     <h1>Contact</h1>
-    <p>The easiest way to reach us is through Etsy: open the IS listing and use <b>Message seller</b>. Please include your IS code.</p>
-    <p>Deletion requests: send your IS code and we will delete your images and designs.</p>
+    <p>The easiest way to reach us is through Etsy: open the PatternNifty listing and use <b>Message seller</b>. Please include your PatternNifty code.</p>
+    <p>Deletion requests: send your PatternNifty code and we will delete your images and designs.</p>
     <p class="sub">[Contact address to be added before launch.]</p>`);
 }
 

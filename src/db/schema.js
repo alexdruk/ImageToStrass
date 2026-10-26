@@ -2,7 +2,7 @@
 
 export const SCHEMA = `
 CREATE TABLE IF NOT EXISTS codes (
-  code                TEXT PRIMARY KEY,               -- IS-XXXX-XXXX
+  code                TEXT PRIMARY KEY,               -- PN-XXXX-XXXX (IS-XXXX-XXXX before PN-01)
   created_at          TEXT NOT NULL,
   ip_hash             TEXT,
   consent_at          TEXT,

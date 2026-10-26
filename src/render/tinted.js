@@ -1,4 +1,5 @@
 import { createCanvas } from "@napi-rs/canvas";
+import { BRAND } from "../brand.js";
 import { getCrystalAppearance } from "../stones/CrystalAppearance.js";
 import { adjustBrightness, drawCrystalStone } from "../stones/CrystalStoneRenderer.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
@@ -373,9 +374,9 @@ function drawStone(ctx, stone, x, y, r, scale, rule, ss6Rim = true, outsideRgb =
   ctx.restore();
 }
 
-// The watermark of every preview the browser receives: "IS · PREVIEW · <code>", tiled diagonally.
+// The watermark of every preview the browser receives: "PatternNifty · PREVIEW · <code>", tiled diagonally.
 function drawWatermark(ctx, widthPx, heightPx, code) {
-  const text = `IS · PREVIEW · ${code}`;
+  const text = `${BRAND} · PREVIEW · ${code}`;
   const sizePx = Math.max(12, Math.round(Math.max(widthPx, heightPx) / 28));
   ctx.save();
   ctx.globalAlpha = WATERMARK_OPACITY;

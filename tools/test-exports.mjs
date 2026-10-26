@@ -28,11 +28,11 @@ import { StoneLayout } from "../src/stones/StoneLayout.js";
 // ZIP's entries against the spec's table.
 
 const run = promisify(execFile);
-const CODE = "IS-7K3Q-9XPA";
+const CODE = "PN-7K3Q-9XPA";
 const PT_PER_MM = 72 / 25.4;
 const CHROME = process.env.CHROME_PATH || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 // Words no delivered file may contain (spec section 12, and section 9: no metadata naming anything
-// but IS).
+// but PatternNifty).
 const FOREIGN = /openai|gpt|dall|prompt|ghostscript|artifex|resvg|tarikjabiri|napi|skia|cairo|rsvg|rhinestone.studio/i;
 
 const FIXTURES = new URL("./fixtures/is03b/", import.meta.url);
@@ -264,7 +264,7 @@ test("ZIP contents match the table (spec section 9)", () => {
   for (const d of DESIGNS) assert.deepEqual(FILES.get(d.id).files.map((f) => f.name), expected, d.id);
 });
 
-test("no delivered file names anything but IS", () => {
+test("no delivered file names anything but PatternNifty", () => {
   for (const d of DESIGNS) {
     for (const f of FILES.get(d.id).files) {
       if (f.name.endsWith(".png")) {
@@ -284,7 +284,7 @@ test("README: code, natural size, counts per size and colour, file list", () => 
   for (const d of DESIGNS) {
     const text = FILES.get(d.id).files.find((f) => f.name === "README.txt").data.toString("utf8");
     const L = d.stoneLayout;
-    assert.ok(text.startsWith(`IS design ${CODE}\r\n`));
+    assert.ok(text.startsWith(`PatternNifty design ${CODE}\r\nhttps://patternnifty.com\r\n`));
     assert.ok(text.includes(`Size: ${L.widthMm.toFixed(1)} × ${L.heightMm.toFixed(1)} mm (${(L.widthMm / 25.4).toFixed(2)} × ${(L.heightMm / 25.4).toFixed(2)} in)`), d.id);
     assert.ok(text.includes(`Stones: ${L.count}\r\n`));
     const sizes = [...text.matchAll(/^ {2}(SS\d+): (\d+)\r$/gm)].reduce((n, m) => n + Number(m[2]), 0);
@@ -383,15 +383,15 @@ async function pdfOpen(file) {
 const near = (a, b, tol = 0.5) => Math.abs(a - b) <= tol;
 const samePage = ([w, h], [a, b]) => (near(w, a) && near(h, b)) || (near(w, b) && near(h, a));
 
-test("production sheets (A4 and Letter) open in pdf.js: page count, page size, Producer and Creator IS", async () => {
+test("production sheets (A4 and Letter) open in pdf.js: page count, page size, Producer and Creator PatternNifty", async () => {
   // Page counts of the 8 designs (A4 and Letter alike), as in docs/IS-04-results.md.
   const PAGES = { "cat-norule": 2, "cat-rule": 2, "dachshund-rule": 1, "dog-norule": 2, "dog-rule": 2, "giraffe-rule": 3, "mug-norule": 1, "mug-rule": 1 };
   for (const d of DESIGNS) {
     for (const [name, size] of [["production-sheet-A4.pdf", [595.28, 841.89]], ["production-sheet-Letter.pdf", [612, 792]]]) {
       const { info, pages, numPages } = await pdfOpen(fileOf(d.id, name));
-      assert.equal(info.Producer, "IS", `${d.id} ${name}`);
-      assert.equal(info.Creator, "IS");
-      assert.equal(info.Title, `IS design ${CODE}`);
+      assert.equal(info.Producer, "PatternNifty", `${d.id} ${name}`);
+      assert.equal(info.Creator, "PatternNifty");
+      assert.equal(info.Title, `PatternNifty design ${CODE}`);
       assert.equal(numPages, PAGES[d.id], `${d.id} ${name}: pages`);
       for (const p of pages) assert.ok(samePage(p, size), `${d.id} ${name}: ${p}`);
     }
@@ -403,21 +403,22 @@ test("production sheet text: title, no Object line, footer on every page, units"
     for (const [name, unit] of [["production-sheet-A4.pdf", "mm"], ["production-sheet-Letter.pdf", "in"]]) {
       const pdf = readFileSync(fileOf(d.id, name), "latin1");
       const pages = Number(/\/Count (\d+)/.exec(pdf)[1]);
-      assert.ok(pdf.includes(`(IS design ${CODE}) Tj`), `${d.id} ${name}: title`);
+      assert.ok(pdf.includes(`(PatternNifty design ${CODE}) Tj`), `${d.id} ${name}: title`);
       assert.ok(!pdf.includes("(Object:"), "no Object line");
       assert.ok(!/Plate|Design target/.test(pdf), "no plate lines");
       assert.match(pdf, new RegExp(`\\(Production size: [\\d.]+ \\xd7 [\\d.]+ ${unit}\\) Tj`));
       assert.ok(pdf.includes("(Gap: 0.1 mm) Tj"));
-      for (let i = 1; i <= pages; i++) assert.ok(pdf.includes(`(Made with IS \xb7 Page ${i} of ${pages}) Tj`), `${d.id} ${name}: footer ${i}`);
+      for (let i = 1; i <= pages; i++) assert.ok(pdf.includes(`(Made with PatternNifty \xb7 Page ${i} of ${pages}) Tj`), `${d.id} ${name}: footer ${i}`);
     }
   }
 });
 
-test("AI opens in pdf.js: one page, the design plus 10 mm, Producer IS", async () => {
+test("AI opens in pdf.js: one page, the design plus 10 mm, Producer PatternNifty", async () => {
   for (const d of DESIGNS) {
     const { info, pages } = await pdfOpen(fileOf(d.id, `${CODE}.ai`));
-    assert.equal(info.Producer, "IS");
-    assert.equal(info.Creator, "IS");
+    assert.equal(info.Producer, "PatternNifty");
+    assert.equal(info.Creator, "PatternNifty");
+    assert.equal(info.Title, `PatternNifty design ${CODE}`);
     assert.equal(pages.length, 1);
     const L = d.stoneLayout;
     assert.ok(near(pages[0][0], (L.widthMm + 2 * AI_MARGIN_MM) * PT_PER_MM, 0.01) && near(pages[0][1], (L.heightMm + 2 * AI_MARGIN_MM) * PT_PER_MM, 0.01), `${d.id}: ${pages[0]}`);
@@ -473,13 +474,13 @@ function parseEps(text) {
   return { header, circles };
 }
 
-test("EPS: valid EPSF-3.0 structure, bounding box = design size, one circle per stone, header names IS", () => {
+test("EPS: valid EPSF-3.0 structure, bounding box = design size, one circle per stone, header names PatternNifty", () => {
   const unit = (hex) => [0, 2, 4].map((i) => parseInt(hex.replace("#", "").slice(i, i + 2), 16) / 255);
   for (const d of DESIGNS) {
     const L = d.stoneLayout;
     const { header, circles } = parseEps(readFileSync(fileOf(d.id, `${CODE}.eps`), "latin1"));
-    assert.equal(header.Creator, "IS", d.id);
-    assert.equal(header.Title, `IS design ${CODE}`);
+    assert.equal(header.Creator, "PatternNifty", d.id);
+    assert.equal(header.Title, `PatternNifty design ${CODE}`);
     assert.equal(header.Pages, "1");
     const W = L.widthMm * PT_PER_MM, H = L.heightMm * PT_PER_MM;
     const hi = header.HiResBoundingBox.split(" ").map(Number);
@@ -536,7 +537,7 @@ test("DXF: millimetres, one circle per stone at the Y-flipped position, one laye
     const L = d.stoneLayout;
     const dxf = parseDxf(readFileSync(fileOf(d.id, `${CODE}.dxf`), "utf8"));
     assert.equal(dxf.insunits, 4, "millimetres");
-    assert.equal(dxf.lastSavedBy, "IS");
+    assert.equal(dxf.lastSavedBy, "PatternNifty");
     const colours = [...new Set(L.stones.map((s) => s.color))].sort();
     for (const c of colours) assert.ok(dxf.layerNames.includes(dxfLayerNameForColor(c)), `${d.id}: layer ${c}`);
     assert.ok(dxf.layerNames.includes("CANVAS"));

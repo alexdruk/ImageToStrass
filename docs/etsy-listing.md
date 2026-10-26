@@ -1,20 +1,19 @@
-# Etsy listing — texts and settings (IS-06, expectations IS-07b)
+# Etsy listing — texts and settings (IS-06, expectations IS-07b, PatternNifty PN-01)
 
 The one Etsy listing of spec section 11.1 (decision D8: one listing, one price). Copy the texts below
-into Etsy as they are. `[IS address]` stands for the IS domain, which does not exist yet (spec
-section 19); replace it everywhere, and make the attached PDF again with it (below), before the
-listing goes live.
+into Etsy as they are. The buyer sees the public name PatternNifty and the site patternnifty.com,
+never IS (the internal project name).
 
 ## Settings
 
 | Setting | Value |
 | --- | --- |
 | Type | Digital files (instant download) |
-| Digital file | `docs/IS-how-to-download.pdf` (one page: go to `[IS address]/download` and enter your code) |
+| Digital file | `docs/PatternNifty-how-to-download.pdf` (one page: go to `patternnifty.com/download` and enter your code) |
 | Price | One price, no variations (still open: spec section 19) |
 | Quantity | Any; a buyer who orders several designs enters one code per design |
 | Personalization | **On, required** |
-| Personalization instructions | `Enter your IS code, for example IS-7K3Q-9XPA` |
+| Personalization instructions | `Enter your PatternNifty code, for example PN-7K3Q-9XPA` |
 | Personalization character limit | 100 (room for two or three codes) |
 | Photos | Still open (spec section 19) |
 
@@ -23,8 +22,8 @@ After publishing:
 1. Put the listing id in `.env` as `IS_ETSY_LISTING_IDS=<id>` and its URL as
    `IS_ETSY_LISTING_URL=https://www.etsy.com/listing/<id>`, then restart the server. The poller
    stores only transactions of the listings in `IS_ETSY_LISTING_IDS`.
-2. Make the PDF with the real address and attach it again:
-   `node tools/make-how-to-pdf.mjs https://<domain>` (writes `docs/IS-how-to-download.pdf`).
+2. Attach `docs/PatternNifty-how-to-download.pdf`. To make it again:
+   `node tools/make-how-to-pdf.mjs https://patternnifty.com` (writes that file).
 
 ## Title
 
@@ -45,12 +44,12 @@ Your design is an artistic rhinestone version of your photo, not a copy of it: f
 Black & white comes in two styles: Bold and Shaded.
 
 HOW IT WORKS
-1. Go to [IS address] and upload your image (PNG, JPG, BMP, TIFF, WebP, AVIF or SVG, up to 50 MB).
+1. Go to patternnifty.com and upload your image (PNG, JPG, BMP, TIFF, WebP, AVIF or SVG, up to 50 MB).
 2. Prepare it: background removal, crop, rotate, brightness, contrast and saturation. Choose Colour or Black & white (Bold or Shaded).
-3. IS makes your design in a few minutes and shows it next to your image. Not happy? Try again, up to 3 designs.
-4. Pick the design you like. IS gives you a code, for example IS-7K3Q-9XPA.
+3. PatternNifty makes your design in a few minutes and shows it next to your image. Not happy? Try again, up to 3 designs.
+4. Pick the design you like. PatternNifty gives you a code, for example PN-7K3Q-9XPA.
 5. Come back to this listing, enter the code in the Personalization field and check out.
-6. Go to [IS address]/download, enter your code and download your files.
+6. Go to patternnifty.com/download, enter your code and download your files.
 
 SIZE
 Size depends on your image, usually 13 to 30 cm on the longest side. You see the exact size before you buy.
@@ -70,7 +69,7 @@ GOOD TO KNOW
 - Only upload images you own or have the right to use.
 - Designs are created with the help of AI tools.
 
-Questions? Send us a message on Etsy and include your IS code.
+Questions? Send us a message on Etsy and include your PatternNifty code.
 ```
 
 The address is plain text: Etsy does not make it a link. The description names no price, has no buy
@@ -81,11 +80,12 @@ AI line is the generic disclosure of Etsy's Creativity Standards; no tool or pro
 ## Personalization instructions
 
 ```
-Enter your IS code, for example IS-7K3Q-9XPA
+Enter your PatternNifty code, for example PN-7K3Q-9XPA
 ```
 
-IS reads every code in the field (spaces, dashes, lower case, O for 0 and I or L for 1 are all
-fine), so a buyer who orders two designs can enter both codes.
+PatternNifty reads every code in the field (spaces, dashes, lower case, O for 0 and I or L for 1 are
+all fine), so a buyer who orders two designs can enter both codes. Codes made before the rebrand
+(IS-XXXX-XXXX) are no longer read.
 
 ## Tags (suggestions, 13 at most, 20 characters each)
 

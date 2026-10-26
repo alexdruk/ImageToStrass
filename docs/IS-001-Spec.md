@@ -28,6 +28,8 @@ with MediaPipe Face Landmarker instead of dlib; the dlib model is test-only and 
 production (7.4, 16). Revised 26 Oct 2026 (IS-07b): the buyer picks the Black & white style, Bold
 (stencil, the default) or Shaded (halftone), stored in the attempt's settings; the `BW_STYLE` setting is
 gone (6.4, 7.2, 7.7, 10, 18); the expectations line on Prepare and Result and in the listing (10, 11.1).
+Revised 26 Oct 2026 (PN-01): public name PatternNifty, domain patternnifty.com, codes PN-XXXX-XXXX
+(1, 5, 8, 9, 10, 11.1, 12); IS stays the internal project name.
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -38,24 +40,26 @@ service builds A–K). Where this spec and RS disagree, this spec wins for IS.
 
 ## 1. Product
 
-A buyer finds the Etsy listing "Any image to rhinestone template". The listing points to the IS web
-app. There the buyer:
+A buyer finds the Etsy listing "Any image to rhinestone template". The listing points to the web app,
+whose public name is **PatternNifty** (site `https://patternnifty.com`). IS is the internal project
+name only (repository, folders, `IS_*` settings, source file names, internal logs, the admin page);
+nothing a buyer can see, download or read names IS (PN-01). There the buyer:
 
 1. uploads an image (PNG, JPG, BMP, TIFF, WebP, AVIF, SVG; at most 50 MB);
 2. prepares it: background removal (on by default), crop, rotate, brightness, contrast, saturation;
 3. chooses Colour or Black & white (there is no size to choose: the design has its natural size,
    shown with the result);
-4. waits while IS makes the design (a few minutes);
+4. waits while PatternNifty makes the design (a few minutes);
 5. sees the original and the **tinted** result side by side;
 6. tries again if unhappy (at most **3 designs per code**), or picks one with "Use this design";
-7. copies the code (`IS-XXXX-XXXX`), returns to Etsy, enters the code in the Personalization field
+7. copies the code (`PN-XXXX-XXXX`), returns to Etsy, enters the code in the Personalization field
    and checks out;
-8. opens the IS download page, enters the code and, once the payment is seen, downloads a ZIP with
+8. opens the PatternNifty download page (`patternnifty.com/download`), enters the code and, once the payment is seen, downloads a ZIP with
    SVG, PDF (production sheet), AI, EPS, DXF and PNG.
 
 A buyer who is not happy after 3 designs simply does not buy. Nothing is charged before checkout.
 
-The buyer must believe IS does all the work. No third-party name, prompt, model or intermediate
+The buyer must believe PatternNifty does all the work. No third-party name, prompt, model or intermediate
 image ever reaches the browser (section 12). The Etsy listing still carries Etsy's required AI
 disclosure in generic words (section 11.1).
 
@@ -123,7 +127,7 @@ Stage names shown to the buyer (never anything else): "Preparing image", "Design
 
 ```
 codes(
-  code TEXT PRIMARY KEY,          -- IS-XXXX-XXXX
+  code TEXT PRIMARY KEY,          -- PN-XXXX-XXXX (IS-XXXX-XXXX before PN-01)
   created_at, ip_hash, consent_at,
   attempts_used INTEGER DEFAULT 0,
   selected_attempt INTEGER NULL,
@@ -178,7 +182,7 @@ data/archive/<code>/                         kept forever (D7)
   attempt-<n>/layout.json                    layout service response
   attempt-<n>/stones.json                    final StoneLayout at natural size, after bw mapping
   attempt-<n>/tinted.png                     full-resolution tinted render
-data/delivery/<code>/IS-XXXX-XXXX.zip        deleted 30 days after payment
+data/delivery/<code>/PN-XXXX-XXXX.zip        deleted 30 days after payment
 ```
 
 All of `data/` is git-ignored (already the case). The archive is written before anything is shown
@@ -192,14 +196,16 @@ folder is never overwritten.
 
 ## 5. Codes
 
-- Format `IS-XXXX-XXXX`, 8 symbols of Crockford base32 (`0-9 A-H J K M N P-T V-Z`), from
-  `crypto.randomInt`. 40 bits, collision checked against the table.
-- Normalisation when read anywhere: upper-case; `O→0`, `I→1`, `L→1`; spaces, dashes and the
-  `IS` prefix optional.
+- Format `PN-XXXX-XXXX` (PN-01; `IS-XXXX-XXXX` before), 8 symbols of Crockford base32
+  (`0-9 A-H J K M N P-T V-Z`), from `crypto.randomInt`. 40 bits, collision checked against the table.
+- Normalisation when read anywhere: upper-case; `O→0`, `I→1`, `L→1` on the 8 symbols only; spaces,
+  dashes and the `PN` prefix optional.
 - A code is created at the first upload, shown on screen from the start, and kept in
   `localStorage` so the buyer can come back (`/c/<code>` resumes the session).
-- Matching regex (personalization text): `/I\s*S[\s\-_]*([0-9A-Z]{4})[\s\-_]*([0-9A-Z]{4})/i`,
+- Matching regex (personalization text): `/P\s*N[\s\-_]*([0-9A-Z]{4})[\s\-_]*([0-9A-Z]{4})/i`,
   then normalisation.
+- Codes made before PN-01 (`IS-XXXX-XXXX`) stay in the database as they are (no migration); the
+  poller no longer matches them and the download page no longer accepts them.
 
 ## 6. Upload and preparation
 
@@ -249,8 +255,8 @@ folder is never overwritten.
 ## 7. Design pipeline
 
 One queue, one design at a time (the layout service holds a process lock anyway). Queue length
-and position are shown. Queue limit 10; beyond that, "IS is very busy, please try again in a few
-minutes".
+and position are shown. Queue limit 10; beyond that, "PatternNifty is very busy, please try again in a
+few minutes".
 
 ### 7.1 Prepared image → model input
 
@@ -506,7 +512,7 @@ that can be filled. The rim of step 5 is `drawStone` in the same file. "Main sto
 side, white background, watermarked, sent to the browser) and full (2400 px long side, transparent,
 written to `attempt-<n>/tinted.png` in the "Preparing files" stage and put in the ZIP).
 
-Watermark on every preview the browser receives: tiled diagonal "IS · PREVIEW · <code>" at 18 %
+Watermark on every preview the browser receives: tiled diagonal "PatternNifty · PREVIEW · <code>" at 18 %
 opacity, plus no right-click save of the full image (best effort only; the low resolution is the
 real protection).
 
@@ -522,33 +528,33 @@ the preview and README, all at that size.
 
 | File | How |
 | --- | --- |
-| `IS-XXXX-XXXX.svg` | RS `stoneLayoutToSvg` in its grouped form, true size, `width`/`height` in mm, one `<g>` per colour and size with an id such as `jet-ss6` (the empty regions group left out) |
+| `PN-XXXX-XXXX.svg` | RS `stoneLayoutToSvg` in its grouped form, true size, `width`/`height` in mm, one `<g>` per colour and size with an id such as `jet-ss6` (the empty regions group left out) |
 | `production-sheet-A4.pdf` | RS `productionSheetToPdf`, A4, mm, multi-page tiling, mirror off, registration marks on |
 | `production-sheet-Letter.pdf` | The same on Letter, inches (D9) |
-| `IS-XXXX-XXXX.ai` | New `aiExport.js`: one-page true-size vector PDF of the stones (page = design + 10 mm, 5 mm on every side), built with RS `PdfDocument`, saved as `.ai` (PDF-compatible; Illustrator opens it) |
-| `IS-XXXX-XXXX.eps` | New `epsExport.js`: EPSF-3.0 written directly from the StoneLayout; `%%BoundingBox` and `%%HiResBoundingBox` in points at true size (the design, no margin), `%%Creator: IS`, `%%Title` the design, no other tool named; one filled circle per stone in its catalogue fill colour, grouped by colour, y flipped (origin bottom-left) |
-| `IS-XXXX-XXXX.dxf` | RS `stoneLayoutToDxf`, one layer per colour; header `$LASTSAVEDBY` set to `IS` |
-| `IS-XXXX-XXXX.png` | The SVG rendered by `@resvg/resvg-js` at 300 dpi (size = mm / 25.4 × 300, rounded), transparent background (the SVG's white rectangle left out), a `pHYs` chunk of 300 dpi and no other metadata |
-| `IS-XXXX-XXXX-preview.png` | Full tinted render (section 8), no watermark |
-| `README.txt` | Code, natural size (width × height in mm and in), stone count per size and per colour, file list, short how-to |
+| `PN-XXXX-XXXX.ai` | New `aiExport.js`: one-page true-size vector PDF of the stones (page = design + 10 mm, 5 mm on every side), built with RS `PdfDocument`, saved as `.ai` (PDF-compatible; Illustrator opens it) |
+| `PN-XXXX-XXXX.eps` | New `epsExport.js`: EPSF-3.0 written directly from the StoneLayout; `%%BoundingBox` and `%%HiResBoundingBox` in points at true size (the design, no margin), `%%Creator: PatternNifty`, `%%Title` the design, no other tool named; one filled circle per stone in its catalogue fill colour, grouped by colour, y flipped (origin bottom-left) |
+| `PN-XXXX-XXXX.dxf` | RS `stoneLayoutToDxf`, one layer per colour; header `$LASTSAVEDBY` set to `PatternNifty` |
+| `PN-XXXX-XXXX.png` | The SVG rendered by `@resvg/resvg-js` at 300 dpi (size = mm / 25.4 × 300, rounded), transparent background (the SVG's white rectangle left out), a `pHYs` chunk of 300 dpi and no other metadata |
+| `PN-XXXX-XXXX-preview.png` | Full tinted render (section 8), no watermark |
+| `README.txt` | First lines `PatternNifty design PN-XXXX-XXXX` and `https://patternnifty.com`; natural size (width × height in mm and in), stone count per size and per colour, file list, short how-to |
 
 Production sheet changes (copied `ProductionSheetExporter.js`):
 
-- title `IS design IS-XXXX-XXXX`;
+- title `PatternNifty design PN-XXXX-XXXX`;
 - the Object line and the plate/vessel lines are removed (no products in IS);
 - header keeps: production size, stone count, stone sizes with counts, gap, every colour with its
   count (RS build F rule), page / margin / mirror / registration;
 - the gap is the minimum gap of the gap check, `0.1 mm`, printed in mm on both sheets (in inches it
   would round to 0);
-- footer: `Made with IS · Page i of N` on every page, inside the bottom margin. No other branding.
+- footer: `Made with PatternNifty · Page i of N` on every page, inside the bottom margin. No other branding.
 
 Both sheets: margin 10 mm, mirror off, registration marks on; A4 with sizes in mm, Letter in inches.
 
-PDF metadata: Producer and Creator `IS`, Title `IS design IS-XXXX-XXXX`, added to the
-`PdfDocument` output as an incremental update (`src/export/pdfInfo.js`), so `PdfDocument.js` stays
+PDF metadata (production sheets and the `.ai` file): Producer and Creator `PatternNifty`, Title
+`PatternNifty design PN-XXXX-XXXX`, added to the `PdfDocument` output as an incremental update (`src/export/pdfInfo.js`), so `PdfDocument.js` stays
 unchanged. No comments or metadata in SVG/DXF/PNG naming anything else (section 12).
 
-The ZIP (`archiver`, deflate; `buildDeliveryZip` in `src/export/zip.js`, from `attempt-<n>/stones.json`
+The ZIP (`PN-XXXX-XXXX.zip`, its entries named as above; `archiver`, deflate; `buildDeliveryZip` in `src/export/zip.js`, from `attempt-<n>/stones.json`
 and `tinted.png`, never writing to the archive; in the render worker of section 8) is built when the code becomes paid (or at the first download if the
 build was skipped), stored in `data/delivery/`, and rebuilt from the archive if the buyer
 downloads again within 30 days and the file is missing.
@@ -556,7 +562,8 @@ downloads again within 30 days and the file is missing.
 ## 10. Web app
 
 Plain ES modules, no framework, no build step. Must feel like a standalone app: app shell with a
-fixed header (IS logo, step indicator), one main panel per step, no page reloads, works on phone
+fixed header (the PatternNifty wordmark: the name as text in the deep blue, no logo image or font
+download; step indicator), one main panel per step, no page reloads, works on phone
 widths. White background, deep blue accents (RS UI principles). IS-05 uses the frontend-design
 skill for the visual direction.
 
@@ -574,7 +581,7 @@ Screens (one URL each, history API):
    `bw-shaded.png`) are made by `tools/make-bw-examples.mjs` from the CC0 cat fixture without a
    provider call: the same stones coloured as each style draws, shown with the tinted renderer.
 3. **Working** `/c/<code>/working` — the four stage names with progress, queue position, "You can
-   leave this page; your code is IS-XXXX-XXXX". Polls `GET /api/attempts/<code>/<n>` every 3 s.
+   leave this page; your code is PN-XXXX-XXXX". Polls `GET /api/attempts/<code>/<n>` every 3 s.
 4. **Result** `/c/<code>/result/<n>` — Original | Tinted side by side on wide screens; at phone
    width (640 px and less) two tabs, **Original | Tinted**, one view at a time, Tinted shown first
    (IS-06: the compare slider is gone). Zoom on both views, which scroll together; the Original view
@@ -586,7 +593,7 @@ Screens (one URL each, history API):
 5. **Your code** `/c/<code>/done` — big code with Copy, three numbered steps back to Etsy
    (enter the code in Personalization, check out, come back to the download page), link to the
    listing (`IS_ETSY_LISTING_URL`).
-6. **Download** `/download` — code field. States: unknown code; not paid yet ("Payments usually
+6. **Download** `/download` — code field (placeholder `PN-XXXX-XXXX`). States: unknown code; not paid yet ("Payments usually
    appear within 10 minutes of checkout. This page checks again automatically."); ready (Download
    button, expiry date); expired; refunded.
 7. Static pages: privacy, terms, contact (`/privacy`, `/terms`, `/contact`).
@@ -595,23 +602,26 @@ Expectations line (IS-07b), on Prepare and Result: "Your design is an artistic r
 your photo; faces are stylised, not photographic. You can try up to 3 designs and only buy if you like
 one."
 
+Every screen, the page title and the static pages name PatternNifty, never IS; once the buyer has a
+code, the header shows it (`PN-XXXX-XXXX`) on every screen, at 390 px too.
+
 No view shows a mask, AI image, overlay, 3D view, model name, prompt, stage timing or raw error.
 
 ## 11. Etsy
 
 ### 11.1 Listing (manual, texts in `docs/etsy-listing.md` written in IS-06)
 
-- Digital item, one price, Personalization **required**, instructions: "Enter your IS code, for
-  example IS-7K3Q-9XPA".
-- Digital file attached to the listing: `IS-how-to-download.pdf` (one page: "Go to <domain>/download
-  and enter your code").
-- Description: what the buyer gets, the steps, the IS address written as plain text (Etsy does not
+- Digital item, one price, Personalization **required**, instructions: "Enter your PatternNifty
+  code, for example PN-7K3Q-9XPA".
+- Digital file attached to the listing: `PatternNifty-how-to-download.pdf` (one page: "Go to
+  patternnifty.com/download and enter your code"; `tools/make-how-to-pdf.mjs <site URL>`).
+- Description: what the buyer gets, the steps, the site written as plain text, `patternnifty.com` (Etsy does not
   make it clickable), and the AI disclosure required by Etsy's Creativity Standards, in generic
   words: "Designs are created with the help of AI tools." A "What to expect" paragraph (IS-07b): the
   design is an artistic rhinestone version of the photo, faces are stylised rather than
   photographic, the buyer can try up to 3 designs and only buys if they like one; and "Black & white
   comes in two styles: Bold and Shaded." No prices, buy buttons or contact
-  collection on IS (Off-Platform Transactions policy).
+  collection on PatternNifty (Off-Platform Transactions policy).
 
 ### 11.2 OAuth (existing code)
 
@@ -678,7 +688,7 @@ which then becomes paid (or refunded, if the order was).
 
 - All provider calls are server-side; the key lives only in `.env`.
 - The AI image is never sent to the browser.
-- API responses carry only IS fields: code, stage names, positions, results, IS error codes
+- API responses carry only the app's own fields: code, stage names, positions, results, error codes
   (`bad-file`, `too-large`, `declined`, `failed`, `busy`, `limit`).
 - Buyer texts: declined → "This image can't be turned into a design. Please try another image.";
   failed → "Something went wrong while making your design. It didn't count — please try again."
@@ -693,12 +703,19 @@ which then becomes paid (or refunded, if the order was).
   any match, or any metadata chunk in a file the buyer gets, fails. A scripted provider whose image
   carries such metadata and whose errors name it must leave no trace either. The generic words
   (`openai`, `gpt`, `dall`, `prompt`) are not matched inside random tokens, which can spell them by
-  chance (exp-faces): IS codes, the Turnstile widget's ids (`cf-chl-widget-` and five random
+  chance (exp-faces): codes (`PN-XXXX-XXXX`), the Turnstile widget's ids (`cf-chl-widget-` and five random
   characters), and runs of letters, digits, `-` and `_` of at least 12 characters that switch
   between lower case, upper case and digits at least 3 times (nonces, ETags, ids); the model name
   and the prompt text are matched everywhere.
 - The AI image is archived without metadata (4.2): provider outputs carry C2PA chunks that name
   the provider.
+- Brand (PN-01): test `tools/test-brand.mjs` (part of `npm test`) runs a fake design and a paid
+  download (`IS_FAKE=1`) and reads every HTML page, script, stylesheet and API response, the preview
+  images' metadata and every ZIP entry (PDF and AI text and metadata, EPS, DXF, SVG, PNG metadata,
+  README). Any standalone upper-case word `IS` used as a brand ("IS design", "Made with IS",
+  "IS-XXXX", "IS · PREVIEW", "%%Creator: IS", "Producer (IS)") fails it, and so does a README, PDF
+  metadata or production sheet footer without "PatternNifty". The browser flow test checks the
+  wordmark and the PN code on every screen, at 1280 px and 390 px.
 
 ## 13. Abuse and cost
 
@@ -855,7 +872,8 @@ ETSY_POLL_SECONDS=180
 
 ## 19. Open items
 
-- Domain name (needed before launch; the quick tunnel is for OAuth and testing only).
+- Domain: `patternnifty.com` (PN-01); the named tunnel and the Etsy callback on it are still to be
+  set up (11.2, 15).
 - Etsy listing photos and price.
 
 ## Appendix A — Black & white section 4 and final check of the prompt

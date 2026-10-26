@@ -46,7 +46,7 @@ test("createCode stores a new open code", () => {
   assert.equal(row.ip_hash, "abc");
   assert.ok(q.codeExists(row.code));
   assert.deepEqual(q.getCode(row.code), row);
-  assert.equal(q.getCode("IS-0000-0000"), null);
+  assert.equal(q.getCode("PN-0000-0000"), null);
 });
 
 test("updateCode changes allowed columns only", () => {
@@ -57,10 +57,10 @@ test("updateCode changes allowed columns only", () => {
   assert.equal(q.getCode(code).status, "paid");
   assert.equal(q.getCode(code).receipt_id, 42);
 
-  assert.throws(() => q.updateCode(code, { code: "IS-0000-0000" }), /Unknown column/);
+  assert.throws(() => q.updateCode(code, { code: "PN-0000-0000" }), /Unknown column/);
   assert.throws(() => q.updateCode(code, { "status = 'paid' --": 1 }), /Unknown column/);
   assert.throws(() => q.updateCode(code, { status: "bogus" }), /CHECK constraint/);
-  assert.equal(q.updateCode("IS-0000-0000", { downloads: 1 }), false);
+  assert.equal(q.updateCode("PN-0000-0000", { downloads: 1 }), false);
 });
 
 test("attempts are numbered per code and keep settings and results as JSON", () => {
@@ -100,7 +100,7 @@ test("attempts are numbered per code and keep settings and results as JSON", () 
 
 test("attempts need an existing code", () => {
   const { q } = fresh();
-  assert.throws(() => q.createAttempt("IS-0000-0000", null), /FOREIGN KEY/);
+  assert.throws(() => q.createAttempt("PN-0000-0000", null), /FOREIGN KEY/);
 });
 
 test("etsy orders: unmatched orders are listed", () => {
@@ -117,7 +117,7 @@ test("etsy orders: unmatched orders are listed", () => {
   assert.ok(unmatched[0].seen_at);
 
   assert.throws(
-    () => q.upsertEtsyOrder({ receipt_id: 3, transaction_id: 31, matched_code: "IS-0000-0000" }),
+    () => q.upsertEtsyOrder({ receipt_id: 3, transaction_id: 31, matched_code: "PN-0000-0000" }),
     /FOREIGN KEY/
   );
 });
@@ -147,7 +147,7 @@ test("attempt numbers are never reused and only counted attempts use the limit",
   assert.deepEqual(q.listAttempts(code).map((a) => a.n), [1, 2, 3, 4]);
   assert.equal(q.countedAttempts(code), 2);
   assert.equal(q.createAttempt(code, null).n, 5);
-  assert.equal(q.countedAttempts("IS-0000-0000"), 0);
+  assert.equal(q.countedAttempts("PN-0000-0000"), 0);
 });
 
 test("etsy orders: one row per (transaction, code); re-polls upsert", () => {

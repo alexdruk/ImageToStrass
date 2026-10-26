@@ -2,14 +2,18 @@
 // & white Bold, then Shaded: IS-07b), use this design, code screen, download (every state), and the three static pages. Used by
 // tools/test-webapp-browser.mjs (checks only) and tools/shoot-is05.mjs (with screenshots).
 // Every response the page receives, and the page source and text of every screen, are checked for
-// the words of spec section 12.
+// the words of spec section 12, and for the old brand: every screen shows the PatternNifty wordmark,
+// once the buyer has a code its PN code, and never "IS" as a brand (PN-01).
+import { BRAND, findOldBrand } from "./brand-words.mjs";
 import { findLeaks } from "./leak-words.mjs";
 
 const TEXT_TYPES = /^(text\/|application\/(json|javascript)|image\/svg)/;
 
 export async function runFlow({ page, server, width, height, mobile, photo, shot = async () => {} }) {
   const leaks = [];
+  const brand = [];
   const seen = [];
+  let code = null;
   const responses = new Map();
 
   await page.send("Network.enable");
@@ -33,6 +37,14 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
     const { source, text } = await page.eval("({ source: document.documentElement.outerHTML, text: document.body.innerText })");
     for (const word of findLeaks(source)) leaks.push(`screen ${name} source: ${word}`);
     for (const word of findLeaks(text)) leaks.push(`screen ${name} text: ${word}`);
+    for (const at of findOldBrand(source)) brand.push(`screen ${name} source: ${at}`);
+    const shown = await page.eval(`(() => {
+      const visible = (el) => !!el && !el.hidden && el.offsetParent !== null && el.getBoundingClientRect().right <= innerWidth;
+      const mark = document.querySelector(".brand-name"), chip = document.querySelector("#code-chip");
+      return { mark: visible(mark) ? mark.textContent : null, chip: visible(chip) ? chip.textContent : null };
+    })()`);
+    if (shown.mark !== BRAND) brand.push(`screen ${name}: wordmark ${JSON.stringify(shown.mark)}`);
+    if (code && shown.chip !== code) brand.push(`screen ${name}: code chip ${JSON.stringify(shown.chip)}`);
   }
   const imagesLoaded = "[...document.images].every((i) => i.complete && i.naturalWidth > 0)";
   const path = () => page.eval("location.pathname");
@@ -62,7 +74,8 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
   const expect = "document.querySelector('.expect')?.textContent.includes('faces are stylised') && document.querySelector('.expect').offsetParent !== null";
   if (!(await page.eval(expect))) throw new Error("Prepare: no expectation line");
   if (!(await page.eval("document.querySelector('#bw-styles').hidden"))) throw new Error("Prepare: Black & white styles shown for Colour");
-  const code = await page.eval("document.querySelector('#code-chip').textContent");
+  code = await page.eval("document.querySelector('#code-chip').textContent");
+  if (!/^PN-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/.test(code)) brand.push(`code ${code}`);
   await page.eval("(() => { const i = document.querySelector('#brightness'); i.value = 12; i.dispatchEvent(new Event('input')); })()");
   await page.click("#crop");
   await screen("prepare-crop", "document.querySelector('.crop-box') && document.querySelector('#busy').hidden");
@@ -138,7 +151,7 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
     await page.eval(submit);
     await screen(`download-${state}`, `document.querySelector('#state .notice:not(.ok):not(.warn):not(.error)')?.textContent.includes(${JSON.stringify(state === "expired" ? "expired" : "refunded")})`);
   }
-  await page.eval("document.querySelector('#code').value = 'IS-0000-0000'");
+  await page.eval("document.querySelector('#code').value = 'PN-0000-0000'");
   await page.eval(submit);
   await screen("download-unknown", "document.querySelector('#state .notice.error')");
 
@@ -155,5 +168,5 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
   // Nothing wider than the screen.
   const overflow = await page.eval("document.documentElement.scrollWidth - window.innerWidth");
 
-  return { code, leaks, responses: seen.length, zipBytes: zipBytes.length, overflow };
+  return { code, leaks, brand, responses: seen.length, zipBytes: zipBytes.length, overflow };
 }

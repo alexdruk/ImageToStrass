@@ -1,16 +1,17 @@
 import crypto from "node:crypto";
 
-// IS codes (spec section 5): IS-XXXX-XXXX, 8 symbols of Crockford base32, 40 bits.
+// Codes (spec section 5): PN-XXXX-XXXX, 8 symbols of Crockford base32, 40 bits. Codes made before
+// PN-01 (IS-XXXX-XXXX) stay in the database as they are but are no longer read.
 
 export const CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
 const AMBIGUOUS = { O: "0", I: "1", L: "1" };
 
 // Personalization text may hold several codes; each match is then normalised.
-const CODE_IN_TEXT = /I\s*S[\s\-_]*([0-9A-Z]{4})[\s\-_]*([0-9A-Z]{4})/gi;
+const CODE_IN_TEXT = /P\s*N[\s\-_]*([0-9A-Z]{4})[\s\-_]*([0-9A-Z]{4})/gi;
 
 function formatCode(body) {
-  return `IS-${body.slice(0, 4)}-${body.slice(4)}`;
+  return `PN-${body.slice(0, 4)}-${body.slice(4)}`;
 }
 
 export function randomCode(randomInt = crypto.randomInt) {
@@ -36,8 +37,8 @@ export function generateCode(exists, { randomInt, maxTries = 10 } = {}) {
   throw new Error("Unable to allocate a unique code.");
 }
 
-// Returns the canonical "IS-XXXX-XXXX", or null when the input is not a code.
-// Upper-case; O→0, I→1, L→1; spaces, dashes and the IS prefix are optional.
+// Returns the canonical "PN-XXXX-XXXX", or null when the input is not a code.
+// Upper-case; O→0, I→1, L→1 on the 8 symbols; spaces, dashes and the PN prefix are optional.
 export function normalizeCode(input) {
   if (typeof input !== "string") {
     return null;
@@ -45,7 +46,7 @@ export function normalizeCode(input) {
 
   let body = input.toUpperCase().replace(/[\s\-_]/g, "");
 
-  if (body.length === 10 && body.startsWith("IS")) {
+  if (body.length === 10 && body.startsWith("PN")) {
     body = body.slice(2);
   }
 

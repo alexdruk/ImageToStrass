@@ -226,7 +226,7 @@ test("Create design refuses bad settings, unknown codes and a missing cut-out", 
     const { code } = await srv.upload();
     assert.deepEqual((await srv.create(code, { ...SETTINGS, mode: "sepia" })).body, { error: "bad-request" });
     assert.deepEqual((await srv.create(code, { ...SETTINGS, upload: 2 })).body, { error: "not-found" });
-    assert.equal((await srv.create("IS-0000-0000", SETTINGS)).status, 404);
+    assert.equal((await srv.create("PN-0000-0000", SETTINGS)).status, 404);
     rmSync(path.join(srv.config.archiveDir, code, "uploads", "1", "cutout.png"));
     assert.deepEqual((await srv.create(code, SETTINGS)).body, { error: "not-ready" });
     assert.equal((await srv.create(code, { ...SETTINGS, removeBackground: false })).status, 202);

@@ -13,13 +13,13 @@ export function leakWords(env = process.env) {
   ].filter((word, i, all) => word && all.indexOf(word) === i);
 }
 
-// The generic words: a random token the server makes (an IS code, a nonce, an ETag, an id) can
+// The generic words: a random token the server makes (a code, a nonce, an ETag, an id) can
 // spell them by chance. The model name and the prompt text are always matched as they are.
 const GENERIC = ["openai", "gpt", "dall", "prompt"];
-// Random tokens of a known form, too short for looksRandom: IS codes (spec section 5; Crockford
-// base32, upper case, so "GPT" can be three of their symbols) and the ids the Turnstile widget gives
-// itself (cf-chl-widget-<5 random characters>, its response field <id>_response).
-const KNOWN_TOKENS = [/IS-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}/g, /cf-chl-widget-[A-Za-z0-9]+/g];
+// Random tokens of a known form, too short for looksRandom: codes (spec section 5, PN-XXXX-XXXX;
+// Crockford base32, upper case, so "GPT" can be three of their symbols) and the ids the Turnstile
+// widget gives itself (cf-chl-widget-<5 random characters>, its response field <id>_response).
+const KNOWN_TOKENS = [/PN-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}/g, /cf-chl-widget-[A-Za-z0-9]+/g];
 const RUN = /[A-Za-z0-9_-]+/g;
 const RANDOM_MIN_LENGTH = 12;
 const RANDOM_MIN_CHANGES = 3;
