@@ -1,0 +1,903 @@
+[
+ {
+  "id": "rs-cat",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 2162,
+   "mediapipe": 2162
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1003
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1003
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "rs-dog",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 1683,
+   "mediapipe": 1683
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1023
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1023
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "rs-einstein",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": true,
+   "mediapipe": true
+  },
+  "face": {
+   "dlib": "human",
+   "mediapipe": "human"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 3594,
+   "mediapipe": 3594
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "rs-jesus",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 1,
+   "mediapipe": 1
+  },
+  "pupilDistMm": [
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 3307,
+   "mediapipe": 3307
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1002
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1002
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "rs-lake",
+  "mode": "colour",
+  "differs": true,
+  "faceFound": {
+   "dlib": true,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "human",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "pupilDistMm": [],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 4100,
+   "mediapipe": 4100
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1002
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1002
+   }
+  },
+  "image": "rs-lake.jpg"
+ },
+ {
+  "id": "rs-leopard",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 2436,
+   "mediapipe": 2436
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1008
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1008
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "rs-logo",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "pupilDistMm": [],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 833,
+   "mediapipe": 833
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1024
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1024
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "rs-parrot",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 1,
+   "mediapipe": 1
+  },
+  "pupilDistMm": [
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 2552,
+   "mediapipe": 2552
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1008
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1008
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "rs-portrait",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": true,
+   "mediapipe": true
+  },
+  "face": {
+   "dlib": "human",
+   "mediapipe": "human"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 4045,
+   "mediapipe": 4045
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1004
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1004
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "rs-rose",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "pupilDistMm": [],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 1846,
+   "mediapipe": 1846
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1012
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1012
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "rs-tulips",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "pupilDistMm": [],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 2675,
+   "mediapipe": 2675
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1009
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1009
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "rs-woman",
+  "mode": "colour",
+  "differs": true,
+  "faceFound": {
+   "dlib": true,
+   "mediapipe": true
+  },
+  "face": {
+   "dlib": "human",
+   "mediapipe": "human"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 1,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 2627,
+   "mediapipe": 2626
+  },
+  "finalStonesChanged": 3,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1
+   }
+  },
+  "image": "rs-woman.jpg"
+ },
+ {
+  "id": "cc0-car-rule",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": null,
+   "mediapipe": null
+  },
+  "pupils": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "pupilDistMm": [],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 3548,
+   "mediapipe": 3548
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1004
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1004
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "cc0-cat-norule",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 3148,
+   "mediapipe": 3148
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.101
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.101
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "cc0-cat-rule",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 3579,
+   "mediapipe": 3579
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1008
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1008
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "cc0-dachshund-rule",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 1633,
+   "mediapipe": 1633
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1021
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1021
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "cc0-dog-norule",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": true,
+   "mediapipe": true
+  },
+  "face": {
+   "dlib": "human",
+   "mediapipe": "human"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 2084,
+   "mediapipe": 2084
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1001
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1001
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "cc0-dog-rule",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": true,
+   "mediapipe": true
+  },
+  "face": {
+   "dlib": "human",
+   "mediapipe": "human"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 2050,
+   "mediapipe": 2050
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1014
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1014
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "cc0-giraffe-rule",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 2,
+   "mediapipe": 2
+  },
+  "pupilDistMm": [
+   0,
+   0
+  ],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 2327,
+   "mediapipe": 2327
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1011
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1011
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "cc0-mug-norule",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "pupilDistMm": [],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 2224,
+   "mediapipe": 2224
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1016
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.1016
+   }
+  },
+  "image": null
+ },
+ {
+  "id": "cc0-mug-rule",
+  "mode": "colour",
+  "differs": false,
+  "faceFound": {
+   "dlib": false,
+   "mediapipe": false
+  },
+  "face": {
+   "dlib": "animal",
+   "mediapipe": "animal"
+  },
+  "pupils": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "pupilDistMm": [],
+  "serviceStonesChanged": 0,
+  "serviceViolations": {
+   "dlib": 0,
+   "mediapipe": 0
+  },
+  "finalStones": {
+   "dlib": 1751,
+   "mediapipe": 1751
+  },
+  "finalStonesChanged": 0,
+  "check": {
+   "dlib": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.103
+   },
+   "mediapipe": {
+    "ok": true,
+    "violations": 0,
+    "minGapMm": 0.103
+   }
+  },
+  "image": null
+ }
+]

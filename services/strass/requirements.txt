@@ -1,6 +1,5 @@
 # From Rhinestone-Studio @38cd831 services/strass-layout/requirements.txt
 csbdeep==0.8.2
-dlib-bin==19.24.6
 fastapi==0.142.2
 httpx==0.28.1
 numpy==1.26.4
@@ -17,3 +16,5 @@ uvicorn==0.54.0
 # numpy 1.x (tensorflow 2.16 needs it); onnxruntime 1.23.2 is the last one with an Intel Mac wheel.
 onnxruntime==1.23.2
 rembg==2.0.69
+# IS (IS-07a): MediaPipe (face landmarks) is in requirements-nodeps.txt, installed with --no-deps;
+# dlib only in requirements-dlib-tests.txt (test only, never in production).

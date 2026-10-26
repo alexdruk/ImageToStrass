@@ -48,6 +48,21 @@ Changes made for IS:
 - `README.md`: an IS note at the top and the new endpoint.
 - New files (not from RS): `strass_layout/background.py`, `tests/test_background.py`,
   `tests/fixtures/photos/` (CC0 photos, see `SOURCES.md` there), this file.
+- IS-07a (face landmarks, see the section below): `requirements.txt` drops `dlib-bin`;
+  `scripts/setup_mac.sh` installs MediaPipe and downloads the dlib model only with
+  `--with-dlib-tests`; `Dockerfile` installs MediaPipe and copies its model instead of fetching
+  the dlib model; `README.md`: an IS-07a note and the setup, test and Docker text. New files:
+  `requirements-nodeps.txt`, `requirements-dlib-tests.txt`, `tests/dlib_faces.py`,
+  `scripts/is07a_landmarks.py`, and `models/mediapipe/face_landmarker.task` (MediaPipe Face
+  Landmarker, float16 version 1, Apache 2.0, from
+  `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+  SHA-256 `64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff`; it cannot carry a
+  comment).
+
+**The dlib 68-point model must never be shipped or used in production.** It was trained on the
+iBUG 300-W dataset, whose licence excludes commercial use. Since IS-07a the service does not import
+dlib or load the model; it stays only as a test-only dependency of the equivalence test against the
+prototype (`prototype/landmarks.py` uses it), skipped when the model is absent.
 
 ## Divergences from RS 38cd831 in the layout code (to port back)
 
@@ -289,3 +304,30 @@ no stone, size or colour changes.
 - `tests/test_contract.py`: `discsAtMm` added to `REPORT_KEYS`; `README.md`: the new key.
 - `scripts/holes_trace.py` records the same detections with their verdicts; the discs are the
   verdicts kept, tiled, rows-deleted, duplicate, inside-big and outside-mask.
+
+### IS-07a (26 Oct 2026): MediaPipe face landmarks instead of dlib
+
+RS finds the face (and so a person as opposed to an animal) and the eye boxes with dlib's frontal
+face detector and 68-point shape predictor. That model's training data (iBUG 300-W) excludes
+commercial use, so the IS service replaces it with MediaPipe Face Landmarker (Apache 2.0).
+
+- `strass_layout/models.py`: `Models` loads the MediaPipe landmarker
+  (`models/mediapipe/face_landmarker.task`) instead of dlib; `landmarks()` (68 points) becomes
+  `eye_contours()`: the largest face's two eye contours in dlib's order (points 36-41, then 42-47),
+  from the Face Mesh points `MP_EYES`, or `None`. The search is RS's: the median 5 px blur, then
+  Gaussian blurs of 3 and 6 px; in each, the face with the largest box is taken, and the first
+  one wider than 0.12 of the image wins (the box is the mesh's bounding box; dlib's was its
+  detection box). dlib's 2x upsampling has no MediaPipe equivalent and is dropped. Two additions
+  keep the answers close to dlib's: faces need a detection and presence confidence of 0.6
+  (MediaPipe's default 0.5 fitted a face to the RS dog at the 6 px blur), and a mesh whose iris
+  centres are closer than 0.25 of its ear-to-ear width (a face seen from the side or a false find,
+  which dlib's frontal detector does not report) is not a face. Docstring note.
+- `strass_layout/post.py`: `_eye_boxes` reads `models.eye_contours`; the eye boxes are computed
+  from the contours as before (centre, width, at least 20 px). Nothing else changes: `face` is
+  still "human" with eye boxes, "animal" without, `None` for implausible pupils.
+- `tests/dlib_faces.py` (test only): RS's dlib `landmarks()` and the same `eye_contours()` on top
+  of the service's `Models`; `available()` is false without dlib or its model.
+- `tests/support.py`: `frame_result(name, rules, dlib=False)`; `tests/test_equivalence.py` runs the
+  package with `dlib=True` (the prototype uses dlib) and skips without it.
+- `scripts/is07a_landmarks.py` (IS diagnosis only): lays out AI images with both and records what
+  differs (docs/is-07a-landmarks.md).

@@ -23,7 +23,9 @@ of the black & white prompt behind `BW_STYLE=stencil` (7.2; halftone stays the d
 Oct 2026 (exp-bw-stencil, eyes): the stencil variant has an eye rule (7.2, version 5). Revised 24 Oct
 2026 (exp-faces, leftovers): `BW_GAP` `crystal` is the default for black & white designs (section 8);
 the disc reading `IS_BW_FROM_DISCS` is removed (7.6; the service keeps `report.discsAtMm`); the leak
-check skips random tokens (section 12).
+check skips random tokens (section 12). Revised 26 Oct 2026 (IS-07a): the strass service finds faces
+with MediaPipe Face Landmarker instead of dlib; the dlib model is test-only and never used in
+production (7.4, 16).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -317,6 +319,15 @@ Shadow skin (IS's strass copy, IS-05d, `docs/IS-05d-results.md`): with the rule 
 `DEFAULT`, `warm_shadow_de` 3), a skin stone whose nearest skin colour is Smoked Topaz takes Colorado
 Topaz when Colorado Topaz is at most 3 ΔE2000 further from its sampled colour. Only those near ties
 change; stones, sizes, faces and pupils do not. RS 38cd831 has no such rule.
+
+Faces (IS's strass copy, IS-07a, `docs/is-07a-landmarks.md`): the service finds a face (a person,
+as opposed to an animal or no face) and the eye boxes its pupils are looked for in with MediaPipe
+Face Landmarker (library and model Apache 2.0, `services/strass/models/mediapipe/`), installed
+into the service's own environment (`mediapipe==0.10.15`, `pip --no-deps`). RS 38cd831 uses dlib's
+68-point model, which was trained on iBUG 300-W, whose licence excludes commercial use: **the dlib
+model must never be shipped or used in production.** It stays only as a test-only dependency of the
+equivalence test against the RS prototype, skipped when the model is absent, and `setup_mac.sh`
+downloads it only with `--with-dlib-tests`.
 
 ### 7.5 Size (D1, D2)
 
@@ -715,7 +726,7 @@ which then becomes paid (or refunded, if the order was).
 
 | RS path | IS path | Change |
 | --- | --- | --- |
-| `services/strass-layout/` (all, incl. tests, models, scripts) | `services/strass/` | Add `/remove-background` (rembg) under the same lock; rename scripts; keep the 12 test images and golden tests |
+| `services/strass-layout/` (all, incl. tests, models, scripts) | `services/strass/` | Add `/remove-background` (rembg) under the same lock; rename scripts; keep the 12 test images and golden tests; face landmarks from MediaPipe instead of dlib, dlib model test-only, never in production (IS-07a, 7.4) |
 | `server/redraw/prompt.mjs` | `src/pipeline/prompt.js` | Stones prompt only; whole-image line in section 6; B&W variant (Appendix A) |
 | `server/redraw/handler.mjs` (provider call part) | `src/pipeline/provider.js` | Keep retries, safety retry, timeout, abort; drop routes, access code, limiter, fake routes |
 | `server/redraw/jobs.mjs` (`callLayoutService`) | `src/pipeline/layout.js` | Keep |

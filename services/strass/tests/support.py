@@ -14,6 +14,7 @@ from strass_layout import PROTOTYPE, layout_frame, load_models
 from strass_layout.detect import detect_stones
 from strass_layout.imageio import decode_png
 from strass_layout.pipeline import finish_layout
+from tests import dlib_faces
 
 SERVICE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROTOTYPE_DIR = os.path.join(SERVICE_DIR, "prototype")
@@ -41,11 +42,14 @@ def expected(name):
         return json.load(f)
 
 
-def frame_result(name, rules=PROTOTYPE):
-    """layout_frame() on the image with the given rules, run once per process."""
-    key = (name, rules)
+def frame_result(name, rules=PROTOTYPE, dlib=False):
+    """layout_frame() on the image with the given rules, run once per process. IS (IS-07a): with
+    dlib, the face landmarks are RS's dlib ones (tests/dlib_faces.py, test only) instead of the
+    service's MediaPipe ones."""
+    key = (name, rules, dlib)
     if key not in _frames:
-        _frames[key] = layout_frame(png_bytes(name), 2.1, load_models(), rules)
+        models = dlib_faces.dlib_models() if dlib else load_models()
+        _frames[key] = layout_frame(png_bytes(name), 2.1, models, rules)
     return _frames[key]
 
 
