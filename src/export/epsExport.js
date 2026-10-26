@@ -1,9 +1,10 @@
+import { BRAND } from "../brand.js";
 import { STONE_COLORS } from "../stones/StoneColors.js";
 
-// IS-XXXX-XXXX.eps (spec section 9): EPSF-3.0 written directly from the final StoneLayout. The
+// PN-XXXX-XXXX.eps (spec section 9): EPSF-3.0 written directly from the final StoneLayout. The
 // bounding box is the design's natural size in points, origin bottom-left (y flipped); one filled
-// circle per stone in its catalogue fill colour, the stones grouped by colour. The header names IS
-// and the design only (section 12).
+// circle per stone in its catalogue fill colour, the stones grouped by colour. The header names
+// PatternNifty and the design only (section 12).
 
 const PT_PER_MM = 72 / 25.4;
 const pt = (mm) => (Math.round(mm * PT_PER_MM * 1000) / 1000).toString();
@@ -13,7 +14,7 @@ const rgb = (hex) => [0, 2, 4].map((i) => unit(parseInt(hex.replace("#", "").sli
 // DSC text values: printable ASCII only.
 const dscText = (s) => String(s).replace(/[^\x20-\x7e]/g, "?");
 
-export function designEps(stoneLayout, { title = "IS design" } = {}) {
+export function designEps(stoneLayout, { title = `${BRAND} design` } = {}) {
   const box = stoneLayout.getBoundingBox();
   const { widthMm, heightMm } = stoneLayout;
   const groups = new Map();
@@ -25,7 +26,7 @@ export function designEps(stoneLayout, { title = "IS design" } = {}) {
     "%!PS-Adobe-3.0 EPSF-3.0",
     `%%BoundingBox: 0 0 ${Math.ceil(widthMm * PT_PER_MM - 1e-6)} ${Math.ceil(heightMm * PT_PER_MM - 1e-6)}`,
     `%%HiResBoundingBox: 0 0 ${pt(widthMm)} ${pt(heightMm)}`,
-    "%%Creator: IS",
+    `%%Creator: ${BRAND}`,
     `%%Title: ${dscText(title)}`,
     "%%LanguageLevel: 2",
     "%%Pages: 1",

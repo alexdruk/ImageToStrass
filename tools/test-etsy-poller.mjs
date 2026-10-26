@@ -17,12 +17,12 @@ import { findLeaks } from "./leak-words.mjs";
 // guards. The Etsy API is mocked throughout (etsy-mock.mjs); nothing reaches Etsy.
 //
 // The fixture shop: listing 1850000001 is IS, 1850000002 another product. Receipts:
-//   3800000001  "is 7k3q 9xpa"                    spaces, lower case       -> IS-7K3Q-9XPA
-//   3800000002  "IS-ORIT-H8W2"                    O for 0, I for 1          -> IS-0R1T-H8W2
-//   3800000003  "IS-C4DE-5FG6, is h7j8 k9mn" (x2) two codes                 -> both
+//   3800000001  "pn 7k3q 9xpa"                    spaces, lower case       -> PN-7K3Q-9XPA
+//   3800000002  "PN-ORIT-H8W2"                    O for 0, I for 1          -> PN-0R1T-H8W2
+//   3800000003  "PN-C4DE-5FG6, pn h7j8 k9mn" (x2) two codes                 -> both
 //   3800000004  "Please make it sparkle!"         no code                   -> unmatched
-//   3800000005  "IS-ZZZZ-ZZZZ"                    a code IS never made      -> unmatched
-//   3800000006  IS "my code: IS 9ABC DEFG thanks" + another listing ("Lily") -> IS-9ABC-DEFG only
+//   3800000005  "PN-ZZZZ-ZZZZ"                    a code IS never made      -> unmatched
+//   3800000006  IS "my code: PN 9ABC DEFG thanks" + another listing ("Lily") -> PN-9ABC-DEFG only
 //   3800000007  another listing only, its text looks like a code            -> ignored
 //   3800000008  not paid yet (Payment Processing)                           -> not returned
 // receipt-refunded.json is 3800000001 later, fully refunded.
@@ -36,16 +36,16 @@ const USER = read("users-me.json");
 const PHOTO = readFileSync(new URL("./fixtures/upload/photo.png", import.meta.url));
 const IS_LISTING = 1850000001;
 const NOW = Date.parse("2026-10-21T12:00:00Z");
-const CODES = { a: "IS-7K3Q-9XPA", b: "IS-0R1T-H8W2", c: "IS-C4DE-5FG6", d: "IS-H7J8-K9MN", e: "IS-9ABC-DEFG", f: "IS-MNPQ-RST0", g: "IS-GGGG-2345" };
+const CODES = { a: "PN-7K3Q-9XPA", b: "PN-0R1T-H8W2", c: "PN-C4DE-5FG6", d: "PN-H7J8-K9MN", e: "PN-9ABC-DEFG", f: "PN-MNPQ-RST0", g: "PN-GGGG-2345" };
 const quiet = { error() {}, warn() {}, log() {} };
 const iso = (seconds) => new Date(seconds * 1000).toISOString();
 
 // --- matcher -------------------------------------------------------------------------------------
 
 test("matcher: the personalization is the variation with property 54 or named Personalization", () => {
-  assert.equal(personalizationOf(RECEIPTS[0].transactions[0]), "is 7k3q 9xpa");
-  assert.equal(personalizationOf({ variations: [{ property_id: 513, formatted_name: "Personalisation", formatted_value: "IS-AAAA-BBBB" }] }), "IS-AAAA-BBBB");
-  assert.equal(personalizationOf({ variations: [{ property_id: 200, formatted_name: "Colour", formatted_value: "IS-AAAA-BBBB" }] }), "");
+  assert.equal(personalizationOf(RECEIPTS[0].transactions[0]), "pn 7k3q 9xpa");
+  assert.equal(personalizationOf({ variations: [{ property_id: 513, formatted_name: "Personalisation", formatted_value: "PN-AAAA-BBBB" }] }), "PN-AAAA-BBBB");
+  assert.equal(personalizationOf({ variations: [{ property_id: 200, formatted_name: "Colour", formatted_value: "PN-AAAA-BBBB" }] }), "");
   assert.equal(personalizationOf({}), "");
 });
 
@@ -64,7 +64,7 @@ test("matcher: IS transactions only, every code normalised", () => {
     [3800000002, 4900000002, [CODES.b]],
     [3800000003, 4900000003, [CODES.c, CODES.d]],
     [3800000004, 4900000004, []],
-    [3800000005, 4900000005, ["IS-ZZZZ-ZZZZ"]],
+    [3800000005, 4900000005, ["PN-ZZZZ-ZZZZ"]],
     [3800000006, 4900000006, [CODES.e]]
   ]);
   assert.ok(orders.every((o) => o.status === "paid" && o.listing_id === IS_LISTING));
@@ -73,8 +73,11 @@ test("matcher: IS transactions only, every code normalised", () => {
   assert.deepEqual(ordersFromReceipts(RECEIPTS, []), []);
   assert.deepEqual(ordersFromReceipts([REFUNDED], [IS_LISTING]).map((o) => o.status), ["refunded"]);
   // L for 1 too, and a code split over the text by underscores.
-  const t = { listing_id: IS_LISTING, variations: [{ property_id: 54, formatted_value: "Is_LNVK_7Q2W" }] };
-  assert.deepEqual(ordersFromReceipts([{ receipt_id: 1, is_paid: true, transactions: [t] }], [IS_LISTING])[0].codes, ["IS-1NVK-7Q2W"]);
+  const t = { listing_id: IS_LISTING, variations: [{ property_id: 54, formatted_value: "Pn_LNVK_7Q2W" }] };
+  assert.deepEqual(ordersFromReceipts([{ receipt_id: 1, is_paid: true, transactions: [t] }], [IS_LISTING])[0].codes, ["PN-1NVK-7Q2W"]);
+  // Codes made before PN-01 (IS-XXXX-XXXX) are no longer matched.
+  const old = { listing_id: IS_LISTING, variations: [{ property_id: 54, formatted_value: "IS-7K3Q-9XPA" }] };
+  assert.deepEqual(ordersFromReceipts([{ receipt_id: 1, is_paid: true, transactions: [old] }], [IS_LISTING])[0].codes, []);
 });
 
 // --- poller --------------------------------------------------------------------------------------
@@ -130,7 +133,7 @@ test("poller: first poll matches every case, marks the codes paid and builds the
       { transaction_id: 4900000005, matched_code: null, status: "paid" },
       { transaction_id: 4900000006, matched_code: CODES.e, status: "paid" }
     ]);
-    assert.deepEqual(srv.q.listUnmatchedOrders().map((o) => o.personalization).sort(), ["IS-ZZZZ-ZZZZ", "Please make it sparkle!"]);
+    assert.deepEqual(srv.q.listUnmatchedOrders().map((o) => o.personalization).sort(), ["PN-ZZZZ-ZZZZ", "Please make it sparkle!"]);
 
     // The request: paid receipts modified in the last 30 days (no good run yet), first page.
     assert.deepEqual(receiptCalls(mock)[0], {
@@ -158,7 +161,7 @@ test("poller: first poll matches every case, marks the codes paid and builds the
     assert.equal(JSON.parse(readFileSync(`${srv.config.archiveDir}/${CODES.a}/code.json`, "utf8")).status, "paid");
 
     // The download page reads the real state.
-    const state = await (await fetch(`${srv.url}/api/download/is7k3q9xpa`)).json();
+    const state = await (await fetch(`${srv.url}/api/download/pn7k3q9xpa`)).json();
     assert.equal(state.state, "ready");
     assert.equal(state.expiresAt, a.delivery_expires_at);
     const download = await fetch(`${srv.url}/api/download/${CODES.a}/zip`);
@@ -249,7 +252,7 @@ test("poller: an order without a code matched by hand pays the code and stays ma
 
     assert.deepEqual(poller.matchOrder(sparkle.id, "nope"), { ok: false, error: "unknown-code" });
     assert.deepEqual(poller.matchOrder(999999, CODES.g), { ok: false, error: "unknown-order" });
-    const out = poller.matchOrder(sparkle.id, "is gggg 2345");
+    const out = poller.matchOrder(sparkle.id, "pn gggg 2345");
     assert.equal(out.ok, true);
     await out.build;
     assert.equal(srv.q.getCode(CODES.g).status, "paid");
@@ -321,7 +324,7 @@ test("download page: an unpaid code asks the poller for a poll, other states do 
   try {
     const { code } = srv.q.createCode();
     await fetch(`${srv.url}/api/download/${code}`);
-    await fetch(`${srv.url}/api/download/IS-0000-0000`);
+    await fetch(`${srv.url}/api/download/PN-0000-0000`);
     srv.q.updateCode(code, { status: "refunded" });
     await fetch(`${srv.url}/api/download/${code}`);
     assert.equal(asked.length, 1);
@@ -470,19 +473,38 @@ test("admin page: shows the state, matches, unlocks and polls; forms need the pa
     for (const word of ["Test Buyer", "example.com"]) assert.ok(!page.text.includes(word), word);
 
     const id = srv.q.listUnmatchedOrders().find((o) => o.transaction_id === 4900000004).id;
-    assert.equal((await call(srv.url, "/admin/match", form({ csrf, id: String(id), code: "IS-0000-0000" }))).headers.location, "/admin?msg=unknown-code");
+    assert.equal((await call(srv.url, "/admin/match", form({ csrf, id: String(id), code: "PN-0000-0000" }))).headers.location, "/admin?msg=unknown-code");
     assert.equal((await call(srv.url, "/admin/match", form({ csrf, id: String(id), code: CODES.g }))).headers.location, "/admin?msg=matched");
     assert.equal(srv.q.getCode(CODES.g).status, "paid");
 
     srv.q.updateCode(CODES.b, { status: "refunded" });
-    assert.equal((await call(srv.url, "/admin/unlock", form({ csrf, code: "is-0rit-h8w2" }))).headers.location, "/admin?msg=unlocked");
+    assert.equal((await call(srv.url, "/admin/unlock", form({ csrf, code: "pn-0rit-h8w2" }))).headers.location, "/admin?msg=unlocked");
     assert.equal(srv.q.getCode(CODES.b).status, "paid");
-    assert.equal((await call(srv.url, "/admin/unlock", form({ csrf, code: "IS-0000-0000" }))).headers.location, "/admin?msg=unknown-code");
+    assert.equal((await call(srv.url, "/admin/unlock", form({ csrf, code: "PN-0000-0000" }))).headers.location, "/admin?msg=unknown-code");
 
     page = await call(srv.url, "/admin?msg=<b>x</b>");
     assert.ok(!page.text.includes("<b>x</b>"));
     assert.match(page.text, /Orders without a code \(1\)/);
     assert.match(page.text, /Disk use of data\//);
+  } finally {
+    await srv.stop();
+  }
+});
+
+test("poller: a code made before PN-01 (IS-XXXX-XXXX) is left untouched and not matched or downloadable", { timeout: 120_000 }, async () => {
+  const { srv, poller, setReceipts } = await setup();
+  try {
+    const old = "IS-7K3Q-9XPA";
+    srv.db.prepare("INSERT INTO codes (code, created_at) VALUES (?, ?)").run(old, new Date(NOW - 3600_000).toISOString());
+    const receipt = structuredClone(RECEIPTS[0]);
+    receipt.transactions[0].variations.find((v) => v.property_id === 54).formatted_value = old;
+    setReceipts([receipt]);
+    const out = await poller.runOnce();
+    await out.builds;
+    assert.deepEqual([out.paid, out.unmatched], [0, 1]);
+    assert.equal(srv.q.getCode(old).status, "open");
+    assert.equal(srv.q.getCode(CODES.a).status, "open");
+    assert.deepEqual(await (await fetch(`${srv.url}/api/download/${old}`)).json(), { state: "unknown" });
   } finally {
     await srv.stop();
   }

@@ -1,4 +1,6 @@
-// PDF metadata (spec section 9): Producer and Creator "IS". PdfDocument.js (copied unchanged from
+import { BRAND } from "../brand.js";
+
+// PDF metadata (spec section 9): Producer and Creator "PatternNifty" (BRAND). PdfDocument.js (copied unchanged from
 // RS) writes no Info dictionary, so it is added afterwards as a standard incremental update: an
 // Info object, a one-entry cross-reference section and a trailer pointing back (/Prev) to the
 // original one. The original bytes are kept as they are.
@@ -15,7 +17,7 @@ export function withInfo(pdfBytes, { title } = {}) {
   const root = /\/Root (\d+ \d+ R)/.exec(tail.slice(tail.lastIndexOf("trailer")))?.[1];
   if (!Number.isInteger(prev) || !Number.isInteger(size) || !root) throw new Error("Not a PdfDocument PDF.");
 
-  const fields = [["Producer", "IS"], ["Creator", "IS"], ...(title ? [["Title", title]] : [])];
+  const fields = [["Producer", BRAND], ["Creator", BRAND], ...(title ? [["Title", title]] : [])];
   const object = `\n${size} 0 obj\n<< ${fields.map(([k, v]) => `/${k} ${pdfString(v)}`).join(" ")} >>\nendobj\n`;
   const objectOffset = pdf.length + 1;
   const xrefOffset = pdf.length + object.length;

@@ -1,7 +1,7 @@
 import { Resvg } from "@resvg/resvg-js";
 import zlib from "node:zlib";
 
-// IS-XXXX-XXXX.png (spec section 9): the SVG rendered at PNG_DPI with a transparent background
+// PN-XXXX-XXXX.png (spec section 9): the SVG rendered at PNG_DPI with a transparent background
 // (the SVG's white background rectangle is left out), so the PNG prints at true size. resvg writes
 // no metadata; a pHYs chunk records the resolution.
 

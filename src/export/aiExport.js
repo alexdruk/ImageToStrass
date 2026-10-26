@@ -2,7 +2,7 @@ import { STONE_COLORS } from "../stones/StoneColors.js";
 import { PT_PER_MM, PdfDocument } from "./PdfDocument.js";
 import { withInfo } from "./pdfInfo.js";
 
-// IS-XXXX-XXXX.ai (spec section 9): one true-size vector PDF page of the stones, the page the design
+// PN-XXXX-XXXX.ai (spec section 9): one true-size vector PDF page of the stones, the page the design
 // plus 10 mm (AI_MARGIN_MM on every side), built with RS PdfDocument. Saved as .ai: Illustrator
 // opens a PDF-compatible file. Stones are drawn as the production sheet draws them: catalogue fill,
 // catalogue stroke 0.12 mm.

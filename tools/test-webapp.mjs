@@ -20,8 +20,8 @@ import { findLeaks } from "./leak-words.mjs";
 
 const PHOTO = readFileSync(new URL("./fixtures/upload/photo.png", import.meta.url));
 const PUBLIC = new URL("../public/", import.meta.url).pathname;
-const SCREENS = ["/", "/c/IS-AAAA-BBBB", "/c/IS-AAAA-BBBB/prepare", "/c/IS-AAAA-BBBB/working",
-  "/c/IS-AAAA-BBBB/result/2", "/c/IS-AAAA-BBBB/done", "/download", "/privacy", "/terms", "/contact"];
+const SCREENS = ["/", "/c/PN-AAAA-BBBB", "/c/PN-AAAA-BBBB/prepare", "/c/PN-AAAA-BBBB/working",
+  "/c/PN-AAAA-BBBB/result/2", "/c/PN-AAAA-BBBB/done", "/download", "/privacy", "/terms", "/contact"];
 
 // fetch that checks every answer's headers and (text) body for the section 12 words.
 function checkedFetch(base) {
@@ -65,7 +65,7 @@ test("every screen URL answers the app page with a CSP; other paths are 404", as
       assert.ok(r.body.equals(index), url);
       assert.match(r.headers.get("content-security-policy"), /default-src 'self'/, url);
     }
-    for (const url of ["/nope", "/c/IS-AAAA-BBBB/other", "/customizer", "/api/frames"]) {
+    for (const url of ["/nope", "/c/PN-AAAA-BBBB/other", "/customizer", "/api/frames"]) {
       assert.equal((await get(url)).status, 404, url);
     }
     for (const file of ["app.js", "styles.css", "logo.svg", "adjust.js"]) assert.equal((await get(`/${file}`)).status, 200, file);
@@ -140,7 +140,7 @@ test("session, views, Use this design and Try again settings", async () => {
     assert.equal(chosen.status, 200);
     assert.equal(srv.q.getCode(code).selected_attempt, n);
     assert.equal((await get(`/api/codes/${code}`)).json().selected, n);
-    assert.equal((await get("/api/codes/IS-0000-0000")).status, 404);
+    assert.equal((await get("/api/codes/PN-0000-0000")).status, 404);
   } finally {
     await srv.stop();
   }
@@ -156,7 +156,7 @@ test("download states, the ZIP, and the test-only payment switch", async () => {
     const { code, n } = await uploadAndDesign(srv, get);
     const state = async () => (await get(`/api/download/${code}`)).json();
 
-    assert.deepEqual((await get("/api/download/IS-0000-0000")).json(), { state: "unknown" });
+    assert.deepEqual((await get("/api/download/PN-0000-0000")).json(), { state: "unknown" });
     assert.deepEqual(await state(), { state: "unpaid" });
     assert.equal((await get(`/api/download/${code}/zip`)).status, 403);
 
@@ -189,7 +189,7 @@ test("download states, the ZIP, and the test-only payment switch", async () => {
     assert.deepEqual(await state(), { state: "refunded" });
     await pay(code, "expired");
     assert.deepEqual(await state(), { state: "expired" });
-    assert.equal((await pay("IS-0000-0000", "paid")).status, 404);
+    assert.equal((await pay("PN-0000-0000", "paid")).status, 404);
     assert.equal((await pay(code, "free")).status, 404);
   } finally {
     await srv.stop();

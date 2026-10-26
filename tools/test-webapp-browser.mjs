@@ -24,6 +24,8 @@ for (const w of WIDTHS) {
     try {
       const result = await runFlow({ page: browser.page, server, ...w, photo: PHOTO });
       assert.deepEqual(result.leaks, []);
+      // PN-01: the PatternNifty wordmark and the PN code on every screen, no "IS" brand.
+      assert.deepEqual(result.brand, []);
       assert.ok(result.responses > 20, "responses were checked");
       assert.equal(result.overflow, 0, "nothing is wider than the screen");
       assert.ok(result.zipBytes > 100_000);

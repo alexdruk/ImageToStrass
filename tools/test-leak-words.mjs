@@ -7,13 +7,13 @@ import { findLeaks, leakWords, looksRandom } from "./leak-words.mjs";
 
 test("leak words: a random token that happens to contain a word is not a leak", () => {
   const headers = JSON.stringify([
-    ["content-disposition", 'attachment; filename="IS-7GPT-K2M9.zip"'],
+    ["content-disposition", 'attachment; filename="PN-7GPT-K2M9.zip"'],
     ["etag", 'W/"4a1-Q7xkGpT9vL2mN8rB4sW1aZ"'],
     ["content-security-policy", "script-src 'nonce-b3Rk0gptX9aLq2Wm7Z' 'self'"],
     ["x-request-id", "dALl7Hq2-9xKprOmPt4QzR1"]
   ]);
   assert.deepEqual(findLeaks(headers), []);
-  assert.deepEqual(findLeaks("/c/IS-GPTQ-DA11/result/1"), []);
+  assert.deepEqual(findLeaks("/c/PN-GPTQ-DA11/result/1"), []);
   assert.deepEqual(findLeaks('<input type="hidden" name="cf-turnstile-response" id="cf-chl-widget-xgpt4_response">'), []);
   assert.equal(looksRandom("Q7xkGpT9vL2mN8rB4sW1aZ"), true);
 });

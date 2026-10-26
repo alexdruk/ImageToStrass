@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:f
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { inflateRawSync, inflateSync } from "node:zlib";
+import { inflateSync } from "node:zlib";
 import sharp from "sharp";
 import { openDatabase } from "../src/db/index.js";
 import { createQueries } from "../src/db/queries.js";
@@ -16,6 +16,7 @@ import { loadConfig } from "../src/server/config.js";
 import { etsyTestConfig, noEtsy } from "./etsy-mock.mjs";
 import { buildPrompt } from "../src/pipeline/prompt.js";
 import { findLeaks, leakWords } from "./leak-words.mjs";
+import { zipEntries } from "./zip-read.mjs";
 
 // Spec section 12 (CLAUDE.md "Never expose the provider"): a fake design end to end, every HTTP
 // response body and header, every file the server sends (pages, scripts, images, the ZIP) and every
@@ -93,36 +94,12 @@ function scanPdf(name, buf) {
     try { out.push(...leaksIn(`${name} (PDF stream)`, inflateSync(raw).toString("latin1"))); } catch { /* not deflated */ }
   }
   if (/\/Type\s*\/Metadata/.test(text)) out.push(`${name}: PDF XMP metadata stream`);
-  // The info dictionary that counts (the last one) names IS only.
+  // The info dictionary that counts (the last one) names PatternNifty only.
   const producers = [...text.matchAll(/\/(Producer|Creator)\s*\(([^)]*)\)/g)].map((x) => `${x[1]}=${x[2]}`);
   const last = { Producer: null, Creator: null };
   for (const p of producers) { const [k, v] = p.split("="); last[k] = v; }
-  if (last.Producer !== "IS" || last.Creator !== "IS") out.push(`${name}: PDF Producer/Creator ${JSON.stringify(last)}`);
+  if (last.Producer !== "PatternNifty" || last.Creator !== "PatternNifty") out.push(`${name}: PDF Producer/Creator ${JSON.stringify(last)}`);
   return out;
-}
-
-// ZIP: every entry (name, comment, extra field, content) and the archive comment.
-function zipEntries(buf) {
-  const eocd = buf.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
-  assert.ok(eocd >= 0, "ZIP end record");
-  const count = buf.readUInt16LE(eocd + 10);
-  let at = buf.readUInt32LE(eocd + 16);
-  const entries = [];
-  for (let i = 0; i < count; i++) {
-    assert.equal(buf.readUInt32LE(at), 0x02014b50, "ZIP central header");
-    const method = buf.readUInt16LE(at + 10);
-    const size = buf.readUInt32LE(at + 20);
-    const nameLen = buf.readUInt16LE(at + 28), extraLen = buf.readUInt16LE(at + 30), commentLen = buf.readUInt16LE(at + 32);
-    const local = buf.readUInt32LE(at + 42);
-    const name = buf.toString("utf8", at + 46, at + 46 + nameLen);
-    const extra = buf.subarray(at + 46 + nameLen, at + 46 + nameLen + extraLen);
-    const comment = buf.toString("utf8", at + 46 + nameLen + extraLen, at + 46 + nameLen + extraLen + commentLen);
-    const dataAt = local + 30 + buf.readUInt16LE(local + 26) + buf.readUInt16LE(local + 28);
-    const raw = buf.subarray(dataAt, dataAt + size);
-    entries.push({ name, extra, comment, data: method === 8 ? inflateRawSync(raw) : raw, localExtra: buf.subarray(local + 30 + buf.readUInt16LE(local + 26), dataAt) });
-    at += 46 + nameLen + extraLen + commentLen;
-  }
-  return { entries, comment: buf.toString("utf8", eocd + 22, eocd + 22 + buf.readUInt16LE(eocd + 20)) };
 }
 
 function scanZip(name, buf) {
@@ -325,12 +302,12 @@ test("a fake design end to end: no response, header, file or ZIP entry names the
     assert.equal(zip.status, 200);
     assert.equal(zipEntries(zip.body).entries.length, 9);
 
-    // Refusals and unknown things answer with IS codes only.
-    await env.json("/api/codes/IS-0000-0000");
+    // Refusals and unknown things answer with IS error codes only.
+    await env.json("/api/codes/PN-0000-0000");
     await env.json(`/api/attempts/${code}/99`);
     await env.post(`/api/attempts/${code}`, { upload: 1, mode: "sepia" });
     await env.call(`/api/attempts/${code}/99/tinted.png`);
-    await env.call("/api/download/IS-0000-0000/zip");
+    await env.call("/api/download/PN-0000-0000/zip");
 
     // The archived AI images carry no metadata either.
     for (const n of [colour.attempt, bw.attempt, shaded.attempt]) {

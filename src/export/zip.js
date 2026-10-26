@@ -2,6 +2,7 @@ import { ZipArchive } from "archiver";
 import { createWriteStream, existsSync, mkdirSync, readFileSync, renameSync, rmSync } from "node:fs";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
+import { BRAND, SITE_URL } from "../brand.js";
 import { attemptDir } from "../prep/archive.js";
 import { MIN_GAP_MM } from "../pipeline/tiers.js";
 import { renderFull } from "../render/tinted.js";
@@ -66,7 +67,8 @@ export function readmeText(stoneLayout, code) {
   ];
   const width = Math.max(...files.map(([name]) => name.length));
   return [
-    `IS design ${code}`,
+    `${BRAND} design ${code}`,
+    SITE_URL,
     "",
     `Size: ${naturalSizeText(stoneLayout)}`,
     `Stones: ${stoneLayout.count}`,
@@ -93,7 +95,7 @@ export function readmeText(stoneLayout, code) {
 
 // StoneLayout + code + the full tinted render -> [{ name, data }] in zipEntryNames() order.
 export async function designFiles(stoneLayout, { code, tintedPng }) {
-  const title = `IS design ${code}`;
+  const title = `${BRAND} design ${code}`;
   const sheet = (s) => withInfo(productionSheetToPdf(stoneLayout, {
     projectName: title, productionWidthMm: stoneLayout.widthMm, productionHeightMm: stoneLayout.heightMm,
     gapMm: MIN_GAP_MM, pageSize: s.pageSize, units: s.units, marginMm: SHEET_MARGIN_MM, mirror: false, registrationMarks: true

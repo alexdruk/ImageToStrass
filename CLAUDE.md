@@ -5,6 +5,8 @@ truth for what IS does; this file says how to work on it.
 
 ## What IS is
 
+The public name is **PatternNifty** (patternnifty.com, codes `PN-XXXX-XXXX`); IS is only the internal name, never shown to a buyer.
+
 A standalone web app, sold through one Etsy listing. A buyer uploads an image, IS turns it into a
 production-ready rhinestone template, shows the original and a tinted preview, and gives a code.
 The buyer enters the code on Etsy, pays, and downloads a ZIP (SVG, production-sheet PDF, AI, EPS,

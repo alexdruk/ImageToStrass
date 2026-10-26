@@ -247,7 +247,7 @@ test("archive: upload and attempt folders are numbered and never overwritten", (
   const root = tmp();
 
   try {
-    const code = "IS-AAAA-BBBB";
+    const code = "PN-AAAA-BBBB";
     writeCodeJson(root, { code, status: "open" });
     writeCodeJson(root, { code, status: "paid" });
     assert.equal(JSON.parse(readFileSync(path.join(root, code, "code.json"), "utf8")).status, "paid");

@@ -1,4 +1,4 @@
-/* IS web app (spec section 10). White, calm, deep blue accents; one panel per step. */
+/* PatternNifty web app (spec section 10). White, calm, deep blue accents; one panel per step. */
 
 :root {
   --bg: #ffffff;
@@ -77,8 +77,9 @@ button, input, select { font: inherit; color: inherit; }
 }
 
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); flex: none; }
-.brand img { display: block; }
-.brand-name { font-weight: 800; font-size: 20px; letter-spacing: 0.04em; color: var(--blue); }
+/* The wordmark: plain text in the deep blue, no font download. */
+.brand-name { font-weight: 500; font-size: 21px; letter-spacing: -0.01em; color: var(--blue); white-space: nowrap; }
+.brand-name b { font-weight: 800; }
 .brand-tag { font-size: 13px; color: var(--muted); }
 
 .steps {
@@ -394,23 +395,27 @@ button, input, select { font: inherit; color: inherit; }
 
 /* ---------- Phones ---------- */
 
+/* The wordmark, all five step names and the code fit beside the tagline only on wide screens. */
+@media (max-width: 1100px) {
+  .brand-tag { display: none; }
+}
+
 @media (max-width: 960px) {
   .steps .label { display: none; }
   .steps li.current .label { display: inline; }
   .steps li + li::before { width: 12px; }
-  .brand-tag { display: none; }
   .prepare, .result, .upload-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {
   :root { --header-h: 58px; }
-  .topbar-inner { padding: 0 16px; gap: 10px; }
-  .brand-name { display: none; }
+  .topbar-inner { padding: 0 16px; gap: 8px; }
+  .brand-name { font-size: 15px; }
   .steps { gap: 3px; margin: 0; }
-  .steps li { gap: 5px; font-size: 13px; }
-  .steps li + li::before { width: 8px; margin-right: 0; }
-  .steps .dot { width: 22px; height: 22px; font-size: 11px; }
-  .code-chip { padding: 6px 9px; font-size: 12px; }
+  .steps li { gap: 3px; font-size: 13px; }
+  .steps li + li::before { width: 5px; margin-right: 0; }
+  .steps .dot { width: 20px; height: 20px; font-size: 11px; }
+  .code-chip { padding: 5px 7px; font-size: 11px; }
   .main { padding: calc(var(--header-h) + 18px) 16px 32px; }
   .card { padding: 18px; }
   .dropzone { min-height: 220px; }
@@ -423,8 +428,21 @@ button, input, select { font: inherit; color: inherit; }
   .actions .btn { flex: 1 1 auto; }
 }
 
-@media (max-width: 400px) {
+/* Beside the wordmark and the code there is no room for the current step's name. */
+@media (max-width: 460px) {
   .steps li.current .label { display: none; }
+}
+
+/* Small phones: no step connectors, a smaller wordmark and code; below 340 px no step dots. */
+@media (max-width: 380px) {
+  .brand-name { font-size: 13px; }
+  .steps li + li::before { display: none; }
+  .code-chip { padding: 5px 6px; font-size: 10px; }
+}
+
+@media (max-width: 340px) {
+  .steps { display: none; }
+  .steps:not([hidden]) + .code-chip { margin-left: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {

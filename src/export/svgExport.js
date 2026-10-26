@@ -1,7 +1,7 @@
 import { findStoneSizeByDiameterMm } from "../stones/StoneSizes.js";
 import { stoneLayoutToSvg } from "./SvgExporter.js";
 
-// IS-XXXX-XXXX.svg (spec section 9): RS stoneLayoutToSvg at true size (width/height in mm), in its
+// PN-XXXX-XXXX.svg (spec section 9): RS stoneLayoutToSvg at true size (width/height in mm), in its
 // grouped form, every colour-and-size group a <g> with an id such as "jet-ss6". IS has no traced
 // regions, so the empty regions group is left out.
 

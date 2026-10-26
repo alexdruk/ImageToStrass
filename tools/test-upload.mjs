@@ -15,7 +15,7 @@ import { MAX_UPLOAD_BYTES } from "../src/server/upload.js";
 
 const FIXTURES = new URL("./fixtures/upload/", import.meta.url).pathname;
 const fixture = (name) => readFileSync(path.join(FIXTURES, name));
-const CODE = /^IS-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/;
+const CODE = /^PN-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/;
 
 const FORMATS = [
   ["photo.png", "png"], ["photo.jpg", "jpg"], ["photo.bmp", "bmp"], ["photo.tif", "tif"],
@@ -120,9 +120,9 @@ test("a second upload to the same code gets the next upload number", async () =>
     assert.equal(srv.db.prepare("SELECT COUNT(*) FROM codes").pluck().get(), 1);
 
     // An unknown code (e.g. a stale one in localStorage) gets a fresh code.
-    const fresh = await upload(srv, { file: fixture("photo.png"), code: "IS-0000-0000" });
+    const fresh = await upload(srv, { file: fixture("photo.png"), code: "PN-0000-0000" });
     assert.equal(fresh.status, 201);
-    assert.notEqual(fresh.body.code, "IS-0000-0000");
+    assert.notEqual(fresh.body.code, "PN-0000-0000");
   } finally {
     await srv.stop();
   }
@@ -314,7 +314,7 @@ test("background removal runs after upload; status and both previews are served"
 
     assert.ok(existsSync(path.join(srv.config.archiveDir, body.code, "uploads", "1", "cutout.png")));
     assert.equal((await fetch(`${srv.url}/api/uploads/${body.code}/2`)).status, 404);
-    assert.equal((await fetch(`${srv.url}/api/uploads/IS-0000-0000/1`)).status, 404);
+    assert.equal((await fetch(`${srv.url}/api/uploads/PN-0000-0000/1`)).status, 404);
     assert.equal((await fetch(`${srv.url}/api/uploads/${body.code}/1/preview?background=mask`)).status, 404);
   } finally {
     await srv.stop();

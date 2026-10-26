@@ -163,14 +163,14 @@ export function adminRoutes({ q, config, pipeline, poller, delivery, deps = {} }
     esc(o.receipt_id), esc(o.transaction_id), esc(o.listing_id), `<span class="pers">${esc(o.personalization)}</span>`,
     esc(when(o.paid_at)), esc(o.status),
     `<form class="inline" method="post" action="/admin/match">${hidden}<input type="hidden" name="id" value="${esc(o.id)}">
-      <input type="text" name="code" placeholder="IS-XXXX-XXXX" required><button class="btn" type="submit">Match</button></form>`
+      <input type="text" name="code" placeholder="PN-XXXX-XXXX" required><button class="btn" type="submit">Match</button></form>`
   ]), "None.")}
 </section>
 <div class="grid">
 <section><h2>Manual unlock</h2>
   <p class="muted">Marks the code paid and downloadable for 30 days from now (also after a refund), and builds its ZIP.</p>
   <form class="inline" method="post" action="/admin/unlock">${hidden}
-    <input type="text" name="code" placeholder="IS-XXXX-XXXX" required><button class="btn" type="submit">Unlock</button></form>
+    <input type="text" name="code" placeholder="PN-XXXX-XXXX" required><button class="btn" type="submit">Unlock</button></form>
 </section>
 <section><h2>Queue</h2>
   <p>${esc(pipeline.queueLength())} design(s) queued or running.</p>

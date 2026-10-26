@@ -1,6 +1,6 @@
 // From Rhinestone-Studio @38cd831 src/export/ProductionSheetExporter.js
 // IS (spec section 9): no Object line and no plate lines (IS has no products); the Gap line is in mm
-// whatever the unit; every page has the footer "Made with IS · Page i of N".
+// whatever the unit; every page has the footer "Made with PatternNifty · Page i of N".
 /**
  * Production Sheet exporter — RS-1005.
  *
@@ -26,6 +26,7 @@
  * permanent stone-generation engine (src/geometry/**).
  */
 
+import { BRAND } from '../brand.js';
 import { STONE_COLORS } from '../stones/StoneColors.js';
 import { formatStoneSizeLabel } from '../stones/StoneSizes.js';
 import { stoneCircleSvg } from './SvgExporter.js';
@@ -785,10 +786,11 @@ export function computeProductionSheetDocument(stoneLayout, options = {}) {
   };
 }
 
-// IS: the footer of every page, "Made with IS · Page i of N", right-aligned inside the bottom margin.
+// IS: the footer of every page, "Made with PatternNifty · Page i of N", right-aligned inside the
+// bottom margin.
 const FOOTER_TEXT_SIZE_MM = 2.6;
 function footerLine(pageWidthMm, pageHeightMm, marginMm, pageNumber, pageCount) {
-  const text = `Made with IS · Page ${pageNumber} of ${pageCount}`;
+  const text = `Made with ${BRAND} · Page ${pageNumber} of ${pageCount}`;
   return { text, sizeMm: FOOTER_TEXT_SIZE_MM, xMm: pageWidthMm - marginMm - headerTextWidthMm(text, FOOTER_TEXT_SIZE_MM), yMm: pageHeightMm - marginMm * 0.4 };
 }
 
@@ -992,7 +994,7 @@ export function productionSheetToPdf(stoneLayout, options = {}) {
   return doc.toBytes();
 }
 
-// IS: "Made with IS · Page i of N".
+// IS: "Made with PatternNifty · Page i of N".
 function drawPdfFooter(doc, page, pageNumber, pageCount) {
   const { toPt, flipY } = pdfPageSpace(page.pageHeightMm);
   const footer = footerLine(page.pageWidthMm, page.pageHeightMm, page.marginMm, pageNumber, pageCount);
