@@ -5,7 +5,8 @@ import { CHROME, launchBrowser } from "./browser-cdp.mjs";
 import { startFakeServer } from "./fake-server.mjs";
 import { runFlow } from "./webapp-flow.mjs";
 
-// IS-05 "Done when": the full flow runs in fake mode in a desktop and a 390 px-wide browser, and no
+// IS-05 "Done when": the full flow runs in fake mode in a desktop and a 390 px-wide browser (with
+// both Black & white styles since IS-07b), and no
 // screen, response or page source contains the words of spec section 12. An isolated headless
 // Chrome with a throw-away profile, started and stopped by this test only.
 
@@ -27,6 +28,9 @@ for (const w of WIDTHS) {
       assert.equal(result.overflow, 0, "nothing is wider than the screen");
       assert.ok(result.zipBytes > 100_000);
       assert.equal(server.q.getCode(result.code).downloads, 1);
+      // Colour, then Black & white Bold, then Shaded (IS-07b): the style is in each attempt's settings.
+      const designs = server.q.listAttempts(result.code).filter((a) => a.status === "done");
+      assert.deepEqual(designs.map((a) => [a.settings.mode, a.settings.bwStyle]), [["colour", undefined], ["bw", "stencil"], ["bw", "halftone"]]);
     } finally {
       await browser.close();
       await server.stop();

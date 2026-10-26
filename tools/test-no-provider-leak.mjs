@@ -262,10 +262,12 @@ const SETTINGS = { upload: 1, mode: "colour", removeBackground: true, adjustment
 
 // ---- tests -------------------------------------------------------------------------------------
 
-test("the word list: spec section 12's words, the model name and both prompts' first 40 characters", () => {
+test("the word list: spec section 12's words, the model name and every prompt's first 40 characters", () => {
   for (const w of ["openai", "gpt", "dall", "prompt", MODEL]) assert.ok(WORDS.includes(w), w);
-  // Both prompt variants start alike, so their first 40 characters are one entry.
-  for (const mode of ["colour", "bw"]) assert.ok(WORDS.includes(buildPrompt({ mode }).slice(0, 40)), mode);
+  // The prompt variants start alike, so their first 40 characters are one entry.
+  for (const options of [{ mode: "colour" }, { mode: "bw", bwStyle: "stencil" }, { mode: "bw", bwStyle: "halftone" }]) {
+    assert.ok(WORDS.includes(buildPrompt(options).slice(0, 40)), JSON.stringify(options));
+  }
   // The scanners find what they look for.
   assert.ok(scanFile("x.svg", Buffer.from("<svg><!-- made by OpenAI --></svg>")).length);
   assert.ok(scanFile("x.png", withProviderMetadata(FAKE_PNG)).some((p) => p.includes("caBX")));
@@ -301,9 +303,12 @@ test("a fake design end to end: no response, header, file or ZIP entry names the
 
     const colour = await env.design(code, SETTINGS);
     assert.equal(colour.status, "done");
-    const bw = await env.design(code, { ...SETTINGS, mode: "bw" });
+    // Black & white in both styles (Bold and Shaded, IS-07b).
+    const bw = await env.design(code, { ...SETTINGS, mode: "bw", bwStyle: "stencil" });
     assert.equal(bw.status, "done");
-    for (const n of [colour.attempt, bw.attempt]) {
+    const shaded = await env.design(code, { ...SETTINGS, mode: "bw", bwStyle: "halftone" });
+    assert.equal(shaded.status, "done");
+    for (const n of [colour.attempt, bw.attempt, shaded.attempt]) {
       await env.call(`/c/${code}/result/${n}`);
       for (const p of ["tinted.png", "original.png", "original.png?source=upload"]) {
         const r = await env.call(`/api/attempts/${code}/${n}/${p}`);
@@ -328,7 +333,7 @@ test("a fake design end to end: no response, header, file or ZIP entry names the
     await env.call("/api/download/IS-0000-0000/zip");
 
     // The archived AI images carry no metadata either.
-    for (const n of [colour.attempt, bw.attempt]) {
+    for (const n of [colour.attempt, bw.attempt, shaded.attempt]) {
       env.problems.push(...scanFile(`archive ai.png ${n}`, readFileSync(path.join(env.config.archiveDir, code, `attempt-${n}`, "ai.png"))));
     }
     assert.ok(env.seen.length >= 40, `${env.seen.length} responses checked`);

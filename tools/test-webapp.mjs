@@ -105,6 +105,15 @@ test("session, views, Use this design and Try again settings", async () => {
       adjustments: { rotate: 0, crop: null, brightness: 12, contrast: 0, saturation: 0, autoEnhance: false }
     });
 
+    // Black & white Shaded, then Try again starts from it (IS-07b: the style is in the settings).
+    const shaded = await get(`/api/attempts/${code}`, post({ upload: 1, mode: "bw", bwStyle: "halftone", removeBackground: true, adjustments: {} }));
+    assert.equal(shaded.status, 202);
+    await srv.pipeline.idle();
+    const again = (await get(`/api/codes/${code}`)).json();
+    assert.deepEqual([again.settings.mode, again.settings.bwStyle], ["bw", "halftone"]);
+    const shadedView = (await get(`/api/attempts/${code}/${shaded.json().attempt}`)).json();
+    assert.deepEqual([shadedView.result.mode, shadedView.result.bwStyle], ["bw", "halftone"]);
+
     const view = (await get(`/api/attempts/${code}/${n}`)).json();
     assert.ok(view.result.widthMm > 0 && view.result.widthIn > 0 && view.result.heightIn > 0);
     assert.equal(view.result.outputPx, undefined);

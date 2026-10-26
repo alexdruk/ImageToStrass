@@ -1,4 +1,4 @@
-# Etsy listing — texts and settings (IS-06)
+# Etsy listing — texts and settings (IS-06, expectations IS-07b)
 
 The one Etsy listing of spec section 11.1 (decision D8: one listing, one price). Copy the texts below
 into Etsy as they are. `[IS address]` stands for the IS domain, which does not exist yet (spec
@@ -40,9 +40,13 @@ Custom Rhinestone Template from Your Image, Any Photo or Logo to Rhinestone Desi
 Turn any image into a production-ready rhinestone template: a pet, a portrait, a logo or a drawing.
 You see your finished design before you buy.
 
+WHAT TO EXPECT
+Your design is an artistic rhinestone version of your photo, not a copy of it: faces are stylised rather than photographic. You can try up to 3 designs and you only buy if you like one.
+Black & white comes in two styles: Bold and Shaded.
+
 HOW IT WORKS
 1. Go to [IS address] and upload your image (PNG, JPG, BMP, TIFF, WebP, AVIF or SVG, up to 50 MB).
-2. Prepare it: background removal, crop, rotate, brightness, contrast and saturation. Choose Colour or Black & white.
+2. Prepare it: background removal, crop, rotate, brightness, contrast and saturation. Choose Colour or Black & white (Bold or Shaded).
 3. IS makes your design in a few minutes and shows it next to your image. Not happy? Try again, up to 3 designs.
 4. Pick the design you like. IS gives you a code, for example IS-7K3Q-9XPA.
 5. Come back to this listing, enter the code in the Personalization field and check out.

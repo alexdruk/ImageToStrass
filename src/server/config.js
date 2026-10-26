@@ -1,7 +1,6 @@
 // Settings from the environment (spec section 18). Read once at start-up.
 
 import { BW_GAPS } from "../render/bw-gaps.js";
-import { BW_STYLES } from "../pipeline/prompt.js";
 
 function positive(value, fallback) {
   const n = Number(value);
@@ -50,8 +49,6 @@ export function loadConfig(env = process.env) {
     },
     layoutTimeoutMs: positive(env.LAYOUT_TIMEOUT_SECONDS, 180) * 1000,
     bwThreshold: positive(env.BW_THRESHOLD, 55),
-    // Black & white prompt style (exp-bw-stencil; spec 7.2): "halftone" unless BW_STYLE is "stencil".
-    bwStyle: BW_STYLES.includes(env.BW_STYLE) ? env.BW_STYLE : BW_STYLES[0],
     // Hole fill after the overlap cleanup (spec 7.5): on unless IS_FILL_HOLES=0.
     fillHoles: env.IS_FILL_HOLES !== "0",
     // The service's own fill stones take their neighbours' colour too (spec 7.5; off unless

@@ -83,8 +83,8 @@ export function webappRoutes({ q, config, background, delivery, poller = null, l
   function lastSettings(attempts, upload) {
     const last = [...attempts].reverse().find((a) => a.settings);
     if (!last || last.settings.uploadId !== upload) return null;
-    const { removeBackground, adjustments, mode } = last.settings;
-    return { removeBackground, adjustments, mode };
+    const { removeBackground, adjustments, mode, bwStyle } = last.settings;
+    return { removeBackground, adjustments, mode, ...(bwStyle ? { bwStyle } : {}) };
   }
 
   router.get("/api/config", (_req, res) => {

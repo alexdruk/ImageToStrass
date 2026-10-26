@@ -4,8 +4,8 @@
 // IS (spec section 7.2): the stones prompt only (the flat style is not copied). Section 6 uses the
 // whole image instead of a square one, and rule 1 has no "about 60 stones across" sentence (prompt
 // version 3, IS-03b decision); for Black & white, section 4 and the final check are replaced
-// by the spec's Appendix A (BW_STYLE halftone, the default) or by the stencil variant (BW_STYLE
-// stencil, exp-bw-stencil). There is no size line: every design has its natural size (7.5). The prompt is built
+// by the stencil variant (bwStyle stencil, exp-bw-stencil; "Bold", the default since IS-07b) or by
+// the spec's Appendix A (bwStyle halftone, "Shaded"). There is no size line: every design has its natural size (7.5). The prompt is built
 // server-side only; it is never logged, stored under public/ or sent to the browser.
 import { STONE_COLORS } from '../stones/StoneColors.js';
 
@@ -13,8 +13,9 @@ import { STONE_COLORS } from '../stones/StoneColors.js';
 export const IS_PROMPT_VERSION = 3;
 // IS (exp-bw-stencil): the Black & white stencil variant has its own version (5: the eye rule).
 export const IS_STENCIL_PROMPT_VERSION = 5;
-// IS (exp-bw-stencil): the Black & white styles (the BW_STYLE setting); the first is the default.
-export const BW_STYLES = Object.freeze(['halftone', 'stencil']);
+// IS (exp-bw-stencil, IS-07b): the Black & white styles the buyer picks from (the attempt's
+// settings.bwStyle); the first is the default.
+export const BW_STYLES = Object.freeze(['stencil', 'halftone']);
 
 // IMG-026 (S10, S11, build H): version 6 is the placement-chart prompt of the spec's Appendix D, with
 // the generated palette line inside rule 4.
@@ -122,7 +123,7 @@ export function buildPaletteLine(colors = STONE_COLORS, includeAiOnly = false) {
 
 function checkOptions(mode, bwStyle) {
   if (mode !== 'colour' && mode !== 'bw') throw new RangeError('mode must be colour or bw.');
-  if (!BW_STYLES.includes(bwStyle)) throw new RangeError('bwStyle must be halftone or stencil.');
+  if (!BW_STYLES.includes(bwStyle)) throw new RangeError('bwStyle must be stencil or halftone.');
 }
 
 // IS: the version of the prompt buildPrompt makes for these options.
@@ -131,7 +132,7 @@ export function promptVersion({ mode, bwStyle = BW_STYLES[0] }) {
   return mode === 'bw' && bwStyle === 'stencil' ? IS_STENCIL_PROMPT_VERSION : IS_PROMPT_VERSION;
 }
 
-// IS: { mode: 'colour' | 'bw', bwStyle: 'halftone' | 'stencil' (Black & white only) } -> the prompt text.
+// IS: { mode: 'colour' | 'bw', bwStyle: 'stencil' | 'halftone' (Black & white only) } -> the prompt text.
 export function buildPrompt({ mode, bwStyle = BW_STYLES[0] }, colors = STONE_COLORS) {
   checkOptions(mode, bwStyle);
   if (mode === 'bw' && bwStyle === 'stencil') return [V6_HEAD, bwStencilColoursSection(colors), V6_DESIGN, BW_STENCIL_CHECK].join('\n');

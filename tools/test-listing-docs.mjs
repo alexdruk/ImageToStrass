@@ -24,13 +24,18 @@ async function pdfText(bytes) {
   };
 }
 
-test("listing: title, personalization instructions, size line and the generic AI disclosure", () => {
+test("listing: title, personalization instructions, size line, expectations and the generic AI disclosure", () => {
   const title = block("Title");
   assert.ok(title.length <= 140, `title is ${title.length} characters`);
   assert.equal(block("Personalization instructions"), "Enter your IS code, for example IS-7K3Q-9XPA");
   const description = block("Description");
   assert.ok(description.includes("Size depends on your image, usually 13 to 30 cm on the longest side. You see the exact size before you buy."));
   assert.ok(description.includes("Designs are created with the help of AI tools."));
+  // What to expect (IS-07b): an artistic version, stylised faces, up to 3 designs, the two B&W styles.
+  assert.ok(description.includes("Your design is an artistic rhinestone version of your photo"));
+  assert.ok(description.includes("faces are stylised rather than photographic"));
+  assert.ok(description.includes("You can try up to 3 designs and you only buy if you like one."));
+  assert.ok(description.includes("Black & white comes in two styles: Bold and Shaded."));
   assert.ok(description.includes("[IS address]/download"));
   // No price, payment or contact collection off Etsy (spec 11.1); no provider (spec 12).
   assert.doesNotMatch(description, /[$€£]|https?:|@|e-?mail/i);

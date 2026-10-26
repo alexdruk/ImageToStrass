@@ -39,7 +39,7 @@ test("colour prompt is RS prompt v6 with the whole-image line and without the 60
 
 test("black & white prompt replaces section 4 and the final check (Appendix A)", () => {
   const colour = buildPrompt({ mode: "colour" });
-  const bw = buildPrompt({ mode: "bw" });
+  const bw = buildPrompt({ mode: "bw", bwStyle: "halftone" });
   assert.equal(bw.split("4. COLOURS")[0], colour.split("4. COLOURS")[0]);
   const section4 = bw.split("4. COLOURS")[1].split("5. DESIGN")[0];
   assert.ok(section4.includes(`Jet ${STONE_COLORS.jet.previewColor}, Crystal ${STONE_COLORS["crystal-clear"].previewColor}.`));
@@ -54,10 +54,11 @@ test("black & white prompt replaces section 4 and the final check (Appendix A)",
 
 test("black & white stencil prompt replaces only section 4 and the final check; its own version", () => {
   // The stencil wording lives in src/pipeline/ only, so this test checks the structure, not the text.
-  const halftone = buildPrompt({ mode: "bw" });
-  assert.equal(buildPrompt({ mode: "bw", bwStyle: "halftone" }), halftone);
-  assert.deepEqual(BW_STYLES, ["halftone", "stencil"]);
+  const halftone = buildPrompt({ mode: "bw", bwStyle: "halftone" });
+  // Bold (stencil) is the default since IS-07b.
+  assert.deepEqual(BW_STYLES, ["stencil", "halftone"]);
   const stencil = buildPrompt({ mode: "bw", bwStyle: "stencil" });
+  assert.equal(buildPrompt({ mode: "bw" }), stencil);
   assert.equal(stencil.split("4. COLOURS")[0], halftone.split("4. COLOURS")[0]);
   const [stencilDesign, stencilCheck] = stencil.split("5. DESIGN")[1].split("\n\nBefore finishing, ");
   const [halftoneDesign, halftoneCheck] = halftone.split("5. DESIGN")[1].split("\n\nBefore finishing, ");
@@ -80,8 +81,8 @@ test("black & white stencil prompt replaces only section 4 and the final check; 
   // Colour ignores the style; only the stencil variant has the new version.
   assert.equal(buildPrompt({ mode: "colour", bwStyle: "stencil" }), buildPrompt({ mode: "colour" }));
   assert.equal(IS_STENCIL_PROMPT_VERSION, 5);
-  assert.equal(promptVersion({ mode: "bw", bwStyle: "stencil" }), IS_STENCIL_PROMPT_VERSION);
-  for (const o of [{ mode: "bw" }, { mode: "bw", bwStyle: "halftone" }, { mode: "colour" }, { mode: "colour", bwStyle: "stencil" }]) assert.equal(promptVersion(o), IS_PROMPT_VERSION);
+  for (const o of [{ mode: "bw" }, { mode: "bw", bwStyle: "stencil" }]) assert.equal(promptVersion(o), IS_STENCIL_PROMPT_VERSION);
+  for (const o of [{ mode: "bw", bwStyle: "halftone" }, { mode: "colour" }, { mode: "colour", bwStyle: "stencil" }]) assert.equal(promptVersion(o), IS_PROMPT_VERSION);
   assert.throws(() => buildPrompt({ mode: "bw", bwStyle: "dots" }));
 });
 
@@ -197,11 +198,15 @@ test("acceptance: under 3 % removed, coverage >= 0.5, IS gap check 0, at least 3
   assert.ok(c.coverage < 0.6 && c.coverage > 0.59, String(c.coverage));
 });
 
-test("design settings: mode, background removal and adjustments only", () => {
+test("design settings: mode, black & white style, background removal and adjustments only", () => {
   const s = normalizeDesignSettings({ upload: 1, mode: "bw" });
-  assert.deepEqual([s.uploadId, s.mode, s.removeBackground], [1, "bw", true]);
+  assert.deepEqual([s.uploadId, s.mode, s.removeBackground, s.bwStyle], [1, "bw", true, "stencil"]);
+  assert.equal(normalizeDesignSettings({ upload: 1, mode: "bw", bwStyle: "halftone" }).bwStyle, "halftone");
+  assert.equal(normalizeDesignSettings({ upload: 1, mode: "bw", bwStyle: "stencil" }).bwStyle, "stencil");
+  // Colour has no style: it is dropped, so a Colour attempt's settings stay as before.
+  assert.ok(!("bwStyle" in normalizeDesignSettings({ upload: 1, mode: "colour", bwStyle: "halftone" })));
   assert.deepEqual(Object.keys(normalizeDesignSettings({ upload: 2, size: 200, unit: "mm" })).sort(), ["adjustments", "mode", "removeBackground", "uploadId"]);
-  for (const bad of [{ upload: 0 }, { upload: 1, mode: "sepia" }, { upload: 1, removeBackground: "yes" }]) {
+  for (const bad of [{ upload: 0 }, { upload: 1, mode: "sepia" }, { upload: 1, removeBackground: "yes" }, { upload: 1, mode: "bw", bwStyle: "dots" }, { upload: 1, mode: "colour", bwStyle: "dots" }]) {
     assert.throws(() => normalizeDesignSettings(bad), RangeError, JSON.stringify(bad));
   }
 });
