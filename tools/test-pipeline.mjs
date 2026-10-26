@@ -248,6 +248,36 @@ function scripted({ draws, layouts }) {
   };
 }
 
+test("black & white style: the attempt's settings choose the prompt; Bold is the default; re-runs keep it", async () => {
+  const options = [];
+  const deps = {
+    provider: { redraw: async (_png, o) => { options.push(o); return { png: PNG, width: 1024, height: 1024 }; } },
+    layoutCall: async () => ({ layout: options.length === 1 ? SMALL_LAYOUT : GOOD_LAYOUT })
+  };
+  const srv = await start({ env: {}, pipelineDeps: deps });
+  try {
+    const { code } = await srv.upload();
+    // Shaded: the first layout is rejected, and the automatic re-run keeps the style.
+    await srv.create(code, { ...SETTINGS, mode: "bw", bwStyle: "halftone" });
+    await srv.pipeline.idle();
+    await srv.create(code, { ...SETTINGS, mode: "bw" });
+    await srv.pipeline.idle();
+    await srv.create(code, { ...SETTINGS, bwStyle: "halftone" });
+    await srv.pipeline.idle();
+    assert.deepEqual(options, [
+      { mode: "bw", bwStyle: "halftone" }, { mode: "bw", bwStyle: "halftone" },
+      { mode: "bw", bwStyle: "stencil" }, { mode: "colour", bwStyle: "stencil" }
+    ]);
+    assert.deepEqual([1, 2, 3, 4].map((n) => srv.q.getAttempt(code, n).settings.bwStyle), ["halftone", "halftone", "stencil", undefined]);
+    assert.deepEqual([2, 3, 4].map((n) => srv.q.getAttempt(code, n).result.bwStyle), ["halftone", "stencil", undefined]);
+    const saved = JSON.parse(readFileSync(path.join(srv.config.archiveDir, code, "attempt-2", "settings.json"), "utf8"));
+    assert.equal(saved.bwStyle, "halftone");
+    assert.deepEqual((await srv.create(code, { ...SETTINGS, mode: "bw", bwStyle: "dots" })).body, { error: "bad-request" });
+  } finally {
+    await srv.stop();
+  }
+});
+
 test("a rejected layout is re-run once automatically and does not count", async () => {
   const s = scripted({
     draws: [{ png: PNG, width: 1024, height: 1536 }, { png: PNG, width: 1536, height: 1024 }],

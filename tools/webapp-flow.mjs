@@ -1,5 +1,5 @@
-// The IS-05 flow in a browser (spec section 10): upload, prepare, working, result, try again, use
-// this design, code screen, download (every state), and the three static pages. Used by
+// The IS-05 flow in a browser (spec section 10): upload, prepare, working, result, try again (Black
+// & white Bold, then Shaded: IS-07b), use this design, code screen, download (every state), and the three static pages. Used by
 // tools/test-webapp-browser.mjs (checks only) and tools/shoot-is05.mjs (with screenshots).
 // Every response the page receives, and the page source and text of every screen, are checked for
 // the words of spec section 12.
@@ -57,8 +57,11 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
   await page.click("#consent");
   await page.setFiles("#file", [photo]);
 
-  // 2 Prepare: brightness +12, a crop, Colour.
+  // 2 Prepare: brightness +12, a crop, Colour. The expectation line is under the photo.
   await screen("prepare", prepareReady);
+  const expect = "document.querySelector('.expect')?.textContent.includes('faces are stylised') && document.querySelector('.expect').offsetParent !== null";
+  if (!(await page.eval(expect))) throw new Error("Prepare: no expectation line");
+  if (!(await page.eval("document.querySelector('#bw-styles').hidden"))) throw new Error("Prepare: Black & white styles shown for Colour");
   const code = await page.eval("document.querySelector('#code-chip').textContent");
   await page.eval("(() => { const i = document.querySelector('#brightness'); i.value = 12; i.dispatchEvent(new Event('input')); })()");
   await page.click("#crop");
@@ -84,15 +87,36 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
     throw new Error("desktop: Original and Tinted are not side by side");
   }
 
-  // Try again: Prepare starts from the previous settings; Black & white this time.
+  // The expectation line next to Try again.
+  if (!(await page.eval(expect))) throw new Error("Result: no expectation line");
+
+  // Try again: Prepare starts from the previous settings; Black & white this time, in the default
+  // style (Bold), whose two examples are shown.
   await page.click("#again");
   await screen("try-again", prepareReady);
   const restored = await page.eval("({ brightness: document.querySelector('#brightness').value, left: document.querySelector('.designs-left b').textContent })");
   if (restored.brightness !== "12" || restored.left !== "2 of 3") throw new Error(`Try again did not restore the settings: ${JSON.stringify(restored)}`);
   await page.click("[data-mode=bw]");
+  const pressedStyle = "document.querySelector('.bw-style[aria-pressed=true] b')?.textContent";
+  await screen("prepare-bw", `!document.querySelector('#bw-styles').hidden && document.querySelectorAll('.bw-style img').length === 2 && ${imagesLoaded}`);
+  if ((await page.eval(pressedStyle)) !== "Bold") throw new Error("Black & white: Bold is not the default style");
   await page.click("#create");
   await page.waitFor("location.pathname.endsWith('/working')");
   await screen("result-2", `location.pathname.includes('/result/') && location.pathname !== ${JSON.stringify(first)} && document.querySelectorAll('.thumb img').length === 2 && ${imagesLoaded}`);
+  const second = await path();
+  if (!(await page.eval("document.querySelector('.viewer-bar .sub').textContent.startsWith('Black & white, Bold')"))) throw new Error("Result 2 is not Black & white, Bold");
+
+  // Try again keeps Black & white Bold; switch to Shaded.
+  await page.click("#again");
+  await page.waitFor(prepareReady);
+  if ((await page.eval(pressedStyle)) !== "Bold" || (await page.eval("document.querySelector('#bw-styles').hidden"))) throw new Error("Try again did not keep Black & white, Bold");
+  await page.click(".bw-style[data-style=halftone]");
+  await screen("prepare-shaded", `${pressedStyle} === "Shaded"`);
+  await page.click("#create");
+  await page.waitFor("location.pathname.endsWith('/working')");
+  await screen("result-3", `location.pathname.includes('/result/') && ![${JSON.stringify(first)}, ${JSON.stringify(second)}].includes(location.pathname) && document.querySelectorAll('.thumb img').length === 3 && ${imagesLoaded}`);
+  if (!(await page.eval("document.querySelector('.viewer-bar .sub').textContent.startsWith('Black & white, Shaded')"))) throw new Error("Result 3 is not Black & white, Shaded");
+  if (!(await page.eval(expect))) throw new Error("Result 3: no expectation line");
 
   // 5 Your code.
   await page.click("#use");

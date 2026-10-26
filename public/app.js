@@ -39,6 +39,14 @@ const errorText = (code) => TEXTS[code] || TEXTS.failed;
 const ICON_ROTATE_LEFT = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4v6h6"/><path d="M3.5 15a9 9 0 1 0 2.1-9.4L3 10"/></svg>`;
 const ICON_ROTATE_RIGHT = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4v6h-6"/><path d="M20.5 15a9 9 0 1 1-2.1-9.4L21 10"/></svg>`;
 const COLOURS_SHOWN = 8;
+// The two Black & white styles (spec 6.4); the first is the default.
+const BW_STYLES = [
+  { id: "stencil", name: "Bold", note: "Solid black and clear areas: strong and graphic.", example: "/examples/bw-bold.png" },
+  { id: "halftone", name: "Shaded", note: "Black and clear stones mixed to show light and shade.", example: "/examples/bw-shaded.png" }
+];
+const bwStyleName = (id) => (BW_STYLES.find((st) => st.id === id) || BW_STYLES[0]).name;
+// What the buyer can expect (spec 10), under the photo on Prepare and next to Try again on Result.
+const expectation = () => `Your design is an artistic rhinestone version of your photo; faces are stylised, not photographic. You can try up to ${config.designsPerCode} designs and only buy if you like one.`;
 
 let config = { turnstileSiteKey: null, listingUrl: null, designsPerCode: 3, colours: {}, sizes: {} };
 let cleanup = [];
@@ -391,6 +399,7 @@ async function prepareScreen(code) {
   const state = {
     adjustments: { ...DEFAULT_SETTINGS, ...(start.adjustments || {}) },
     mode: start.mode || "colour",
+    bwStyle: BW_STYLES.some((st) => st.id === start.bwStyle) ? start.bwStyle : BW_STYLES[0].id,
     removeBackground: start.removeBackground ?? true,
     background: session.upload.background,
     cropping: false
@@ -420,6 +429,7 @@ async function prepareScreen(code) {
           <button class="btn small ghost" type="button" id="reset">Reset all</button>
           <a class="btn small ghost" href="/" data-link>Use another image</a>
         </div>
+        <p class="sub expect">${expectation()}</p>
       </div>
       <div class="controls">
         <div class="card">
@@ -448,6 +458,14 @@ async function prepareScreen(code) {
             <button type="button" data-mode="bw">Black &amp; white</button>
           </div>
           <p class="sub" id="mode-note"></p>
+          <div class="bw-styles" id="bw-styles" role="group" aria-label="Black &amp; white style" hidden>
+            ${raw(BW_STYLES.map((st) => html`
+              <button type="button" class="bw-style" data-style="${st.id}">
+                <img src="${st.example}" alt="" width="320" height="269">
+                <b>${st.name}</b>
+                <span>${st.note}</span>
+              </button>`).join(""))}
+          </div>
         </div>
         <div class="card">
           <div class="designs-left">
@@ -646,15 +664,19 @@ async function prepareScreen(code) {
     draw();
   });
 
-  // Colour / Black & white.
+  // Colour / Black & white, and the Black & white style (Bold or Shaded).
   const modeNote = $("#mode-note");
+  const bwStyles = $("#bw-styles");
   function showMode() {
     for (const b of panel.querySelectorAll("[data-mode]")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
+    for (const b of panel.querySelectorAll("[data-style]")) b.setAttribute("aria-pressed", String(b.dataset.style === state.bwStyle));
+    bwStyles.hidden = state.mode !== "bw";
     modeNote.textContent = state.mode === "bw"
-      ? "Jet and Crystal stones only."
+      ? "Jet and Crystal stones only. Choose a style:"
       : "Stones in the colours of your image.";
   }
   for (const b of panel.querySelectorAll("[data-mode]")) b.addEventListener("click", () => { state.mode = b.dataset.mode; showMode(); });
+  for (const b of panel.querySelectorAll("[data-style]")) b.addEventListener("click", () => { state.bwStyle = b.dataset.style; showMode(); });
   showMode();
 
   function updateCreate() {
@@ -670,6 +692,7 @@ async function prepareScreen(code) {
     const { ok, body } = await postJson(`/api/attempts/${session.code}`, {
       upload: k,
       mode: state.mode,
+      ...(state.mode === "bw" ? { bwStyle: state.bwStyle } : {}),
       removeBackground: state.removeBackground && state.background === "ready",
       adjustments: state.adjustments,
       "cf-turnstile-response": await check.token()
@@ -784,7 +807,7 @@ async function resultScreen(code, nText) {
   const panel = render(html`
     <div class="viewer-bar">
       <div><h1>Design ${index} of ${config.designsPerCode}</h1>
-        <p class="sub">${r.mode === "bw" ? "Black & white" : "Colour"} · shown as a watermarked preview</p></div>
+        <p class="sub">${r.mode === "bw" ? `Black & white, ${bwStyleName(r.bwStyle)}` : "Colour"} · shown as a watermarked preview</p></div>
     </div>
     <div class="result">
       <div>
@@ -817,6 +840,7 @@ async function resultScreen(code, nText) {
           <p class="sub center mt-s">${canTry
             ? `${session.designsLeft} of ${config.designsPerCode} designs left.`
             : `You've used all ${config.designsPerCode} designs.`}</p>
+          <p class="sub center mt-s expect">${expectation()}</p>
         </div>
         <div class="card">
           <div class="control-title">Stone sizes</div>

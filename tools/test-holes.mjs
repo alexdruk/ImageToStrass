@@ -193,9 +193,8 @@ test("holes: the fill is on unless IS_FILL_HOLES=0; the service fill vote is off
   assert.equal(loadConfig({}).bwGap, "crystal");
   for (const g of ["nearest", "crystal", "white", "black"]) assert.equal(loadConfig({ BW_GAP: g }).bwGap, g);
   assert.equal(loadConfig({ BW_GAP: "grey" }).bwGap, "crystal");
-  assert.equal(loadConfig({}).bwStyle, "halftone");
-  assert.equal(loadConfig({ BW_STYLE: "stencil" }).bwStyle, "stencil");
-  assert.equal(loadConfig({ BW_STYLE: "dots" }).bwStyle, "halftone");
+  // The black & white style is the buyer's choice (settings.bwStyle, IS-07b), not a setting.
+  assert.equal(loadConfig({ BW_STYLE: "stencil" }).bwStyle, undefined);
 });
 
 test("black & white: each stone's lightness is read from the AI image composited on white", () => {

@@ -283,6 +283,15 @@ button, input, select { font: inherit; color: inherit; }
 .segmented button { min-height: 40px; border: 0; border-radius: 9px; background: transparent; font-weight: 600; color: var(--muted); cursor: pointer; }
 .segmented button[aria-pressed="true"] { background: #fff; color: var(--blue-ink); box-shadow: 0 1px 3px rgb(14 23 48 / 12%); }
 
+.bw-styles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.bw-style { display: grid; gap: 4px; align-content: start; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+.bw-style img { width: 100%; height: auto; border-radius: 8px; background: var(--surface); }
+.bw-style b { margin-top: 4px; font-size: 15px; }
+.bw-style span { color: var(--muted); font-size: 13px; line-height: 1.35; }
+.bw-style[aria-pressed="true"] { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); background: var(--blue-soft); }
+.bw-style[aria-pressed="true"] b { color: var(--blue-ink); }
+.expect { margin-top: 12px; }
+
 .designs-left { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 15px; }
 .pips { display: flex; gap: 6px; }
 .pips i { width: 12px; height: 12px; border-radius: 50%; background: var(--blue); }

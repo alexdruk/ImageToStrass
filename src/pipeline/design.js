@@ -11,6 +11,7 @@ import { findStoneSizeByDiameterMm } from "../stones/StoneSizes.js";
 import { mapBlackAndWhiteFromImage } from "./bw.js";
 import { cleanedLayout } from "./cleanup.js";
 import { callLayoutService } from "./layout.js";
+import { BW_STYLES } from "./prompt.js";
 import { DEFAULT_TIMERS, createProvider } from "./provider.js";
 import { QUEUE_LIMIT, createQueue } from "./queue.js";
 
@@ -58,7 +59,8 @@ export class DesignRefused extends Error {
 }
 
 // The buyer's choices (spec sections 6.3, 6.4) -> the settings stored with the attempt. There is no
-// size: every design has its natural size (7.5).
+// size: every design has its natural size (7.5). bwStyle (Black & white only, IS-07b): "stencil"
+// (Bold, the default) or "halftone" (Shaded); it is dropped for Colour.
 export function normalizeDesignSettings(input) {
   if (!input || typeof input !== "object") throw new RangeError("settings must be an object.");
   const upload = input.upload;
@@ -67,12 +69,15 @@ export function normalizeDesignSettings(input) {
   if (mode !== "colour" && mode !== "bw") throw new RangeError("mode must be colour or bw.");
   const removeBackground = input.removeBackground ?? true;
   if (typeof removeBackground !== "boolean") throw new RangeError("removeBackground must be true or false.");
+  const bwStyle = input.bwStyle ?? BW_STYLES[0];
+  if (!BW_STYLES.includes(bwStyle)) throw new RangeError("bwStyle must be stencil or halftone.");
 
   return {
     uploadId: upload,
     removeBackground,
     adjustments: normalizeSettings(input.adjustments ?? {}),
-    mode
+    mode,
+    ...(mode === "bw" ? { bwStyle } : {})
   };
 }
 
@@ -161,6 +166,7 @@ export function designResult(stoneLayout, { coverage, settings, outputPx }) {
     heightIn: round(stoneLayout.heightMm / MM_PER_INCH, 2),
     coverage,
     mode: settings.mode,
+    ...(settings.mode === "bw" ? { bwStyle: settings.bwStyle ?? BW_STYLES[0] } : {}),
     outputPx
   };
 }
@@ -240,7 +246,7 @@ export function createPipeline({
       const input = await modelInput(readFileSync(path.join(dir, "prepared.png")), { cropToSubject: settings.removeBackground });
 
       stage("designing");
-      const drawn = await redraw(input, { mode: settings.mode, bwStyle: config.bwStyle }, stopping.signal);
+      const drawn = await redraw(input, { mode: settings.mode, bwStyle: settings.bwStyle ?? BW_STYLES[0] }, stopping.signal);
       if (!drawn) return fail(code, n, "cancelled");
       if (drawn.error === "declined") return finish(code, n, "declined", { error_code: "declined" }, { reason: drawn.detail });
       if (drawn.error) return fail(code, n, drawn.detail);
@@ -334,8 +340,8 @@ export function createPipeline({
       out.queue = { position: queue.position(idOf(code, attempt.n)), length: queue.length() };
     }
     if (attempt.status === "done") {
-      const { stones, bySize, byColour, widthMm, heightMm, widthIn, heightIn, coverage, mode } = attempt.result;
-      out.result = { stones, bySize, byColour, widthMm, heightMm, widthIn, heightIn, coverage, mode };
+      const { stones, bySize, byColour, widthMm, heightMm, widthIn, heightIn, coverage, mode, bwStyle } = attempt.result;
+      out.result = { stones, bySize, byColour, widthMm, heightMm, widthIn, heightIn, coverage, mode, ...(bwStyle ? { bwStyle } : {}) };
     }
     if (attempt.status === "failed" || attempt.status === "declined") out.error = attempt.error_code;
     return out;

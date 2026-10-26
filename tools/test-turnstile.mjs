@@ -115,8 +115,9 @@ test("browser, always-pass site and secret keys: the whole flow goes through the
     const result = await runFlow({ page: browser.page, server, width: 1280, height: 860, mobile: false, photo: CAT });
     assert.deepEqual(result.leaks, []);
     assert.equal(result.overflow, 0);
-    // The server refuses an empty token, so the upload and both designs got tokens from the widget.
-    assert.equal(server.q.getCode(result.code).attempts_used, 2);
+    // The server refuses an empty token, so the upload and all three designs (Colour, Black & white
+    // Bold and Shaded) got tokens from the widget.
+    assert.equal(server.q.getCode(result.code).attempts_used, 3);
   } finally {
     await browser.close();
     await server.stop();

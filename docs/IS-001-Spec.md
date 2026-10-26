@@ -25,7 +25,9 @@ Oct 2026 (exp-bw-stencil, eyes): the stencil variant has an eye rule (7.2, versi
 the disc reading `IS_BW_FROM_DISCS` is removed (7.6; the service keeps `report.discsAtMm`); the leak
 check skips random tokens (section 12). Revised 26 Oct 2026 (IS-07a): the strass service finds faces
 with MediaPipe Face Landmarker instead of dlib; the dlib model is test-only and never used in
-production (7.4, 16).
+production (7.4, 16). Revised 26 Oct 2026 (IS-07b): the buyer picks the Black & white style, Bold
+(stencil, the default) or Shaded (halftone), stored in the attempt's settings; the `BW_STYLE` setting is
+gone (6.4, 7.2, 7.7, 10, 18); the expectations line on Prepare and Result and in the listing (10, 11.1).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -132,7 +134,7 @@ codes(
 attempts(
   code, n INTEGER,                -- 1, 2, 3, ... per code, never reused
   status TEXT,                    -- queued | running | done | failed | declined
-  stage TEXT, settings_json,      -- mode, bg removal, adjustments, crop, rotate
+  stage TEXT, settings_json,      -- mode, B&W style, bg removal, adjustments, crop, rotate
   result_json NULL,               -- stone count, sizes, colours, natural w/h, coverage
   error_code NULL, created_at, finished_at,
   counts INTEGER                  -- 1 if it uses one of the 3 designs (D5)
@@ -236,8 +238,13 @@ folder is never overwritten.
 ### 6.4 Mode
 
 - No size input. The design has its natural size (section 7.5); the result screen shows it.
-- The settings are only: Colour / Black & white (Colour default), background removal (6.2) and the
-  adjustments (6.3).
+- The settings are only: Colour / Black & white (Colour default), for Black & white its style,
+  background removal (6.2) and the adjustments (6.3).
+- Black & white style (IS-07b), `bwStyle` in the attempt's settings: **Bold** (`stencil`, the
+  default) or **Shaded** (`halftone`), the two prompt variants of 7.2. Any other value is refused
+  (`bad-request`); for Colour the style is not stored. It is stored with the attempt, so "Try again"
+  starts from it and can switch it, and the automatic re-run (7.4) keeps it. Attempts made before
+  IS-07b have no style; they were made with the then `BW_STYLE` setting.
 
 ## 7. Design pipeline
 
@@ -270,11 +277,13 @@ minutes".
   stone size). Every other stone rule of v6 is kept.
 - Colour mode: palette line and ramps as v6.
 - Black & white mode: section 4 and the final check sentence are replaced by Appendix A.
-- Black & white style (exp-bw-stencil): the setting `BW_STYLE` picks the black & white variant:
-  `halftone` (the default) is Appendix A; `stencil` replaces section 4 and the final check with
-  solid Jet and Crystal areas and no mixing of the two, and an eye rule (eyes never part of a dark
-  area, kept apart from dark shadows and eyebrows by Crystal) (text in `src/pipeline/prompt.js`
-  only), prompt version `IS_STENCIL_PROMPT_VERSION = 5`.
+- Black & white style (exp-bw-stencil; the buyer's choice since IS-07b, 6.4): the attempt's
+  `bwStyle` picks the black & white variant: `stencil` (Bold, the default) replaces section 4 and
+  the final check with solid Jet and Crystal areas and no mixing of the two, and an eye rule (eyes
+  never part of a dark area, kept apart from dark shadows and eyebrows by Crystal) (text in
+  `src/pipeline/prompt.js` only), prompt version `IS_STENCIL_PROMPT_VERSION = 5`; `halftone`
+  (Shaded) is Appendix A. The browser sees only the style's id and its name (Bold, Shaded), never
+  the prompt or the request (section 12).
 - The prompt is built server-side only, never logged in a file the web server serves, never sent
   to the browser.
 
@@ -422,8 +431,8 @@ was removed in exp-faces.
 
 `stones.json` (StoneLayout in mm, origin top-left), the tinted render (section 8), and
 `result_json`: stone count, count per size, count per colour, natural width × height in mm
-(`widthMm`, `heightMm`) and in (`widthIn`, `heightIn`), coverage, mode, and `outputPx` (server
-only, 7.3). The browser gets every field except `outputPx`.
+(`widthMm`, `heightMm`) and in (`widthIn`, `heightIn`), coverage, mode, for Black & white `bwStyle`
+(6.4), and `outputPx` (server only, 7.3). The browser gets every field except `outputPx`.
 
 ## 8. Tinted view (D4)
 
@@ -557,7 +566,13 @@ Screens (one URL each, history API):
    (privacy policy link), Turnstile. On success → 2.
 2. **Prepare** `/c/<code>/prepare` — large preview; background removal toggle (on); crop and
    rotate tools; brightness / contrast / saturation sliders and Auto enhance; Colour / Black &
-   white; "Designs left: N of 3"; button **Create design**. No size field.
+   white; with Black & white, the two styles (6.4) as two choices, each with a small example
+   picture and one line: **Bold** "Solid black and clear areas: strong and graphic." and **Shaded**
+   "Black and clear stones mixed to show light and shade." (Bold chosen unless the previous
+   settings say Shaded); "Designs left: N of 3"; button **Create design**. No size field. Under the
+   photo, the expectations line (below). The example pictures (`public/examples/bw-bold.png`,
+   `bw-shaded.png`) are made by `tools/make-bw-examples.mjs` from the CC0 cat fixture without a
+   provider call: the same stones coloured as each style draws, shown with the tinted renderer.
 3. **Working** `/c/<code>/working` — the four stage names with progress, queue position, "You can
    leave this page; your code is IS-XXXX-XXXX". Polls `GET /api/attempts/<code>/<n>` every 3 s.
 4. **Result** `/c/<code>/result/<n>` — Original | Tinted side by side on wide screens; at phone
@@ -565,8 +580,9 @@ Screens (one URL each, history API):
    (IS-06: the compare slider is gone). Zoom on both views, which scroll together; the Original view
    switches between the prepared image and the upload. The natural size W × H in mm and in, stone
    count, sizes and colours used; buttons
-   **Use this design** and **Try again** (disabled at 3). Earlier designs of this code are shown
-   as thumbnails to switch between.
+   **Use this design** and **Try again** (disabled at 3), the expectations line next to them. The
+   subtitle names the mode, for Black & white with its style ("Black & white, Bold"). Earlier
+   designs of this code are shown as thumbnails to switch between.
 5. **Your code** `/c/<code>/done` — big code with Copy, three numbered steps back to Etsy
    (enter the code in Personalization, check out, come back to the download page), link to the
    listing (`IS_ETSY_LISTING_URL`).
@@ -574,6 +590,10 @@ Screens (one URL each, history API):
    appear within 10 minutes of checkout. This page checks again automatically."); ready (Download
    button, expiry date); expired; refunded.
 7. Static pages: privacy, terms, contact (`/privacy`, `/terms`, `/contact`).
+
+Expectations line (IS-07b), on Prepare and Result: "Your design is an artistic rhinestone version of
+your photo; faces are stylised, not photographic. You can try up to 3 designs and only buy if you like
+one."
 
 No view shows a mask, AI image, overlay, 3D view, model name, prompt, stage timing or raw error.
 
@@ -587,7 +607,10 @@ No view shows a mask, AI image, overlay, 3D view, model name, prompt, stage timi
   and enter your code").
 - Description: what the buyer gets, the steps, the IS address written as plain text (Etsy does not
   make it clickable), and the AI disclosure required by Etsy's Creativity Standards, in generic
-  words: "Designs are created with the help of AI tools." No prices, buy buttons or contact
+  words: "Designs are created with the help of AI tools." A "What to expect" paragraph (IS-07b): the
+  design is an artistic rhinestone version of the photo, faces are stylised rather than
+  photographic, the buyer can try up to 3 designs and only buys if they like one; and "Black & white
+  comes in two styles: Bold and Shaded." No prices, buy buttons or contact
   collection on IS (Off-Platform Transactions policy).
 
 ### 11.2 OAuth (existing code)
@@ -814,7 +837,6 @@ STRASS_SERVICE_URL=http://127.0.0.1:8000
 REMBG_MODEL=birefnet-general
 LAYOUT_TIMEOUT_SECONDS=180
 BW_THRESHOLD=55
-BW_STYLE=halftone                # B&W prompt: halftone or stencil (7.2)
 IS_FILL_HOLES=1                  # 0 = no hole fill (7.5)
 IS_SERVICE_FILL_NEIGHBOURS=0     # 1 = the service's fill stones take their neighbours' colour (7.5)
 BW_GAP=crystal                   # B&W tinted gaps: crystal, nearest, white or black (8)
