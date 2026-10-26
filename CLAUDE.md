@@ -43,6 +43,11 @@ prepared image → provider call → strass /layout → stone list (mm)
   `data/delivery/` ZIPs are deleted (30 days after payment) by the nightly job.
 - Never commit `.env`, `data/`, tokens, models over 50 MB or buyer images.
 - No payment, prices or contact collection on IS; payment happens only on Etsy.
+- Never ship or use the dlib 68-point face model (`shape_predictor_68_face_landmarks.dat`) in
+  production: its iBUG 300-W training data excludes commercial use. The strass service finds faces
+  with MediaPipe Face Landmarker (Apache 2.0); dlib is a test-only dependency of the equivalence
+  test (`setup_mac.sh --with-dlib-tests`), and nothing under `strass_layout/` or `app.py` may
+  import it.
 
 ## Technology
 
@@ -53,6 +58,9 @@ prepared image → provider call → strass /layout → stone list (mm)
 - Add a dependency only when it removes real risk or work, and say why in the commit.
 - The public web app targets current evergreen browsers (the RS Chrome 103 baseline does not
   apply here).
+- Strass service face landmarks: `mediapipe==0.10.15` (`requirements-nodeps.txt`, installed with
+  `pip --no-deps`; the last release whose Intel Mac binaries run on macOS 13) and the committed
+  `models/mediapipe/face_landmarker.task`.
 
 ## UI principles
 
@@ -66,7 +74,8 @@ minimal. Clarity over features.
 - `IS_FAKE=1` runs the whole flow with no provider and no strass calls (fixture layout).
 - During a build, run the tests for the area you touched; run `npm test` before committing.
 - Strass service tests: `cd services/strass && .venv/bin/python -m unittest -v`
-  (`STRASS_SKIP_EQUIVALENCE=1` to skip the slow equivalence test).
+  (`STRASS_SKIP_EQUIVALENCE=1` to skip the slow equivalence test; it is skipped anyway without the
+  test-only dlib model).
 - Browser checks: use an isolated browser instance. Never close or quit Chrome, and never close
   windows named **main** or **airbnb**.
 
