@@ -33,7 +33,6 @@ const CSP = "default-src 'none'; style-src 'unsafe-inline'; script-src 'self'; f
 export function loadControlConfig(env = process.env, root = process.cwd()) {
   const server = loadConfig(env);
   const at = (p) => path.resolve(root, p);
-  const cap = Number(env.IS_DAILY_DESIGN_CAP);
   return {
     root,
     host: "127.0.0.1",
@@ -50,7 +49,7 @@ export function loadControlConfig(env = process.env, root = process.cwd()) {
     pollerFile: at(server.etsy.stateFile),
     shopFile: at(server.etsy.shopFile),
     logsDir: path.resolve(root, server.logsDir),
-    dailyCap: Number.isFinite(cap) && cap > 0 ? cap : 100,
+    dailyCap: server.dailyDesignCap,
     listingIdsCount: server.etsy.listingIds.length,
     keys: KEYS.map(([name, key]) => ({ name, set: Boolean(env[key]) }))
   };

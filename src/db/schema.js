@@ -60,5 +60,10 @@ export const MIGRATIONS = [
   `DELETE FROM etsy_orders WHERE rowid NOT IN (
      SELECT MAX(rowid) FROM etsy_orders GROUP BY transaction_id, IFNULL(matched_code, ''));
    CREATE UNIQUE INDEX etsy_orders_transaction_code
-     ON etsy_orders(transaction_id, IFNULL(matched_code, ''));`
+     ON etsy_orders(transaction_id, IFNULL(matched_code, ''));`,
+  // 2 (PN-06): the hashed IP of the request that made a design, for the per-IP limit (spec 13);
+  // NULL for automatic re-runs and for designs made before PN-06.
+  `ALTER TABLE attempts ADD COLUMN ip_hash TEXT;
+   CREATE INDEX attempts_created ON attempts(created_at);
+   CREATE INDEX codes_ip_created ON codes(ip_hash, created_at);`
 ];

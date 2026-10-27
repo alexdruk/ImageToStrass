@@ -218,7 +218,7 @@ function businessSection(b, websiteUrl) {
   </div><div>
   <p>Orders without a code: ${b.unmatched ? bad(String(b.unmatched)) : ok("0")} · <a href="${esc(websiteUrl)}/admin">open /admin</a></p>
   <p>Daily design cap: ${capShare >= 1 ? bad(`${b.capUsed} of ${b.cap}`) : capShare >= 0.8 ? warn(`${b.capUsed} of ${b.cap}`) : `<b>${esc(b.capUsed)}</b> of ${esc(b.cap)}`} used today
-    <span class="small muted">(designs started by buyers since midnight; the website server does not enforce the cap yet)</span></p>
+    <span class="small muted">(designs counted since midnight in Paris; at the cap new designs answer busy)</span></p>
   ${etsyBlock(b)}
   </div></div>
 </section>`;

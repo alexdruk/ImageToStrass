@@ -138,7 +138,7 @@ function receive(req, tmpDir) {
   });
 }
 
-export function uploadRoutes({ q, config, background, verifyTurnstile, hashIp, log = console }) {
+export function uploadRoutes({ q, config, background, verifyTurnstile, hashIp, limits, log = console }) {
   const router = express.Router();
 
   function codeOf(req) {
@@ -204,6 +204,13 @@ export function uploadRoutes({ q, config, background, verifyTurnstile, hashIp, l
 
       const work = await decodeToWork(readFileSync(file), format);
       const now = new Date().toISOString();
+
+      // New codes per IP (spec 13); checked and made with no await between, so it holds.
+      const refusal = row ? null : limits.codeRefusal(hashIp(ip));
+      if (refusal) {
+        res.status(refusal.status).json({ error: refusal.error });
+        return;
+      }
 
       row ??= q.createCode({ ipHash: hashIp(ip), consentAt: now });
 

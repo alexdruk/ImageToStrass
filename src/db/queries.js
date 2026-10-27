@@ -9,8 +9,14 @@ const CODE_FIELDS = [
 ];
 
 const ATTEMPT_FIELDS = [
-  "status", "stage", "settings_json", "result_json", "error_code", "finished_at", "counts"
+  "status", "stage", "settings_json", "result_json", "error_code", "finished_at", "counts", "ip_hash"
 ];
+
+// A design that uses up the per-IP limit and the daily cap (spec 13): made by a buyer (not an
+// automatic re-run, 7.4) and waiting, running or past the "preparing" stage, i.e. it reached the
+// provider or is about to. The control panel counts with the same condition.
+export const COUNTED_DESIGN_SQL = `json_extract(settings_json, '$.rerunOf') IS NULL
+  AND (status IN ('queued', 'running') OR (stage IS NOT NULL AND stage <> 'preparing'))`;
 
 function now() {
   return new Date().toISOString();
@@ -101,6 +107,10 @@ export function createQueries(db) {
       "SELECT code FROM codes WHERE status = 'paid' AND delivery_expires_at IS NOT NULL AND delivery_expires_at <= ?"
     ).pluck(),
     insertEvent: db.prepare("INSERT INTO events (at, code, kind, detail) VALUES (?, ?, ?, ?)"),
+    // Limits (spec 13): designs since a time, all or from one hashed IP; codes made from one IP.
+    countDesignsSince: db.prepare(`SELECT COUNT(*) FROM attempts WHERE created_at >= ? AND ${COUNTED_DESIGN_SQL}`).pluck(),
+    countIpDesignsSince: db.prepare(`SELECT COUNT(*) FROM attempts WHERE created_at >= ? AND ip_hash = ? AND ${COUNTED_DESIGN_SQL}`).pluck(),
+    countIpCodesSince: db.prepare("SELECT COUNT(*) FROM codes WHERE created_at >= ? AND ip_hash = ?").pluck(),
     listEvents: db.prepare("SELECT * FROM events WHERE code = ? ORDER BY at, rowid")
   };
 
@@ -202,6 +212,10 @@ export function createQueries(db) {
     },
 
     listExpiredPaidCodes: (iso) => statements.listExpiredPaidCodes.all(iso),
-    listEvents: (code) => statements.listEvents.all(code)
+    listEvents: (code) => statements.listEvents.all(code),
+
+    countDesignsSince: (iso) => statements.countDesignsSince.get(iso),
+    countIpDesignsSince: (iso, ipHash) => statements.countIpDesignsSince.get(iso, ipHash),
+    countIpCodesSince: (iso, ipHash) => statements.countIpCodesSince.get(iso, ipHash)
   };
 }

@@ -271,8 +271,9 @@ test("control: agents, health, business and logs as the page shows them", async 
   assert.match(main, /Downloads<\/td><td class="num">1</);
   assert.match(main, /Orders without a code: <span class="bad">● 1/);
   assert.match(main, /href="http:\/\/127\.0\.0\.1:\d+\/admin"/);
-  // Buyers started 2 designs today (the re-run is the server's) of the cap of 40.
-  assert.match(main, /<b>2<\/b> of 40/);
+  // The cap as the server counts it (spec 13): the running design; not the failed one, which never
+  // reached the provider, nor the automatic re-run.
+  assert.match(main, /<b>1<\/b> of 40/);
   assert.match(main, /<script src="\/control\.js"><\/script>/);
   assert.doesNotMatch(main, /notes\.txt/);
 

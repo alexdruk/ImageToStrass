@@ -4,6 +4,8 @@ import { open, statfs } from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
 import Database from "better-sqlite3";
+import { COUNTED_DESIGN_SQL } from "../db/queries.js";
+import { parisDayStart } from "../server/limits.js";
 
 // What the control panel shows (PN-05, spec section 15.1): the agents, health, business figures,
 // the machine, storage and logs. Everything here only reads: launchctl list, ps, pmset -g, sysctl,
@@ -218,8 +220,8 @@ export async function business({ config, loadTokens, now = new Date() }) {
       today: period(today),
       week: period(week),
       unmatched: one("SELECT COUNT(*) FROM etsy_orders WHERE matched_code IS NULL"),
-      // Designs buyers started today; the automatic re-runs are the server's, not the buyers'.
-      capUsed: one("SELECT COUNT(*) FROM attempts WHERE created_at >= ? AND json_extract(settings_json, '$.rerunOf') IS NULL", today)
+      // The daily cap as the server counts it (spec 13, limits.js): the Paris calendar day.
+      capUsed: one(`SELECT COUNT(*) FROM attempts WHERE created_at >= ? AND ${COUNTED_DESIGN_SQL}`, parisDayStart(now).toISOString())
     });
   } catch {
     out.db = false;
