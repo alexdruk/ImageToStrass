@@ -31,7 +31,8 @@ gone (6.4, 7.2, 7.7, 10, 18); the expectations line on Prepare and Result and in
 Revised 26 Oct 2026 (PN-01): public name PatternNifty, domain patternnifty.com, codes PN-XXXX-XXXX
 (1, 5, 8, 9, 10, 11.1, 12); IS stays the internal project name. Revised 26 Oct 2026 (PN-02): hosting on
 the laptop on patternnifty.com (15, 19). Revised 27 Oct 2026 (PN-03): logs in ~/Library/Logs/PatternNifty,
-outside the repo (12, 15, 18).
+outside the repo (12, 15, 18). Revised 27 Oct 2026 (PN-05): local control panel on 127.0.0.1:3010
+(15.1, 18).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -761,7 +762,7 @@ server, the Etsy poller and the tunnel (runbook).
   privacy rules do not let launchd open a log file for an agent (the agent exits with code 78). The
   folder is created by `tools/install-agents.sh` and by the server and the nightly job at start. The
   repository's old `logs/` is no longer written to; it stays git-ignored and is left as it is.
-- `launchd` user agents, templates in `ops/launchd/` (`__REPO__`, `__HOME__`, `__NODE__`,
+- `launchd` user agents (and the control panel's `com.is.control`, 15.1), templates in `ops/launchd/` (`__REPO__`, `__HOME__`, `__NODE__`,
   `__CLOUDFLARED__`, `__PATH__`, `__LOGS__`); all RunAtLoad, absolute paths, a PATH with node's and
   cloudflared's folders, Homebrew and the system, stdout and stderr to `<log folder>/<agent>.log`:
   - `com.is.strass` — `/usr/bin/caffeinate -i services/strass/scripts/start.sh` (127.0.0.1:8000), KeepAlive;
@@ -810,6 +811,35 @@ server, the Etsy poller and the tunnel (runbook).
   `cloudflared`; every plist's log paths under `<fake home>/Library/Logs/PatternNifty`, none in the
   repository) and `tools/test-logs.mjs` (a fake design and the nightly job with a temporary
   `IS_LOG_DIR` leave the repository's `logs/` unchanged).
+
+### 15.1 Control panel (PN-05)
+
+- Its own process, `src/control/index.js`, run by the launchd agent `com.is.control` (RunAtLoad,
+  KeepAlive, log `control.log` in the log folder), so it works while the website server is down.
+  It binds to `127.0.0.1:IS_CONTROL_PORT` (default 3010) only. The tunnel ingress stays 3003 only,
+  and a request with `CF-Connecting-IP` or a non-loopback `Host` gets the plain 404 (as `/admin`,
+  11.2).
+- One server-made page (HTML and CSS, no framework, no build step; one small script reloads it every
+  10 s, with a pause switch): the five agents (running, PID, uptime, last exit code with its meaning,
+  CPU and memory of the agent and its children, from `launchctl list` and `ps`); health (the website's
+  and the strass service's `/health` with response times, port 8000 listening, the public `/health`
+  through Cloudflare from the Mac, cloudflared's connections from its local metrics); business
+  figures read from the database opened read-only and the poller's state file (queue and running
+  stage, designs done / failed / declined, automatic re-runs, codes created and paid, downloads,
+  today and 7 days; orders without a code; Etsy token age, last poll and its error, whether listing
+  ids are configured; designs started today of `IS_DAILY_DESIGN_CAP`); the machine (uptime, power,
+  battery, `pmset -g` sleep settings, macOS and node versions); storage (free disk, sizes of
+  `data/archive`, `data/delivery`, `data/backup` and the log folder, the last database backup); the
+  logs (size, last change, the last 100 lines as escaped text with error, warn and traceback lines
+  highlighted). It never writes to the database or the server's files.
+- No `.env` value is shown; for each key only "set" or "missing".
+- Buttons, each a POST carrying a token made at start-up: Start (`launchctl bootstrap gui/<uid>
+  <plist>`, or `kickstart` when the agent is loaded), Stop (`bootout`), Restart (`kickstart -k`),
+  and Run now for the nightly job (`kickstart`). Stop and Restart first show what they do (stopping
+  the website server or the tunnel says patternnifty.com will be down) and need a second click. The
+  panel has no Stop for itself.
+- `tools/install-agents.sh` and `uninstall-agents.sh` include `com.is.control`; the install prints
+  the panel's address. Test `tools/test-control.mjs` (stub `launchctl`, a test `.env`).
 
 ## 16. Code taken from RS (at `38cd831`)
 
@@ -919,6 +949,8 @@ IS_ETSY_LISTING_URL=
 ETSY_POLL_SECONDS=180
 # All logs (server, nightly, launchd agents): an absolute folder outside the repository; empty = ~/Library/Logs/PatternNifty
 IS_LOG_DIR=
+# The local control panel (15.1), on 127.0.0.1 only; empty = 3010
+IS_CONTROL_PORT=
 ```
 
 ## 19. Open items

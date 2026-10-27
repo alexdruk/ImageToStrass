@@ -12,10 +12,11 @@ What runs, as launchd agents of the logged-in user (`~/Library/LaunchAgents`):
 | `com.is.server` | `node src/server/index.js --wait-for-strass` (127.0.0.1:3003) | `server.log` |
 | `com.is.tunnel` | `cloudflared tunnel --config ~/.cloudflared/config.yml run is` | `tunnel.log` |
 | `com.is.nightly` | `node src/ops/nightly.js` at 03:30 and at login | `nightly.log` (summary), `nightly-run.log` |
+| `com.is.control` | `node src/control/index.js`: the control panel (127.0.0.1:3010) | `control.log` |
 
 The logs are in `~/Library/Logs/PatternNifty` (see Logs below).
 
-The first three restart when they stop (KeepAlive). The server waits until the strass service's
+The first three and the control panel restart when they stop (KeepAlive). The server waits until the strass service's
 `/health` says its models are loaded; after 5 minutes without that it exits with an error and launchd
 starts it again 10 seconds later. `caffeinate -i` keeps the Mac from idle-sleeping while the strass
 service runs.
@@ -39,7 +40,8 @@ with `plutil -lint`, copies them to `~/Library/LaunchAgents` and loads them (`la
 gui/$UID`). If `~/.cloudflared/config.yml` does not exist it writes it, with the id of the tunnel `is`
 from `cloudflared tunnel list`: `patternnifty.com` and `www.patternnifty.com` go to
 `http://127.0.0.1:3003` (never `localhost`, which can resolve to `::1`), everything else gets 404.
-An existing `config.yml` is never overwritten. At the end it prints the log folder.
+An existing `config.yml` is never overwritten. At the end it prints the log folder and the control
+panel's address, http://127.0.0.1:3010.
 
 Run it again after a `git pull` that changed `ops/`, or when `which node` changes (for example after
 an nvm or Homebrew Node upgrade: the agents call node by its full path). Running it twice is safe;
@@ -54,6 +56,8 @@ FileVault on, the Mac waits at the unlock screen after a restart until someone l
 restart use `sudo fdesetup authrestart`, which unlocks once by itself.
 
 ## Start, stop, restart
+
+The simplest way is the control panel (below). From Terminal:
 
 ```sh
 U=gui/$(id -u)
@@ -70,6 +74,77 @@ Stop everything: `tools/uninstall-agents.sh`. Start everything: `tools/install-a
 
 After changing `.env`, restart the server (`launchctl kickstart -k $U/com.is.server`); `REMBG_MODEL`
 is read by the strass service, so restart `com.is.strass` for that one.
+
+## Control panel
+
+**http://127.0.0.1:3010** (on this Mac only; another port with `IS_CONTROL_PORT` in `.env`, then run
+`tools/install-agents.sh` again). Its own agent, `com.is.control`, so it works while the website
+server is down. The tunnel never reaches it: through Cloudflare, or with any `Host` other than
+`127.0.0.1`/`localhost`, it answers 404. It reloads itself every 10 s; tick **Pause auto-refresh**
+to stop that while reading. Screenshot: `docs/control-panel.png`.
+
+It only reads (the database read-only, the poller's state, the logs, `launchctl list`, `ps`,
+`pmset -g`); the only changes are the buttons. No `.env` value is ever shown, only "set" or "missing"
+for each key.
+
+**Agents.** For each agent: state, PID, uptime, last exit code, CPU and memory (with child
+processes, so strass shows caffeinate plus Python), and buttons:
+
+- **Start**: `launchctl bootstrap` of the plist in `~/Library/LaunchAgents` (or `kickstart` if it is
+  loaded but not running).
+- **Stop**: `launchctl bootout`. It stays stopped until Start, the next login or the next
+  `install-agents.sh`. Asks first.
+- **Restart**: `launchctl kickstart -k`. Asks first.
+- **Run now** (nightly): `launchctl kickstart`. Its row shows the last summary line of `nightly.log`.
+
+The control panel has Restart only; it cannot stop itself (use `tools/uninstall-agents.sh`). If a
+button's page says "the page had expired", the panel was restarted: reload it and click again.
+
+| What it shows | Meaning | What to do |
+| --- | --- | --- |
+| not loaded (stopped) | Stopped with Stop or `bootout`, or never installed | Start; if it is missing from `~/Library/LaunchAgents`, run `tools/install-agents.sh` |
+| loaded, not running | It exited and launchd has not started it again (yet) | Look at its log (Logs below); Restart or Start |
+| last exit 78 | macOS blocked the start | "An agent shows exit code 78" below |
+| last exit -15 | Stopped by a signal (Restart, Stop, a shutdown) | Nothing, unless it is not running |
+| other exit code | It crashed or exited with an error | Show its log; the last lines say why |
+| nightly "last run failed", or `errors` not 0 in its summary | A nightly step failed | `nightly-run.log`; Run now after fixing |
+
+**Health.**
+
+- *Website*: the server's `/health` from the Mac, with its time and the db / strass / etsy parts.
+  "down: no connection" = the server is not running (see Agents). "answers 503" = it runs but a part
+  is not ok (strass not ready, or the Etsy token missing or older than 90 days).
+- *Strass*: its `/health` and whether port 8000 listens. "models loading" for about a minute after a
+  start is normal. Not listening while the agent runs: `strass.log`.
+- *Public*: `https://patternnifty.com/health` fetched from this Mac through Cloudflare (at most every
+  30 s): proves domain, tunnel and server work end to end. Website ok but Public not: the tunnel
+  (next line, `tunnel.log`, `~/.cloudflared/config.yml`); also not when this Mac is offline.
+- *Tunnel*: cloudflared's connections to Cloudflare (from its local metrics, usually 4) and their
+  locations. "no connection": the Mac's internet or Cloudflare; Restart the tunnel. "metrics did not
+  answer": cloudflared runs but could not be asked; trust the Public line.
+
+**Business** (read-only). Queue and the running design's stage; today and the last 7 days: designs
+done, failed, declined, automatic re-runs, codes created, codes paid, downloads.
+
+- *Orders without a code* above 0: a buyer paid without a usable code; open `/admin` (the link) and
+  match it by hand.
+- *Etsy token*: amber from 80 days, red at 90: reconnect Etsy (below). *Last poll* failed or *Last
+  poll error*: Etsy or the internet; it retries every 3 minutes, and `/admin` has Poll now.
+- *Listing ids empty*: `IS_ETSY_LISTING_IDS` is not set in `.env`, so no order is stored or paid;
+  set it and restart the server.
+- *Daily design cap*: designs buyers started today (re-runs not counted) of `IS_DAILY_DESIGN_CAP`.
+  The server does not enforce the cap yet; it is shown so a busy day can be seen.
+
+**Machine.** Uptime; power (red on battery: the Mac will sleep, plug it in); sleep settings (red when
+`sleep` on the adapter is not 0: see Power below); macOS and node versions.
+
+**Storage.** Free disk (amber under 15 %, red under 5 % or 10 GB: clear space; never delete in
+`data/archive/`); the sizes of `data/archive`, `data/delivery`, `data/backup` and the log folder (at
+most once a minute); the last database backup (red when older than 36 hours: the nightly job did not
+run, see its row).
+
+**Logs.** Each file in the log folder with its size and last change; **Show last 100 lines** shows
+the end as plain text, lines with error, warn, traceback, ERR or WRN highlighted.
 
 ## Logs
 
