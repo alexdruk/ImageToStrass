@@ -36,6 +36,9 @@ export function loadConfig(env = process.env) {
     turnstileSecret: env.TURNSTILE_SECRET_KEY || "",
     turnstileSiteKey: env.TURNSTILE_SITE_KEY || "",
     listingUrl: env.IS_ETSY_LISTING_URL || "",
+    // Limits (spec 13): designs per hashed IP in any 24 h, and designs per Paris calendar day.
+    designsPerIpPerDay: positive(env.IS_DESIGNS_PER_IP_PER_DAY, 6),
+    dailyDesignCap: positive(env.IS_DAILY_DESIGN_CAP, 100),
     // /admin, /auth/etsy and the Etsy routes: this Mac only, or this token in the x-admin-token header.
     adminToken: env.ADMIN_TOKEN || "",
     // Etsy (spec section 11). The keystring and secret are read by src/etsy/ itself.

@@ -32,7 +32,7 @@ Revised 26 Oct 2026 (PN-01): public name PatternNifty, domain patternnifty.com, 
 (1, 5, 8, 9, 10, 11.1, 12); IS stays the internal project name. Revised 26 Oct 2026 (PN-02): hosting on
 the laptop on patternnifty.com (15, 19). Revised 27 Oct 2026 (PN-03): logs in ~/Library/Logs/PatternNifty,
 outside the repo (12, 15, 18). Revised 27 Oct 2026 (PN-05): local control panel on 127.0.0.1:3010
-(15.1, 18).
+(15.1, 18). Revised 27 Oct 2026 (PN-06): section 13 limits enforced and tested (4.1, 13, 15.1).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -146,7 +146,8 @@ attempts(
   stage TEXT, settings_json,      -- mode, B&W style, bg removal, adjustments, crop, rotate
   result_json NULL,               -- stone count, sizes, colours, natural w/h, coverage
   error_code NULL, created_at, finished_at,
-  counts INTEGER                  -- 1 if it uses one of the 3 designs (D5)
+  counts INTEGER,                 -- 1 if it uses one of the 3 designs (D5)
+  ip_hash NULL                    -- hashed IP of the Create design request (13); NULL for re-runs
 )
 etsy_orders(receipt_id, transaction_id, listing_id, personalization, matched_code NULL,
             paid_at, status, seen_at,
@@ -169,7 +170,8 @@ Etsy orders:
 - Re-polls upsert on that key and never add a duplicate row. Because SQLite treats NULLs as
   distinct, the key is enforced by a unique index on `(transaction_id, IFNULL(matched_code, ''))`.
 - Schema changes are migrations keyed on `PRAGMA user_version`; migration 1 de-duplicates
-  existing `etsy_orders` rows on that key (keeping the newest) and adds the index.
+  existing `etsy_orders` rows on that key (keeping the newest) and adds the index; migration 2
+  (PN-06) adds `attempts.ip_hash` and indexes for the limits of section 13.
 
 ### 4.2 Files
 
@@ -726,13 +728,42 @@ which then becomes paid (or refunded, if the order was).
 
 ## 13. Abuse and cost
 
-- Turnstile on upload and on Create design. `tools/test-turnstile.mjs` checks the wiring with
-  Cloudflare's test keys (always-pass and always-fail secrets, always-pass and always-block site
-  keys) against the real Turnstile service; the real keys stay empty until launch (IS-06).
-- Per IP (hashed): 6 designs per 24 h. Global: `IS_DAILY_DESIGN_CAP` (default 100) → `busy`.
-- At most 3 counted designs per code (D5); new codes per IP: 5 per 24 h.
-- Queue limit 10 (section 7).
-- Upload limits as section 6.1; SVG sanitising; files written only under `data/`.
+As built (PN-06). Every check below runs before a design is queued, so a refused request never
+reaches the provider. The buyer sees only the IS error codes and texts of section 12.
+
+- **Turnstile** on Upload and on Create design, each checked server-side with siteverify before
+  anything else of the request is done (`verification`, 403). A token is good for one request:
+  siteverify refuses a token it has seen, and the server also remembers the tokens it accepted for
+  10 minutes and refuses them again without a call (not for Cloudflare's documented test secret
+  keys, which accept the same dummy token every time). Without `TURNSTILE_SECRET_KEY` the check is
+  skipped (local development; the server warns at start-up). `tools/test-turnstile.mjs` checks the
+  wiring with Cloudflare's test keys (always-pass and always-fail secrets, always-pass and
+  always-block site keys) against the real Turnstile service; the real keys stay empty until launch
+  (IS-06).
+- **A counted design** (for the next two limits) is an attempt made by Create design (not an
+  automatic re-run, 7.4, so a re-run design counts once) that is queued or running, or that ended
+  after its "preparing" stage, i.e. it reached the provider. A request refused by a limit, by
+  Turnstile, by bad settings or by the code's state makes no attempt and counts for nothing; a
+  design that fails before the provider call stops counting.
+- **Per IP** (hashed with the install's key, `attempts.ip_hash`): `IS_DESIGNS_PER_IP_PER_DAY`
+  (default 6) counted designs in any 24 h, a rolling window → `busy` (429).
+- **Global**: `IS_DAILY_DESIGN_CAP` (default 100) counted designs per calendar day in
+  Europe/Paris (from midnight Paris time) → `busy` (503).
+- At most **3 counted designs per code** (D5; `counts = 1`, the done designs) → `limit` (409), for
+  Create design and for an upload to that code.
+- **New codes per IP**: 5 in any 24 h, a rolling window → `busy` (429). Checked when an upload
+  would make a new code; an upload to an existing code is not limited by it.
+- **Queue limit** 10 designs queued or running (section 7) → `busy` (503).
+- Create design's limit checks and its new attempt run one request at a time, and the new-code check
+  and the new code are made with nothing in between, so parallel requests cannot pass a limit
+  together.
+- **Upload limits** as section 6.1: 50 MB while streaming (`too-large`, 413), 100 MP before decoding
+  and SVG sanitising (`bad-file`, 400); a refused upload makes no code. Files are written only under
+  `data/`.
+- `busy` reads "PatternNifty is very busy, please try again in a few minutes." for every busy case;
+  the buyer is not told which limit was reached.
+- Test `tools/test-limits.mjs`: each limit is reached, the next request is refused with its IS error
+  code, and a counting fake provider shows no call was made for it.
 - Express behind the tunnel: trust `CF-Connecting-IP` only when the request comes from cloudflared
   on localhost.
 
@@ -827,7 +858,8 @@ server, the Etsy poller and the tunnel (runbook).
   figures read from the database opened read-only and the poller's state file (queue and running
   stage, designs done / failed / declined, automatic re-runs, codes created and paid, downloads,
   today and 7 days; orders without a code; Etsy token age, last poll and its error, whether listing
-  ids are configured; designs started today of `IS_DAILY_DESIGN_CAP`); the machine (uptime, power,
+  ids are configured; the designs counted today against `IS_DAILY_DESIGN_CAP`, as section 13 counts
+  them); the machine (uptime, power,
   battery, `pmset -g` sleep settings, macOS and node versions); storage (free disk, sizes of
   `data/archive`, `data/delivery`, `data/backup` and the log folder, the last database backup); the
   logs (size, last change, the last 100 lines as escaped text with error, warn and traceback lines

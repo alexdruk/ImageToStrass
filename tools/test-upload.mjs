@@ -65,8 +65,9 @@ function form({ file, name = "upload.bin", consent = "1", code, token } = {}) {
   return body;
 }
 
-async function upload(srv, fields) {
-  const response = await fetch(`${srv.url}/api/upload`, { method: "POST", body: form(fields) });
+// headers: e.g. CF-Connecting-IP, the buyer's IP as cloudflared passes it.
+async function upload(srv, fields, headers = {}) {
+  const response = await fetch(`${srv.url}/api/upload`, { method: "POST", body: form(fields), headers });
   return { status: response.status, headers: response.headers, body: await response.json() };
 }
 
@@ -78,9 +79,10 @@ test("every accepted format uploads, is archived and becomes work.png", async ()
   const srv = await start();
 
   try {
-    for (const [name, ext] of FORMATS) {
-      // A misleading name: the type comes from the signature.
-      const { status, body, headers } = await upload(srv, { file: fixture(name), name: "picture.gif" });
+    for (const [i, [name, ext]] of FORMATS.entries()) {
+      // A misleading name: the type comes from the signature. One buyer IP per format: an IP gets
+      // at most 5 new codes a day (spec 13).
+      const { status, body, headers } = await upload(srv, { file: fixture(name), name: "picture.gif" }, { "cf-connecting-ip": `203.0.113.${i + 1}` });
 
       assert.equal(status, 201, name);
       assert.match(body.code, CODE);

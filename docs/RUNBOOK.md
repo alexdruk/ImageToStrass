@@ -132,8 +132,9 @@ done, failed, declined, automatic re-runs, codes created, codes paid, downloads.
   poll error*: Etsy or the internet; it retries every 3 minutes, and `/admin` has Poll now.
 - *Listing ids empty*: `IS_ETSY_LISTING_IDS` is not set in `.env`, so no order is stored or paid;
   set it and restart the server.
-- *Daily design cap*: designs buyers started today (re-runs not counted) of `IS_DAILY_DESIGN_CAP`.
-  The server does not enforce the cap yet; it is shown so a busy day can be seen.
+- *Daily design cap*: designs counted today (since midnight in Paris, as the server counts them, spec
+  13) of `IS_DAILY_DESIGN_CAP`. At the cap every new design answers busy until midnight in Paris;
+  raise the cap in `.env` and restart the server if that is wanted.
 
 **Machine.** Uptime; power (red on battery: the Mac will sleep, plug it in); sleep settings (red when
 `sleep` on the adapter is not 0: see Power below); macOS and node versions.
