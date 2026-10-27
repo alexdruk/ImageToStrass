@@ -15,7 +15,7 @@ import { startFakeServer } from "./fake-server.mjs";
 // or ~/.cloudflared, and no real launchctl or cloudflared call).
 
 const REPO = fileURLToPath(new URL("..", import.meta.url));
-const LABELS = ["com.is.strass", "com.is.server", "com.is.tunnel", "com.is.nightly"];
+const LABELS = ["com.is.strass", "com.is.server", "com.is.tunnel", "com.is.nightly", "com.is.control"];
 const TUNNEL_ID = "0b1c2d3e-4f50-6172-8394-a5b6c7d8e9f0";
 
 // GET with full control of the Host and CF-Connecting-IP headers (the tunnel adds the latter).
@@ -136,13 +136,13 @@ esac`);
   return bin;
 }
 
-// Runs a script; returns its stdout and stderr together. IS_LOG_DIR is empty unless env names it, so
-// an IS_LOG_DIR in the repository's .env does not change what is checked.
+// Runs a script; returns its stdout and stderr together. IS_LOG_DIR and IS_CONTROL_PORT are empty
+// unless env names them, so the repository's .env does not change what is checked.
 function run(script, root, bin, { env = {}, status = 0 } = {}) {
   const result = spawnSync("/bin/bash", [path.join(REPO, "tools", script)], {
     cwd: root,
     encoding: "utf8",
-    env: { HOME: path.join(root, "home"), TMPDIR: path.join(root, "tmp"), PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin:/usr/sbin:/sbin`, IS_LOG_DIR: "", ...env }
+    env: { HOME: path.join(root, "home"), TMPDIR: path.join(root, "tmp"), PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin:/usr/sbin:/sbin`, IS_LOG_DIR: "", IS_CONTROL_PORT: "", ...env }
   });
   assert.equal(result.status, status, `${script}: ${result.stdout}${result.stderr}`);
   return result.stdout + result.stderr;
@@ -167,6 +167,7 @@ test("install-agents.sh: plists and config.yml in a fake HOME; safe to run twice
     const logDir = path.join(home, "Library", "Logs", "PatternNifty");
     assert.ok(output.includes(`Logs: ${logDir}/`), output);
     assert.ok(existsSync(logDir));
+    assert.match(output, /Control panel: http:\/\/127\.0\.0\.1:3010\n/);
 
     const uid = execFileSync("id", ["-u"], { encoding: "utf8" }).trim();
     const agents = path.join(home, "Library", "LaunchAgents");
@@ -197,6 +198,7 @@ test("install-agents.sh: plists and config.yml in a fake HOME; safe to run twice
     assert.deepEqual(args("com.is.server"), [process.execPath, path.join(REPO, "src/server/index.js"), "--wait-for-strass"]);
     assert.deepEqual(args("com.is.tunnel"), [path.join(bin, "cloudflared"), "tunnel", "--config", path.join(home, ".cloudflared/config.yml"), "run", "is"]);
     assert.deepEqual(args("com.is.nightly"), [process.execPath, path.join(REPO, "src/ops/nightly.js")]);
+    assert.deepEqual(args("com.is.control"), [process.execPath, path.join(REPO, "src/control/index.js")]);
     const nightly = JSON.parse(execFileSync("plutil", ["-convert", "json", "-o", "-", path.join(agents, "com.is.nightly.plist")], { encoding: "utf8" }));
     assert.deepEqual(nightly.StartCalendarInterval, { Hour: 3, Minute: 30 });
 
@@ -219,8 +221,8 @@ test("install-agents.sh: plists and config.yml in a fake HOME; safe to run twice
     assert.match(again, /Kept the existing/);
     assert.equal(readFileSync(path.join(home, ".cloudflared", "config.yml"), "utf8"), "# edited by hand\n");
     assert.equal(calls().filter((c) => c.startsWith("cloudflared")).length, 0);
-    assert.equal(calls().filter((c) => c.includes("bootout")).length, 4);
-    assert.equal(calls().filter((c) => c.includes("bootstrap")).length, 4);
+    assert.equal(calls().filter((c) => c.includes("bootout")).length, LABELS.length);
+    assert.equal(calls().filter((c) => c.includes("bootstrap")).length, LABELS.length);
 
     // IS_LOG_DIR moves every agent's log; a folder inside the repository or a relative one is refused.
     const custom = path.join(root, "custom logs");

@@ -1,5 +1,6 @@
 #!/bin/bash
-# Installs the IS launchd agents (spec section 15, docs/RUNBOOK.md) for the user running it:
+# Installs the IS launchd agents (spec section 15, docs/RUNBOOK.md) for the user running it, the
+# control panel com.is.control (PN-05) included:
 #   tools/install-agents.sh
 # - fills the templates in ops/launchd/ with this repository folder, $HOME, `which node`,
 #   `which cloudflared` and the log folder (IS_LOG_DIR from the environment or .env, else
@@ -13,7 +14,7 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
-LABELS=(com.is.strass com.is.server com.is.tunnel com.is.nightly)
+LABELS=(com.is.strass com.is.server com.is.tunnel com.is.nightly com.is.control)
 AGENTS_DIR="$HOME/Library/LaunchAgents"
 CF_DIR="$HOME/.cloudflared"
 CF_CONFIG="$CF_DIR/config.yml"
@@ -89,4 +90,10 @@ for label in "${LABELS[@]}"; do
   echo "Loaded $label."
 done
 
+# The control panel's port, as it reads it: the environment, then .env, then 3010.
+if [ -z "${IS_CONTROL_PORT+set}" ] && [ -f "$REPO/.env" ]; then
+  IS_CONTROL_PORT="$(sed -n 's/^IS_CONTROL_PORT=\([0-9]*\).*/\1/p' "$REPO/.env" | tail -n 1)"
+fi
+
 echo "Done. Logs: $LOG_DIR/ (also in the Console app). Health: curl http://127.0.0.1:3003/health"
+echo "Control panel: http://127.0.0.1:${IS_CONTROL_PORT:-3010}"
