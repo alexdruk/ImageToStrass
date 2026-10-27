@@ -8,10 +8,12 @@ What runs, as launchd agents of the logged-in user (`~/Library/LaunchAgents`):
 
 | Agent | Runs | Log |
 | --- | --- | --- |
-| `com.is.strass` | `caffeinate -i services/strass/scripts/start.sh` (127.0.0.1:8000) | `logs/strass.log` |
-| `com.is.server` | `node src/server/index.js --wait-for-strass` (127.0.0.1:3003) | `logs/server.log` |
-| `com.is.tunnel` | `cloudflared tunnel --config ~/.cloudflared/config.yml run is` | `logs/tunnel.log` |
-| `com.is.nightly` | `node src/ops/nightly.js` at 03:30 and at login | `logs/nightly.log` (summary), `logs/nightly-run.log` |
+| `com.is.strass` | `caffeinate -i services/strass/scripts/start.sh` (127.0.0.1:8000) | `strass.log` |
+| `com.is.server` | `node src/server/index.js --wait-for-strass` (127.0.0.1:3003) | `server.log` |
+| `com.is.tunnel` | `cloudflared tunnel --config ~/.cloudflared/config.yml run is` | `tunnel.log` |
+| `com.is.nightly` | `node src/ops/nightly.js` at 03:30 and at login | `nightly.log` (summary), `nightly-run.log` |
+
+The logs are in `~/Library/Logs/PatternNifty` (see Logs below).
 
 The first three restart when they stop (KeepAlive). The server waits until the strass service's
 `/health` says its models are loaded; after 5 minutes without that it exits with an error and launchd
@@ -31,19 +33,20 @@ create is`, routed with `cloudflared tunnel route dns is patternnifty.com` and `
 tools/install-agents.sh
 ```
 
-It fills the templates with this folder, your home, `which node` and `which cloudflared`, checks them
+It fills the templates with this folder, your home, `which node`, `which cloudflared` and the log
+folder (`IS_LOG_DIR`, else `~/Library/Logs/PatternNifty`, created if missing), checks them
 with `plutil -lint`, copies them to `~/Library/LaunchAgents` and loads them (`launchctl bootstrap
 gui/$UID`). If `~/.cloudflared/config.yml` does not exist it writes it, with the id of the tunnel `is`
 from `cloudflared tunnel list`: `patternnifty.com` and `www.patternnifty.com` go to
 `http://127.0.0.1:3003` (never `localhost`, which can resolve to `::1`), everything else gets 404.
-An existing `config.yml` is never overwritten.
+An existing `config.yml` is never overwritten. At the end it prints the log folder.
 
 Run it again after a `git pull` that changed `ops/`, or when `which node` changes (for example after
 an nvm or Homebrew Node upgrade: the agents call node by its full path). Running it twice is safe;
 each agent is stopped and started again.
 
 To remove everything: `tools/uninstall-agents.sh` (stops the agents and deletes their plists; keeps
-`~/.cloudflared/config.yml`, `logs/` and `data/`).
+`~/.cloudflared/config.yml`, the log folder and `data/`).
 
 LaunchAgents run only while the user is logged in. After a restart the agents start at login, so
 turn on automatic login (System Settings → Users & Groups), which needs FileVault off. With
@@ -70,16 +73,45 @@ is read by the strass service, so restart `com.is.strass` for that one.
 
 ## Logs
 
-All in `logs/` (git-ignored, outside `public/`):
+All in `~/Library/Logs/PatternNifty`, outside the repository and never served. They are also
+visible in the Console app (Log Reports). Another folder can be set with `IS_LOG_DIR` in `.env` (an
+absolute path outside the repository; run `tools/install-agents.sh` again after changing it).
 
 ```sh
-tail -f logs/server.log
-tail -f logs/strass.log logs/tunnel.log
-tail -n 20 logs/nightly.log                        # one summary line per night
+L=~/Library/Logs/PatternNifty
+tail -f $L/server.log
+tail -f $L/strass.log $L/tunnel.log
+tail -n 20 $L/nightly.log
 ```
 
-The nightly job copies each non-empty `*.log` to `<name>.log.YYYY-MM-DD` and empties it; rotated files
-are kept 14 days.
+`nightly.log` has one summary line per night. The nightly job copies each non-empty `*.log` there to
+`<name>.log.YYYY-MM-DD` and empties it; rotated files are kept 14 days.
+
+Why not in the repository: the repository lives in `~/Documents`, and macOS privacy rules (TCC) do
+not let launchd open a file in `~/Documents` for an agent. Before PN-03 the strass agent's log was
+`logs/strass.log` in the repository: launchd could not open it, the agent exited with code 78 and
+strass never started. The repository's old `logs/` folder is no longer written to (it stays
+git-ignored and is left as it is).
+
+### An agent shows exit code 78
+
+`launchctl list | grep com.is` shows `78` in the second column (or `last exit code = 78` in
+`launchctl print`): launchd could not start the job, usually because macOS blocked a file it needs.
+Look for the block in the system log right after it happened:
+
+```sh
+log show --last 5m --style compact --predicate 'eventMessage CONTAINS[c] "com.is" OR eventMessage CONTAINS[c] "Operation not permitted"'
+```
+
+Lines like `xpcproxy deny file-read-data .../Documents/...` or `posix_spawn(/usr/bin/caffeinate)
+Operation not permitted` name the file that was blocked. Check that the plists in
+`~/Library/LaunchAgents` point their `StandardOutPath` and `StandardErrorPath` at
+`~/Library/Logs/PatternNifty` (run `tools/install-agents.sh` again if not).
+
+During the PN-03 investigation `/usr/bin/caffeinate` was also given Full Disk Access (System Settings →
+Privacy & Security → Full Disk Access). With the logs outside `~/Documents` that may not be needed.
+If a future macOS blocks the strass script itself (`services/strass/scripts/start.sh`, which is in
+`~/Documents`), that Full Disk Access entry for `/usr/bin/caffeinate` is the first thing to check.
 
 ## Health
 
@@ -100,7 +132,7 @@ curl -sI https://www.patternnifty.com/download?x=1  # 301, location: https://pat
 curl -s -o /dev/null -w "%{http_code}\n" https://patternnifty.com/admin   # 404: admin is Mac-only
 ```
 
-If the outside check fails while the inside one passes: `tail logs/tunnel.log`, `cloudflared tunnel
+If the outside check fails while the inside one passes: `tail ~/Library/Logs/PatternNifty/tunnel.log`, `cloudflared tunnel
 info is` (shows connections), and check `~/.cloudflared/config.yml`.
 
 `/admin` (http://127.0.0.1:3003/admin, on the Mac only, or with the `x-admin-token` header) shows the

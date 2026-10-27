@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- Template (spec section 15): tools/install-agents.sh fills in __REPO__, __HOME__, __NODE__,
-     __CLOUDFLARED__ and __PATH__ and installs it in ~/Library/LaunchAgents. -->
+     __CLOUDFLARED__, __PATH__ and __LOGS__ (IS_LOG_DIR) and installs it in ~/Library/LaunchAgents. -->
 <plist version="1.0">
 <dict>
 	<key>Label</key>
@@ -28,8 +28,8 @@
 	<key>ThrottleInterval</key>
 	<integer>10</integer>
 	<key>StandardOutPath</key>
-	<string>__REPO__/logs/server.log</string>
+	<string>__LOGS__/server.log</string>
 	<key>StandardErrorPath</key>
-	<string>__REPO__/logs/server.log</string>
+	<string>__LOGS__/server.log</string>
 </dict>
 </plist>

@@ -1,13 +1,15 @@
 #!/bin/bash
 # Installs the IS launchd agents (spec section 15, docs/RUNBOOK.md) for the user running it:
 #   tools/install-agents.sh
-# - fills the templates in ops/launchd/ with this repository folder, $HOME, `which node` and
-#   `which cloudflared`, checks them with plutil and copies them to ~/Library/LaunchAgents;
+# - fills the templates in ops/launchd/ with this repository folder, $HOME, `which node`,
+#   `which cloudflared` and the log folder (IS_LOG_DIR from the environment or .env, else
+#   ~/Library/Logs/PatternNifty), checks them with plutil and copies them to ~/Library/LaunchAgents;
 # - writes ~/.cloudflared/config.yml from ops/cloudflared/config.yml.template with the id of the
 #   named tunnel "is", only if that file does not exist yet (it is never overwritten);
 # - (re)loads each agent with launchctl bootstrap gui/$UID.
 # Safe to run again (after a git pull, or when node moved): each agent is unloaded and loaded anew.
-# No sudo; nothing under data/ is touched.
+# No sudo; nothing under data/ is touched. The logs stay outside the repository: launchd may not open
+# files in ~/Documents (PN-03).
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -22,6 +24,14 @@ fail() { echo "install-agents: $*" >&2; exit 1; }
 NODE="$(command -v node)" || fail "node was not found on PATH."
 CLOUDFLARED="$(command -v cloudflared)" || fail "cloudflared was not found on PATH (brew install cloudflared)."
 
+# The log folder, as the server reads it: the environment, then .env (only that line), then the default.
+if [ -z "${IS_LOG_DIR+set}" ] && [ -f "$REPO/.env" ]; then
+  IS_LOG_DIR="$(sed -n 's/^IS_LOG_DIR=\([^[:space:]#]*\).*/\1/p' "$REPO/.env" | tail -n 1)"
+fi
+LOG_DIR="${IS_LOG_DIR:-$HOME/Library/Logs/PatternNifty}"
+case "$LOG_DIR" in /*) ;; *) fail "IS_LOG_DIR must be an absolute path: $LOG_DIR" ;; esac
+case "$LOG_DIR/" in "$REPO/"*) fail "IS_LOG_DIR must be outside the repository: $LOG_DIR" ;; esac
+
 # The agents' PATH: node's and cloudflared's folders, then Homebrew and the system.
 AGENT_PATH=""
 for dir in "$(dirname "$NODE")" "$(dirname "$CLOUDFLARED")" /opt/homebrew/bin /usr/local/bin /usr/bin /bin /usr/sbin /sbin; do
@@ -29,16 +39,16 @@ for dir in "$(dirname "$NODE")" "$(dirname "$CLOUDFLARED")" /opt/homebrew/bin /u
 done
 
 # The values go into XML and sed unescaped, so they must not hold & < > or |.
-for value in "$REPO" "$HOME" "$NODE" "$CLOUDFLARED" "$AGENT_PATH"; do
+for value in "$REPO" "$HOME" "$NODE" "$CLOUDFLARED" "$AGENT_PATH" "$LOG_DIR"; do
   case "$value" in *[\&\<\>\|]*) fail "unsupported character in path: $value" ;; esac
 done
 
 fill() {
   sed -e "s|__REPO__|$REPO|g" -e "s|__HOME__|$HOME|g" -e "s|__NODE__|$NODE|g" \
-      -e "s|__CLOUDFLARED__|$CLOUDFLARED|g" -e "s|__PATH__|$AGENT_PATH|g" "$@"
+      -e "s|__CLOUDFLARED__|$CLOUDFLARED|g" -e "s|__PATH__|$AGENT_PATH|g" -e "s|__LOGS__|$LOG_DIR|g" "$@"
 }
 
-mkdir -p "$REPO/logs" "$AGENTS_DIR" "$CF_DIR"
+mkdir -p "$LOG_DIR" "$AGENTS_DIR" "$CF_DIR"
 
 # --- cloudflared config ---------------------------------------------------------------------------
 if [ -e "$CF_CONFIG" ]; then
@@ -79,4 +89,4 @@ for label in "${LABELS[@]}"; do
   echo "Loaded $label."
 done
 
-echo "Done. Logs: $REPO/logs/. Health: curl http://127.0.0.1:3003/health"
+echo "Done. Logs: $LOG_DIR/ (also in the Console app). Health: curl http://127.0.0.1:3003/health"

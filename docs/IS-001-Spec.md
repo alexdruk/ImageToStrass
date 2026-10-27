@@ -30,7 +30,8 @@ production (7.4, 16). Revised 26 Oct 2026 (IS-07b): the buyer picks the Black & 
 gone (6.4, 7.2, 7.7, 10, 18); the expectations line on Prepare and Result and in the listing (10, 11.1).
 Revised 26 Oct 2026 (PN-01): public name PatternNifty, domain patternnifty.com, codes PN-XXXX-XXXX
 (1, 5, 8, 9, 10, 11.1, 12); IS stays the internal project name. Revised 26 Oct 2026 (PN-02): hosting on
-the laptop on patternnifty.com (15, 19).
+the laptop on patternnifty.com (15, 19). Revised 27 Oct 2026 (PN-03): logs in ~/Library/Logs/PatternNifty,
+outside the repo (12, 15, 18).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -698,7 +699,8 @@ which then becomes paid (or refunded, if the order was).
   failed → "Something went wrong while making your design. It didn't count — please try again."
 - `x-powered-by` off; no third-party names in HTML, JS, CSS, comments, file names, ZIP contents,
   PDF/SVG metadata.
-- Logs stay in `logs/` outside `public/`.
+- Logs stay in the log folder `IS_LOG_DIR` (default `~/Library/Logs/PatternNifty`), outside the
+  repository and `public/`; they are never served.
 - Test `tools/test-no-provider-leak.mjs` (part of `npm test`; word list `tools/leak-words.mjs`):
   run a fake design, check every HTTP response body and header, every file the server sends (pages,
   scripts, images, the ZIP) and every ZIP entry for `openai`, `gpt`, `dall`, `prompt`, the model
@@ -753,10 +755,15 @@ server, the Etsy poller and the tunnel (runbook).
 
 - The server binds to `127.0.0.1:3003` only. cloudflared's origin is `http://127.0.0.1:3003`, never
   `localhost`, which can resolve to `::1` where nothing listens.
+- Logs (PN-03): every log — the agents' stdout and stderr and any file the server, the nightly job
+  or a tool writes — goes to one folder, `IS_LOG_DIR` (default `~/Library/Logs/PatternNifty`), outside
+  the repository and `public/`, never served. The repository lives in `~/Documents`, where macOS
+  privacy rules do not let launchd open a log file for an agent (the agent exits with code 78). The
+  folder is created by `tools/install-agents.sh` and by the server and the nightly job at start. The
+  repository's old `logs/` is no longer written to; it stays git-ignored and is left as it is.
 - `launchd` user agents, templates in `ops/launchd/` (`__REPO__`, `__HOME__`, `__NODE__`,
-  `__CLOUDFLARED__`, `__PATH__`); all RunAtLoad, absolute paths, a PATH with node's and cloudflared's
-  folders, Homebrew and the system, stdout and stderr to `logs/<agent>.log` (git-ignored, outside
-  `public/`):
+  `__CLOUDFLARED__`, `__PATH__`, `__LOGS__`); all RunAtLoad, absolute paths, a PATH with node's and
+  cloudflared's folders, Homebrew and the system, stdout and stderr to `<log folder>/<agent>.log`:
   - `com.is.strass` — `/usr/bin/caffeinate -i services/strass/scripts/start.sh` (127.0.0.1:8000), KeepAlive;
   - `com.is.server` — `node src/server/index.js --wait-for-strass`, KeepAlive. With that flag the server
     polls the strass `/health` (models loaded) every 2 s before it opens the database and listens; after
@@ -766,8 +773,10 @@ server, the Etsy poller and the tunnel (runbook).
     `http_status:404` (template `ops/cloudflared/config.yml.template`);
   - `com.is.nightly` — `node src/ops/nightly.js` at 03:30 (StartCalendarInterval) and at load; no KeepAlive.
 - `tools/install-agents.sh` fills the templates (repository folder, `$HOME`, `which node`, `which
-  cloudflared`), checks them with `plutil -lint`, copies them to `~/Library/LaunchAgents` and loads them
-  with `launchctl bootstrap gui/$UID` (a loaded agent is booted out first). It writes
+  cloudflared`, the log folder: `IS_LOG_DIR` from the environment or `.env`, else the default; an
+  absolute path outside the repository, else it stops), checks them with `plutil -lint`, copies them
+  to `~/Library/LaunchAgents`, loads them with `launchctl bootstrap gui/$UID` (a loaded agent is
+  booted out first) and prints the log folder at the end. It writes
   `~/.cloudflared/config.yml` with the id of the tunnel `is` from `cloudflared tunnel list` only when the
   file does not exist; it never overwrites it. `tools/uninstall-agents.sh` boots the agents out and
   removes their plists. Both are safe to run twice, run no sudo and do not touch `data/`.
@@ -781,10 +790,10 @@ server, the Etsy poller and the tunnel (runbook).
 - Nightly job (`src/ops/nightly.js`, also run by hand with `node src/ops/nightly.js`): paid codes whose
   `delivery_expires_at` has passed become `expired` (code.json and event as at every change); delivery
   ZIPs of codes whose `delivery_expires_at` has passed are deleted, and their folder when empty; nothing
-  under `data/archive/` is read, deleted or moved; non-empty `logs/*.log` are copied to
+  under `data/archive/` is read, deleted or moved; non-empty `*.log` in the log folder are copied to
   `<name>.log.YYYY-MM-DD` and emptied, rotated files kept 14 days; `data/is.sqlite` is copied with
   SQLite's online backup to `data/backup/is-YYYY-MM-DD.sqlite` (single file, not WAL), the last 30 kept;
-  one summary line (counts only) is appended to `logs/nightly.log`. A failed step does not stop the
+  one summary line (counts only) is appended to `nightly.log` in the log folder. A failed step does not stop the
   others; the job then exits non-zero.
 - `pmset` advice in the runbook (the commands; no script runs sudo): no sleep on the power adapter;
   lid-closed operation needs external power (and an external display).
@@ -796,8 +805,11 @@ server, the Etsy poller and the tunnel (runbook).
   layout service). No PDF or PostScript tools are needed: IS writes the EPS itself, and the tests
   open the PDFs with pdf.js (`pdfjs-dist`, a dev dependency).
 - Tests: `tools/test-nightly.mjs` (expired ZIP deleted, current one kept, archive untouched, backup
-  row counts, log rotation) and `tools/test-hosting.mjs` (www redirect, the tunnel's 404s, the strass
-  wait, `install-agents.sh` with a fake `HOME` and stub `launchctl` and `cloudflared`).
+  row counts, log rotation in a temporary `IS_LOG_DIR`), `tools/test-hosting.mjs` (www redirect, the
+  tunnel's 404s, the strass wait, `install-agents.sh` with a fake `HOME` and stub `launchctl` and
+  `cloudflared`; every plist's log paths under `<fake home>/Library/Logs/PatternNifty`, none in the
+  repository) and `tools/test-logs.mjs` (a fake design and the nightly job with a temporary
+  `IS_LOG_DIR` leave the repository's `logs/` unchanged).
 
 ## 16. Code taken from RS (at `38cd831`)
 
@@ -905,6 +917,8 @@ TOKEN_ENCRYPTION_KEY=            # 32 bytes, base64
 IS_ETSY_LISTING_IDS=             # comma separated
 IS_ETSY_LISTING_URL=
 ETSY_POLL_SECONDS=180
+# All logs (server, nightly, launchd agents): an absolute folder outside the repository; empty = ~/Library/Logs/PatternNifty
+IS_LOG_DIR=
 ```
 
 ## 19. Open items

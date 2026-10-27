@@ -3,9 +3,9 @@
 // 1. paid codes whose 30 days are over become expired;
 // 2. delivery ZIPs (data/delivery/<code>/) of codes whose delivery_expires_at has passed are deleted,
 //    and the folder with them when it is empty;
-// 3. logs/*.log are rotated (copied to <name>.log.YYYY-MM-DD, then emptied; 14 days kept);
+// 3. *.log in the log folder (IS_LOG_DIR, ~/Library/Logs/PatternNifty) are rotated (copied to <name>.log.YYYY-MM-DD, then emptied; 14 days kept);
 // 4. data/is.sqlite is copied with SQLite's online backup to data/backup/is-YYYY-MM-DD.sqlite (30 kept);
-// 5. one summary line goes to logs/nightly.log.
+// 5. one summary line goes to nightly.log in the log folder.
 // Nothing under data/archive/ is read, deleted or moved; the only write there is the code.json copy
 // of a code that became expired, as at every change of a code (section 4.2).
 
@@ -107,6 +107,7 @@ async function backupDatabase({ db, backupDir, now }) {
 
 // Each step runs even when an earlier one failed; the summary counts the failures.
 export async function runNightly({ db, config, now = new Date(), log = console }) {
+  mkdirSync(config.logsDir, { recursive: true });
   const q = createQueries(db);
   const delivery = createDelivery({ q, config, log });
   const errors = [];
@@ -129,7 +130,6 @@ export async function runNightly({ db, config, now = new Date(), log = console }
     `logs rotated ${logs.rotated} (old deleted ${logs.deleted}), ` +
     `backup ${backup ? `${backup.name} (old deleted ${backup.deleted})` : "failed"}, ` +
     `errors ${errors.length ? errors.join(" ") : 0}`;
-  mkdirSync(config.logsDir, { recursive: true });
   appendFileSync(path.join(config.logsDir, "nightly.log"), `${line}\n`);
 
   return { ok: errors.length === 0, expired, zips, logs, backup, errors, line };
