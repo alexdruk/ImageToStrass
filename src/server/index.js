@@ -1,10 +1,13 @@
 import "dotenv/config";
+import { mkdirSync } from "node:fs";
 import { openDatabase } from "../db/index.js";
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
 import { waitForStrass } from "./health.js";
 
 const config = loadConfig();
+// The log folder (IS_LOG_DIR); launchd writes this server's output there.
+mkdirSync(config.logsDir, { recursive: true });
 
 // launchd (com.is.server) starts the server with --wait-for-strass: it waits for the strass
 // service's health check, and after 5 minutes without one exits non-zero so launchd tries again.

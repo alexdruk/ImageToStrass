@@ -1,5 +1,7 @@
 // Settings from the environment (spec section 18). Read once at start-up.
 
+import { homedir } from "node:os";
+import path from "node:path";
 import { BW_GAPS } from "../render/bw-gaps.js";
 
 function positive(value, fallback) {
@@ -28,7 +30,8 @@ export function loadConfig(env = process.env) {
     tmpDir: "data/tmp",
     // The nightly job (src/ops/nightly.js): database copies and the launchd logs it rotates.
     backupDir: "data/backup",
-    logsDir: "logs",
+    // Every log, outside the repository: launchd may not open files in ~/Documents (PN-03).
+    logsDir: env.IS_LOG_DIR || path.join(homedir(), "Library", "Logs", "PatternNifty"),
     ipKeyFile: "data/ip-hash.key",
     turnstileSecret: env.TURNSTILE_SECRET_KEY || "",
     turnstileSiteKey: env.TURNSTILE_SITE_KEY || "",

@@ -9,7 +9,8 @@ import { createQueries } from "../src/db/queries.js";
 import { localDate, runNightly } from "../src/ops/nightly.js";
 import { loadConfig } from "../src/server/config.js";
 
-// The nightly job (spec section 15) on a temporary folder; data/ and logs/ are never touched.
+// The nightly job (spec section 15) on a temporary folder and a temporary IS_LOG_DIR; data/ and the
+// real log folder are never touched.
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const quiet = { error() {}, warn() {}, log() {} };
@@ -17,13 +18,12 @@ const quiet = { error() {}, warn() {}, log() {} };
 function setup() {
   const root = mkdtempSync(path.join(tmpdir(), "is-nightly-"));
   const config = {
-    ...loadConfig({}),
+    ...loadConfig({ IS_LOG_DIR: path.join(root, "logs") }),
     dataDir: root,
     dbFile: path.join(root, "is.sqlite"),
     archiveDir: path.join(root, "archive"),
     deliveryDir: path.join(root, "delivery"),
-    backupDir: path.join(root, "backup"),
-    logsDir: path.join(root, "logs")
+    backupDir: path.join(root, "backup")
   };
   const db = openDatabase(config.dbFile);
   return { root, config, db, q: createQueries(db) };
@@ -135,6 +135,7 @@ test("logs: rotated and emptied, 14 days kept, one summary line", async () => {
   const now = new Date();
   const dated = (days) => localDate(new Date(now.getTime() - days * DAY_MS));
   try {
+    assert.equal(config.logsDir, path.join(root, "logs"));
     mkdirSync(config.logsDir, { recursive: true });
     const log = (name) => path.join(config.logsDir, name);
     writeFileSync(log("server.log"), "line 1\n");
@@ -155,6 +156,11 @@ test("logs: rotated and emptied, 14 days kept, one summary line", async () => {
     const summary = readFileSync(log("nightly.log"), "utf8").trim().split("\n");
     assert.equal(summary.length, 1);
     assert.match(summary[0], /nightly: codes expired 0, zips deleted 0, logs rotated 1 .* errors 0$/);
+
+    // A missing log folder is made at start.
+    rmSync(config.logsDir, { recursive: true });
+    assert.equal((await runNightly({ db, config, now, log: quiet })).ok, true);
+    assert.equal(readFileSync(log("nightly.log"), "utf8").trim().split("\n").length, 1);
   } finally {
     db.close();
     rmSync(root, { recursive: true, force: true });

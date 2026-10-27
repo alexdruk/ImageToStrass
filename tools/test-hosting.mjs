@@ -136,14 +136,15 @@ esac`);
   return bin;
 }
 
-// Runs a script; returns its stdout and stderr together.
-function run(script, root, bin) {
+// Runs a script; returns its stdout and stderr together. IS_LOG_DIR is empty unless env names it, so
+// an IS_LOG_DIR in the repository's .env does not change what is checked.
+function run(script, root, bin, { env = {}, status = 0 } = {}) {
   const result = spawnSync("/bin/bash", [path.join(REPO, "tools", script)], {
     cwd: root,
     encoding: "utf8",
-    env: { HOME: path.join(root, "home"), TMPDIR: path.join(root, "tmp"), PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin:/usr/sbin:/sbin` }
+    env: { HOME: path.join(root, "home"), TMPDIR: path.join(root, "tmp"), PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin:/usr/sbin:/sbin`, IS_LOG_DIR: "", ...env }
   });
-  assert.equal(result.status, 0, `${script}: ${result.stdout}${result.stderr}`);
+  assert.equal(result.status, status, `${script}: ${result.stdout}${result.stderr}`);
   return result.stdout + result.stderr;
 }
 
@@ -162,6 +163,10 @@ test("install-agents.sh: plists and config.yml in a fake HOME; safe to run twice
     const output = run("install-agents.sh", root, bin);
     assert.match(output, /Wrote .*config\.yml \(tunnel 0b1c2d3e/);
     assert.match(output, /credentials .* are missing/);
+    // PN-03: the logs are in ~/Library/Logs/PatternNifty, made by the script, never in the repository.
+    const logDir = path.join(home, "Library", "Logs", "PatternNifty");
+    assert.ok(output.includes(`Logs: ${logDir}/`), output);
+    assert.ok(existsSync(logDir));
 
     const uid = execFileSync("id", ["-u"], { encoding: "utf8" }).trim();
     const agents = path.join(home, "Library", "LaunchAgents");
@@ -177,7 +182,10 @@ test("install-agents.sh: plists and config.yml in a fake HOME; safe to run twice
       assert.equal(plist.EnvironmentVariables.HOME, home);
       assert.ok(plist.EnvironmentVariables.PATH.split(":").includes(path.dirname(process.execPath)));
       assert.ok(plist.EnvironmentVariables.PATH.split(":").includes(bin), "cloudflared's folder");
-      assert.ok(plist.StandardOutPath.startsWith(path.join(REPO, "logs") + "/"));
+      for (const out of [plist.StandardOutPath, plist.StandardErrorPath]) {
+        assert.equal(path.dirname(out), logDir, `${label}: ${out}`);
+        assert.ok(!out.startsWith(REPO), `${label}: ${out} is in the repository`);
+      }
       assert.equal(plist.StandardErrorPath, plist.StandardOutPath);
       for (const arg of plist.ProgramArguments) {
         if (arg.includes("/")) assert.ok(path.isAbsolute(arg), `${label}: ${arg}`);
@@ -213,6 +221,17 @@ test("install-agents.sh: plists and config.yml in a fake HOME; safe to run twice
     assert.equal(calls().filter((c) => c.startsWith("cloudflared")).length, 0);
     assert.equal(calls().filter((c) => c.includes("bootout")).length, 4);
     assert.equal(calls().filter((c) => c.includes("bootstrap")).length, 4);
+
+    // IS_LOG_DIR moves every agent's log; a folder inside the repository or a relative one is refused.
+    const custom = path.join(root, "custom logs");
+    assert.match(run("install-agents.sh", root, bin, { env: { IS_LOG_DIR: custom } }), /Logs: .*custom logs\//);
+    for (const label of LABELS) {
+      const plist = JSON.parse(execFileSync("plutil", ["-convert", "json", "-o", "-", path.join(agents, `${label}.plist`)], { encoding: "utf8" }));
+      assert.equal(path.dirname(plist.StandardOutPath), custom, label);
+      assert.equal(path.dirname(plist.StandardErrorPath), custom, label);
+    }
+    assert.match(run("install-agents.sh", root, bin, { env: { IS_LOG_DIR: path.join(REPO, "logs") }, status: 1 }), /outside the repository/);
+    assert.match(run("install-agents.sh", root, bin, { env: { IS_LOG_DIR: "logs" }, status: 1 }), /absolute path/);
 
     run("uninstall-agents.sh", root, bin);
     run("uninstall-agents.sh", root, bin);

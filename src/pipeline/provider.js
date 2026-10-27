@@ -88,7 +88,7 @@ export function createProvider({ settings, fetch = globalThis.fetch, timers = DE
       try { body = await response.json(); } catch { body = null; }
       if (response.status >= 400 && response.status < 500) {
         // IMG-023 (D7): every 4xx is logged with its status and message -- never the key, the
-        // prompt, the image or a request header. IS: the server log lives in logs/, outside public/.
+        // prompt, the image or a request header. IS: the server log lives in IS_LOG_DIR, outside the repository.
         logger.warn(`Provider answered ${response.status}: ${messageOf(body)}`);
         // A safety-system refusal is retried once, within the same two-attempt budget.
         if (SAFETY_SYSTEM_PATTERN.test(messageOf(body)) && attempt < 2) continue;

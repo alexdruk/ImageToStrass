@@ -1,7 +1,7 @@
 #!/bin/bash
 # Unloads the IS launchd agents and removes them from ~/Library/LaunchAgents (docs/RUNBOOK.md):
 #   tools/uninstall-agents.sh
-# Safe to run again. ~/.cloudflared/config.yml, logs/ and data/ are left as they are.
+# Safe to run again. ~/.cloudflared/config.yml, the log folder and data/ are left as they are.
 set -uo pipefail
 
 DOMAIN_UID="gui/$(id -u)"
