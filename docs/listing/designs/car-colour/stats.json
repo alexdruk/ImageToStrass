@@ -1,0 +1,42 @@
+{
+  "subject": "car",
+  "design": "colour",
+  "mode": "colour",
+  "stones": 4856,
+  "bySize": {
+    "ss6": 4446,
+    "ss4": 410
+  },
+  "byColour": {
+    "jet": 1146,
+    "aquamarine": 1101,
+    "crystal-clear": 638,
+    "capri-blue": 513,
+    "jet-hematite": 300,
+    "sapphire": 278,
+    "hematite": 236,
+    "light-sapphire": 196,
+    "black-diamond": 146,
+    "grey": 128,
+    "crystal": 120,
+    "graphite": 23,
+    "light-siam": 14,
+    "silver": 11,
+    "greige": 2,
+    "emerald": 1,
+    "indian-siam": 1,
+    "khaki": 1,
+    "scarlet": 1
+  },
+  "widthMm": 308.2,
+  "heightMm": 106,
+  "widthIn": 12.13,
+  "heightIn": 4.17,
+  "coverage": 0.598,
+  "photo": {
+    "title": "Borgward concept car side view",
+    "url": "https://commons.wikimedia.org/wiki/File:Borgward_concept_car_side_view.jpg",
+    "author": "Wikimedia Commons",
+    "licence": "CC0"
+  }
+}

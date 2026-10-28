@@ -1,0 +1,50 @@
+{
+  "subject": "stag-beetle",
+  "design": "colour",
+  "stones": 1514,
+  "bySize": {
+    "ss6": 1421,
+    "ss4": 93
+  },
+  "byColour": {
+    "jet": 624,
+    "indian-siam": 146,
+    "light-siam": 111,
+    "padparadscha": 69,
+    "silver": 64,
+    "smoked-topaz": 61,
+    "scarlet": 58,
+    "grey": 55,
+    "black-diamond": 49,
+    "siam": 44,
+    "rose-peach": 40,
+    "hematite": 39,
+    "jet-hematite": 25,
+    "greige": 23,
+    "light-topaz": 23,
+    "graphite": 16,
+    "light-smoked-topaz": 16,
+    "golden-shadow": 10,
+    "hyacinth": 9,
+    "vintage-rose": 8,
+    "rose": 7,
+    "light-colorado": 5,
+    "metallic-sunshine": 5,
+    "gold": 3,
+    "light-peach": 2,
+    "silk": 2
+  },
+  "widthMm": 204.4,
+  "heightMm": 92.3,
+  "widthIn": 8.05,
+  "heightIn": 3.63,
+  "coverage": 0.646,
+  "mode": "colour",
+  "photo": {
+    "source": "PickPik",
+    "url": null,
+    "note": "source page URL not kept",
+    "licence": "pickpik Open License",
+    "licenceUrl": "https://www.pickpik.com/license"
+  }
+}

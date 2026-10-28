@@ -11,12 +11,14 @@ import { pathToFileURL } from "node:url";
 import { openDatabase } from "../src/db/index.js";
 import { createQueries } from "../src/db/queries.js";
 import { createPipeline } from "../src/pipeline/design.js";
-import { FAKE_REDRAW_DATA_URL } from "../src/pipeline/fake/FakeRedrawProvider.js";
 import { createApp } from "../src/server/app.js";
 import { loadConfig } from "../src/server/config.js";
 import { etsyTestConfig, noEtsy } from "./etsy-mock.mjs";
 
-const FAKE_PNG = Buffer.from(FAKE_REDRAW_DATA_URL.split(",")[1], "base64");
+// The fixtures of IS_FAKE=1 (src/pipeline/design.js): the fake layout and its own AI image, so the
+// hole fill and black & white read the image the layout came from.
+const FAKE_PNG = readFileSync(new URL("../src/pipeline/fake/ai.png", import.meta.url));
+const FAKE_PX = { width: FAKE_PNG.readUInt32BE(16), height: FAKE_PNG.readUInt32BE(20) };
 const FAKE_LAYOUT = JSON.parse(readFileSync(new URL("../src/pipeline/fake/layout.json", import.meta.url), "utf8"));
 const quiet = { error() {}, warn() {}, log() {} };
 
@@ -41,7 +43,7 @@ export async function startFakeServer({ port = 0, stageMs = 0, env = {}, deps = 
   const pipeline = stageMs > 0
     ? createPipeline({
       q, config: { ...config, fake: false }, log,
-      provider: { redraw: async () => (await wait(stageMs), { png: FAKE_PNG, width: 64, height: 64 }) },
+      provider: { redraw: async () => (await wait(stageMs), { png: FAKE_PNG, ...FAKE_PX }) },
       layoutCall: async () => (await wait(stageMs), { layout: FAKE_LAYOUT })
     })
     : createPipeline({ q, config, log });

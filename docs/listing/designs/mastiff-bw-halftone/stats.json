@@ -1,0 +1,35 @@
+{
+  "subject": "mastiff",
+  "design": "bw-halftone",
+  "stones": 4141,
+  "bySize": {
+    "ss6": 3962,
+    "ss4": 179
+  },
+  "byColour": {
+    "crystal-clear": 2462,
+    "jet": 1679
+  },
+  "widthMm": 179.1,
+  "heightMm": 144,
+  "widthIn": 7.05,
+  "heightIn": 5.67,
+  "coverage": 0.625,
+  "mode": "bw",
+  "bwStyle": "halftone",
+  "adjustments": {
+    "crop": {
+      "x": 0.24,
+      "y": 0.16,
+      "w": 0.52,
+      "h": 0.62
+    }
+  },
+  "photo": {
+    "source": "PickPik",
+    "url": null,
+    "note": "source page URL not kept",
+    "licence": "pickpik Open License",
+    "licenceUrl": "https://www.pickpik.com/license"
+  }
+}
