@@ -1,0 +1,40 @@
+{
+  "subject": "dahlia",
+  "design": "colour",
+  "stones": 3127,
+  "bySize": {
+    "ss6": 2946,
+    "ss4": 181
+  },
+  "byColour": {
+    "padparadscha": 1150,
+    "indian-siam": 931,
+    "emerald": 335,
+    "peridot": 218,
+    "scarlet": 167,
+    "chrysolite": 85,
+    "fern-green": 60,
+    "citrus-green": 52,
+    "light-siam": 42,
+    "rose": 41,
+    "citrine": 20,
+    "hyacinth": 12,
+    "erinite": 5,
+    "jet": 4,
+    "siam": 3,
+    "rose-peach": 2
+  },
+  "widthMm": 156,
+  "heightMm": 158.2,
+  "widthIn": 6.14,
+  "heightIn": 6.23,
+  "coverage": 0.65,
+  "mode": "colour",
+  "photo": {
+    "source": "PickPik",
+    "url": null,
+    "note": "source page URL not kept",
+    "licence": "pickpik Open License",
+    "licenceUrl": "https://www.pickpik.com/license"
+  }
+}

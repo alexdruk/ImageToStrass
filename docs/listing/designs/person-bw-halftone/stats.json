@@ -1,0 +1,27 @@
+{
+  "subject": "person",
+  "design": "bw-halftone",
+  "mode": "bw",
+  "stones": 7154,
+  "bySize": {
+    "ss6": 5689,
+    "ss4": 1465
+  },
+  "byColour": {
+    "jet": 3706,
+    "crystal-clear": 3448
+  },
+  "widthMm": 200.9,
+  "heightMm": 249.5,
+  "widthIn": 7.91,
+  "heightIn": 9.82,
+  "coverage": 0.591,
+  "bwStyle": "halftone",
+  "photo": {
+    "source": "PickPik",
+    "url": null,
+    "note": "source page URL not kept",
+    "licence": "pickpik Open License",
+    "licenceUrl": "https://www.pickpik.com/license"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "subject": "person",
+  "design": "bw-stencil",
+  "mode": "bw",
+  "stones": 5048,
+  "bySize": {
+    "ss6": 4497,
+    "ss4": 549,
+    "ss20": 2
+  },
+  "byColour": {
+    "crystal-clear": 2673,
+    "jet": 2375
+  },
+  "widthMm": 171.1,
+  "heightMm": 207.9,
+  "widthIn": 6.74,
+  "heightIn": 8.18,
+  "coverage": 0.612,
+  "bwStyle": "stencil",
+  "photo": {
+    "source": "PickPik",
+    "url": null,
+    "note": "source page URL not kept",
+    "licence": "pickpik Open License",
+    "licenceUrl": "https://www.pickpik.com/license"
+  }
+}

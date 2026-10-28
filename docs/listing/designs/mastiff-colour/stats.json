@@ -1,0 +1,64 @@
+{
+  "subject": "mastiff",
+  "design": "colour",
+  "stones": 3714,
+  "bySize": {
+    "ss6": 3348,
+    "ss4": 364,
+    "ss20": 2
+  },
+  "byColour": {
+    "silk": 545,
+    "colorado-topaz": 518,
+    "rose-gold": 513,
+    "jet": 491,
+    "copper": 476,
+    "smoked-topaz": 431,
+    "light-smoked-topaz": 121,
+    "vintage-rose": 102,
+    "rose": 101,
+    "golden-shadow": 81,
+    "fuchsia": 52,
+    "citrine": 46,
+    "fern-green": 43,
+    "greige": 43,
+    "hematite": 38,
+    "silver": 25,
+    "light-siam": 12,
+    "graphite": 11,
+    "light-peach": 9,
+    "olivine": 8,
+    "scarlet": 8,
+    "light-colorado": 7,
+    "rose-peach": 7,
+    "siam": 6,
+    "grey": 5,
+    "padparadscha": 5,
+    "amethyst": 3,
+    "metallic-sunshine": 3,
+    "crystal-clear": 2,
+    "citrus-green": 1,
+    "emerald": 1
+  },
+  "widthMm": 164.9,
+  "heightMm": 132.4,
+  "widthIn": 6.49,
+  "heightIn": 5.21,
+  "coverage": 0.641,
+  "mode": "colour",
+  "adjustments": {
+    "crop": {
+      "x": 0.24,
+      "y": 0.16,
+      "w": 0.52,
+      "h": 0.62
+    }
+  },
+  "photo": {
+    "source": "PickPik",
+    "url": null,
+    "note": "source page URL not kept",
+    "licence": "pickpik Open License",
+    "licenceUrl": "https://www.pickpik.com/license"
+  }
+}

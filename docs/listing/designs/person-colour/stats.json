@@ -1,0 +1,42 @@
+{
+  "subject": "person",
+  "design": "colour",
+  "mode": "colour",
+  "stones": 4685,
+  "bySize": {
+    "ss6": 4252,
+    "ss4": 433
+  },
+  "byColour": {
+    "jet": 1049,
+    "hematite": 832,
+    "silk": 603,
+    "smoked-topaz": 521,
+    "grey": 435,
+    "colorado-topaz": 343,
+    "silver": 335,
+    "rose-gold": 214,
+    "copper": 196,
+    "graphite": 108,
+    "crystal-clear": 19,
+    "golden-shadow": 14,
+    "greige": 7,
+    "light-smoked-topaz": 4,
+    "jet-hematite": 2,
+    "black-diamond": 1,
+    "khaki": 1,
+    "light-sapphire": 1
+  },
+  "widthMm": 167.4,
+  "heightMm": 204.2,
+  "widthIn": 6.59,
+  "heightIn": 8.04,
+  "coverage": 0.609,
+  "photo": {
+    "source": "PickPik",
+    "url": null,
+    "note": "source page URL not kept",
+    "licence": "pickpik Open License",
+    "licenceUrl": "https://www.pickpik.com/license"
+  }
+}

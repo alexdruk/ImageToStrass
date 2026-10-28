@@ -1,0 +1,41 @@
+{
+  "subject": "butterfly",
+  "design": "colour",
+  "mode": "colour",
+  "stones": 1917,
+  "bySize": {
+    "ss6": 1800,
+    "ss4": 117
+  },
+  "byColour": {
+    "jet": 953,
+    "citrine": 554,
+    "light-topaz": 134,
+    "crystal-clear": 82,
+    "gold": 74,
+    "chrysolite": 45,
+    "light-sapphire": 35,
+    "hyacinth": 11,
+    "light-colorado": 11,
+    "sapphire": 4,
+    "copper": 3,
+    "light-smoked-topaz": 3,
+    "smoked-topaz": 3,
+    "colorado-topaz": 2,
+    "khaki": 1,
+    "metallic-sunshine": 1,
+    "olivine": 1
+  },
+  "widthMm": 171,
+  "heightMm": 142.8,
+  "widthIn": 6.73,
+  "heightIn": 5.62,
+  "coverage": 0.651,
+  "photo": {
+    "source": "PickPik",
+    "url": null,
+    "note": "source page URL not kept",
+    "licence": "pickpik Open License",
+    "licenceUrl": "https://www.pickpik.com/license"
+  }
+}

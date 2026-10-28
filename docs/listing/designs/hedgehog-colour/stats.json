@@ -1,0 +1,42 @@
+{
+  "subject": "hedgehog",
+  "design": "colour",
+  "mode": "colour",
+  "stones": 2328,
+  "bySize": {
+    "ss6": 2143,
+    "ss4": 183,
+    "ss20": 2
+  },
+  "byColour": {
+    "smoked-topaz": 697,
+    "silk": 586,
+    "crystal-clear": 553,
+    "colorado-topaz": 184,
+    "golden-shadow": 95,
+    "copper": 65,
+    "light-smoked-topaz": 42,
+    "greige": 20,
+    "rose-gold": 20,
+    "light-peach": 19,
+    "hematite": 16,
+    "jet": 14,
+    "indian-siam": 10,
+    "grey": 2,
+    "siam": 2,
+    "vintage-rose": 2,
+    "jet-hematite": 1
+  },
+  "widthMm": 136.2,
+  "heightMm": 106.3,
+  "widthIn": 5.36,
+  "heightIn": 4.18,
+  "coverage": 0.671,
+  "photo": {
+    "source": "PickPik",
+    "url": null,
+    "note": "source page URL not kept",
+    "licence": "pickpik Open License",
+    "licenceUrl": "https://www.pickpik.com/license"
+  }
+}
