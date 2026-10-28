@@ -33,6 +33,8 @@ Revised 26 Oct 2026 (PN-01): public name PatternNifty, domain patternnifty.com, 
 the laptop on patternnifty.com (15, 19). Revised 27 Oct 2026 (PN-03): logs in ~/Library/Logs/PatternNifty,
 outside the repo (12, 15, 18). Revised 27 Oct 2026 (PN-05): local control panel on 127.0.0.1:3010
 (15.1, 18). Revised 27 Oct 2026 (PN-06): section 13 limits enforced and tested (4.1, 13, 15.1).
+Revised 28 Oct 2026 (PN-04b): the Black & white example pictures are crops of the mastiff listing
+designs (10).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -586,8 +588,9 @@ Screens (one URL each, history API):
    "Black and clear stones mixed to show light and shade." (Bold chosen unless the previous
    settings say Shaded); "Designs left: N of 3"; button **Create design**. No size field. Under the
    photo, the expectations line (below). The example pictures (`public/examples/bw-bold.png`,
-   `bw-shaded.png`) are made by `tools/make-bw-examples.mjs` from the CC0 cat fixture without a
-   provider call: the same stones coloured as each style draws, shown with the tinted renderer.
+   `bw-shaded.png`) are made by `tools/make-bw-examples.mjs` without a provider call: the same crop
+   of the mastiff's face from the Etsy listing designs `mastiff-bw-stencil` and `mastiff-bw-halftone`
+   (PN-04a, `docs/listing/README.md`), their full-size tinted renders shown on white.
 3. **Working** `/c/<code>/working` — the four stage names with progress, queue position, "You can
    leave this page; your code is PN-XXXX-XXXX". Polls `GET /api/attempts/<code>/<n>` every 3 s.
 4. **Result** `/c/<code>/result/<n>` — Original | Tinted side by side on wide screens; at phone
