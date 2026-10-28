@@ -8,7 +8,9 @@
 // Writes docs/listing/photos/<nn>-<name>.jpg (PHOTO_W x PHOTO_H, sRGB, each under MAX_BYTES) and
 // overview.png (every photo on one sheet, at most OVERVIEW_W wide). Running it twice gives the same
 // files.
-// Everything important stays inside the centre PHOTO_H x PHOTO_H square (Etsy crops the thumbnail).
+// Everything important stays inside the centre THUMB_W x PHOTO_H (Etsy's thumbnail is about 5:4),
+// at least MARGIN px inside it. Photo 07 is rendered from the butterfly's StoneLayout (its PN-04a
+// run's stones.json) with the tinted renderer at CLOSE.pxPerMm; nothing in the design changes.
 // Text is Inter (SIL OFL, tools/fonts/); colours are the web app's (public/styles.css).
 import { GlobalFonts, createCanvas, loadImage } from "@napi-rs/canvas";
 import { createHash } from "node:crypto";
@@ -18,7 +20,7 @@ import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import sharp from "sharp";
 import { BRAND } from "../src/brand.js";
 import { designFiles, zipEntryNames } from "../src/export/zip.js";
-import { MARGIN_STONES } from "../src/render/tinted.js";
+import { MARGIN_STONES, renderTinted, tintCanvasMm } from "../src/render/tinted.js";
 import { StoneLayout } from "../src/stones/StoneLayout.js";
 import { getStoneSize } from "../src/stones/StoneSizes.js";
 
@@ -46,12 +48,14 @@ const C = {
 for (const w of ["Regular", "SemiBold", "Bold"]) GlobalFonts.registerFromPath(path.join(ROOT, `tools/fonts/Inter-${w}.ttf`));
 const FONT = "Inter";
 
-// The centre square and the bands every photo shares.
-const SAFE = { x0: (PHOTO_W - PHOTO_H) / 2, x1: (PHOTO_W + PHOTO_H) / 2 };
+// The safe area (the thumbnail's centre THUMB_W x PHOTO_H less MARGIN) and the bands every photo
+// shares: the brand row and the footer stay MARGIN inside the top and bottom edges too.
+const THUMB_W = 2531, MARGIN = 80;
+const SAFE = { x0: (PHOTO_W - THUMB_W) / 2 + MARGIN, x1: (PHOTO_W + THUMB_W) / 2 - MARGIN };
 const SAFE_W = SAFE.x1 - SAFE.x0;
 const CX = PHOTO_W / 2;
-const BRAND_Y = 105, TITLE_Y = 300, TITLE_PX = 104;
-const TOP = 390, BOTTOM = 1880, FOOTER_Y = 1975;
+const BRAND_Y = 125, TITLE_Y = 285, TITLE_PX = 104;
+const TOP = 330, BOTTOM = 1840, FOOTER_Y = 1930;
 
 // ---- designs ----
 
@@ -105,18 +109,10 @@ async function fitted(file, boxW, boxH) {
   return { img: await picture(file, region, w, h), w, h };
 }
 
-// The visible part of a tinted render at pxPerMm (the same scale for every design of one photo).
-async function atScale(d, pxPerMm) {
-  const g = await tintedGeometry(d);
-  const region = await alphaBox(d.tinted);
-  const s = pxPerMm / g.scale;
-  const w = Math.round(region.width * s), h = Math.round(region.height * s);
-  return { img: await picture(d.tinted, region, w, h), w, h, mm: { w: region.width / g.scale, h: region.height / g.scale } };
-}
-async function sizeMm(d) {
-  const g = await tintedGeometry(d);
-  const region = await alphaBox(d.tinted);
-  return { w: region.width / g.scale, h: region.height / g.scale };
+// Width over height of an image's visible part.
+async function aspect(file) {
+  const region = await alphaBox(file);
+  return region.width / region.height;
 }
 
 // ---- drawing ----
@@ -213,53 +209,43 @@ const draw = (ctx, p, x, y) => ctx.drawImage(p.img, Math.round(x), Math.round(y)
 
 // ---- photos ----
 
+// Photo, arrow, design in one row: the design PHOTO_RATIO times the photo's height, both as large as
+// the safe width and the content band allow.
+const PHOTO_RATIO = 1.5, ARROW_W = 180;
 async function mainPhoto(id) {
   const d = design(id);
   const { canvas, ctx } = frame({ title: "Your photo → rhinestone template" });
-  const boxW = 860, boxH = BOTTOM - TOP - 40, gap = SAFE_W - 2 * boxW;
-  const midY = (TOP + BOTTOM) / 2;
-  const left = await fitted(d.prepared, boxW, boxH);
-  const right = await fitted(d.tinted, boxW, boxH);
-  draw(ctx, left, SAFE.x0 + (boxW - left.w) / 2, midY - left.h / 2);
-  draw(ctx, right, SAFE.x1 - boxW + (boxW - right.w) / 2, midY - right.h / 2);
-  arrow(ctx, SAFE.x0 + boxW + gap * 0.22, SAFE.x0 + boxW + gap * 0.78, midY);
+  const ap = await aspect(d.prepared), ad = await aspect(d.tinted);
+  const h = Math.min(BOTTOM - TOP, (SAFE_W - ARROW_W) / (ad + ap / PHOTO_RATIO));
+  const left = await fitted(d.prepared, Infinity, h / PHOTO_RATIO);
+  const right = await fitted(d.tinted, Infinity, h);
+  const x0 = CX - (left.w + ARROW_W + right.w) / 2, midY = (TOP + BOTTOM) / 2;
+  draw(ctx, left, x0, midY - left.h / 2);
+  draw(ctx, right, x0 + left.w + ARROW_W, midY - right.h / 2);
+  arrow(ctx, x0 + left.w + 30, x0 + left.w + ARROW_W - 30, midY);
   return canvas;
 }
 
-// Two black & white styles of one subject at the same scale, labelled, with the prepared photo small
-// above them (landscape) or between them (portrait).
+// The prepared photo (PHOTO_SHARE of the design height), Bold and Shaded in one row, each design
+// at the same height (not the same scale: size is shown only on 06), each with its label under it.
+const PHOTO_SHARE = 0.6;
 async function twoStyles(subject, title) {
   const bold = design(`${subject}-bw-stencil`), shaded = design(`${subject}-bw-halftone`);
   const { canvas, ctx } = frame({ title });
-  const sizes = [await sizeMm(bold), await sizeMm(shaded)];
-  const portrait = sizes[0].h > sizes[0].w;
-  const LABEL = 110, GAP = 50;
-  let photo, cols, top, avail;
-  if (portrait) {
-    const photoW = 330;
-    const colW = (SAFE_W - photoW - 2 * GAP) / 2;
-    photo = await fitted(bold.prepared, photoW, 600);
-    cols = [SAFE.x0, SAFE.x1 - colW].map((x) => ({ x, w: colW }));
-    top = TOP;
-    avail = BOTTOM - TOP - LABEL;
-  } else {
-    photo = await fitted(bold.prepared, 600, 330);
-    const colW = (SAFE_W - GAP) / 2;
-    cols = [SAFE.x0, SAFE.x1 - colW].map((x) => ({ x, w: colW }));
-    top = TOP + photo.h + 40;
-    avail = BOTTOM - top - LABEL;
-  }
-  const pxPerMm = Math.min(...sizes.flatMap((s, i) => [cols[i].w / s.w, avail / s.h]));
-  const pics = [await atScale(bold, pxPerMm), await atScale(shaded, pxPerMm)];
-  const maxH = Math.max(...pics.map((p) => p.h));
-  const y0 = top + (avail - maxH) / 2;
+  const LABEL = 110, GAP = 70;
+  const files = [bold.prepared, bold.tinted, shaded.tinted];
+  const shares = [PHOTO_SHARE, 1, 1];
+  const aspects = await Promise.all(files.map(aspect));
+  const h = Math.min(BOTTOM - TOP - LABEL, (SAFE_W - 2 * GAP) / aspects.reduce((sum, a, i) => sum + a * shares[i], 0));
+  const pics = await Promise.all(files.map((f, i) => fitted(f, Infinity, h * shares[i])));
+  const base = TOP + (BOTTOM - TOP - LABEL + h) / 2;
+  let x = CX - (pics.reduce((sum, p) => sum + p.w, 0) + 2 * GAP) / 2;
   for (const [i, p] of pics.entries()) {
-    const x = cols[i].x + (cols[i].w - p.w) / 2;
-    draw(ctx, p, x, y0 + maxH - p.h);
-    text(ctx, ["Bold", "Shaded"][i], cols[i].x + cols[i].w / 2, y0 + maxH + 85, { px: 64, weight: 600, color: C.blue });
+    draw(ctx, p, x, base - p.h);
+    const [label, color] = [["Your photo", C.muted], ["Bold", C.blue], ["Shaded", C.blue]][i];
+    text(ctx, label, x + p.w / 2, base + 85, { px: 64, weight: 600, color });
+    x += p.w + GAP;
   }
-  if (portrait) draw(ctx, photo, CX - photo.w / 2, y0 + (maxH - photo.h) / 2);
-  else draw(ctx, photo, CX - photo.w / 2, TOP);
   return canvas;
 }
 
@@ -293,10 +279,34 @@ function fileTile(ctx, x, y, w, h, label) {
   text(ctx, label, x + w / 2, y + h - 30, { px: 30, weight: 700, color: C.blue });
 }
 
+// An upload sign: an arrow up out of an open tray, size px wide, centred on (cx, cy).
+function uploadIcon(ctx, cx, cy, size) {
+  const s = size / 2;
+  ctx.strokeStyle = C.blue;
+  ctx.fillStyle = C.blue;
+  ctx.lineWidth = size * 0.1;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx - s, cy + s * 0.2);
+  ctx.lineTo(cx - s, cy + s);
+  ctx.lineTo(cx + s, cy + s);
+  ctx.lineTo(cx + s, cy + s * 0.2);
+  ctx.moveTo(cx, cy + s * 0.45);
+  ctx.lineTo(cx, cy - s * 0.6);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - s);
+  ctx.lineTo(cx - s * 0.5, cy - s * 0.4);
+  ctx.lineTo(cx + s * 0.5, cy - s * 0.4);
+  ctx.closePath();
+  ctx.fill();
+}
+
 async function howItWorks() {
   const d = design("butterfly-colour");
   const { canvas, ctx } = frame({ title: "How it works" });
-  const N = 4, GAP = 40, colW = (SAFE_W - (N - 1) * GAP) / N, card = colW - 10;
+  const N = 4, GAP = 50, colW = (SAFE_W - (N - 1) * GAP) / N, card = colW - 10;
   // The cards and their two lines of text, centred between the title and the footer.
   const cardY = TOP + (BOTTOM - TOP - card - 250) / 2 + 30;
   const steps = ["Upload your photo", "See your design", "Order on Etsy with your code", "Download your files"];
@@ -311,8 +321,9 @@ async function howItWorks() {
     ctx.stroke();
     ctx.setLineDash([]);
     if (i === 0) {
-      const p = await fitted(d.prepared, card - 80, card - 80);
-      draw(ctx, p, x + (card - p.w) / 2, y + (card - p.h) / 2);
+      const p = await fitted(d.prepared, card - 120, card - 220);
+      draw(ctx, p, x + (card - p.w) / 2, y + 40 + (card - 220 - p.h) / 2);
+      uploadIcon(ctx, x + card / 2, y + card - 100, 96);
     } else if (i === 1) {
       const p = await fitted(d.tinted, card - 60, card - 60);
       draw(ctx, p, x + (card - p.w) / 2, y + (card - p.h) / 2);
@@ -477,40 +488,44 @@ async function size() {
   const { canvas, ctx } = frame({ title: `${stats.stones} stones · mostly ${main.toUpperCase()}` });
   const g = await tintedGeometry(d);
   const cm = (mm) => `${(mm / 10).toFixed(1)} cm`;
-  // The stones' box at pxPerMm, with room for the width line below and the height line and its
-  // label on the right.
-  const DIM = 200, LABEL_W = 280;
-  const availW = SAFE_W - DIM - LABEL_W, availH = BOTTOM - TOP - 90 - DIM;
+  // The stones' box at pxPerMm, with room for the width line and its label below and the height
+  // line and its label on the right; the small line sits above the footer.
+  const SMALL_Y = 1874, LINE = 45, BELOW = LINE + 85, RIGHT = 80 + 50 + 230, top = TOP + 30;
+  const availW = SAFE_W - RIGHT, availH = SMALL_Y - 50 - top - BELOW;
   const pxPerMm = Math.min(availW / stats.widthMm, availH / stats.heightMm);
   const k = pxPerMm / g.scale;
   const boxW = stats.widthMm * pxPerMm, boxH = stats.heightMm * pxPerMm;
-  const bx = SAFE.x0 + (availW - boxW) / 2 + 40, by = TOP + 10 + (availH - boxH) / 2;
+  if (boxH < 0.65 * PHOTO_H) throw new Error(`06: the design is ${Math.round(boxH)} px high, less than 65 % of the photo`);
+  const bx = CX - (boxW + RIGHT) / 2, by = top + (availH - boxH) / 2;
   const p = { img: await picture(d.tinted, { left: 0, top: 0, width: g.width, height: g.height }, g.width * k, g.height * k), w: Math.round(g.width * k), h: Math.round(g.height * k) };
   draw(ctx, p, bx - g.box.x * k, by - g.box.y * k);
 
-  const wy = by + boxH + 80;
+  const wy = by + boxH + LINE;
   dimension(ctx, bx, wy, bx + boxW, wy);
-  text(ctx, `${cm(stats.widthMm)}  ·  ${stats.widthIn} in`, bx + boxW / 2, wy + 95, { px: 56, weight: 600, color: C.blue });
+  text(ctx, `${cm(stats.widthMm)}  ·  ${stats.widthIn} in`, bx + boxW / 2, wy + 72, { px: 56, weight: 600, color: C.blue });
   const hx = bx + boxW + 80;
   dimension(ctx, hx, by, hx, by + boxH);
   text(ctx, cm(stats.heightMm), hx + 50, by + boxH / 2 - 10, { px: 56, weight: 600, color: C.blue, align: "left" });
   text(ctx, `${stats.heightIn} in`, hx + 50, by + boxH / 2 + 62, { px: 56, weight: 600, color: C.blue, align: "left" });
-  text(ctx, "Each design has its own natural size, usually 13–30 cm", CX, BOTTOM + 10, { px: 46, color: C.ink, maxW: SAFE_W });
+  text(ctx, "Each design has its own natural size, usually 13–30 cm", CX, SMALL_Y, { px: 46, color: C.ink, maxW: SAFE_W });
   return canvas;
 }
 
-// The mastiff's eyes and nose at CLOSE_SCALE times the full-size render (fractions of tinted.png).
-const CLOSE = { cx: 0.55, cy: 0.45, scale: 2 };
+// A part of the butterfly's wing (centre in the StoneLayout's mm), rendered by the tinted renderer
+// at pxPerMm: SS6 stones on a 2.1 mm pitch are about 9 to every 500 px.
+const CLOSE = { id: "butterfly-colour", cxMm: 100, cyMm: 88, pxPerMm: 26.5 };
 async function closeUp() {
-  const d = design("mastiff-colour");
+  const d = design(CLOSE.id);
   const { canvas, ctx } = frame({ title: "Every stone placed for you", footer: false });
-  const g = await tintedGeometry(d);
-  const top = TOP - 30, h = PHOTO_H - top;
-  const sw = Math.round(PHOTO_W / CLOSE.scale), sh = Math.round(h / CLOSE.scale);
-  const left = Math.round(CLOSE.cx * g.width - sw / 2), stop = Math.round(CLOSE.cy * g.height - sh / 2);
-  if (left < 0 || stop < 0 || left + sw > g.width || stop + sh > g.height) throw new Error("close-up outside the render");
-  const p = { img: await picture(d.tinted, { left, top: stop, width: sw, height: sh }, PHOTO_W, h), w: PHOTO_W, h };
-  draw(ctx, p, 0, top);
+  const layout = stonesOf(d);
+  const box = tintCanvasMm(layout);
+  const { png, scale } = renderTinted(layout, { longSidePx: Math.round(Math.max(box.widthMm, box.heightMm) * CLOSE.pxPerMm), background: "white" });
+  const top = TOP, h = PHOTO_H - top;
+  const left = Math.round((CLOSE.cxMm - box.minXmm) * scale - PHOTO_W / 2), stop = Math.round((CLOSE.cyMm - box.minYmm) * scale - h / 2);
+  const { width, height } = await sharp(png).metadata();
+  if (left < 0 || stop < 0 || left + PHOTO_W > width || stop + h > height) throw new Error("close-up outside the render");
+  const img = await loadImage(await sharp(png).extract({ left, top: stop, width: PHOTO_W, height: h }).png().toBuffer());
+  ctx.drawImage(img, 0, top);
   return canvas;
 }
 
