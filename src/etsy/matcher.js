@@ -10,12 +10,17 @@ export const PERSONALIZATION_PROPERTY_ID = 54;
 const REFUNDED_STATES = new Set(["canceled", "cancelled", "fully refunded", "partially refunded"]);
 
 // The personalization text of a transaction: its variation named Personalization (Etsy's property
-// 54). "" when the buyer gave none.
+// 54). When that holds no code (or there is none), every variation's text, if any of them holds a
+// code (PN-07: Etsy may file the field under another property id or name). "" when the buyer gave
+// none.
 export function personalizationOf(transaction) {
-  return (transaction.variations || [])
-    .filter((v) => v.property_id === PERSONALIZATION_PROPERTY_ID || /^personali[sz]ation$/i.test(String(v.formatted_name || "").trim()))
-    .map((v) => String(v.formatted_value ?? ""))
-    .join("\n");
+  const variations = transaction.variations || [];
+  const text = (list) => list.map((v) => String(v.formatted_value ?? "")).join("\n");
+  const exact = text(variations.filter((v) => v.property_id === PERSONALIZATION_PROPERTY_ID ||
+    /^personali[sz]ation$/i.test(String(v.formatted_name || "").trim())));
+  if (extractCodes(exact).length) return exact;
+  const all = text(variations);
+  return extractCodes(all).length ? all : exact;
 }
 
 export function isRefunded(receipt) {

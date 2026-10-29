@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import express from "express";
 import { isLocalRequest } from "../server/admin-access.js";
-import { loadConfig } from "../server/config.js";
+import { loadConfig, missingLegal } from "../server/config.js";
 import { AGENT_INFO, CONFIRM, REFRESH_SCRIPT, confirmPage, logPage, mainPage, messagePage } from "./page.js";
 import {
   AGENTS, LOG_NAME, agents, business, cached, folderSizes, health, listLogs, machine, nightlySummary, runCommand,
@@ -51,7 +51,9 @@ export function loadControlConfig(env = process.env, root = process.cwd()) {
     logsDir: path.resolve(root, server.logsDir),
     dailyCap: server.dailyDesignCap,
     listingIdsCount: server.etsy.listingIds.length,
-    keys: KEYS.map(([name, key]) => ({ name, set: Boolean(env[key]) }))
+    keys: KEYS.map(([name, key]) => ({ name, set: Boolean(env[key]) })),
+    // The seller's details for the legal pages (PN-07): the names of the required ones left empty.
+    legalMissing: missingLegal(env)
   };
 }
 
@@ -109,7 +111,8 @@ export function createControlApp({ config, run = runCommand, fetchFn = fetch, lo
     ]);
     const data = {
       agents: agentsData, health: healthData, tunnel: tunnelData, business: businessData, machine: machineData,
-      storage: storageData, nightly, logs: listLogs(config.logsDir), keys: config.keys
+      storage: storageData, nightly, logs: listLogs(config.logsDir), keys: config.keys,
+      legalMissing: config.legalMissing
     };
     const recent = lastAction && Date.now() - lastAction.at < 10 * 60 * 1000 ? lastAction : null;
     html(res, 200, mainPage(data, { csrf, lastAction: recent, websiteUrl: config.websiteUrl }));

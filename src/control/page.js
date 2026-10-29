@@ -238,7 +238,7 @@ function etsyBlock(b) {
   <p>Listing ids: ${b.listings ? ok(`configured (${b.listings})`) : bad("empty: no order is stored")}</p>`;
 }
 
-function machineSection({ machine, storage, keys }) {
+function machineSection({ machine, storage, keys, legalMissing = [] }) {
   const power = machine.power;
   const powerLine = !power?.source ? muted("unknown")
     : power.source === "AC Power" ? ok("on the power adapter") : bad("on battery: the Mac sleeps as usual");
@@ -270,6 +270,7 @@ function machineSection({ machine, storage, keys }) {
 </section>
 <section><h2>Keys in .env</h2>
   <table><tbody>${keys.map((k) => `<tr><td>${esc(k.name)}</td><td>${k.set ? ok("set") : bad("missing")}</td></tr>`).join("")}</tbody></table>
+  ${legalMissing.length ? `<p>${warn("Legal details missing in .env")} <span class="small muted">${esc(legalMissing.join(", "))}: the privacy, terms, contact and legal notice pages show "Not set".</span></p>` : `<p>Legal details: ${ok("set")}</p>`}
   <p class="small muted">Only whether each is set; values are never shown.</p>
 </section>
 </div>`;
@@ -288,7 +289,8 @@ export function mainPage(data, { csrf, lastAction, websiteUrl }) {
   const message = lastAction
     ? `<p class="note${lastAction.ok ? "" : " bad"}">${esc(when(lastAction.at))}: ${esc(lastAction.text)}</p>`
     : "";
-  return layout("IS control", `${message}
+  const legal = data.legalMissing?.length ? `<p class="note bad">${warn("Legal details missing in .env")}</p>` : "";
+  return layout("IS control", `${message}${legal}
 ${agentsSection(data, csrf)}
 ${healthSection(data)}
 ${businessSection(data.business, websiteUrl)}

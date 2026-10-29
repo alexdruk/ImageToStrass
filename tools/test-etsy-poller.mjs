@@ -45,8 +45,26 @@ const iso = (seconds) => new Date(seconds * 1000).toISOString();
 test("matcher: the personalization is the variation with property 54 or named Personalization", () => {
   assert.equal(personalizationOf(RECEIPTS[0].transactions[0]), "pn 7k3q 9xpa");
   assert.equal(personalizationOf({ variations: [{ property_id: 513, formatted_name: "Personalisation", formatted_value: "PN-AAAA-BBBB" }] }), "PN-AAAA-BBBB");
-  assert.equal(personalizationOf({ variations: [{ property_id: 200, formatted_name: "Colour", formatted_value: "PN-AAAA-BBBB" }] }), "");
+  assert.equal(personalizationOf({ variations: [{ property_id: 200, formatted_name: "Colour", formatted_value: "Blue" }] }), "");
   assert.equal(personalizationOf({}), "");
+});
+
+test("matcher fallback (PN-07): with no code in the Personalization variation, every variation is read", () => {
+  // The only variation has another property id and another name.
+  const only = { listing_id: IS_LISTING, transaction_id: 4900000099, variations: [{ property_id: 1234, formatted_name: "Your design code", formatted_value: "pn-7k3q 9xpa" }] };
+  assert.equal(personalizationOf(only), "pn-7k3q 9xpa");
+  const [order] = ordersFromReceipts([{ ...RECEIPTS[0], transactions: [only] }], [IS_LISTING]);
+  assert.deepEqual(order.codes, ["PN-7K3Q-9XPA"]);
+  // The exact match comes first: its codes only, not another variation's.
+  const both = { variations: [
+    { property_id: 54, formatted_name: "Personalization", formatted_value: "PN-AAAA-BBBB" },
+    { property_id: 1234, formatted_name: "Your design code", formatted_value: "PN-CCCC-DDDD" }
+  ] };
+  assert.equal(personalizationOf(both), "PN-AAAA-BBBB");
+  // An empty Personalization falls back to the others; no code anywhere keeps the exact text.
+  both.variations[0].formatted_value = "";
+  assert.equal(personalizationOf(both), "\nPN-CCCC-DDDD");
+  assert.equal(personalizationOf({ variations: [{ property_id: 54, formatted_name: "Personalization", formatted_value: "see message" }, { property_id: 200, formatted_name: "Colour", formatted_value: "Blue" }] }), "see message");
 });
 
 test("matcher: refunds and cancellations", () => {
@@ -164,7 +182,7 @@ test("poller: first poll matches every case, marks the codes paid and builds the
     const state = await (await fetch(`${srv.url}/api/download/pn7k3q9xpa`)).json();
     assert.equal(state.state, "ready");
     assert.equal(state.expiresAt, a.delivery_expires_at);
-    const download = await fetch(`${srv.url}/api/download/${CODES.a}/zip`);
+    const download = await fetch(`${srv.url}/api/download/${CODES.a}/zip?agree=1`);
     assert.equal(download.status, 200);
     assert.ok(Buffer.from(await download.arrayBuffer()).equals(zip));
 

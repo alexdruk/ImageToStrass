@@ -25,6 +25,9 @@ const app = createApp({ db, config });
 app.locals.pipeline.recover();
 // Etsy receipts -> paid codes (spec section 11.3), now and every ETSY_POLL_SECONDS.
 app.locals.poller.start();
+// Hashed IPs are kept 24 h (spec 13): cleared now and every hour (the nightly job does it too).
+app.locals.limits.forgetOldIps();
+setInterval(() => app.locals.limits.forgetOldIps(), 60 * 60 * 1000).unref();
 
 if (!config.turnstileSecret) {
   console.warn("TURNSTILE_SECRET_KEY is not set: uploads are not checked by Turnstile.");

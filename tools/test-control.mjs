@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { loadControlConfig } from "../src/control/app.js";
 import { openDatabase } from "../src/db/index.js";
 import { exitMeaning, parseLaunchctlList, parsePmsetBatt, parsePmsetCustom, parsePs, processTree } from "../src/control/probes.js";
 
@@ -254,6 +255,17 @@ test("control: the page never contains a value from .env; keys show only set or 
   assert.match(main, /Image provider key<\/td><td><span class="ok">● set/);
   assert.match(main, /TURNSTILE_SITE_KEY<\/td><td><span class="bad">● missing/);
   assert.match(main, /Listing ids: <span class="ok">● configured \(1\)/);
+});
+
+test("control: a warning when the legal details are missing in .env (PN-07)", async () => {
+  // The test .env sets none of them.
+  const main = await page();
+  assert.match(main, /<p class="note bad"><span class="warn">● Legal details missing in .env<\/span><\/p>/);
+  assert.match(main, /IS_LEGAL_NAME, IS_LEGAL_ADDRESS, IS_LEGAL_COUNTRY, IS_LEGAL_LAW, IS_CONTACT_EMAIL: the privacy/);
+  const all = { IS_LEGAL_NAME: "n", IS_LEGAL_ADDRESS: "a", IS_LEGAL_COUNTRY: "c", IS_LEGAL_LAW: "l", IS_CONTACT_EMAIL: "e" };
+  // The registration number may stay empty; a blank value counts as missing.
+  assert.deepEqual(loadControlConfig(all, root).legalMissing, []);
+  assert.deepEqual(loadControlConfig({ ...all, IS_LEGAL_LAW: "  " }, root).legalMissing, ["IS_LEGAL_LAW"]);
 });
 
 test("control: agents, health, business and logs as the page shows them", async () => {

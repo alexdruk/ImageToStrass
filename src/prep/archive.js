@@ -1,9 +1,10 @@
 import { constants, copyFileSync, mkdirSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-// data/archive/<code>/ (spec section 4.2). Kept forever: nothing here ever deletes. Folders
-// uploads/<k>/ and attempt-<n>/ are created exclusively and files in them are written with
-// "wx", so nothing is overwritten. code.json is the one file replaced on each change.
+// data/archive/<code>/ (spec section 4.2). Nothing here ever deletes: only the nightly job deletes a
+// code's whole folder, 30 days after its last activity or its payment (D7). Folders uploads/<k>/
+// and attempt-<n>/ are created exclusively and files in them are written with "wx", so nothing is
+// overwritten. code.json is the one file replaced on each change.
 
 export function codeDir(root, code) {
   return path.join(root, code);
@@ -21,13 +22,16 @@ function writeNew(file, data) {
   writeFileSync(file, data, { flag: "wx" });
 }
 
-// Atomic replace of code.json with the current code row.
+// Atomic replace of code.json with the current code row, without the hashed IP (kept 24 h in the
+// database only, spec 13). Once the nightly job has deleted the code's folder, nothing is written.
 export function writeCodeJson(root, row) {
+  if (row.files_deleted_at) return;
   const dir = codeDir(root, row.code);
   const tmp = path.join(dir, `.code.json.${process.pid}.tmp`);
+  const { ip_hash: _ipHash, ...kept } = row;
 
   mkdirSync(dir, { recursive: true });
-  writeFileSync(tmp, `${JSON.stringify(row, null, 2)}\n`);
+  writeFileSync(tmp, `${JSON.stringify(kept, null, 2)}\n`);
   renameSync(tmp, path.join(dir, "code.json"));
 }
 

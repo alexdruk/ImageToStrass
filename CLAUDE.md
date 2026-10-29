@@ -41,8 +41,9 @@ prepared image → provider call → strass /layout → stone list (mm)
   section 12. The grep test in `tools/test-no-provider-leak.mjs` must pass.
 - The browser only ever sees: the original/prepared image, the watermarked tinted preview, stats
   and codes. Never a mask, AI image, overlay or 3D view.
-- Never delete anything under `data/archive/`. Alex manages it by hand. Only
-  `data/delivery/` ZIPs are deleted (30 days after payment) by the nightly job.
+- Never delete anything under `data/archive/` yourself. Only the nightly job deletes there: a code's
+  folder 30 days after its last activity or its payment (spec D7, PN-07), and the `data/delivery/`
+  ZIPs 30 days after payment. Never touch `data/listing/` or `data/private-portraits/`.
 - Never commit `.env`, `data/`, tokens, models over 50 MB or buyer images.
 - No payment, prices or contact collection on IS; payment happens only on Etsy.
 - Never ship or use the dlib 68-point face model (`shape_predictor_68_face_landmarks.dat`) in

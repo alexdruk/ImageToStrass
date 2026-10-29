@@ -17,6 +17,7 @@ import { etsyTestConfig, noEtsy } from "./etsy-mock.mjs";
 import { buildPrompt } from "../src/pipeline/prompt.js";
 import { findLeaks, leakWords } from "./leak-words.mjs";
 import { zipEntries } from "./zip-read.mjs";
+import { PAGES, renderHtml, renderMarkdown } from "../public/legal.js";
 
 // Spec section 12 (CLAUDE.md "Never expose the provider"): a fake design end to end, every HTTP
 // response body and header, every file the server sends (pages, scripts, images, the ZIP) and every
@@ -272,7 +273,7 @@ test("a fake design end to end: no response, header, file or ZIP entry names the
   try {
     // Pages, static files and the app's settings.
     for (const f of publicFiles()) await env.call(`/${f}`);
-    for (const p of ["/", "/download", "/privacy", "/terms", "/contact", "/api/config", "/health", "/no-such-file.js"]) await env.call(p);
+    for (const p of ["/", "/download", "/privacy", "/terms", "/contact", "/legal", "/api/config", "/health", "/no-such-file.js"]) await env.call(p);
 
     const { code } = await env.upload();
     for (const p of ["", "/prepare", "/working", "/done"]) await env.call(`/c/${code}${p}`);
@@ -298,7 +299,8 @@ test("a fake design end to end: no response, header, file or ZIP entry names the
     assert.equal((await env.call(`/api/download/${code}/zip`)).status, 403);
     assert.equal((await env.post(`/api/test/payment/${code}`, { state: "paid" })).body.state, "ready");
     await env.json(`/api/download/${code}`);
-    const zip = await env.call(`/api/download/${code}/zip`);
+    assert.equal((await env.call(`/api/download/${code}/zip`)).status, 403);
+    const zip = await env.call(`/api/download/${code}/zip?agree=1`);
     assert.equal(zip.status, 200);
     assert.equal(zipEntries(zip.body).entries.length, 9);
 
@@ -321,6 +323,20 @@ test("a fake design end to end: no response, header, file or ZIP entry names the
   }
   // Nothing (a log, say) was written under public/.
   assert.equal(publicFiles().join("\n"), publicBefore);
+});
+
+// PN-07: the privacy, terms, contact and legal notice pages as the browser renders them (public/legal.js;
+// the screen URLs and legal.js itself are read in the end-to-end test above), with and without the
+// seller's details, and their review copies in docs/legal/. The rendered pages are checked in a
+// real browser too (tools/webapp-flow.mjs).
+test("the four legal pages and docs/legal/*.md name no provider", () => {
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+  const set = { name: "Seller", address: "Street 1", registration: "R1", country: "France", law: "France", email: "a@example.invalid", listing: "https://www.etsy.com/listing/1" };
+  for (const [name, page] of Object.entries(PAGES)) {
+    for (const values of [{}, set]) assert.deepEqual(leaksIn(`/${name}`, renderHtml(page, values, esc)), [], name);
+    assert.deepEqual(leaksIn(`${name}.md`, renderMarkdown(page)), [], name);
+    assert.deepEqual(leaksIn(`docs/legal/${name}.md`, readFileSync(path.join(ROOT, "docs", "legal", `${name}.md`), "utf8")), [], name);
+  }
 });
 
 test("a provider that names itself in its image and its errors leaves no trace", async () => {

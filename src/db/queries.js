@@ -5,7 +5,7 @@ import { generateCode } from "./codes.js";
 
 const CODE_FIELDS = [
   "consent_at", "attempts_used", "selected_attempt", "status", "paid_at",
-  "receipt_id", "transaction_id", "downloads", "delivery_expires_at"
+  "receipt_id", "transaction_id", "downloads", "delivery_expires_at", "last_seen_at", "files_deleted_at"
 ];
 
 const ATTEMPT_FIELDS = [
@@ -111,7 +111,22 @@ export function createQueries(db) {
     countDesignsSince: db.prepare(`SELECT COUNT(*) FROM attempts WHERE created_at >= ? AND ${COUNTED_DESIGN_SQL}`).pluck(),
     countIpDesignsSince: db.prepare(`SELECT COUNT(*) FROM attempts WHERE created_at >= ? AND ip_hash = ? AND ${COUNTED_DESIGN_SQL}`).pluck(),
     countIpCodesSince: db.prepare("SELECT COUNT(*) FROM codes WHERE created_at >= ? AND ip_hash = ?").pluck(),
-    listEvents: db.prepare("SELECT * FROM events WHERE code = ? ORDER BY at, rowid")
+    listEvents: db.prepare("SELECT * FROM events WHERE code = ? ORDER BY at, rowid"),
+    firstEvent: db.prepare("SELECT * FROM events WHERE code = ? AND kind = ? ORDER BY at, rowid LIMIT 1"),
+    // Keeping data (D7): every code whose files are not deleted yet, with its last activity (the
+    // latest of its creation, its last visit, its events and its designs) and whether a design of
+    // it is still queued or running. ISO times compare as text.
+    listKeptCodes: db.prepare(`
+      SELECT c.code, c.status, c.paid_at, c.delivery_expires_at,
+        MAX(c.created_at, IFNULL(c.last_seen_at, ''),
+          IFNULL((SELECT MAX(at) FROM events e WHERE e.code = c.code), ''),
+          IFNULL((SELECT MAX(MAX(created_at, IFNULL(finished_at, ''))) FROM attempts a WHERE a.code = c.code), '')
+        ) AS last_active_at,
+        EXISTS (SELECT 1 FROM attempts a WHERE a.code = c.code AND a.status IN ('queued', 'running')) AS active
+      FROM codes c WHERE c.files_deleted_at IS NULL`),
+    // The hashed IP is kept only as long as the limits need it (24 h, spec 13).
+    forgetCodeIps: db.prepare("UPDATE codes SET ip_hash = NULL WHERE ip_hash IS NOT NULL AND created_at < ?"),
+    forgetAttemptIps: db.prepare("UPDATE attempts SET ip_hash = NULL WHERE ip_hash IS NOT NULL AND created_at < ?")
   };
 
   const codeExists = (code) => statements.codeExists.get(code) === 1;
@@ -213,6 +228,11 @@ export function createQueries(db) {
 
     listExpiredPaidCodes: (iso) => statements.listExpiredPaidCodes.all(iso),
     listEvents: (code) => statements.listEvents.all(code),
+    // The first event of a kind for a code (the withdrawal consent at download), or null.
+    firstEvent: (code, kind) => statements.firstEvent.get(code, kind) ?? null,
+    listKeptCodes: () => statements.listKeptCodes.all(),
+    // Hashed IPs of codes and designs made before iso are cleared. Returns how many rows changed.
+    forgetIpHashes: (iso) => statements.forgetCodeIps.run(iso).changes + statements.forgetAttemptIps.run(iso).changes,
 
     countDesignsSince: (iso) => statements.countDesignsSince.get(iso),
     countIpDesignsSince: (iso, ipHash) => statements.countIpDesignsSince.get(iso, ipHash),

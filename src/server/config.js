@@ -9,6 +9,23 @@ function positive(value, fallback) {
   return value !== undefined && value !== "" && Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
+// The seller's legal details for the privacy, terms, contact and legal notice pages (PN-07). Only
+// IS_LEGAL_REGISTRATION may stay empty; an empty required one shows "Not set" on the pages and a
+// warning on the control panel.
+export const LEGAL_KEYS = {
+  name: "IS_LEGAL_NAME",
+  address: "IS_LEGAL_ADDRESS",
+  registration: "IS_LEGAL_REGISTRATION",
+  country: "IS_LEGAL_COUNTRY",
+  law: "IS_LEGAL_LAW",
+  contactEmail: "IS_CONTACT_EMAIL"
+};
+export const LEGAL_OPTIONAL = ["IS_LEGAL_REGISTRATION"];
+
+// The required legal keys that are empty in env.
+export const missingLegal = (env = process.env) =>
+  Object.values(LEGAL_KEYS).filter((key) => !LEGAL_OPTIONAL.includes(key) && !String(env[key] ?? "").trim());
+
 // Comma-separated Etsy listing ids -> numbers (anything else is ignored).
 function listingIds(value) {
   return String(value || "").split(",").map((s) => s.trim()).filter((s) => /^\d+$/.test(s)).map(Number);
@@ -36,6 +53,11 @@ export function loadConfig(env = process.env) {
     turnstileSecret: env.TURNSTILE_SECRET_KEY || "",
     turnstileSiteKey: env.TURNSTILE_SITE_KEY || "",
     listingUrl: env.IS_ETSY_LISTING_URL || "",
+    legal: Object.fromEntries(Object.entries(LEGAL_KEYS).map(([field, key]) => [field, String(env[key] ?? "").trim()])),
+    // Keeping data (D7): a code's archive folder is deleted this many days after its last activity
+    // (never paid) or after payment (paid or refunded), by the nightly job.
+    keepUnpaidDays: positive(env.IS_KEEP_UNPAID_DAYS, 30),
+    keepPaidDays: positive(env.IS_KEEP_PAID_DAYS, 30),
     // Limits (spec 13): designs per hashed IP in any 24 h, and designs per Paris calendar day.
     designsPerIpPerDay: positive(env.IS_DESIGNS_PER_IP_PER_DAY, 6),
     dailyDesignCap: positive(env.IS_DAILY_DESIGN_CAP, 100),
