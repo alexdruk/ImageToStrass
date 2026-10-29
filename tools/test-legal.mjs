@@ -60,6 +60,8 @@ test("privacy: the required parts, in order, and the browser storage found in th
   for (const words of ["Example Seller, 1 Example Road. Email: help@example.invalid", "24 hours", "30 days in server logs",
     "order and transaction numbers", "no accounts", "contract", "legitimate interest", "An AI image service in the United States",
     "Cloudflare", "Etsy", "standard data-protection terms", "never uses them to train AI", "no cookies",
+    // What the AI image service keeps (its API data terms, checked in the PN-07 follow-up).
+    "for up to 30 days to check for abuse, and does not use them to train AI", "The AI image service: up to 30 days, only to check for abuse, never to train AI.",
     "data-protection authority", "within one month"]) assert.ok(t.includes(words), words);
   // Exactly what the app and Turnstile store (public/app.js; Turnstile checked in a browser, PN-07).
   const app = readFileSync(new URL("../public/app.js", import.meta.url), "utf8");
@@ -68,6 +70,9 @@ test("privacy: the required parts, in order, and the browser storage found in th
   assert.equal([...app.matchAll(/(localStorage|sessionStorage)\.setItem\(/g)].length, 2, "the privacy policy names every item the app stores");
   assert.doesNotMatch(app, /document\.cookie|indexedDB/);
   for (const words of ["is.code in local storage", "is.working.<your code> in session storage", "cf.turnstile.u"]) assert.ok(t.includes(words), words);
+  // Markdown shows < and > as they are (in code, so GitHub keeps them).
+  assert.ok(legalDocs().privacy.includes("`is.working.<your code>`"));
+  for (const md of Object.values(legalDocs())) assert.doesNotMatch(md, /&lt;|&gt;|&amp;/);
 });
 
 test("terms: the expectations line word for word, the withdrawal rule, licence and law", () => {

@@ -7,7 +7,7 @@ import { loadConfig, missingLegal } from "../server/config.js";
 import { AGENT_INFO, CONFIRM, REFRESH_SCRIPT, confirmPage, logPage, mainPage, messagePage } from "./page.js";
 import {
   AGENTS, LOG_NAME, agents, business, cached, folderSizes, health, listLogs, machine, nightlySummary, runCommand,
-  storage, tailLines, timedGet, tunnel
+  storage, tailLines, timedGet, tunnel, markAlertDone, paidAfterDeleteAlerts
 } from "./probes.js";
 
 // The control panel (PN-05, spec section 15.1): one local page with the state of the agents, health,
@@ -53,7 +53,9 @@ export function loadControlConfig(env = process.env, root = process.cwd()) {
     listingIdsCount: server.etsy.listingIds.length,
     keys: KEYS.map(([name, key]) => ({ name, set: Boolean(env[key]) })),
     // The seller's details for the legal pages (PN-07): the names of the required ones left empty.
-    legalMissing: missingLegal(env)
+    legalMissing: missingLegal(env),
+    // The panel's own record of the alerts Alex marked done (never the database).
+    alertsDoneFile: at("data/control-alerts-done.json")
   };
 }
 
@@ -112,7 +114,8 @@ export function createControlApp({ config, run = runCommand, fetchFn = fetch, lo
     const data = {
       agents: agentsData, health: healthData, tunnel: tunnelData, business: businessData, machine: machineData,
       storage: storageData, nightly, logs: listLogs(config.logsDir), keys: config.keys,
-      legalMissing: config.legalMissing
+      legalMissing: config.legalMissing,
+      alerts: paidAfterDeleteAlerts(config)
     };
     const recent = lastAction && Date.now() - lastAction.at < 10 * 60 * 1000 ? lastAction : null;
     html(res, 200, mainPage(data, { csrf, lastAction: recent, websiteUrl: config.websiteUrl }));
@@ -131,6 +134,17 @@ export function createControlApp({ config, run = runCommand, fetchFn = fetch, lo
     } catch {
       html(res, 500, messagePage("Log not readable", "The file could not be read."));
     }
+  });
+
+  // "Done" next to a paid-after-delete alert: Alex refunded the order on Etsy.
+  app.post("/alerts/:id/done", (req, res) => {
+    if (!tokenOk(req)) return html(res, 403, messagePage("Refused", "The page had expired (the control panel was restarted). Open the control panel again and retry."));
+    const id = /^[1-9]\d{0,12}$/.test(req.params.id) ? Number(req.params.id) : null;
+    if (!id || !paidAfterDeleteAlerts(config).some((a) => a.id === id)) return html(res, 404, messagePage("Not found", "No such alert."));
+    markAlertDone(config.alertsDoneFile, id);
+    lastAction = { at: Date.now(), ok: true, text: "Alert marked done." };
+    log.log(`control: alert ${id} marked done`);
+    res.redirect(303, "/");
   });
 
   app.post("/agents/:label/:action", async (req, res) => {

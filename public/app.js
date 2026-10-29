@@ -1002,6 +1002,7 @@ async function doneScreen(code) {
           <li><div><b>Check out on Etsy</b><p>You pay on Etsy only. Nothing is charged here.</p></div></li>
           <li><div><b>Come back to download</b><p>Go to <a href="/download?code=${session.code}" data-link>${downloadUrl}</a> and enter your code. Payments usually appear within 10 minutes.</p></div></li>
         </ol>
+        <p class="sub mt" id="order-within">Order within 30 days. After 30 days without a visit, your design is deleted.</p>
         <div class="actions mt-l" id="links">
           ${raw(config.listingUrl ? html`<a class="btn primary" href="${config.listingUrl}" target="_blank" rel="noopener">Open the Etsy listing</a>` : "")}
           ${raw(chosen ? html`<a class="btn" href="/c/${session.code}/result/${chosen}" data-link>Back to your design</a>` : "")}
@@ -1064,7 +1065,9 @@ async function downloadScreen(params) {
         <div class="actions dl-actions"><a class="btn primary" id="dl" download ${raw(body.consented ? html`href="${zipUrl(clean)}"` : 'aria-disabled="true"')}>Download ZIP</a></div>
         <p class="sub">Available until ${body.expiresAt ? date(body.expiresAt) : ""}. See the <a href="/terms" data-link>terms</a>.</p>`,
       expired: html`<div class="notice"><b>This download has expired.</b> Files are kept for 30 days after payment. Please <a href="/contact" data-link>contact us</a> if you need them again.</div>`,
-      refunded: html`<div class="notice"><b>This order was refunded</b>, so its files are no longer available.</div>`
+      refunded: html`<div class="notice"><b>This order was refunded</b>, so its files are no longer available.</div>`,
+      // Paid after the nightly job deleted the design (D7); Alex refunds it on Etsy.
+      deleted: html`<div class="notice" id="deleted">This design was deleted because it was more than 30 days old. Send us a message on Etsy and we will refund you.</div>`
     };
     out.innerHTML = states[body.state] || states.unknown;
     const agree = out.querySelector("#withdrawal");

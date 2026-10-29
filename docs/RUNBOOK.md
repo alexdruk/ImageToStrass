@@ -313,6 +313,17 @@ choice; IS makes no automatic copy. `data/archive/` holds buyers' photos, which 
 promises to delete after 30 days: a Time Machine or other copy would keep them longer, so exclude it
 (`tmutil addexclusion data/archive`) or delete its copies on the same schedule.
 
+## Paid, but the design was deleted
+
+The control panel shows a red alert "Paid, but the design was deleted: refund on Etsy" with a receipt
+number and a code when an order is paid for a code whose files the nightly job has already deleted
+(30 days without a visit, spec D7 and 11.3). The buyer's download page tells them the design was
+deleted and that they will be refunded. What to do:
+
+1. In Etsy (Shop Manager → Orders), open the order with that receipt number and refund it in full.
+2. Optionally send the buyer a message: they can make a new design with a new code.
+3. Click **Done** next to the alert. The next poll sees the refund and marks the code refunded.
+
 ## Privacy requests
 
 A buyer emails `IS_CONTACT_EMAIL` with a code (answer within one month, spec 14). To delete their

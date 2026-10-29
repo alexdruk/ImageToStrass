@@ -302,4 +302,8 @@ test("downloadState", () => {
   assert.deepEqual(downloadState({ status: "paid", delivery_expires_at: "2026-10-19T11:59:59.000Z" }, now), { state: "expired" });
   assert.deepEqual(downloadState({ status: "expired" }, now), { state: "expired" });
   assert.deepEqual(downloadState({ status: "refunded" }, now), { state: "refunded" });
+  // Paid after the design was deleted (PN-07 follow-up), until refunded.
+  assert.deepEqual(downloadState({ status: "paid", undeliverable_at: "2026-10-19T11:00:00.000Z", delivery_expires_at: "2026-11-18T12:00:00.000Z" }, now), { state: "deleted" });
+  assert.deepEqual(downloadState({ status: "expired", undeliverable_at: "2026-10-19T11:00:00.000Z" }, now), { state: "deleted" });
+  assert.deepEqual(downloadState({ status: "refunded", undeliverable_at: "2026-10-19T11:00:00.000Z" }, now), { state: "refunded" });
 });

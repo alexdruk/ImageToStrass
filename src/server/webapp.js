@@ -48,6 +48,8 @@ export const WITHDRAWAL_CONSENT = "withdrawal-consent";
 export function downloadState(row, now = Date.now()) {
   if (!row) return { state: "unknown" };
   if (row.status === "refunded") return { state: "refunded" };
+  // Paid after its design was deleted (D7): nothing to deliver; the order is refunded on Etsy.
+  if (row.undeliverable_at) return { state: "deleted" };
   const expiresAt = row.delivery_expires_at;
   if (row.status === "expired" || (row.status === "paid" && expiresAt && Date.parse(expiresAt) <= now)) {
     return { state: "expired" };

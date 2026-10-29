@@ -23,7 +23,7 @@ test("the database file is created in WAL mode with all tables", () => {
 
     const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").pluck().all();
     assert.deepEqual(tables, ["attempts", "codes", "etsy_orders", "events"]);
-    assert.equal(db.pragma("user_version", { simple: true }), 3);
+    assert.equal(db.pragma("user_version", { simple: true }), 4);
     db.close();
 
     // Opening again keeps the data and does not fail on the existing schema.
@@ -197,7 +197,7 @@ test("migration 1 de-duplicates an IS-01 etsy_orders table and adds the unique k
     old.close();
 
     const db = openDatabase(file);
-    assert.equal(db.pragma("user_version", { simple: true }), 3);
+    assert.equal(db.pragma("user_version", { simple: true }), 4);
     assert.deepEqual(
       db.prepare("SELECT transaction_id, matched_code, status FROM etsy_orders ORDER BY rowid").all(),
       [

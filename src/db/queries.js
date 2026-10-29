@@ -5,7 +5,8 @@ import { generateCode } from "./codes.js";
 
 const CODE_FIELDS = [
   "consent_at", "attempts_used", "selected_attempt", "status", "paid_at",
-  "receipt_id", "transaction_id", "downloads", "delivery_expires_at", "last_seen_at", "files_deleted_at"
+  "receipt_id", "transaction_id", "downloads", "delivery_expires_at", "last_seen_at", "files_deleted_at",
+  "undeliverable_at"
 ];
 
 const ATTEMPT_FIELDS = [

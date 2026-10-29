@@ -11,6 +11,8 @@ import { findLeaks } from "./leak-words.mjs";
 const FOOTER_LINKS = ["/privacy", "/terms", "/contact", "/legal"];
 // PN-07: the waiting-time notes (spec section 10).
 const WAIT_PREPARE = "Your design takes a few minutes, usually 2 to 5, longer when it is busy. You can leave this page: your code brings you back.";
+const ORDER_WITHIN = "Order within 30 days. After 30 days without a visit, your design is deleted.";
+const DELETED = "This design was deleted because it was more than 30 days old. Send us a message on Etsy and we will refund you.";
 const WITHDRAWAL = "I agree that my download starts now and that I lose any right to withdraw from the purchase.";
 const TEXT_TYPES = /^(text\/|application\/(json|javascript)|image\/svg)/;
 
@@ -146,6 +148,7 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
   // 5 Your code.
   await page.click("#use");
   await screen("code", "location.pathname.endsWith('/done') && document.querySelector('.code-big')");
+  if ((await page.eval("document.querySelector('#order-within')?.textContent")) !== ORDER_WITHIN) throw new Error("Your code: no order-within line");
 
   // 6 Download: not paid, ready (and the ZIP itself), expired, refunded, unknown.
   await page.click("#steps-list a[href^='/download']");
@@ -174,6 +177,12 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
   await page.eval("document.querySelector('#code').value = 'PN-0000-0000'");
   await page.eval(submit);
   await screen("download-unknown", "document.querySelector('#state .notice.error')");
+  // Paid after the design was deleted (PN-07 follow-up): the refund text, no tick box, no download.
+  server.q.updateCode(code, { status: "paid", undeliverable_at: new Date().toISOString() });
+  await page.eval(`document.querySelector('#code').value = ${JSON.stringify(code)}`);
+  await page.eval(submit);
+  await screen("download-deleted", `document.querySelector('#deleted')?.textContent === ${JSON.stringify(DELETED)}`);
+  if (await page.eval("!!(document.querySelector('#withdrawal') || document.querySelector('#dl'))")) throw new Error("Download: a deleted design offers a download");
 
   // 7 The legal pages, each reached from the footer.
   for (const href of FOOTER_LINKS) {

@@ -326,3 +326,32 @@ test("control probes: launchctl list, ps trees, pmset and exit meanings", () => 
   assert.match(exitMeaning(-15), /stopped/);
   assert.match(exitMeaning(1), /see its log/);
 });
+
+test("control: paid after the design was deleted: a red alert until Done (PN-07 follow-up)", async () => {
+  const db = openDatabase(path.join(root, "data", "is.sqlite"));
+  db.prepare("INSERT INTO events (at, code, kind, detail) VALUES (?, 'PN-CCCC-DDDD', 'paid-after-delete', ?)")
+    .run(new Date().toISOString(), JSON.stringify({ how: "etsy", receiptId: 3800000777, transactionId: 4900000777 }));
+  const id = db.prepare("SELECT MAX(rowid) FROM events").pluck().get();
+  db.close();
+
+  const alert = /<div class="note bad alert"><span class="bad">● Paid, but the design was deleted: refund on Etsy<\/span>\s*Receipt <b>3800000777<\/b> · code <code>PN-CCCC-DDDD<\/code>/;
+  let main = await page();
+  assert.match(main, alert);
+  // At the top: before the agents.
+  assert.ok(main.indexOf("Paid, but the design was deleted") < main.indexOf("com.is.server"));
+  assert.match(main, new RegExp(`action="/alerts/${id}/done"`));
+
+  // Done needs the page's token, and a known alert.
+  assert.equal((await request("POST", `/alerts/${id}/done`, { form: { csrf: "wrong" } })).status, 403);
+  assert.equal((await request("POST", "/alerts/999999/done", { form: { csrf: await token() } })).status, 404);
+  assert.match(await page(), alert);
+
+  const before = crypto.createHash("sha256").update(readFileSync(path.join(root, "data", "is.sqlite"))).digest("hex");
+  const done = await request("POST", `/alerts/${id}/done`, { form: { csrf: await token() } });
+  assert.equal(done.status, 303);
+  main = await page();
+  assert.doesNotMatch(main, /Paid, but the design was deleted/);
+  // Kept in the panel's own file; the database is still only read.
+  assert.deepEqual(JSON.parse(readFileSync(path.join(root, "data", "control-alerts-done.json"), "utf8")), [id]);
+  assert.equal(crypto.createHash("sha256").update(readFileSync(path.join(root, "data", "is.sqlite"))).digest("hex"), before);
+});

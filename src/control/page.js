@@ -84,6 +84,7 @@ const STYLE = `
   .ok { color: #11743b; font-weight: 600; } .bad { color: #b42318; font-weight: 600; } .warn { color: #a15c00; font-weight: 600; }
   .note { background: #eaf0ff; border-radius: 8px; padding: 8px 12px; margin-top: 12px; }
   .note.bad { background: #fdecea; }
+  form.inline { display: inline; margin-left: 8px; }
   .btn { display: inline-block; background: #12348f; color: #fff; border: 0; border-radius: 8px; padding: 5px 12px;
     font: inherit; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; }
   .btn.ghost { background: #eaf0ff; color: #12348f; }
@@ -290,7 +291,11 @@ export function mainPage(data, { csrf, lastAction, websiteUrl }) {
     ? `<p class="note${lastAction.ok ? "" : " bad"}">${esc(when(lastAction.at))}: ${esc(lastAction.text)}</p>`
     : "";
   const legal = data.legalMissing?.length ? `<p class="note bad">${warn("Legal details missing in .env")}</p>` : "";
-  return layout("IS control", `${message}${legal}
+  // Paid after the design was deleted: red until Alex clicks Done (after refunding on Etsy).
+  const alerts = (data.alerts || []).map((a) => `<div class="note bad alert">${bad("Paid, but the design was deleted: refund on Etsy")}
+    Receipt <b>${esc(a.receiptId ?? "unknown")}</b> · code <code>${esc(a.code)}</code> <span class="small muted">${esc(when(a.at))}</span>
+    <form method="post" action="/alerts/${esc(a.id)}/done" class="inline"><input type="hidden" name="csrf" value="${csrf}"><button class="btn" type="submit">Done</button></form></div>`).join("");
+  return layout("IS control", `${alerts}${message}${legal}
 ${agentsSection(data, csrf)}
 ${healthSection(data)}
 ${businessSection(data.business, websiteUrl)}

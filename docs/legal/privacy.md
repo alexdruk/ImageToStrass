@@ -29,7 +29,7 @@ PatternNifty has no accounts and never asks for your name, email or address. You
 
 ## Who else receives data
 
-- An AI image service in the United States, which turns your prepared image into the design. It receives the image only: never your code, your IP address or your order details.
+- An AI image service in the United States, which turns your prepared image into the design. It receives the image only: never your code, your IP address or your order details. It may keep the image, and the picture it makes from it, for up to 30 days to check for abuse, and does not use them to train AI.
 - Cloudflare, which carries the traffic to our server and runs the anti-bot check.
 - Etsy, where you pay and where your order is handled. Etsy's own privacy policy applies there.
 
@@ -46,15 +46,16 @@ Everything else, background removal included, runs on our own server. Transfers 
 - If you buy: they are deleted 30 days after payment, the same day your download ends.
 - After that we keep only a short record of the code (its status, dates and number of designs) and the Etsy order numbers, without any images, for our accounts.
 - Your IP address: 24 hours in the limit counters, up to 30 days in server logs.
+- The AI image service: up to 30 days, only to check for abuse, never to train AI.
 - Backup copies of our database, which hold the records above, are kept for 30 days.
 
 ## Cookies and browser storage
 
 PatternNifty sets no cookies and uses no tracking or advertising. Your browser stores only:
 
-- your code, under the name is.code in local storage, so you can come back to your design;
-- while a design is being made, its number, under the name is.working.&lt;your code> in session storage, which your browser clears when you close the tab;
-- for the anti-bot check (Cloudflare Turnstile), one item named cf.turnstile.u in the local storage of challenges.cloudflare.com. Turnstile sets no cookies on PatternNifty.
+- your code, under the name `is.code` in local storage, so you can come back to your design;
+- while a design is being made, its number, under the name `is.working.<your code>` in session storage, which your browser clears when you close the tab;
+- for the anti-bot check (Cloudflare Turnstile), one item named `cf.turnstile.u` in the local storage of challenges.cloudflare.com. Turnstile sets no cookies on PatternNifty.
 
 These are needed for the service to work. You can clear them in your browser at any time; you then need your code to come back to your design.
 

@@ -105,6 +105,9 @@ export function createPoller({
         if (paid) {
           done.paid += 1;
           done.builds.push(paid.build);
+        } else if (!before) {
+          // A new order for a code that was already paid and whose files are gone (D7).
+          delivery.markPaidAfterDelete(code, ids);
         }
       }
     }
