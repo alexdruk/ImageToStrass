@@ -131,7 +131,8 @@ button, input, select { font: inherit; color: inherit; }
 .center { text-align: center; }
 
 .footer { border-top: 1px solid var(--line); padding: 18px 20px; }
-.footer nav { max-width: 1160px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+.footer nav { max-width: 1160px; margin: 0 auto; display: flex; gap: 8px 12px; flex-wrap: wrap; justify-content: center; }
+.footer a + a::before { content: "·"; margin-right: 12px; color: var(--muted); }
 .footer a { color: var(--muted); text-decoration: none; font-size: 14px; }
 .footer a:hover { color: var(--blue); }
 
@@ -174,11 +175,6 @@ button, input, select { font: inherit; color: inherit; }
 .notice.warn { background: var(--warn-soft); border-color: #f0dcb0; color: var(--warn); }
 .notice.info { background: var(--blue-soft); border-color: #cdd9f3; color: var(--blue-ink); }
 .notice:empty { display: none; }
-
-.draft-banner {
-  border: 2px dashed #d39b22; background: var(--warn-soft); color: var(--warn);
-  border-radius: var(--radius-sm); padding: 10px 14px; font-weight: 600; margin-bottom: 20px;
-}
 
 .spinner {
   width: 18px; height: 18px; border-radius: 50%; flex: none;
@@ -392,6 +388,10 @@ button, input, select { font: inherit; color: inherit; }
 .prose h2 { margin-top: 26px; }
 .prose ul { padding-left: 22px; }
 .prose li { margin-bottom: 6px; }
+.prose p, .prose li { overflow-wrap: anywhere; }
+.prose .updated { margin-top: -6px; }
+.prose .not-set { color: var(--warn); }
+.prose code { font: 0.92em var(--mono); background: var(--blue-soft); padding: 1px 4px; border-radius: 4px; }
 
 /* ---------- Phones ---------- */
 
@@ -426,6 +426,11 @@ button, input, select { font: inherit; color: inherit; }
   .stage { min-height: 260px; padding: 10px; }
   .code-hero { padding: 26px 16px; }
   .actions .btn { flex: 1 1 auto; }
+  /* Download · Privacy · Terms · Contact · Legal notice on one line at 390 px. */
+  .footer { padding: 16px 12px; }
+  .footer nav { gap: 6px 8px; }
+  .footer a { font-size: 13px; }
+  .footer a + a::before { margin-right: 8px; }
 }
 
 /* Beside the wordmark and the code there is no room for the current step's name. */

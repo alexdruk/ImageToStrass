@@ -84,7 +84,7 @@ test("a fake design and a paid download say PatternNifty everywhere and never IS
 
   try {
     for (const f of publicFiles()) await call(`/${f}`);
-    for (const p of ["/", "/download", "/privacy", "/terms", "/contact", "/api/config", "/no-such-file.js"]) await call(p);
+    for (const p of ["/", "/download", "/privacy", "/terms", "/contact", "/legal", "/api/config", "/no-such-file.js"]) await call(p);
 
     // Upload, a design, its views, "Use this design".
     const form = new FormData();
@@ -111,7 +111,7 @@ test("a fake design and a paid download say PatternNifty everywhere and never IS
     await call(`/api/download/${code}`);
     assert.equal((await post(`/api/test/payment/${code}`, { state: "paid" })).json().state, "ready");
     await call(`/api/download/${code}`);
-    const zip = await call(`/api/download/${code}/zip`);
+    const zip = await call(`/api/download/${code}/zip?agree=1`);
     assert.equal(zip.status, 200);
     assert.match(zip.headers.get("content-disposition"), new RegExp(`filename="${code}\\.zip"`));
 

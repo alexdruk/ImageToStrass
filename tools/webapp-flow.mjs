@@ -1,5 +1,6 @@
 // The IS-05 flow in a browser (spec section 10): upload, prepare, working, result, try again (Black
-// & white Bold, then Shaded: IS-07b), use this design, code screen, download (every state), and the three static pages. Used by
+// & white Bold, then Shaded: IS-07b), use this design, code screen, download (every state, the
+// withdrawal tick box: PN-07), and the four legal pages (PN-07), linked from every screen's footer. Used by
 // tools/test-webapp-browser.mjs (checks only) and tools/shoot-is05.mjs (with screenshots).
 // Every response the page receives, and the page source and text of every screen, are checked for
 // the words of spec section 12, and for the old brand: every screen shows the PatternNifty wordmark,
@@ -7,6 +8,12 @@
 import { BRAND, findOldBrand } from "./brand-words.mjs";
 import { findLeaks } from "./leak-words.mjs";
 
+const FOOTER_LINKS = ["/privacy", "/terms", "/contact", "/legal"];
+// PN-07: the waiting-time notes (spec section 10).
+const WAIT_PREPARE = "Your design takes a few minutes, usually 2 to 5, longer when it is busy. You can leave this page: your code brings you back.";
+const ORDER_WITHIN = "Order within 30 days. After 30 days without a visit, your design is deleted.";
+const DELETED = "This design was deleted because it was more than 30 days old. Send us a message on Etsy and we will refund you.";
+const WITHDRAWAL = "I agree that my download starts now and that I lose any right to withdraw from the purchase.";
 const TEXT_TYPES = /^(text\/|application\/(json|javascript)|image\/svg)/;
 
 export async function runFlow({ page, server, width, height, mobile, photo, shot = async () => {} }) {
@@ -44,6 +51,9 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
       return { mark: visible(mark) ? mark.textContent : null, chip: visible(chip) ? chip.textContent : null };
     })()`);
     if (shown.mark !== BRAND) brand.push(`screen ${name}: wordmark ${JSON.stringify(shown.mark)}`);
+    // PN-07: Privacy · Terms · Contact · Legal notice in the footer of every screen.
+    const footer = await page.eval("[...document.querySelectorAll('.footer a')].filter((a) => a.offsetParent).map((a) => a.getAttribute('href')).join(' ')");
+    for (const href of FOOTER_LINKS) if (!footer.split(" ").includes(href)) brand.push(`screen ${name}: no footer link ${href}`);
     if (code && shown.chip !== code) brand.push(`screen ${name}: code chip ${JSON.stringify(shown.chip)}`);
   }
   const imagesLoaded = "[...document.images].every((i) => i.complete && i.naturalWidth > 0)";
@@ -74,6 +84,7 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
   const expect = "document.querySelector('.expect')?.textContent.includes('faces are stylised') && document.querySelector('.expect').offsetParent !== null";
   if (!(await page.eval(expect))) throw new Error("Prepare: no expectation line");
   if (!(await page.eval("document.querySelector('#bw-styles').hidden"))) throw new Error("Prepare: Black & white styles shown for Colour");
+  if ((await page.eval("document.querySelector('#wait-note')?.textContent")) !== WAIT_PREPARE) throw new Error("Prepare: no waiting-time note");
   code = await page.eval("document.querySelector('#code-chip').textContent");
   if (!/^PN-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/.test(code)) brand.push(`code ${code}`);
   await page.eval("(() => { const i = document.querySelector('#brightness'); i.value = 12; i.dispatchEvent(new Event('input')); })()");
@@ -85,6 +96,9 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
   // 3 Working -> 4 Result.
   await page.click("#create");
   await screen("working", "location.pathname.endsWith('/working') && document.querySelector('#stages li.current')");
+  // Running (or next): the usual time, and the leave-the-page line with the code.
+  if ((await page.eval("document.querySelector('#queue').textContent")) !== "Usually 2 to 5 minutes.") throw new Error("Working: no usual time");
+  if (!(await page.eval(`document.querySelector('.leave').textContent.includes(${JSON.stringify(`You can leave this page; your code is ${code}`)})`))) throw new Error("Working: no leave-the-page line");
   await screen("result", `location.pathname.includes('/result/') && document.querySelectorAll('.pane img').length === 2 && ${imagesLoaded}`);
   const first = await path();
   // Wide screens: Original and Tinted side by side, no tabs. Phone width: tabs, one view at a time.
@@ -134,6 +148,7 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
   // 5 Your code.
   await page.click("#use");
   await screen("code", "location.pathname.endsWith('/done') && document.querySelector('.code-big')");
+  if ((await page.eval("document.querySelector('#order-within')?.textContent")) !== ORDER_WITHIN) throw new Error("Your code: no order-within line");
 
   // 6 Download: not paid, ready (and the ZIP itself), expired, refunded, unknown.
   await page.click("#steps-list a[href^='/download']");
@@ -142,10 +157,18 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
   await setPayment(code, "paid");
   await page.eval(submit);
   await screen("download-ready", "document.querySelector('#state .notice.ok') && document.querySelector('#dl')");
+  // The first download asks for the withdrawal consent: no link until the box is ticked.
+  if ((await page.eval("document.querySelector('#withdrawal-box')?.textContent.trim()")) !== WITHDRAWAL) throw new Error("Download: no withdrawal tick box");
+  if (await page.eval("document.querySelector('#dl').hasAttribute('href') || document.querySelector('#dl').getAttribute('aria-disabled') !== 'true'")) throw new Error("Download: enabled before the tick");
+  await page.click("#withdrawal");
   const href = await page.eval("document.querySelector('#dl').href");
+  if (!href.endsWith("?agree=1") || (await page.eval("document.querySelector('#dl').hasAttribute('aria-disabled')"))) throw new Error(`Download: not enabled by the tick (${href})`);
   const zip = await fetch(href);
   const zipBytes = Buffer.from(await zip.arrayBuffer());
   if (zip.status !== 200 || zipBytes.subarray(0, 2).toString() !== "PK") throw new Error(`ZIP download failed: ${zip.status}`);
+  // Asked once per code: checked again, the Download button is there without a tick box.
+  await page.eval(submit);
+  await screen("download-again", "document.querySelector('#dl')?.hasAttribute('href') && !document.querySelector('#withdrawal-box')");
   for (const state of ["expired", "refunded"]) {
     await setPayment(code, state);
     await page.eval(submit);
@@ -154,11 +177,17 @@ export async function runFlow({ page, server, width, height, mobile, photo, shot
   await page.eval("document.querySelector('#code').value = 'PN-0000-0000'");
   await page.eval(submit);
   await screen("download-unknown", "document.querySelector('#state .notice.error')");
+  // Paid after the design was deleted (PN-07 follow-up): the refund text, no tick box, no download.
+  server.q.updateCode(code, { status: "paid", undeliverable_at: new Date().toISOString() });
+  await page.eval(`document.querySelector('#code').value = ${JSON.stringify(code)}`);
+  await page.eval(submit);
+  await screen("download-deleted", `document.querySelector('#deleted')?.textContent === ${JSON.stringify(DELETED)}`);
+  if (await page.eval("!!(document.querySelector('#withdrawal') || document.querySelector('#dl'))")) throw new Error("Download: a deleted design offers a download");
 
-  // 7 Static pages.
-  for (const name of ["privacy", "terms", "contact"]) {
-    await page.goto(`${server.url}/${name}`);
-    await screen(name, "document.querySelector('.draft-banner')");
+  // 7 The legal pages, each reached from the footer.
+  for (const href of FOOTER_LINKS) {
+    await page.click(`.footer a[href='${href}']`);
+    await screen(href.slice(1), `location.pathname === ${JSON.stringify(href)} && document.querySelector('.prose h1') && document.querySelector('.prose .updated')?.textContent.startsWith('Last updated: ')`);
   }
 
   // /c/<code> resumes the session (here: chosen design -> code screen).

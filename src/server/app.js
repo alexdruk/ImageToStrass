@@ -49,6 +49,7 @@ app.use(wwwRedirect(config));
 const hashIp = deps.hashIp || fileIpHasher(config.ipKeyFile);
 // Spec 13; deps.now (tests) moves the clock.
 const limits = createLimits({ q, config, ...(deps.now && { now: deps.now }) });
+app.locals.limits = limits;
 
 app.use(uploadRoutes({ q, config, background, verifyTurnstile, hashIp, limits }));
 

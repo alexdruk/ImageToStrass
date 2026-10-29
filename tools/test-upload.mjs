@@ -97,7 +97,9 @@ test("every accepted format uploads, is archived and becomes work.png", async ()
 
       const codeJson = JSON.parse(readFileSync(path.join(srv.config.archiveDir, body.code, "code.json"), "utf8"));
       const row = srv.q.getCode(body.code);
-      assert.deepEqual(codeJson, row);
+      // code.json is the row without the hashed IP (kept 24 h in the database only, PN-07).
+      const { ip_hash: _ipHash, ...kept } = row;
+      assert.deepEqual(codeJson, kept);
       assert.ok(row.consent_at);
       assert.match(row.ip_hash, /^[0-9a-f]{32}$/);
       assert.equal(srv.q.listEvents(body.code)[0].kind, "upload");

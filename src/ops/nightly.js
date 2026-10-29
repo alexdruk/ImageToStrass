@@ -3,11 +3,16 @@
 // 1. paid codes whose 30 days are over become expired;
 // 2. delivery ZIPs (data/delivery/<code>/) of codes whose delivery_expires_at has passed are deleted,
 //    and the folder with them when it is empty;
-// 3. *.log in the log folder (IS_LOG_DIR, ~/Library/Logs/PatternNifty) are rotated (copied to <name>.log.YYYY-MM-DD, then emptied; 14 days kept);
-// 4. data/is.sqlite is copied with SQLite's online backup to data/backup/is-YYYY-MM-DD.sqlite (30 kept);
-// 5. one summary line goes to nightly.log in the log folder.
-// Nothing under data/archive/ is read, deleted or moved; the only write there is the code.json copy
-// of a code that became expired, as at every change of a code (section 4.2).
+// 3. keeping data (D7): a code's archive folder (data/archive/<code>/: its uploads, attempt files and
+//    code.json) is deleted IS_KEEP_UNPAID_DAYS (30) after its last activity when it was never paid,
+//    and IS_KEEP_PAID_DAYS (30) after payment when it was paid or refunded, the same day as its
+//    delivery ZIP; the code row and its Etsy orders stay, files_deleted_at set. Hashed IPs older than
+//    24 h are cleared (spec 13);
+// 4. *.log in the log folder (IS_LOG_DIR, ~/Library/Logs/PatternNifty) are rotated (copied to <name>.log.YYYY-MM-DD, then emptied; 30 days kept);
+// 5. data/is.sqlite is copied with SQLite's online backup to data/backup/is-YYYY-MM-DD.sqlite (30 kept);
+// 6. one summary line (counts only, no codes) goes to nightly.log in the log folder.
+// In data/archive/ only folders named after a code of the database are deleted, never anything
+// else; data/listing/ and data/private-portraits/ are never touched.
 
 import {
   appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmdirSync,
@@ -21,8 +26,10 @@ import { openDatabase } from "../db/index.js";
 import { createQueries } from "../db/queries.js";
 import { loadConfig } from "../server/config.js";
 import { createDelivery } from "../server/delivery.js";
+import { createLimits } from "../server/limits.js";
 
-export const LOG_DAYS = 14;
+export const LOG_DAYS = 30;
+const CODE_FOLDER = /^(PN|IS)-[0-9A-Z]{4}-[0-9A-Z]{4}$/;
 export const BACKUPS_KEPT = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -54,6 +61,29 @@ function deleteExpiredZips({ q, deliveryDir, now }) {
       deleted += 1;
     }
     if (readdirSync(dir).length === 0) rmdirSync(dir);
+  }
+  return deleted;
+}
+
+// When a code's files are due (D7): IS_KEEP_PAID_DAYS after payment (and never before its download
+// ends, which an admin unlock can move), else IS_KEEP_UNPAID_DAYS after its last activity.
+export function filesDueAt(row, { keepUnpaidDays, keepPaidDays }) {
+  if (row.paid_at) {
+    const afterPayment = Date.parse(row.paid_at) + keepPaidDays * DAY_MS;
+    return Math.max(afterPayment, row.delivery_expires_at ? Date.parse(row.delivery_expires_at) : 0);
+  }
+  return Date.parse(row.last_active_at) + keepUnpaidDays * DAY_MS;
+}
+
+function deleteOldFiles({ q, config, now }) {
+  const deleted = { unpaid: 0, paid: 0 };
+  for (const row of q.listKeptCodes()) {
+    if (row.active || !(filesDueAt(row, config) <= now.getTime())) continue;
+    // Only a folder directly under data/archive/ named after the code (PN- or IS- code).
+    if (!CODE_FOLDER.test(row.code)) continue;
+    rmSync(path.join(config.archiveDir, row.code), { recursive: true, force: true });
+    q.updateCode(row.code, { files_deleted_at: now.toISOString() });
+    deleted[row.paid_at ? "paid" : "unpaid"] += 1;
   }
   return deleted;
 }
@@ -123,16 +153,19 @@ export async function runNightly({ db, config, now = new Date(), log = console }
 
   const expired = await step("expire", () => expireCodes({ q, delivery, now }), 0);
   const zips = await step("zips", () => deleteExpiredZips({ q, deliveryDir: config.deliveryDir, now }), 0);
+  const files = await step("files", () => deleteOldFiles({ q, config, now }), { unpaid: 0, paid: 0 });
+  const ips = await step("ips", () => createLimits({ q, config, now: () => now }).forgetOldIps(), 0);
   const logs = await step("logs", () => rotateLogs({ logsDir: config.logsDir, now }), { rotated: 0, deleted: 0 });
   const backup = await step("backup", () => backupDatabase({ db, backupDir: config.backupDir, now }), null);
 
   const line = `${now.toISOString()} nightly: codes expired ${expired}, zips deleted ${zips}, ` +
+    `files deleted ${files.unpaid + files.paid} (unpaid ${files.unpaid}, paid ${files.paid}), ip hashes cleared ${ips}, ` +
     `logs rotated ${logs.rotated} (old deleted ${logs.deleted}), ` +
     `backup ${backup ? `${backup.name} (old deleted ${backup.deleted})` : "failed"}, ` +
     `errors ${errors.length ? errors.join(" ") : 0}`;
   appendFileSync(path.join(config.logsDir, "nightly.log"), `${line}\n`);
 
-  return { ok: errors.length === 0, expired, zips, logs, backup, errors, line };
+  return { ok: errors.length === 0, expired, zips, files, ips, logs, backup, errors, line };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {

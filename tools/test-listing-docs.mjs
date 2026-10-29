@@ -26,26 +26,36 @@ async function pdfText(bytes) {
   };
 }
 
-test("listing: title, personalization instructions, size line, expectations and the generic AI disclosure", () => {
+test("listing (PN-07): title, personalization, settings, expectations, deletion, AI disclosure and tags", () => {
   const title = block("Title");
   assert.ok(title.length <= 140, `title is ${title.length} characters`);
-  assert.equal(block("Personalization instructions"), "Enter your PatternNifty code, for example PN-7K3Q-9XPA");
+  assert.ok(title.startsWith("Photo to Rhinestone Template, See Your Design Before You Buy"));
+  assert.equal(block("Personalization instructions"), "Make your design first at patternnifty.com, then paste its code here, e.g. PN-7K3Q-9XPA. Several designs: one code each.");
+  // The settings: Digital files, not Made to order; the field title exactly Personalization, 100 characters.
+  assert.match(LISTING, /\| Type \| Digital files \|/);
+  assert.match(LISTING, /\| When made \| The newest year/);
+  assert.match(LISTING, /\| Personalization field title \| Exactly `Personalization`/);
+  assert.match(LISTING, /\| Personalization character limit \| 100/);
+  assert.match(LISTING, /\| Personalization \| \*\*On, required\*\*, no add-on price \|/);
+  assert.match(LISTING, /\| Digital file \| `docs\/PatternNifty-how-to-download\.pdf`/);
   const description = block("Description");
-  assert.ok(description.includes("Size depends on your image, usually 13 to 30 cm on the longest side. You see the exact size before you buy."));
+  assert.ok(description.startsWith("See your rhinestone design before you buy. Pay only if you like it."));
   assert.ok(description.includes("Designs are created with the help of AI tools."));
-  // What to expect (IS-07b): an artistic version, stylised faces, up to 3 designs, the two B&W styles.
-  assert.ok(description.includes("Your design is an artistic rhinestone version of your photo"));
-  assert.ok(description.includes("faces are stylised rather than photographic"));
-  assert.ok(description.includes("You can try up to 3 designs and you only buy if you like one."));
-  assert.ok(description.includes("Black & white comes in two styles: Bold and Shaded."));
+  // What to expect (IS-07b), the size, the 30-day deletion (D7) and the two B&W styles.
+  assert.ok(description.includes("Your design is an artistic rhinestone version of your photo, not a copy of it: faces are stylised rather than photographic."));
+  assert.ok(description.includes("Black & white comes in two styles: Bold (strong, graphic) and Shaded (more detail)."));
+  assert.ok(description.includes("usually 13 to 30 cm (5 to 12 in) on the longest side"));
+  assert.ok(description.includes("Your photo and designs are deleted 30 days after your last visit, or 30 days after payment."));
+  assert.ok(description.includes("up to 3 designs"));
   assert.ok(description.includes("Go to patternnifty.com and upload"));
   assert.ok(description.includes("Go to patternnifty.com/download"));
   for (const heading of ["Title", "Description", "Personalization instructions"]) assert.deepEqual(findOldBrand(block(heading)), [], heading);
   // No price, payment or contact collection off Etsy (spec 11.1); no provider (spec 12).
   assert.doesNotMatch(description, /[$€£]|https?:|@|e-?mail/i);
   assert.deepEqual(findLeaks(LISTING), []);
-  const tags = block("Tags (suggestions, 13 at most, 20 characters each)").split(/,\s*/);
-  assert.ok(tags.length <= 13 && tags.every((t) => t.length <= 20));
+  const tags = block("Tags (13 at most, 20 characters each)").split(/,\s*/);
+  assert.equal(tags.length, 13);
+  assert.ok(tags.every((t) => t.length <= 20), tags.filter((t) => t.length > 20).join());
 });
 
 test("how-to PDF: one Letter page that sends the buyer to patternnifty.com/download, PatternNifty only", async () => {

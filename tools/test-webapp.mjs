@@ -21,7 +21,7 @@ import { findLeaks } from "./leak-words.mjs";
 const PHOTO = readFileSync(new URL("./fixtures/upload/photo.png", import.meta.url));
 const PUBLIC = new URL("../public/", import.meta.url).pathname;
 const SCREENS = ["/", "/c/PN-AAAA-BBBB", "/c/PN-AAAA-BBBB/prepare", "/c/PN-AAAA-BBBB/working",
-  "/c/PN-AAAA-BBBB/result/2", "/c/PN-AAAA-BBBB/done", "/download", "/privacy", "/terms", "/contact"];
+  "/c/PN-AAAA-BBBB/result/2", "/c/PN-AAAA-BBBB/done", "/download", "/privacy", "/terms", "/contact", "/legal"];
 
 // fetch that checks every answer's headers and (text) body for the section 12 words.
 function checkedFetch(base) {
@@ -168,18 +168,23 @@ test("download states, the ZIP, and the test-only payment switch", async () => {
     assert.equal(paid.state, "ready");
     const row = srv.q.getCode(code);
     assert.equal(Date.parse(row.delivery_expires_at) - Date.parse(row.paid_at), 30 * 24 * 3600 * 1000);
-    assert.equal((await state()).expiresAt, row.delivery_expires_at);
+    assert.deepEqual(await state(), { state: "ready", expiresAt: row.delivery_expires_at, consented: false });
 
     // Paid: the design can no longer be changed; the ZIP has the spec's files (names are stored
-    // uncompressed in the ZIP's directory).
+    // uncompressed in the ZIP's directory). The first download needs the withdrawal consent.
     assert.equal((await get(`/api/codes/${code}/select`, post({ attempt: n }))).status, 409);
-    const zip = await get(`/api/download/${code.replace(/-/g, "").toLowerCase()}/zip`);
+    const refused = await get(`/api/download/${code}/zip`);
+    assert.equal(refused.status, 403);
+    assert.deepEqual(refused.json(), { error: "consent" });
+    assert.equal(srv.q.getCode(code).downloads, 0);
+    const zip = await get(`/api/download/${code.replace(/-/g, "").toLowerCase()}/zip?agree=1`);
     assert.equal(zip.status, 200);
     assert.equal(zip.headers.get("content-type"), "application/zip");
     assert.match(zip.headers.get("content-disposition"), new RegExp(`filename="${code}.zip"`));
     assert.equal(zip.body.subarray(0, 2).toString(), "PK");
     for (const name of zipEntryNames(code)) assert.ok(zip.body.includes(Buffer.from(name)), name);
     assert.equal(srv.q.getCode(code).downloads, 1);
+    assert.equal((await state()).consented, true);
 
     // Past the 30 days, expired; refunded; and back.
     srv.q.updateCode(code, { delivery_expires_at: new Date(Date.now() - 1000).toISOString() });
@@ -193,6 +198,78 @@ test("download states, the ZIP, and the test-only payment switch", async () => {
     assert.equal((await pay(code, "free")).status, 404);
   } finally {
     await srv.stop();
+  }
+});
+
+test("withdrawal consent (PN-07): asked once per code, its first time stored as an event", async () => {
+  const srv = await startFakeServer();
+  const get = checkedFetch(srv.url);
+  const pay = (code) => get(`/api/test/payment/${code}`, post({ state: "paid" }));
+  try {
+    const { code } = await uploadAndDesign(srv, get);
+    const consents = () => srv.q.listEvents(code).filter((e) => e.kind === "withdrawal-consent");
+    await pay(code);
+    // Not before payment, and not without the tick.
+    assert.equal((await get(`/api/download/${code}/zip?agree=0`)).status, 403);
+    assert.deepEqual(consents(), []);
+
+    const before = Date.now();
+    assert.equal((await get(`/api/download/${code}/zip?agree=1`)).status, 200);
+    const [first] = consents();
+    assert.ok(Date.parse(first.at) >= before - 1000 && Date.parse(first.at) <= Date.now());
+
+    // Later downloads need no tick, and a tick again adds no second agreement.
+    assert.equal((await get(`/api/download/${code}/zip`)).status, 200);
+    assert.equal((await get(`/api/download/${code}/zip?agree=1`)).status, 200);
+    assert.deepEqual(consents(), [first]);
+    assert.equal(srv.q.getCode(code).downloads, 3);
+    assert.equal((await get(`/api/download/${code}`)).json().consented, true);
+
+    // Another code is asked again.
+    const other = await uploadAndDesign(srv, get);
+    await pay(other.code);
+    assert.equal((await get(`/api/download/${other.code}`)).json().consented, false);
+    assert.equal((await get(`/api/download/${other.code}/zip`)).status, 403);
+  } finally {
+    await srv.stop();
+  }
+});
+
+test("a code whose files were deleted (D7) is not resumed and takes no upload", async () => {
+  const srv = await startFakeServer();
+  const get = checkedFetch(srv.url);
+  try {
+    const { code } = await uploadAndDesign(srv, get);
+    const seen = srv.q.getCode(code).last_seen_at;
+    assert.equal((await get(`/api/codes/${code}`)).status, 200);
+    assert.ok(srv.q.getCode(code).last_seen_at > (seen ?? ""), "opening the session is the code's last visit");
+
+    srv.q.updateCode(code, { files_deleted_at: new Date().toISOString() });
+    const r = await get(`/api/codes/${code}`);
+    assert.equal(r.status, 410);
+    assert.deepEqual(r.json(), { error: "deleted" });
+    const form = new FormData();
+    form.append("consent", "1");
+    form.append("code", code);
+    form.append("image", new Blob([PHOTO], { type: "image/png" }), "photo.png");
+    assert.equal((await get("/api/upload", { method: "POST", body: form })).status, 409);
+  } finally {
+    await srv.stop();
+  }
+});
+
+test("/api/config carries the seller's legal details, empty when not set", async () => {
+  const values = { IS_LEGAL_NAME: "Test Seller", IS_LEGAL_ADDRESS: "1 Test Street", IS_LEGAL_COUNTRY: "Testland", IS_LEGAL_LAW: "Testland", IS_CONTACT_EMAIL: "test@example.invalid" };
+  for (const [env, legal] of [
+    [{}, { name: "", address: "", registration: "", country: "", law: "", contactEmail: "" }],
+    [values, { name: "Test Seller", address: "1 Test Street", registration: "", country: "Testland", law: "Testland", contactEmail: "test@example.invalid" }]
+  ]) {
+    const srv = await startFakeServer({ env });
+    try {
+      assert.deepEqual((await checkedFetch(srv.url)("/api/config")).json().legal, legal);
+    } finally {
+      await srv.stop();
+    }
   }
 });
 
@@ -225,4 +302,8 @@ test("downloadState", () => {
   assert.deepEqual(downloadState({ status: "paid", delivery_expires_at: "2026-10-19T11:59:59.000Z" }, now), { state: "expired" });
   assert.deepEqual(downloadState({ status: "expired" }, now), { state: "expired" });
   assert.deepEqual(downloadState({ status: "refunded" }, now), { state: "refunded" });
+  // Paid after the design was deleted (PN-07 follow-up), until refunded.
+  assert.deepEqual(downloadState({ status: "paid", undeliverable_at: "2026-10-19T11:00:00.000Z", delivery_expires_at: "2026-11-18T12:00:00.000Z" }, now), { state: "deleted" });
+  assert.deepEqual(downloadState({ status: "expired", undeliverable_at: "2026-10-19T11:00:00.000Z" }, now), { state: "deleted" });
+  assert.deepEqual(downloadState({ status: "refunded", undeliverable_at: "2026-10-19T11:00:00.000Z" }, now), { state: "refunded" });
 });

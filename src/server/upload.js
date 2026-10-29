@@ -194,10 +194,11 @@ export function uploadRoutes({ q, config, background, verifyTurnstile, hashIp, l
         return;
       }
 
-      // An existing code takes the upload only while it can still make designs.
+      // An existing code takes the upload only while it can still make designs, and not once its
+      // files are deleted (D7).
       let row = fields.code ? q.getCode(normalizeCode(fields.code) ?? "") : null;
 
-      if (row && (row.status !== "open" || q.countedAttempts(row.code) >= DESIGNS_PER_CODE)) {
+      if (row && (row.status !== "open" || row.files_deleted_at || q.countedAttempts(row.code) >= DESIGNS_PER_CODE)) {
         res.status(409).json({ error: "limit" });
         return;
       }

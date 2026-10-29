@@ -65,5 +65,12 @@ export const MIGRATIONS = [
   // NULL for automatic re-runs and for designs made before PN-06.
   `ALTER TABLE attempts ADD COLUMN ip_hash TEXT;
    CREATE INDEX attempts_created ON attempts(created_at);
-   CREATE INDEX codes_ip_created ON codes(ip_hash, created_at);`
+   CREATE INDEX codes_ip_created ON codes(ip_hash, created_at);`,
+  // 3 (PN-07): keeping data (D7). last_seen_at: the last time the code's session was opened (its
+  // last activity counts from the latest of this, its events and its designs); files_deleted_at:
+  // when the nightly job deleted its archive folder (the row itself is kept, without images).
+  `ALTER TABLE codes ADD COLUMN last_seen_at TEXT;
+   ALTER TABLE codes ADD COLUMN files_deleted_at TEXT;`,
+  // 4 (PN-07 follow-up): paid after its files were deleted, so it cannot be delivered (refund on Etsy).
+  `ALTER TABLE codes ADD COLUMN undeliverable_at TEXT;`
 ];

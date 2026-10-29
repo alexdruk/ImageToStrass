@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { open, statfs } from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
@@ -192,6 +192,46 @@ function readJson(file) {
     return JSON.parse(readFileSync(file, "utf8"));
   } catch {
     return null;
+  }
+}
+
+// Paid after the design was deleted (PN-07 follow-up): the "paid-after-delete" events Alex has not
+// marked done yet, oldest first: { id, at, code, receiptId }. The Done clicks are kept in the panel's
+// own file (config.alertsDoneFile, a list of event ids), so the database is still only read.
+export function readDoneAlerts(file) {
+  try {
+    const ids = JSON.parse(readFileSync(file, "utf8"));
+    return new Set(Array.isArray(ids) ? ids.filter(Number.isInteger) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function markAlertDone(file, id) {
+  const ids = readDoneAlerts(file);
+  ids.add(id);
+  mkdirSync(path.dirname(file), { recursive: true });
+  const tmp = `${file}.${process.pid}.tmp`;
+  writeFileSync(tmp, `${JSON.stringify([...ids])}\n`);
+  renameSync(tmp, file);
+}
+
+export function paidAfterDeleteAlerts(config) {
+  let db;
+  try {
+    db = new Database(config.dbFile, { readonly: true, fileMustExist: true });
+    const done = readDoneAlerts(config.alertsDoneFile);
+    return db.prepare("SELECT rowid AS id, at, code, detail FROM events WHERE kind = 'paid-after-delete' ORDER BY at, rowid").all()
+      .filter((e) => !done.has(e.id))
+      .map((e) => {
+        let detail = {};
+        try { detail = JSON.parse(e.detail || "{}"); } catch { /* none */ }
+        return { id: e.id, at: e.at, code: e.code, receiptId: detail.receiptId ?? null };
+      });
+  } catch {
+    return [];
+  } finally {
+    db?.close();
   }
 }
 

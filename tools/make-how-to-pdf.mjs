@@ -56,7 +56,7 @@ export function howToPdf(base) {
   step(1, [`Go to the ${BRAND} download page:`], 1.9);
   line(`${site}/download`, { x: M + 40, size: 20, color: BLUE, gap: 2.4 });
   step(2, [`Enter your ${BRAND} code.`, "It is the code you put in the Personalization field on Etsy,", "for example PN-7K3Q-9XPA."]);
-  step(3, ["Click Download ZIP.", "You get SVG, production sheets (PDF), AI, EPS, DXF and PNG,", "at your design's natural size."]);
+  step(3, ["Tick the box and click Download ZIP.", "You get SVG, production sheets (PDF), AI, EPS, DXF and PNG,", "at your design's natural size."]);
 
   y -= 6;
   doc.setStrokeColor([0.87, 0.89, 0.93]);

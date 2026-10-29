@@ -20,7 +20,7 @@ export { DELIVERY_DAYS };
 const PREVIEW_CACHE_SIZE = 24;
 
 // Every screen URL of the app; each answers with the one page (public/index.html).
-export const SCREEN_PATHS = /^\/(?:c\/[^/]+(?:\/prepare|\/working|\/done|\/result\/\d+)?|download|privacy|terms|contact)?\/?$/;
+export const SCREEN_PATHS = /^\/(?:c\/[^/]+(?:\/prepare|\/working|\/done|\/result\/\d+)?|download|privacy|terms|contact|legal)?\/?$/;
 
 const INDEX_CSP = [
   "default-src 'self'",
@@ -40,10 +40,16 @@ const SIZES = Object.fromEntries(listAllStoneSizes().map((s) => [s.id, s.name]))
 
 const nOf = (text) => (/^[1-9]\d{0,5}$/.test(text) ? Number(text) : null);
 
+// The buyer agrees, once per code, that the download starts now and that any right to withdraw is
+// lost (PN-07, EU and UK digital content); the first agreement is this event, its time the event's.
+export const WITHDRAWAL_CONSENT = "withdrawal-consent";
+
 // The download state of a code row (spec 10, screen 6).
 export function downloadState(row, now = Date.now()) {
   if (!row) return { state: "unknown" };
   if (row.status === "refunded") return { state: "refunded" };
+  // Paid after its design was deleted (D7): nothing to deliver; the order is refunded on Etsy.
+  if (row.undeliverable_at) return { state: "deleted" };
   const expiresAt = row.delivery_expires_at;
   if (row.status === "expired" || (row.status === "paid" && expiresAt && Date.parse(expiresAt) <= now)) {
     return { state: "expired" };
@@ -91,19 +97,27 @@ export function webappRoutes({ q, config, background, delivery, poller = null, l
     res.json({
       turnstileSiteKey: config.turnstileSiteKey || null,
       listingUrl: config.listingUrl || null,
+      // The seller's details for the legal pages (PN-07); "" when not set in .env.
+      legal: config.legal,
       designsPerCode: DESIGNS_PER_CODE,
       colours: COLOURS,
       sizes: SIZES
     });
   });
 
-  // The session of a code (/c/<code> resumes it, spec section 5).
+  // The session of a code (/c/<code> resumes it, spec section 5). Opening it is the code's last
+  // visit (D7: an unpaid code's files are deleted 30 days after its last activity).
   router.get("/api/codes/:code", async (req, res) => {
     const row = codeRow(req);
     if (!row) {
       res.status(404).json({ error: "not-found" });
       return;
     }
+    if (row.files_deleted_at) {
+      res.status(410).json({ error: "deleted" });
+      return;
+    }
+    q.updateCode(row.code, { last_seen_at: new Date().toISOString() });
 
     const attempts = q.listAttempts(row.code);
     const k = latestUpload(row.code);
@@ -197,18 +211,32 @@ export function webappRoutes({ q, config, background, delivery, poller = null, l
     res.json({ code: row.code, selected: n });
   });
 
+  const consented = (row) => Boolean(q.firstEvent(row.code, WITHDRAWAL_CONSENT));
+
+  // A ready code says whether the buyer has agreed yet (the page then asks no more).
   router.get("/api/download/:code", (req, res) => {
-    const state = downloadState(codeRow(req));
+    const row = codeRow(req);
+    const state = downloadState(row);
     if (state.state === "unpaid") poller?.requestPoll();
+    if (state.state === "ready") state.consented = consented(row);
     res.set("Cache-Control", "no-store").json(state);
   });
 
+  // ?agree=1: the buyer ticked the box; the first time is recorded. Without it, and with no
+  // agreement recorded, the ZIP is refused ("consent").
   router.get("/api/download/:code/zip", async (req, res) => {
     const row = codeRow(req);
     const { state } = downloadState(row);
     if (state !== "ready") {
       res.status(state === "unknown" ? 404 : 403).json({ error: state });
       return;
+    }
+    if (!consented(row)) {
+      if (req.query.agree !== "1") {
+        res.status(403).json({ error: "consent" });
+        return;
+      }
+      q.logEvent(WITHDRAWAL_CONSENT, { code: row.code });
     }
 
     try {

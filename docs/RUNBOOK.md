@@ -140,7 +140,7 @@ done, failed, declined, automatic re-runs, codes created, codes paid, downloads.
 `sleep` on the adapter is not 0: see Power below); macOS and node versions.
 
 **Storage.** Free disk (amber under 15 %, red under 5 % or 10 GB: clear space; never delete in
-`data/archive/`); the sizes of `data/archive`, `data/delivery`, `data/backup` and the log folder (at
+`data/archive/` by hand except for a privacy request, below); the sizes of `data/archive`, `data/delivery`, `data/backup` and the log folder (at
 most once a minute); the last database backup (red when older than 36 hours: the nightly job did not
 run, see its row).
 
@@ -161,7 +161,8 @@ tail -n 20 $L/nightly.log
 ```
 
 `nightly.log` has one summary line per night. The nightly job copies each non-empty `*.log` there to
-`<name>.log.YYYY-MM-DD` and empties it; rotated files are kept 14 days.
+`<name>.log.YYYY-MM-DD` and empties it; rotated files are kept 30 days (the privacy policy says logs
+are kept 30 days).
 
 Why not in the repository: the repository lives in `~/Documents`, and macOS privacy rules (TCC) do
 not let launchd open a file in `~/Documents` for an agent. Before PN-03 the strass agent's log was
@@ -293,11 +294,50 @@ The nightly job (03:30):
 - copies `data/is.sqlite` with SQLite's online backup to `data/backup/is-YYYY-MM-DD.sqlite` and keeps
   the last 30;
 - deletes delivery ZIPs (`data/delivery/<code>/`) 30 days after payment and marks those codes expired;
-- never reads, deletes or moves anything in `data/archive/`.
+- keeping data (spec D7, PN-07): deletes a code's whole `data/archive/<code>/` folder (uploads,
+  prepared images, AI images, layouts, attempt files) 30 days after its last activity when it was
+  never paid (`IS_KEEP_UNPAID_DAYS`), and 30 days after payment when it was paid or refunded
+  (`IS_KEEP_PAID_DAYS`, the same day as its ZIP). The code row and its Etsy orders stay in the
+  database, without images. Only folders named after a code of the database are deleted: nothing
+  else in `data/archive/`, and never `data/listing/` or `data/private-portraits/`;
+- clears hashed IPs older than 24 h (the server does it every hour too);
+- writes one summary line with counts only (`files deleted N (unpaid A, paid B)`, no codes) to
+  `nightly.log`; the control panel's nightly row shows it.
 
 To restore the database: stop the server, copy a backup to `data/is.sqlite`, delete
 `data/is.sqlite-wal` and `data/is.sqlite-shm`, start the server.
 
 `data/backup/` is on the same disk as the database, so it protects against mistakes, not a lost Mac.
-`data/archive/` (every upload and design, kept forever) and `data/backup/` should also be covered by
-Time Machine or a regular copy to the iMac. That is Alex's choice; IS makes no automatic copy.
+`data/backup/` should also be covered by Time Machine or a regular copy to the iMac. That is Alex's
+choice; IS makes no automatic copy. `data/archive/` holds buyers' photos, which the privacy policy
+promises to delete after 30 days: a Time Machine or other copy would keep them longer, so exclude it
+(`tmutil addexclusion data/archive`) or delete its copies on the same schedule.
+
+## Paid, but the design was deleted
+
+The control panel shows a red alert "Paid, but the design was deleted: refund on Etsy" with a receipt
+number and a code when an order is paid for a code whose files the nightly job has already deleted
+(30 days without a visit, spec D7 and 11.3). The buyer's download page tells them the design was
+deleted and that they will be refunded. What to do:
+
+1. In Etsy (Shop Manager → Orders), open the order with that receipt number and refund it in full.
+2. Optionally send the buyer a message: they can make a new design with a new code.
+3. Click **Done** next to the alert. The next poll sees the refund and marks the code refunded.
+
+## Privacy requests
+
+A buyer emails `IS_CONTACT_EMAIL` with a code (answer within one month, spec 14). To delete their
+data before the 30 days (no agent needs to stop), delete `data/archive/<code>/` and `data/delivery/<code>/`, then
+set the code's `files_deleted_at` so nothing is written there again:
+
+```
+sqlite3 data/is.sqlite "UPDATE codes SET files_deleted_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE code = 'PN-XXXX-XXXX'"
+```
+
+## Legal details
+
+The privacy, terms, contact and legal notice pages read `IS_LEGAL_NAME`, `IS_LEGAL_ADDRESS`,
+`IS_LEGAL_REGISTRATION` (may stay empty), `IS_LEGAL_COUNTRY`, `IS_LEGAL_LAW` and `IS_CONTACT_EMAIL`
+from `.env` at start: restart the server after changing them, and the control panel to clear its
+"Legal details missing in .env" warning. The texts are in `public/legal.js`; after changing them run
+`node tools/make-legal-docs.mjs` and `node tools/shoot-legal.mjs`.

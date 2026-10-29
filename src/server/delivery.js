@@ -8,6 +8,7 @@ import { buildDeliveryZipOffThread } from "../render/offthread.js";
 // to code.json and the event log the same way.
 
 export const DELIVERY_DAYS = 30;
+export const PAID_AFTER_DELETE = "paid-after-delete";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const deliveryExpiry = (paidAt) => new Date(Date.parse(paidAt) + DELIVERY_DAYS * DAY_MS).toISOString();
@@ -60,18 +61,42 @@ export function createDelivery({ q, config, log = console, buildZipFile = buildD
 
     // An open code becomes paid: paid_at, delivery_expires_at = paid_at + 30 days, ZIP built.
     // Returns { row, build } when it changed, else null (already paid, refunded or expired).
+    // Paid after the nightly job deleted its files (D7): paid all the same (the order is matched),
+    // but undeliverable_at is set, no ZIP is built and the event "paid-after-delete" asks Alex
+    // (control panel) to refund the order on Etsy.
     markPaid(code, { paidAt, receiptId = null, transactionId = null, how }) {
       const row = q.getCode(code);
       if (!row || row.status !== "open") return null;
+      const deleted = Boolean(row.files_deleted_at);
       q.updateCode(code, {
         status: "paid",
         paid_at: paidAt,
         delivery_expires_at: deliveryExpiry(paidAt),
         receipt_id: receiptId,
-        transaction_id: transactionId
+        transaction_id: transactionId,
+        ...(deleted && { undeliverable_at: new Date().toISOString() })
       });
       const updated = changed(code, "paid", { how, receiptId, transactionId });
+      if (deleted) {
+        q.logEvent(PAID_AFTER_DELETE, { code, detail: { how, receiptId, transactionId } });
+        log.error(`Paid after its design was deleted: refund receipt ${receiptId} on Etsy (control panel).`);
+        return { row: updated, build: Promise.resolve(null) };
+      }
       return { row: updated, build: buildZipNow(updated) };
+    },
+
+    // A new paid order for a code that is no longer open and whose files are deleted (an expired
+    // code bought again): the code is not changed, but the order cannot be delivered either.
+    // Returns true when it was recorded now (once per transaction).
+    markPaidAfterDelete(code, { receiptId = null, transactionId = null, how }) {
+      const row = q.getCode(code);
+      if (!row || row.status === "open" || !row.files_deleted_at || row.transaction_id === transactionId) return false;
+      const seen = q.listEvents(code).some((e) => e.kind === PAID_AFTER_DELETE && JSON.parse(e.detail || "{}").transactionId === transactionId);
+      if (seen) return false;
+      q.updateCode(code, { undeliverable_at: row.undeliverable_at || new Date().toISOString() });
+      q.logEvent(PAID_AFTER_DELETE, { code, detail: { how, receiptId, transactionId } });
+      log.error(`Paid after its design was deleted: refund receipt ${receiptId} on Etsy (control panel).`);
+      return true;
     },
 
     // A refund or cancellation locks the download. Returns the row when it changed, else null.

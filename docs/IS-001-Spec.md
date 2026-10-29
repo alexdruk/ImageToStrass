@@ -34,7 +34,12 @@ the laptop on patternnifty.com (15, 19). Revised 27 Oct 2026 (PN-03): logs in ~/
 outside the repo (12, 15, 18). Revised 27 Oct 2026 (PN-05): local control panel on 127.0.0.1:3010
 (15.1, 18). Revised 27 Oct 2026 (PN-06): section 13 limits enforced and tested (4.1, 13, 15.1).
 Revised 28 Oct 2026 (PN-04b): the Black & white example pictures are crops of the mastiff listing
-designs (10).
+designs (10). Revised 29 Oct 2026 (PN-07): data kept 30 days, then deleted by the nightly job (D7, 4,
+15); hashed IPs kept 24 h (13); privacy, terms, contact and legal notice pages with the seller's
+details from `.env` (10, 14, 18); withdrawal consent at the first download (10); waiting-time notes
+(10); poller fallback to every variation (11.3); listing texts (11.1). Revised 29 Oct 2026 (PN-07
+follow-up): paid after the design was deleted (4.1, 10, 11.3, 15.1); the AI image service's data
+terms on the privacy page (14).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -78,7 +83,7 @@ disclosure in generic words (section 11.1).
 | D4 | The buyer sees only two views: **Original** and **Tinted** (section 8). No mask, AI image, overlay or 3D view. |
 | D5 | At most 3 designs per code. A design that fails for technical reasons, or is declined by the safety check, does not count. |
 | D6 | The buyer picks the delivered design ("Use this design"). If a paid code has no pick, the latest design is delivered. |
-| D7 | Uploads, prepared images, AI images, layouts and code records are kept **indefinitely** in `data/archive/`, managed by Alex by hand. Delivery ZIPs are kept **30 days** after payment, then deleted. |
+| D7 | Keeping data (PN-07, replaces "kept indefinitely"): a code's folder in `data/archive/` (uploads, prepared images, AI images, layouts, every attempt file, `code.json`) is deleted by the nightly job **30 days after the code's last activity** when it was never paid (open or expired without payment, `IS_KEEP_UNPAID_DAYS`), and **30 days after payment** when it was paid or refunded (`IS_KEEP_PAID_DAYS`), the same day as its delivery ZIP (never before its download ends, which an admin unlock can move). The code row (status, dates, counts) and its Etsy order rows stay, with no images and no image paths. Logs are kept 30 days, hashed IPs 24 h (13). `data/listing/` and `data/private-portraits/` are never touched. |
 | D8 | One Etsy listing, one price. |
 | D9 | Production sheet as the RS exporter, multi-page tiling for large designs. With no unit choice the ZIP carries **both** an A4 sheet (mm) and a Letter sheet (inches) (IS-03b decision). |
 | D10 | CDR is dropped. AI is a PDF-compatible file; EPS is written by IS directly from the stones (no Ghostscript). |
@@ -140,7 +145,10 @@ codes(
   selected_attempt INTEGER NULL,
   status TEXT,                    -- open | paid | refunded | expired
   paid_at NULL, receipt_id NULL, transaction_id NULL,
-  downloads INTEGER DEFAULT 0, delivery_expires_at NULL
+  downloads INTEGER DEFAULT 0, delivery_expires_at NULL,
+  last_seen_at NULL,              -- last time the code's session was opened (PN-07)
+  files_deleted_at NULL,          -- when the nightly job deleted its archive folder (D7)
+  undeliverable_at NULL           -- paid after its files were deleted: nothing to deliver (11.3)
 )
 attempts(
   code, n INTEGER,                -- 1, 2, 3, ... per code, never reused
@@ -154,7 +162,7 @@ attempts(
 etsy_orders(receipt_id, transaction_id, listing_id, personalization, matched_code NULL,
             paid_at, status, seen_at,
             UNIQUE(transaction_id, matched_code))
-events(at, code NULL, kind, detail)   -- audit log, local only
+events(at, code NULL, kind, detail)   -- audit log, local only; kind "withdrawal-consent" (10)
 ```
 
 Attempts:
@@ -173,13 +181,18 @@ Etsy orders:
   distinct, the key is enforced by a unique index on `(transaction_id, IFNULL(matched_code, ''))`.
 - Schema changes are migrations keyed on `PRAGMA user_version`; migration 1 de-duplicates
   existing `etsy_orders` rows on that key (keeping the newest) and adds the index; migration 2
-  (PN-06) adds `attempts.ip_hash` and indexes for the limits of section 13.
+  (PN-06) adds `attempts.ip_hash` and indexes for the limits of section 13; migration 3 (PN-07) adds
+  `codes.last_seen_at` and `codes.files_deleted_at` (D7); migration 4 (PN-07 follow-up) adds
+  `codes.undeliverable_at` (11.3).
+- A code's last activity (D7) is the latest of its `created_at`, its `last_seen_at` (set each time
+  `GET /api/codes/<code>` opens its session), its events and its designs' created and finished times.
+- `ip_hash` (codes and attempts) is cleared 24 h after the row was made (13).
 
 ### 4.2 Files
 
 ```
-data/archive/<code>/                         kept forever (D7)
-  code.json                                  copy of the code row at each change
+data/archive/<code>/                         deleted 30 days after last activity or payment (D7)
+  code.json                                  copy of the code row at each change, without ip_hash
   uploads/<k>/original.<ext>                 upload as received (k = 1, 2, 3, ... never reused)
   uploads/<k>/work.png                       decoded image (section 6.1)
   uploads/<k>/cutout.png                     work.png with the background removed, if removal worked
@@ -196,7 +209,10 @@ data/backup/is-YYYY-MM-DD.sqlite             nightly database copy, the last 30 
 ```
 
 All of `data/` is git-ignored (already the case). The archive is written before anything is shown
-to the buyer, so a crash never loses an upload.
+to the buyer, so a crash never loses an upload. Only the nightly job deletes in `data/archive/`: a whole
+`<code>/` folder of a code in the database, by the D7 rule; after that `code.json` is not written again,
+`GET /api/codes/<code>` answers 410 `deleted` and an upload to the code is refused (`limit`, so the app
+makes a new code).
 
 An upload is written to `uploads/<k>/` the moment it arrives; no attempt row exists yet. A buyer
 may upload several times, and "Try again" may reuse an upload. When "Create design" makes attempt
@@ -586,13 +602,17 @@ Screens (one URL each, history API):
    white; with Black & white, the two styles (6.4) as two choices, each with a small example
    picture and one line: **Bold** "Solid black and clear areas: strong and graphic." and **Shaded**
    "Black and clear stones mixed to show light and shade." (Bold chosen unless the previous
-   settings say Shaded); "Designs left: N of 3"; button **Create design**. No size field. Under the
+   settings say Shaded); "Designs left: N of 3"; button **Create design**, under it (PN-07) "Your
+   design takes a few minutes, usually 2 to 5, longer when it is busy. You can leave this page: your
+   code brings you back." No size field. Under the
    photo, the expectations line (below). The example pictures (`public/examples/bw-bold.png`,
    `bw-shaded.png`) are made by `tools/make-bw-examples.mjs` without a provider call: the same crop
    of the mastiff's face from the Etsy listing designs `mastiff-bw-stencil` and `mastiff-bw-halftone`
    (PN-04a, `docs/listing/README.md`), their full-size tinted renders shown on white.
-3. **Working** `/c/<code>/working` — the four stage names with progress, queue position, "You can
-   leave this page; your code is PN-XXXX-XXXX". Polls `GET /api/attempts/<code>/<n>` every 3 s.
+3. **Working** `/c/<code>/working` — the four stage names with progress, "You can leave this page;
+   your code is PN-XXXX-XXXX". Under the progress (PN-07): with more than one design ahead in the queue,
+   "Designs are made one at a time. <n> ahead of you."; next in line or running, "Usually 2 to 5
+   minutes." Polls `GET /api/attempts/<code>/<n>` every 3 s.
 4. **Result** `/c/<code>/result/<n>` — Original | Tinted side by side on wide screens; at phone
    width (640 px and less) two tabs, **Original | Tinted**, one view at a time, Tinted shown first
    (IS-06: the compare slider is gone). Zoom on both views, which scroll together; the Original view
@@ -603,11 +623,22 @@ Screens (one URL each, history API):
    designs of this code are shown as thumbnails to switch between.
 5. **Your code** `/c/<code>/done` — big code with Copy, three numbered steps back to Etsy
    (enter the code in Personalization, check out, come back to the download page), link to the
-   listing (`IS_ETSY_LISTING_URL`).
+   listing (`IS_ETSY_LISTING_URL`). Under the steps (PN-07 follow-up): "Order within 30 days. After 30
+   days without a visit, your design is deleted."
 6. **Download** `/download` — code field (placeholder `PN-XXXX-XXXX`). States: unknown code; not paid yet ("Payments usually
    appear within 10 minutes of checkout. This page checks again automatically."); ready (Download
-   button, expiry date); expired; refunded.
-7. Static pages: privacy, terms, contact (`/privacy`, `/terms`, `/contact`).
+   button, expiry date); expired; refunded. Withdrawal consent (PN-07): before a code's first
+   download the Download button is enabled only after the box "I agree that my download starts now
+   and that I lose any right to withdraw from the purchase." is ticked; the button then asks for
+   `/api/download/<code>/zip?agree=1`, and the first agreement is stored as the event
+   `withdrawal-consent` (its time is the event's). Asked once per code: `GET /api/download/<code>`
+   says `consented`, and later downloads need no tick. Without it the ZIP answers 403 `consent`.
+   Deleted (PN-07 follow-up; a code with `undeliverable_at`, unless refunded): "This design was
+   deleted because it was more than 30 days old. Send us a message on Etsy and we will refund you."
+   No tick box, no Download button; the ZIP answers 403.
+7. Legal pages (PN-07, section 14): privacy policy, terms of sale, contact and legal notice (`/privacy`,
+   `/terms`, `/contact`, `/legal`), linked from the footer of every screen (Download · Privacy ·
+   Terms · Contact · Legal notice), each with "Last updated" and its date.
 
 Expectations line (IS-07b), on Prepare and Result: "Your design is an artistic rhinestone version of
 your photo; faces are stylised, not photographic. You can try up to 3 designs and only buy if you like
@@ -622,8 +653,10 @@ No view shows a mask, AI image, overlay, 3D view, model name, prompt, stage timi
 
 ### 11.1 Listing (manual, texts in `docs/etsy-listing.md` written in IS-06)
 
-- Digital item, one price, Personalization **required**, instructions: "Enter your PatternNifty
-  code, for example PN-7K3Q-9XPA".
+- Digital files (not Made to order), one price, Personalization **required**, field title exactly
+  "Personalization", 100 characters, instructions (PN-07): "Make your design first at
+  patternnifty.com, then paste its code here, e.g. PN-7K3Q-9XPA. Several designs: one code each."
+  Title, description and tags as in `docs/etsy-listing.md` (PN-07).
 - Digital file attached to the listing: `PatternNifty-how-to-download.pdf` (one page: "Go to
   patternnifty.com/download and enter your code"; `tools/make-how-to-pdf.mjs <site URL>`).
 - Description: what the buyer gets, the steps, the site written as plain text, `patternnifty.com` (Etsy does not
@@ -666,11 +699,22 @@ No view shows a mask, AI image, overlay, 3D view, model name, prompt, stage timi
   `data/etsy-poller.json` with its time and counts (no buyer data), so a restart or a Mac that was
   off catches up. With no good run yet it reads the last 30 days.
 - For each transaction whose `listing_id` is in `IS_ETSY_LISTING_IDS`: read the variation named
-  Personalization (Etsy property 54), extract every code (section 5), store in `etsy_orders`. Other
+  Personalization (Etsy property 54), extract every code (section 5), store in `etsy_orders`. If that
+  variation holds no code (or there is none), the codes in every variation of the transaction are
+  used (PN-07); the exact match always comes first. Other
   listings' transactions are not stored at all; with `IS_ETSY_LISTING_IDS` empty nothing is stored.
 - Code found and `open` → `paid`, `paid_at` (the transaction's Etsy paid time),
   `delivery_expires_at = paid_at + 30 days`, `receipt_id`, `transaction_id`, build ZIP (render
   worker, section 9). A code that is already paid, refunded or expired is not changed.
+- Paid after the design was deleted (PN-07 follow-up). Before, an open code whose files the nightly
+  job had deleted (D7) became `paid` as usual, its ZIP build failed (no `stones.json`; one server log
+  line), and the download page offered the download, which answered `failed`; an expired code bought
+  again was only matched, its page saying "expired", with no sign anywhere. Now: an open code with
+  `files_deleted_at` is marked `paid` as usual (the order is matched), `undeliverable_at` is set, no ZIP
+  is built and the event `paid-after-delete` (receipt and transaction ids) is written; a new paid
+  transaction for a code that is no longer open and whose files are deleted gets the same flag and
+  event, its status unchanged (once per transaction). The control panel shows the alert (15.1); Alex
+  refunds the order on Etsy (runbook), and the next poll makes the code `refunded`.
 - Code not found, or no code → `etsy_orders.matched_code = NULL`, shown on the admin page. Once a
   transaction is matched (also by hand), its NULL row is removed and later polls keep the match.
 - Quantity > 1 with several codes → each code is matched.
@@ -718,7 +762,9 @@ which then becomes paid (or refunded, if the order was).
   chance (exp-faces): codes (`PN-XXXX-XXXX`), the Turnstile widget's ids (`cf-chl-widget-` and five random
   characters), and runs of letters, digits, `-` and `_` of at least 12 characters that switch
   between lower case, upper case and digits at least 3 times (nonces, ETags, ids); the model name
-  and the prompt text are matched everywhere.
+  and the prompt text are matched everywhere. It also covers the four legal pages (PN-07): their
+  screen URLs and `public/legal.js`, the pages rendered with and without the seller's details, and
+  `docs/legal/*.md`; the browser flow checks the rendered pages too.
 - The AI image is archived without metadata (4.2): provider outputs carry C2PA chunks that name
   the provider.
 - Brand (PN-01): test `tools/test-brand.mjs` (part of `npm test`) runs a fake design and a paid
@@ -757,6 +803,9 @@ reaches the provider. The buyer sees only the IS error codes and texts of sectio
 - **New codes per IP**: 5 in any 24 h, a rolling window → `busy` (429). Checked when an upload
   would make a new code; an upload to an existing code is not limited by it.
 - **Queue limit** 10 designs queued or running (section 7) → `busy` (503).
+- **Hashed IPs are kept 24 h** (PN-07): `codes.ip_hash` and `attempts.ip_hash` of rows made more than
+  24 h ago are cleared every hour by the server and by the nightly job (`forgetOldIps` in
+  `src/server/limits.js`), and `code.json` never holds them; the rolling 24 h limits need nothing older.
 - Create design's limit checks and its new attempt run one request at a time, and the new-code check
   and the new code are made with nothing in between, so parallel requests cannot pass a limit
   together.
@@ -770,17 +819,51 @@ reaches the provider. The buyer sees only the IS error codes and texts of sectio
 - Express behind the tunnel: trust `CF-Connecting-IP` only when the request comes from cloudflared
   on localhost.
 
-## 14. Privacy and terms
+## 14. Privacy, terms, contact and legal notice
 
-- Consent checkbox on upload: "I agree to the privacy policy and confirm I have the right to use
-  this image."
-- Privacy page states: what is stored (uploads, generated images, designs, codes, order numbers),
-  why (making and delivering the design, re-delivery, support, improving the service), that it is
-  kept until the buyer asks for deletion, that images are processed by a third-party image
-  processing provider (category named, provider not named on screens; name given on request),
-  contact for deletion (handled manually from `data/archive/`).
-- Terms: digital item, no refunds after download (Etsy digital-item rules), buyer owns rights to
-  the uploaded image, no illegal or infringing images.
+As built (PN-07). The four pages (`/privacy`, `/terms`, `/contact`, `/legal`) are screens of the web
+app (section 10), rendered from one source, `public/legal.js`, which `tools/make-legal-docs.mjs` also
+turns into `docs/legal/privacy.md`, `terms.md`, `contact.md` and `legal.md` for review on GitHub (each
+`.env` value shown as its variable name; `tools/test-legal.mjs` checks the files match). Plain English;
+the image provider is never named (section 12). Screenshots at 390 px: `docs/legal/screens/`
+(`tools/shoot-legal.mjs`).
+
+- The seller's details come from `.env`, read at start and sent in `/api/config`: `IS_LEGAL_NAME`,
+  `IS_LEGAL_ADDRESS`, `IS_LEGAL_REGISTRATION` (may stay empty: its line is then hidden),
+  `IS_LEGAL_COUNTRY`, `IS_LEGAL_LAW` (governing law), `IS_CONTACT_EMAIL`. An empty required one shows
+  "Not set" on the pages and "Legal details missing in .env" on the control panel (15.1). The values
+  never go into the repository, the tests, logs or docs.
+- **Privacy**, in this order: who is responsible (name, address, email; the server is in France, so
+  GDPR); what is collected (the uploaded and prepared image, the designs, the code and its settings,
+  the IP address: 24 h in the limit counters, 30 days in logs; the Etsy order and transaction numbers
+  and the personalization code; no accounts, no name or email asked); why and on what legal basis
+  (contract; legitimate interest for abuse protection and security); who else receives data (an AI
+  image service in the United States, the image only, which may keep it and its output up to 30 days
+  for abuse monitoring and does not train on it (its API data terms, checked in the PN-07 follow-up);
+  Cloudflare; Etsy; transfers outside the EU on the providers' standard data-protection terms); photos (only images the buyer may use, used only for
+  the design, never shown to others, never used by PatternNifty to train AI); how long (D7 in plain
+  words, backups 30 days); cookies and browser storage (none set; exactly what is stored: `is.code` in
+  localStorage, `is.working.<code>` in sessionStorage, and Turnstile's `cf.turnstile.u` in the
+  localStorage of `challenges.cloudflare.com`, no cookies, as checked in a browser on
+  patternnifty.com in PN-07); rights (access, deletion, correction, objection; EU and UK complaints to
+  the data-protection authority; email with the code; answer within one month).
+- **Terms**: who sells (link to `/legal`); a digital template, no physical item or stones; up to 3
+  designs per code, pay on Etsy only for the one picked, download for 30 days; the expectations line
+  of section 10 word for word; the buyer's image (owned or licensed, nothing illegal, may be declined);
+  licence (use the template and sell what is made with it; never resell or share the files); downloads
+  and refunds (refund through Etsy before download; the download tick box starts delivery and, where
+  the law gives one, ends the 14-day right of withdrawal); designs made with the help of AI tools;
+  liability limited as far as the law allows, test before a large job; governing law `IS_LEGAL_LAW`,
+  consumers keep the protection of the law where they live.
+- **Contact**: order questions by Etsy message with the code (link to `IS_ETSY_LISTING_URL` when set);
+  privacy requests to `IS_CONTACT_EMAIL`; no contact form and no email field (Off-Platform
+  Transactions policy).
+- **Legal notice**: the seller (name, address, country, registration when set, email); hosting on the
+  seller's own server, network by Cloudflare, Inc., 101 Townsend St, San Francisco, CA 94107, USA.
+- Consent checkbox on upload (unchanged): "I agree to the privacy policy and confirm I have the right
+  to use this image." The withdrawal consent at download: section 10, screen 6.
+- Privacy requests are handled by hand: find the code, delete its `data/archive/<code>/` folder and
+  set `files_deleted_at` as the nightly job does (runbook).
 
 ## 15. Hosting on the Mac
 
@@ -824,23 +907,31 @@ server, the Etsy poller and the tunnel (runbook).
   be checked from inside; the runbook says how to check it from outside.
 - Nightly job (`src/ops/nightly.js`, also run by hand with `node src/ops/nightly.js`): paid codes whose
   `delivery_expires_at` has passed become `expired` (code.json and event as at every change); delivery
-  ZIPs of codes whose `delivery_expires_at` has passed are deleted, and their folder when empty; nothing
-  under `data/archive/` is read, deleted or moved; non-empty `*.log` in the log folder are copied to
-  `<name>.log.YYYY-MM-DD` and emptied, rotated files kept 14 days; `data/is.sqlite` is copied with
+  ZIPs of codes whose `delivery_expires_at` has passed are deleted, and their folder when empty;
+  keeping data (D7, PN-07): the `data/archive/<code>/` folder of each code that is due (never paid:
+  `IS_KEEP_UNPAID_DAYS` after its last activity; paid or refunded: `IS_KEEP_PAID_DAYS` after payment,
+  not before `delivery_expires_at`; none with a design queued or running) is deleted and the code's
+  `files_deleted_at` set, the row and its Etsy orders kept; only folders named after a code of the
+  database, never anything else in `data/archive/`, `data/listing/` or `data/private-portraits/`;
+  hashed IPs older than 24 h are cleared (13); non-empty `*.log` in the log folder are copied to
+  `<name>.log.YYYY-MM-DD` and emptied, rotated files kept 30 days; `data/is.sqlite` is copied with
   SQLite's online backup to `data/backup/is-YYYY-MM-DD.sqlite` (single file, not WAL), the last 30 kept;
-  one summary line (counts only) is appended to `nightly.log` in the log folder. A failed step does not stop the
+  one summary line (counts only, never a code: codes expired, ZIPs deleted, files deleted unpaid and
+  paid, IP hashes cleared, logs, backup) is appended to `nightly.log` in the log folder. A failed step does not stop the
   others; the job then exits non-zero.
 - `pmset` advice in the runbook (the commands; no script runs sudo): no sleep on the power adapter;
   lid-closed operation needs external power (and an external display).
 - Runbook `docs/RUNBOOK.md`: install, start/stop/restart, logs, health from inside and outside, power,
-  one Mac at a time, moving to the iMac, reconnecting Etsy, backups (and that `data/archive/` should
-  also be in Time Machine or copied to the iMac; Alex decides, no automatic copy), what happens when the
+  one Mac at a time, moving to the iMac, reconnecting Etsy, backups (`data/backup/` in Time Machine or
+  copied to the iMac, Alex decides, no automatic copy; `data/archive/` excluded, as its photos must go
+  after 30 days, D7), privacy requests and the legal details (PN-07), what happens when the
   Mac was off (the poller catches up with `min_last_modified`).
 - Tools to install: Node 20+, `brew install cloudflared`, Python 3.12 (already there for the RS
   layout service). No PDF or PostScript tools are needed: IS writes the EPS itself, and the tests
   open the PDFs with pdf.js (`pdfjs-dist`, a dev dependency).
-- Tests: `tools/test-nightly.mjs` (expired ZIP deleted, current one kept, archive untouched, backup
-  row counts, log rotation in a temporary `IS_LOG_DIR`), `tools/test-hosting.mjs` (www redirect, the
+- Tests: `tools/test-nightly.mjs` (expired ZIP deleted, current one kept, backup row counts, log
+  rotation in a temporary `IS_LOG_DIR`; dated fake codes: no archive folder deleted early, each deleted
+  on time, rows kept, `data/listing/` and `data/private-portraits/` untouched, old IP hashes cleared), `tools/test-hosting.mjs` (www redirect, the
   tunnel's 404s, the strass wait, `install-agents.sh` with a fake `HOME` and stub `launchctl` and
   `cloudflared`; every plist's log paths under `<fake home>/Library/Logs/PatternNifty`, none in the
   repository) and `tools/test-logs.mjs` (a fake design and the nightly job with a temporary
@@ -867,7 +958,13 @@ server, the Etsy poller and the tunnel (runbook).
   `data/archive`, `data/delivery`, `data/backup` and the log folder, the last database backup); the
   logs (size, last change, the last 100 lines as escaped text with error, warn and traceback lines
   highlighted). It never writes to the database or the server's files.
-- No `.env` value is shown; for each key only "set" or "missing".
+- No `.env` value is shown; for each key only "set" or "missing". When a required legal detail (14) is
+  empty, a warning "Legal details missing in .env" at the top and the missing names under the keys
+  (PN-07). The nightly row shows the last run's summary line, with its counts.
+- Paid after the design was deleted (PN-07 follow-up, 11.3): for each `paid-after-delete` event, a red
+  alert at the top, "Paid, but the design was deleted: refund on Etsy", with the Etsy receipt number
+  and the code, and a **Done** button (a POST with the page's token). Done is kept in the panel's own
+  file `data/control-alerts-done.json` (the event ids), so the panel still only reads the database.
 - Buttons, each a POST carrying a token made at start-up: Start (`launchctl bootstrap gui/<uid>
   <plist>`, or `kickstart` when the agent is loaded), Stop (`bootout`), Restart (`kickstart -k`),
   and Run now for the nightly job (`kickstart`). Stop and Restart first show what they do (stopping
@@ -986,6 +1083,14 @@ ETSY_POLL_SECONDS=180
 IS_LOG_DIR=
 # The local control panel (15.1), on 127.0.0.1 only; empty = 3010
 IS_CONTROL_PORT=
+IS_KEEP_UNPAID_DAYS=30           # D7: days after the last activity of a code never paid
+IS_KEEP_PAID_DAYS=30             # D7: days after payment
+IS_LEGAL_NAME=                   # the seller (14); never committed
+IS_LEGAL_ADDRESS=
+IS_LEGAL_REGISTRATION=           # may stay empty: its line is hidden
+IS_LEGAL_COUNTRY=
+IS_LEGAL_LAW=                    # governing law, for example: the State of Delaware, USA
+IS_CONTACT_EMAIL=
 ```
 
 ## 19. Open items

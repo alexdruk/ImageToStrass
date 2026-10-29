@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, statSync } from "node:fs";
 import http from "node:http";
 import { test } from "node:test";
 import { createPoller, FIRST_LOOKBACK_MS, OVERLAP_MS } from "../src/etsy/poller.js";
@@ -45,8 +45,26 @@ const iso = (seconds) => new Date(seconds * 1000).toISOString();
 test("matcher: the personalization is the variation with property 54 or named Personalization", () => {
   assert.equal(personalizationOf(RECEIPTS[0].transactions[0]), "pn 7k3q 9xpa");
   assert.equal(personalizationOf({ variations: [{ property_id: 513, formatted_name: "Personalisation", formatted_value: "PN-AAAA-BBBB" }] }), "PN-AAAA-BBBB");
-  assert.equal(personalizationOf({ variations: [{ property_id: 200, formatted_name: "Colour", formatted_value: "PN-AAAA-BBBB" }] }), "");
+  assert.equal(personalizationOf({ variations: [{ property_id: 200, formatted_name: "Colour", formatted_value: "Blue" }] }), "");
   assert.equal(personalizationOf({}), "");
+});
+
+test("matcher fallback (PN-07): with no code in the Personalization variation, every variation is read", () => {
+  // The only variation has another property id and another name.
+  const only = { listing_id: IS_LISTING, transaction_id: 4900000099, variations: [{ property_id: 1234, formatted_name: "Your design code", formatted_value: "pn-7k3q 9xpa" }] };
+  assert.equal(personalizationOf(only), "pn-7k3q 9xpa");
+  const [order] = ordersFromReceipts([{ ...RECEIPTS[0], transactions: [only] }], [IS_LISTING]);
+  assert.deepEqual(order.codes, ["PN-7K3Q-9XPA"]);
+  // The exact match comes first: its codes only, not another variation's.
+  const both = { variations: [
+    { property_id: 54, formatted_name: "Personalization", formatted_value: "PN-AAAA-BBBB" },
+    { property_id: 1234, formatted_name: "Your design code", formatted_value: "PN-CCCC-DDDD" }
+  ] };
+  assert.equal(personalizationOf(both), "PN-AAAA-BBBB");
+  // An empty Personalization falls back to the others; no code anywhere keeps the exact text.
+  both.variations[0].formatted_value = "";
+  assert.equal(personalizationOf(both), "\nPN-CCCC-DDDD");
+  assert.equal(personalizationOf({ variations: [{ property_id: 54, formatted_name: "Personalization", formatted_value: "see message" }, { property_id: 200, formatted_name: "Colour", formatted_value: "Blue" }] }), "see message");
 });
 
 test("matcher: refunds and cancellations", () => {
@@ -164,13 +182,59 @@ test("poller: first poll matches every case, marks the codes paid and builds the
     const state = await (await fetch(`${srv.url}/api/download/pn7k3q9xpa`)).json();
     assert.equal(state.state, "ready");
     assert.equal(state.expiresAt, a.delivery_expires_at);
-    const download = await fetch(`${srv.url}/api/download/${CODES.a}/zip`);
+    const download = await fetch(`${srv.url}/api/download/${CODES.a}/zip?agree=1`);
     assert.equal(download.status, 200);
     assert.ok(Buffer.from(await download.arrayBuffer()).equals(zip));
 
     // The poller's state file holds times and counts only.
     const saved = readFileSync(srv.config.etsy.stateFile, "utf8");
     for (const word of ["Test Buyer", "example.com", "sparkle", CODES.a]) assert.ok(!saved.includes(word), word);
+  } finally {
+    await srv.stop();
+  }
+});
+
+test("poller (PN-07 follow-up): paid after the design was deleted is matched and paid, but flagged, not built, and the download page says so", { timeout: 120_000 }, async () => {
+  const { srv, poller } = await setup();
+  try {
+    // The nightly job deleted A's files (D7); E was paid long ago, expired and deleted, and is bought again.
+    rmSync(`${srv.config.archiveDir}/${CODES.a}`, { recursive: true, force: true });
+    srv.q.updateCode(CODES.a, { files_deleted_at: new Date(NOW - 86400_000).toISOString() });
+    srv.q.updateCode(CODES.e, { status: "expired", paid_at: "2026-08-01T10:00:00.000Z", transaction_id: 4900000111, files_deleted_at: "2026-09-01T03:30:00.000Z" });
+
+    const out = await poller.runOnce();
+    await out.builds;
+    const a = srv.q.getCode(CODES.a);
+    assert.equal(a.status, "paid", "the order is matched and the code paid as usual");
+    assert.equal(a.receipt_id, 3800000001);
+    assert.ok(a.undeliverable_at);
+    assert.equal(existsSync(`${srv.config.deliveryDir}/${CODES.a}`), false, "no ZIP build");
+    assert.equal(existsSync(`${srv.config.archiveDir}/${CODES.a}`), false, "the archive folder is not made again");
+    const alerts = (code) => srv.q.listEvents(code).filter((e) => e.kind === "paid-after-delete").map((e) => JSON.parse(e.detail));
+    assert.deepEqual(alerts(CODES.a), [{ how: "etsy", receiptId: 3800000001, transactionId: 4900000001 }]);
+    // The expired code is not changed, but the new order cannot be delivered either.
+    const e = srv.q.getCode(CODES.e);
+    assert.equal(e.status, "expired");
+    assert.ok(e.undeliverable_at);
+    assert.deepEqual(alerts(CODES.e), [{ how: "etsy", receiptId: 3800000006, transactionId: 4900000006 }]);
+    // Codes with their files are not flagged.
+    assert.equal(srv.q.getCode(CODES.b).undeliverable_at, null);
+
+    // The download page: the deleted state, no tick box, no download.
+    for (const code of [CODES.a, CODES.e]) {
+      assert.deepEqual(await (await fetch(`${srv.url}/api/download/${code}`)).json(), { state: "deleted" });
+      assert.equal((await fetch(`${srv.url}/api/download/${code}/zip?agree=1`)).status, 403);
+    }
+    const app = readFileSync(new URL("../public/app.js", import.meta.url), "utf8");
+    assert.ok(app.includes("This design was deleted because it was more than 30 days old. Send us a message on Etsy and we will refund you."));
+
+    // A later poll adds no second alert.
+    await (await poller.runOnce()).builds;
+    assert.equal(alerts(CODES.a).length, 1);
+    assert.equal(alerts(CODES.e).length, 1);
+    // Refunded on Etsy afterwards: the page then says refunded.
+    srv.q.updateCode(CODES.a, { status: "refunded" });
+    assert.deepEqual(await (await fetch(`${srv.url}/api/download/${CODES.a}`)).json(), { state: "refunded" });
   } finally {
     await srv.stop();
   }

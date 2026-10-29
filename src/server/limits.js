@@ -5,6 +5,8 @@
 // A design counts once it is queued and stays counted unless it ends before the provider is called
 // (queries.js COUNTED_DESIGN_SQL); automatic re-runs never count. Refusals answer the IS error
 // code "busy": 503 for the daily cap (as a full queue), 429 for the per-IP limits.
+// The hashed IPs are needed for 24 h only: forgetOldIps clears older ones (every hour in the
+// server, and in the nightly job), so the privacy policy's 24 h holds.
 
 export const CODES_PER_IP_PER_DAY = 5;
 export const DAY_MS = 24 * 60 * 60 * 1000;
@@ -42,6 +44,10 @@ export function createLimits({ q, config, now = () => new Date() }) {
     codeRefusal(ipHash) {
       const since = new Date(now().getTime() - DAY_MS).toISOString();
       return q.countIpCodesSince(since, ipHash) >= CODES_PER_IP_PER_DAY ? { status: 429, error: "busy" } : null;
+    },
+    // Clears the hashed IPs of codes and designs made more than 24 h ago; returns how many.
+    forgetOldIps() {
+      return q.forgetIpHashes(new Date(now().getTime() - DAY_MS).toISOString());
     }
   };
 }

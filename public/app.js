@@ -3,6 +3,7 @@
 // codes (CLAUDE.md). Errors are shown from the app's own error codes only (spec section 12).
 
 import { DEFAULT_SETTINGS, applyAdjustments } from "/adjust.js";
+import { PAGES, renderHtml } from "/legal.js";
 
 const main = document.getElementById("main");
 const stepsEl = document.getElementById("steps");
@@ -32,6 +33,7 @@ const TEXTS = {
   "not-found": "We couldn't find this code. Please check it and try again.",
   "not-ready": "The background is still being removed. Please wait a moment and try again.",
   paid: "This code is already paid, so its design can no longer be changed.",
+  deleted: "The images and designs of this code were deleted 30 days after it was last used, as our privacy policy says. Please upload your image again.",
   network: "We couldn't reach PatternNifty. Please check your connection and try again."
 };
 const errorText = (code) => TEXTS[code] || TEXTS.failed;
@@ -48,7 +50,7 @@ const bwStyleName = (id) => (BW_STYLES.find((st) => st.id === id) || BW_STYLES[0
 // What the buyer can expect (spec 10), under the photo on Prepare and next to Try again on Result.
 const expectation = () => `Your design is an artistic rhinestone version of your photo; faces are stylised, not photographic. You can try up to ${config.designsPerCode} designs and only buy if you like one.`;
 
-let config = { turnstileSiteKey: null, listingUrl: null, designsPerCode: 3, colours: {}, sizes: {} };
+let config = { turnstileSiteKey: null, listingUrl: null, legal: {}, designsPerCode: 3, colours: {}, sizes: {} };
 let cleanup = [];
 
 // ---------- Small helpers ----------
@@ -195,9 +197,10 @@ const ROUTES = [
   [/^\/c\/([^/]+)\/result\/(\d+)\/?$/, resultScreen],
   [/^\/c\/([^/]+)\/done\/?$/, doneScreen],
   [/^\/download\/?$/, downloadScreen],
-  [/^\/privacy\/?$/, privacyScreen],
-  [/^\/terms\/?$/, termsScreen],
-  [/^\/contact\/?$/, contactScreen]
+  [/^\/privacy\/?$/, () => staticPage("privacy")],
+  [/^\/terms\/?$/, () => staticPage("terms")],
+  [/^\/contact\/?$/, () => staticPage("contact")],
+  [/^\/legal\/?$/, () => staticPage("legal")]
 ];
 
 function navigate(path, { replace = false } = {}) {
@@ -235,7 +238,7 @@ async function loadSession(code) {
     setSteps(null);
     render(html`
       <div class="card narrow center">
-        <h1>Code not found</h1>
+        <h1>${body.error === "deleted" ? "Design deleted" : "Code not found"}</h1>
         <p class="lede">${errorText(body.error)}</p>
         <div class="actions centered"><a class="btn primary" href="/" data-link>Upload an image</a></div>
       </div>`);
@@ -475,7 +478,7 @@ async function prepareScreen(code) {
           <div class="turnstile-box" id="check"></div>
           <div class="notice error" id="error" role="alert"></div>
           <button class="btn primary block mt" type="button" id="create">Create design</button>
-          <p class="sub center mt-s">It takes a few minutes. You can leave the page while you wait.</p>
+          <p class="sub center mt-s" id="wait-note">Your design takes a few minutes, usually 2 to 5, longer when it is busy. You can leave this page: your code brings you back.</p>
         </div>
       </div>
     </div>`);
@@ -774,9 +777,9 @@ async function workingScreen(code) {
       li.querySelector(".mark").innerHTML = done ? "✓" : current ? `<span class="spinner" aria-hidden="true"></span>` : "";
     });
     bar.style.width = waiting ? "4%" : `${Math.round(((at + 0.5) / STAGES.length) * 100)}%`;
-    queue.textContent = waiting
-      ? `Waiting in line: ${body.queue.position === 1 ? "you are next" : `${body.queue.position} designs ahead of you`}.`
-      : "";
+    // More than one design ahead: the line; next or running: the usual time.
+    const position = body.queue?.position;
+    queue.textContent = position > 1 ? `Designs are made one at a time. ${position} ahead of you.` : "Usually 2 to 5 minutes.";
   }
   await poll();
   every(POLL_MS, poll);
@@ -999,6 +1002,7 @@ async function doneScreen(code) {
           <li><div><b>Check out on Etsy</b><p>You pay on Etsy only. Nothing is charged here.</p></div></li>
           <li><div><b>Come back to download</b><p>Go to <a href="/download?code=${session.code}" data-link>${downloadUrl}</a> and enter your code. Payments usually appear within 10 minutes.</p></div></li>
         </ol>
+        <p class="sub mt" id="order-within">Order within 30 days. After 30 days without a visit, your design is deleted.</p>
         <div class="actions mt-l" id="links">
           ${raw(config.listingUrl ? html`<a class="btn primary" href="${config.listingUrl}" target="_blank" rel="noopener">Open the Etsy listing</a>` : "")}
           ${raw(chosen ? html`<a class="btn" href="/c/${session.code}/result/${chosen}" data-link>Back to your design</a>` : "")}
@@ -1009,6 +1013,9 @@ async function doneScreen(code) {
 }
 
 // ---------- 6 Download ----------
+
+// Asked once per code, before its first download (PN-07, the terms' "Downloads and refunds").
+const WITHDRAWAL_TEXT = "I agree that my download starts now and that I lose any right to withdraw from the purchase.";
 
 async function downloadScreen(params) {
   setSteps(null);
@@ -1032,6 +1039,7 @@ async function downloadScreen(params) {
   let timer = null;
   onLeave(() => clearTimeout(timer));
 
+  const zipUrl = (code) => `/api/download/${encodeURIComponent(code)}/zip`;
   const date = (iso) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
   async function check(code, quiet = false) {
@@ -1047,14 +1055,32 @@ async function downloadScreen(params) {
     const states = {
       unknown: html`<div class="notice error"><b>We couldn't find this code.</b> Please check it — it looks like PN-7K3Q-9XPA.</div>`,
       unpaid: html`<div class="notice warn"><b>Not paid yet.</b> Payments usually appear within 10 minutes of checkout. This page checks again automatically.</div>`,
+      // The first download of a code asks for the withdrawal consent (terms); later ones do not.
       ready: html`
         <div class="notice ok"><b>Your files are ready.</b> SVG, production sheets (PDF), AI, EPS, DXF and PNG in one ZIP.</div>
-        <div class="actions dl-actions"><a class="btn primary" id="dl" href="/api/download/${encodeURIComponent(clean)}/zip" download>Download ZIP</a></div>
-        <p class="sub">Available until ${body.expiresAt ? date(body.expiresAt) : ""}.</p>`,
+        ${raw(body.consented ? "" : html`<label class="consent" id="withdrawal-box">
+          <input type="checkbox" id="withdrawal">
+          <span>${WITHDRAWAL_TEXT}</span>
+        </label>`)}
+        <div class="actions dl-actions"><a class="btn primary" id="dl" download ${raw(body.consented ? html`href="${zipUrl(clean)}"` : 'aria-disabled="true"')}>Download ZIP</a></div>
+        <p class="sub">Available until ${body.expiresAt ? date(body.expiresAt) : ""}. See the <a href="/terms" data-link>terms</a>.</p>`,
       expired: html`<div class="notice"><b>This download has expired.</b> Files are kept for 30 days after payment. Please <a href="/contact" data-link>contact us</a> if you need them again.</div>`,
-      refunded: html`<div class="notice"><b>This order was refunded</b>, so its files are no longer available.</div>`
+      refunded: html`<div class="notice"><b>This order was refunded</b>, so its files are no longer available.</div>`,
+      // Paid after the nightly job deleted the design (D7); Alex refunds it on Etsy.
+      deleted: html`<div class="notice" id="deleted">This design was deleted because it was more than 30 days old. Send us a message on Etsy and we will refund you.</div>`
     };
     out.innerHTML = states[body.state] || states.unknown;
+    const agree = out.querySelector("#withdrawal");
+    agree?.addEventListener("change", () => {
+      const dl = out.querySelector("#dl");
+      if (agree.checked) {
+        dl.href = `${zipUrl(clean)}?agree=1`;
+        dl.removeAttribute("aria-disabled");
+      } else {
+        dl.removeAttribute("href");
+        dl.setAttribute("aria-disabled", "true");
+      }
+    });
     if (body.state === "unpaid") timer = setTimeout(() => check(clean, true), DOWNLOAD_POLL_MS);
   }
 
@@ -1067,59 +1093,13 @@ async function downloadScreen(params) {
   if (params?.get("code")) check(initial);
 }
 
-// ---------- 7 Static pages (DRAFT texts for review, spec section 14) ----------
+// ---------- 7 Static pages (public/legal.js, PN-07) ----------
 
-const DRAFT = `<div class="draft-banner">DRAFT — placeholder text for review. Not yet approved.</div>`;
-
-function staticPage(markup) {
+// The privacy policy, terms, contact and legal notice, with the seller's details from .env.
+function staticPage(name) {
   setSteps(null);
-  render(`<article class="prose">${DRAFT}${markup}</article>`);
-}
-
-function privacyScreen() {
-  staticPage(`
-    <h1>Privacy policy</h1>
-    <p class="lede">How PatternNifty handles your images and your code.</p>
-    <h2>What we store</h2>
-    <ul>
-      <li>The images you upload, and the images made from them while creating your design.</li>
-      <li>Your designs (the stone layouts and their previews).</li>
-      <li>Your PatternNifty code, with the time it was created.</li>
-      <li>Your Etsy order number, once you check out with your code.</li>
-    </ul>
-    <h2>Why</h2>
-    <ul>
-      <li>To make your design and deliver your files.</li>
-      <li>To send your files again if you need them later.</li>
-      <li>To help you if something goes wrong.</li>
-      <li>To improve the service.</li>
-    </ul>
-    <h2>How long</h2>
-    <p>We keep your images and designs until you ask us to delete them. Download files are removed 30 days after payment; they can be made again from your design.</p>
-    <h2>Who processes your images</h2>
-    <p>Your images are processed by a third-party image processing provider on our behalf. We will tell you the provider's name on request.</p>
-    <h2>Deletion and questions</h2>
-    <p>To have your images and designs deleted, <a href="/contact" data-link>contact us</a> with your PatternNifty code. We delete them by hand.</p>`);
-}
-
-function termsScreen() {
-  staticPage(`
-    <h1>Terms</h1>
-    <ul>
-      <li>PatternNifty sells a digital item: a rhinestone template made from your image, delivered as files to download.</li>
-      <li>You pay on Etsy. Under Etsy's rules for digital items there are no refunds once you have downloaded your files.</li>
-      <li>You confirm that you own the image you upload or have the right to use it.</li>
-      <li>Do not upload illegal images, or images that infringe anyone else's rights.</li>
-      <li>You can make up to 3 designs per code. Nothing is charged before you check out on Etsy.</li>
-    </ul>`);
-}
-
-function contactScreen() {
-  staticPage(`
-    <h1>Contact</h1>
-    <p>The easiest way to reach us is through Etsy: open the PatternNifty listing and use <b>Message seller</b>. Please include your PatternNifty code.</p>
-    <p>Deletion requests: send your PatternNifty code and we will delete your images and designs.</p>
-    <p class="sub">[Contact address to be added before launch.]</p>`);
+  const values = { ...config.legal, email: config.legal?.contactEmail, listing: config.listingUrl };
+  render(`<article class="prose">${renderHtml(PAGES[name], values, esc)}</article>`);
 }
 
 // ---------- Start ----------
