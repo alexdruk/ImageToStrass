@@ -16,7 +16,7 @@ Each folder in `designs/` holds `prepared.png` and `tinted.png` at 1200 px on th
 | [car](designs/car-colour/) | Colour | 4856 | 308.2 × 106 mm (12.13 × 4.17 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Borgward_concept_car_side_view.jpg) | CC0 | yes |
 | [dahlia](designs/dahlia-colour/) | Colour | 3127 | 156 × 158.2 mm (6.14 × 6.23 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
 | [hedgehog](designs/hedgehog-colour/) | Colour | 2328 | 136.2 × 106.3 mm (5.36 × 4.18 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
-| [mastiff](designs/mastiff-colour/) | Colour | 3714 | 164.9 × 132.4 mm (6.49 × 5.21 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
+| [mastiff](designs/mastiff-colour/) | Colour | 3714 | 164.9 × 132.4 mm (6.49 × 5.21 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | no: the tongue colour is wrong |
 | [mastiff](designs/mastiff-bw-stencil/) | Black & white Bold | 3701 | 163.2 × 132.6 mm (6.42 × 5.22 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
 | [mastiff](designs/mastiff-bw-halftone/) | Black & white Shaded | 4141 | 179.1 × 144 mm (7.05 × 5.67 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
 | [parrot](designs/parrot-colour/) | Colour | 2375 | 111.1 × 114.5 mm (4.37 × 4.51 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | no: the photo cuts the head |

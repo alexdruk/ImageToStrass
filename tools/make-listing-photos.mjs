@@ -1,4 +1,4 @@
-// PN-04b: the Etsy listing photos, made from the PN-04a listing designs with no provider call:
+// PN-04b, PN-04c: the Etsy listing photos, made from the PN-04a listing designs with no provider call:
 //   node tools/make-listing-photos.mjs
 // Reads only the designs marked "use in listing: yes" in docs/listing/README.md, from their full-size
 // files in data/listing/designs/<id>/ (prepared.png, tinted.png, stats.json; git-ignored), and for
@@ -34,10 +34,10 @@ const QUALITY = { start: 92, step: 2, min: 80 };
 const OVERVIEW_W = 2000;
 const EXAMPLE_CODE = "PN-7K3Q-9XPA";
 const FOOTER = "Digital template · no stones included";
-// Designs this script may use (docs/listing/README.md, "use in listing: yes"); parrot-colour and
-// person-colour are "no" and never read.
+// Designs this script may use (docs/listing/README.md, "use in listing: yes"); parrot-colour,
+// person-colour and mastiff-colour are "no" and never read.
 const ALLOWED = new Set([
-  "butterfly-colour", "car-colour", "dahlia-colour", "hedgehog-colour", "mastiff-colour", "mastiff-bw-stencil",
+  "butterfly-colour", "car-colour", "dahlia-colour", "hedgehog-colour", "mastiff-bw-stencil",
   "mastiff-bw-halftone", "person-bw-stencil", "person-bw-halftone", "stag-beetle-colour"
 ]);
 
@@ -168,8 +168,9 @@ function logo(ctx, x, y, size) {
   ctx.fill();
 }
 
-// White photo with the brand row on top, an optional title and the footer line.
-function frame({ title = null, footer = true } = {}) {
+// White photo with the brand row on top (centred, or in the safe area's top-left corner), an optional
+// title and the footer line. Returns the brand row's and the footer's boxes too.
+function frame({ title = null, footer = true, brandLeft = false } = {}) {
   const canvas = createCanvas(PHOTO_W, PHOTO_H);
   const ctx = canvas.getContext("2d");
   ctx.fillStyle = C.bg;
@@ -177,7 +178,7 @@ function frame({ title = null, footer = true } = {}) {
   const L = 76;
   ctx.font = font(54, 600);
   const nameW = ctx.measureText(BRAND).width;
-  const x = CX - (L + 22 + nameW) / 2;
+  const x = brandLeft ? SAFE.x0 : CX - (L + 22 + nameW) / 2;
   logo(ctx, x, BRAND_Y - L / 2, L);
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
@@ -185,7 +186,10 @@ function frame({ title = null, footer = true } = {}) {
   ctx.fillText(BRAND, x + L + 22, BRAND_Y + 2);
   if (title) text(ctx, title, CX, TITLE_Y, { px: TITLE_PX, weight: 700, maxW: SAFE_W - 40 });
   if (footer) text(ctx, FOOTER, CX, FOOTER_Y, { px: 42, color: C.muted });
-  return { canvas, ctx };
+  ctx.font = font(42, 400);
+  const m = ctx.measureText(FOOTER);
+  const footerBox = { x: CX - m.width / 2, y: FOOTER_Y - m.actualBoundingBoxAscent, w: m.width, h: m.actualBoundingBoxAscent + m.actualBoundingBoxDescent };
+  return { canvas, ctx, brandBox: { x, y: BRAND_Y - L / 2, w: L + 22 + nameW, h: L }, footerBox };
 }
 
 function arrow(ctx, x0, x1, y, { width = 18, head = 64, color = C.blue } = {}) {
@@ -208,6 +212,33 @@ function arrow(ctx, x0, x1, y, { width = 18, head = 64, color = C.blue } = {}) {
 const draw = (ctx, p, x, y) => ctx.drawImage(p.img, Math.round(x), Math.round(y), p.w, p.h);
 
 // ---- photos ----
+
+// The design alone, as large as fits between the top safe margin and the footer (at least
+// HERO_SHARE of the photo's height), centred in that band; the brand row sits in the top-left corner
+// and no stone may come within HERO_CLEAR px of it or of the footer.
+const HERO_SHARE = 0.85, HERO_CLEAR = 30;
+async function hero(id) {
+  const d = design(id);
+  const { canvas, ctx, brandBox, footerBox } = frame({ brandLeft: true });
+  const top = MARGIN, bottom = footerBox.y - 2 * HERO_CLEAR;
+  const p = await fitted(d.tinted, SAFE_W, bottom - top);
+  if (p.h < HERO_SHARE * PHOTO_H) throw new Error(`00: the design is ${p.h} px high, less than ${HERO_SHARE * 100} % of the photo`);
+  const x = Math.round(CX - p.w / 2), y = Math.round(top + (bottom - top - p.h) / 2);
+  // Draw the design alone first, to check that the brand row and the footer stay on white.
+  const alone = createCanvas(PHOTO_W, PHOTO_H).getContext("2d");
+  alone.fillStyle = "#ffffff";
+  alone.fillRect(0, 0, PHOTO_W, PHOTO_H);
+  draw(alone, p, x, y);
+  for (const b of [brandBox, footerBox]) {
+    const { data } = alone.getImageData(Math.floor(b.x - HERO_CLEAR), Math.floor(b.y - HERO_CLEAR), Math.ceil(b.w + 2 * HERO_CLEAR), Math.ceil(b.h + 2 * HERO_CLEAR));
+    if (data.some((v, i) => i % 4 !== 3 && v < 245)) throw new Error("00: the design touches the brand row or the footer");
+  }
+  // The picture is on white: multiply keeps the brand row under its white margin.
+  ctx.globalCompositeOperation = "multiply";
+  draw(ctx, p, x, y);
+  ctx.globalCompositeOperation = "source-over";
+  return canvas;
+}
 
 // Photo, arrow, design in one row: the design PHOTO_RATIO times the photo's height, both as large as
 // the safe width and the content band allow.
@@ -250,7 +281,7 @@ async function twoStyles(subject, title) {
 }
 
 async function range() {
-  const ids = ["car-colour", "stag-beetle-colour", "hedgehog-colour", "mastiff-colour", "butterfly-colour", "dahlia-colour"];
+  const ids = ["car-colour", "stag-beetle-colour", "hedgehog-colour", "person-bw-halftone", "butterfly-colour", "dahlia-colour"];
   const { canvas, ctx } = frame({ title: "Pets, flowers, cars, anything" });
   const COLS = 3, GAP = 40, PAD = 10;
   const cellW = (SAFE_W - (COLS - 1) * GAP) / COLS, cellH = (BOTTOM - TOP - GAP) / 2;
@@ -481,7 +512,7 @@ function dimension(ctx, x0, y0, x1, y1, tick = 26) {
 }
 
 async function size() {
-  const d = design("mastiff-colour");
+  const d = design("stag-beetle-colour");
   const { stats } = d;
   const [main, mainCount] = Object.entries(stats.bySize).sort((a, b) => b[1] - a[1])[0];
   if (mainCount * 2 <= stats.stones) throw new Error(`${d.id}: no size is used by most stones`);
@@ -495,7 +526,10 @@ async function size() {
   const pxPerMm = Math.min(availW / stats.widthMm, availH / stats.heightMm);
   const k = pxPerMm / g.scale;
   const boxW = stats.widthMm * pxPerMm, boxH = stats.heightMm * pxPerMm;
-  if (boxH < 0.65 * PHOTO_H) throw new Error(`06: the design is ${Math.round(boxH)} px high, less than 65 % of the photo`);
+  // At least 65 % of the photo's height, or for a wide design 80 % of the safe width.
+  if (boxH < 0.65 * PHOTO_H && boxW < 0.8 * SAFE_W) {
+    throw new Error(`06: the design is ${Math.round(boxW)} x ${Math.round(boxH)} px, less than 65 % of the photo's height and 80 % of the safe width`);
+  }
   const bx = CX - (boxW + RIGHT) / 2, by = top + (availH - boxH) / 2;
   const p = { img: await picture(d.tinted, { left: 0, top: 0, width: g.width, height: g.height }, g.width * k, g.height * k), w: Math.round(g.width * k), h: Math.round(g.height * k) };
   draw(ctx, p, bx - g.box.x * k, by - g.box.y * k);
@@ -572,8 +606,8 @@ async function overview(files) {
 }
 
 const PHOTOS = [
-  ["01-main-butterfly.jpg", () => mainPhoto("butterfly-colour")],
-  ["01-main-dahlia.jpg", () => mainPhoto("dahlia-colour")],
+  ["00-main-dahlia.jpg", () => hero("dahlia-colour")],
+  ["01-before-after-dahlia.jpg", () => mainPhoto("dahlia-colour")],
   ["02-bold-vs-shaded.jpg", () => twoStyles("mastiff", "Black & white in two styles")],
   ["03-range.jpg", range],
   ["04-how-it-works.jpg", howItWorks],
