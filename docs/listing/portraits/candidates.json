@@ -1,0 +1,83 @@
+[
+  {
+    "n": 1,
+    "id": "portrait-freckles",
+    "photo": "../../../data/listing/candidates/portraits/1-freckles.jpg",
+    "title": "Smile with Freckles (Unsplash).jpg",
+    "url": "https://commons.wikimedia.org/wiki/File:Smile_with_Freckles_(Unsplash).jpg",
+    "author": "Gabriel Silvério (unsplash.com/@gabrielsilverio)",
+    "licence": "CC0",
+    "unsplash": "https://unsplash.com/photos/u3WmDyKGsrY",
+    "unsplashDate": "2017-03-13",
+    "size": "4032 × 6048",
+    "subject": "young woman, light skin, red hair, freckles, smiling at the camera, warm brown background"
+  },
+  {
+    "n": 2,
+    "id": "portrait-curls",
+    "photo": "../../../data/listing/candidates/portraits/2-curls.jpg",
+    "title": "Confident Eye Contact (Unsplash).jpg",
+    "url": "https://commons.wikimedia.org/wiki/File:Confident_Eye_Contact_(Unsplash).jpg",
+    "author": "Tanja Heffner (unsplash.com/@tanjaheffner)",
+    "licence": "CC0",
+    "unsplash": "https://unsplash.com/photos/HKquADJl8CU",
+    "unsplashDate": "2016-10-27",
+    "size": "5184 × 3456",
+    "subject": "young woman, dark skin, curly hair, looking at the camera, dark red top, soft light background"
+  },
+  {
+    "n": 3,
+    "id": "portrait-elder",
+    "photo": "../../../data/listing/candidates/portraits/3-elder.jpg",
+    "title": "Karen Elder (Unsplash).jpg",
+    "url": "https://commons.wikimedia.org/wiki/File:Karen_Elder_(Unsplash).jpg",
+    "author": "Capturing the human heart. (unsplash.com/@zjtcpts)",
+    "licence": "CC0",
+    "unsplash": "https://unsplash.com/photos/i9uIhSlOWYc",
+    "unsplashDate": "2017-03-06",
+    "size": "3648 × 5472",
+    "subject": "elderly man, East Asian, grey hair, smiling at the camera, pink-red shirt, green background"
+  },
+  {
+    "n": 4,
+    "id": "portrait-daytona",
+    "photo": "../../../data/listing/candidates/portraits/4-daytona.jpg",
+    "title": "Portrait of a man (Unsplash).jpg",
+    "url": "https://commons.wikimedia.org/wiki/File:Portrait_of_a_man_(Unsplash).jpg",
+    "author": "William Stitt (unsplash.com/@willpower)",
+    "licence": "CC0",
+    "unsplash": "https://unsplash.com/photos/B0m8ZIR-CF0",
+    "unsplashDate": "2016-09-18",
+    "size": "4096 × 2732",
+    "subject": "young man, dark skin, sunglasses pushed up on his head, looking at the camera, soft warm background",
+    "note": "Commons licence review still open (Images from Unsplash, review needed)"
+  },
+  {
+    "n": 5,
+    "id": "portrait-red-hat",
+    "photo": "../../../data/listing/candidates/portraits/5-red-hat.jpg",
+    "title": "Experience brings character. (Unsplash).jpg",
+    "url": "https://commons.wikimedia.org/wiki/File:Experience_brings_character._(Unsplash).jpg",
+    "author": "Alex Harvey (unsplash.com/@alexharvey)",
+    "licence": "CC0",
+    "unsplash": "https://unsplash.com/photos/y0I85D5QKvs",
+    "unsplashDate": "2015-09-16",
+    "size": "3264 × 2448",
+    "subject": "elderly woman, light skin, glasses, red and yellow hat, close crop of the face",
+    "note": "Commons licence review still open; the file's EXIF still carries the camera app's default \"Copyright 2015. All rights reserved.\""
+  },
+  {
+    "n": 6,
+    "id": "portrait-glasses",
+    "photo": "../../../data/listing/candidates/portraits/6-glasses.jpg",
+    "title": "Man vanguard glasses outdoors (Unsplash).jpg",
+    "url": "https://commons.wikimedia.org/wiki/File:Man_vanguard_glasses_outdoors_(Unsplash).jpg",
+    "author": "Seth Doyle (unsplash.com/@sethdoylee)",
+    "licence": "CC0",
+    "unsplash": "https://unsplash.com/photos/vmBik4xv27s",
+    "unsplashDate": "2017-01-23",
+    "size": "2791 × 2726",
+    "subject": "young man, light skin, beard, glasses, looking at the camera, blue jacket, trees and sky behind",
+    "note": "Commons licence review still open (Images from Unsplash, review needed)"
+  }
+]

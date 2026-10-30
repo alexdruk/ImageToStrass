@@ -1,0 +1,50 @@
+{
+  "subject": "portrait-curls",
+  "design": "colour",
+  "stones": 4764,
+  "bySize": {
+    "ss6": 4374,
+    "ss4": 388,
+    "ss20": 2
+  },
+  "byColour": {
+    "jet": 1373,
+    "colorado-topaz": 760,
+    "smoked-topaz": 743,
+    "light-siam": 461,
+    "silk": 363,
+    "rose-gold": 226,
+    "copper": 221,
+    "siam": 200,
+    "indian-siam": 138,
+    "light-smoked-topaz": 93,
+    "hematite": 52,
+    "metallic-sunshine": 28,
+    "rose-peach": 22,
+    "light-peach": 20,
+    "scarlet": 18,
+    "rose": 11,
+    "golden-shadow": 9,
+    "light-topaz": 8,
+    "crystal-clear": 7,
+    "vintage-rose": 6,
+    "padparadscha": 3,
+    "gold": 1,
+    "silver": 1
+  },
+  "widthMm": 174.6,
+  "heightMm": 174.7,
+  "widthIn": 6.88,
+  "heightIn": 6.88,
+  "coverage": 0.634,
+  "mode": "colour",
+  "adjustments": {},
+  "photo": {
+    "title": "Confident Eye Contact (Unsplash)",
+    "url": "https://commons.wikimedia.org/wiki/File:Confident_Eye_Contact_(Unsplash).jpg",
+    "author": "Tanja Heffner (unsplash.com/@tanjaheffner)",
+    "licence": "CC0",
+    "via": "https://unsplash.com/photos/HKquADJl8CU",
+    "viaDate": "2016-10-27"
+  }
+}

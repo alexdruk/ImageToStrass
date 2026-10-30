@@ -1,0 +1,48 @@
+{
+  "subject": "portrait-freckles",
+  "design": "colour",
+  "stones": 3176,
+  "bySize": {
+    "ss6": 2872,
+    "ss4": 302,
+    "ss20": 2
+  },
+  "byColour": {
+    "silk": 1160,
+    "smoked-topaz": 576,
+    "hyacinth": 373,
+    "jet": 291,
+    "colorado-topaz": 197,
+    "copper": 184,
+    "rose-gold": 165,
+    "golden-shadow": 54,
+    "scarlet": 52,
+    "light-peach": 37,
+    "crystal-clear": 31,
+    "light-topaz": 25,
+    "siam": 13,
+    "indian-siam": 7,
+    "hematite": 3,
+    "light-siam": 2,
+    "silver": 2,
+    "citrine": 1,
+    "grey": 1,
+    "light-smoked-topaz": 1,
+    "vintage-rose": 1
+  },
+  "widthMm": 137.1,
+  "heightMm": 200.8,
+  "widthIn": 5.4,
+  "heightIn": 7.9,
+  "coverage": 0.611,
+  "mode": "colour",
+  "adjustments": {},
+  "photo": {
+    "title": "Smile with Freckles (Unsplash)",
+    "url": "https://commons.wikimedia.org/wiki/File:Smile_with_Freckles_(Unsplash).jpg",
+    "author": "Gabriel Silvério (unsplash.com/@gabrielsilverio)",
+    "licence": "CC0",
+    "via": "https://unsplash.com/photos/u3WmDyKGsrY",
+    "viaDate": "2017-03-13"
+  }
+}
