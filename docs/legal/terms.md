@@ -4,7 +4,7 @@
 
 The rules for using PatternNifty and buying a design. Please read them before you buy.
 
-Last updated: 30 October 2026
+Last updated: 29 October 2026
 
 ## Who sells
 
@@ -19,12 +19,6 @@ A digital rhinestone template made from your image: files to download (SVG, prod
 - You make up to 3 designs with one code, for free.
 - You pay on Etsy, only for the design you pick.
 - After payment you can download your files for 30 days.
-
-Or buy first: check out on Etsy with the Personalization field empty, then enter your Etsy order number at patternnifty.com/order. You get one code for each design you bought.
-
-- With each code you make up to 3 designs and pick one; your 30-day download starts when you pick.
-- If you don't pick a design within 30 days of payment, we deliver your latest one.
-- If you don't like any of your 3 designs, send us a message on Etsy and we will refund you.
 
 ## What to expect
 

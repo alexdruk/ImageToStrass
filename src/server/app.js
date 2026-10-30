@@ -12,7 +12,6 @@ import { checkHealth } from "./health.js";
 import { createLimits } from "./limits.js";
 import { designRoutes } from "./designs.js";
 import { etsyRoutes } from "./etsy-routes.js";
-import { orderRoutes } from "./orders.js";
 import { createTurnstile } from "./turnstile.js";
 import { uploadRoutes } from "./upload.js";
 import { webappRoutes } from "./webapp.js";
@@ -56,7 +55,6 @@ app.use(uploadRoutes({ q, config, background, verifyTurnstile, hashIp, limits })
 
 app.use(express.json({ limit: "16kb" }));
 app.use(designRoutes({ q, pipeline, verifyTurnstile, limits, hashIp }));
-app.use(orderRoutes({ q, config, verifyTurnstile, hashIp, poller }));
 app.use(webappRoutes({ q, config, background, delivery, poller }));
 app.use(express.static("public"));
 

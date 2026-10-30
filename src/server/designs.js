@@ -7,8 +7,7 @@ import { clientIp } from "./client.js";
 // polls it every 3 s). Answers carry IS fields only; refusals are { error: <IS code> } (spec 12).
 // Create design checks Turnstile, then the per-IP limit and the daily cap (limits.js, spec 13),
 // before the design is queued, so nothing refused reaches the provider. The checks and the new
-// attempt run one request at a time, so two requests cannot both take the last design. A prepaid
-// code's designs (PN-08) are paid: they skip those two limits (the queue limit still applies).
+// attempt run one request at a time, so two requests cannot both take the last design.
 
 export function designRoutes({ q, pipeline, verifyTurnstile, limits, hashIp, log = console }) {
   const router = express.Router();
@@ -38,7 +37,7 @@ export function designRoutes({ q, pipeline, verifyTurnstile, limits, hashIp, log
     try {
       const ipHash = hashIp(ip);
       const attempt = await oneAtATime(async () => {
-        const refusal = q.getCode(code)?.status === "prepaid" ? null : limits.designRefusal(ipHash);
+        const refusal = limits.designRefusal(ipHash);
         if (refusal) throw new DesignRefused(refusal.status, refusal.error);
         const created = await pipeline.createDesign(code, body);
         q.updateAttempt(code, created.n, { ip_hash: ipHash });

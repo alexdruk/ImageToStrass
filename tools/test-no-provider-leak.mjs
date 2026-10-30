@@ -203,7 +203,7 @@ async function start({ env, pipelineDeps = {} }) {
   const post = (pathname, data) => json(pathname, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
 
   return {
-    config, url, problems, seen, call, json, post, background, pipeline, q,
+    config, url, problems, seen, call, json, post, background, pipeline,
     async upload() {
       const form = new FormData();
       form.append("consent", "1");
@@ -238,7 +238,6 @@ function publicFiles(dir = PUBLIC, prefix = "") {
 
 const SETTINGS = { upload: 1, mode: "colour", removeBackground: true, adjustments: {} };
 
-
 // ---- tests -------------------------------------------------------------------------------------
 
 test("the word list: spec section 12's words, the model name and every prompt's first 40 characters", () => {
@@ -270,11 +269,11 @@ test("AI images are archived without metadata, pixels unchanged", async () => {
 
 test("a fake design end to end: no response, header, file or ZIP entry names the provider", async () => {
   const publicBefore = publicFiles().join("\n");
-  const env = await start({ env: { IS_FAKE: "1", IS_ETSY_LISTING_IDS: "1850000001" } });
+  const env = await start({ env: { IS_FAKE: "1" } });
   try {
     // Pages, static files and the app's settings.
     for (const f of publicFiles()) await env.call(`/${f}`);
-    for (const p of ["/", "/download", "/order", "/privacy", "/terms", "/contact", "/legal", "/api/config", "/health", "/no-such-file.js"]) await env.call(p);
+    for (const p of ["/", "/download", "/privacy", "/terms", "/contact", "/legal", "/api/config", "/health", "/no-such-file.js"]) await env.call(p);
 
     const { code } = await env.upload();
     for (const p of ["", "/prepare", "/working", "/done"]) await env.call(`/c/${code}${p}`);
@@ -311,30 +310,6 @@ test("a fake design end to end: no response, header, file or ZIP entry names the
     await env.post(`/api/attempts/${code}`, { upload: 1, mode: "sepia" });
     await env.call(`/api/attempts/${code}/99/tinted.png`);
     await env.call("/api/download/PN-0000-0000/zip");
-
-    // Buy first (PN-08): the order page's answers and a prepaid code's design, pick and download.
-    assert.equal((await env.post("/api/order", { order: "12ab" })).status, 400);
-    const waiting = await env.post("/api/order", { order: "3800000999" });
-    assert.equal(waiting.body.state, "waiting");
-    await env.json(`/api/order/3800000999?ticket=${waiting.body.ticket}`);
-    await env.json("/api/order/3800000999?ticket=wrong");
-    env.q.upsertEtsyOrder({ receipt_id: 3800000998, transaction_id: 4900000998, listing_id: 1850000001, personalization: "", paid_at: new Date().toISOString(), status: "paid", quantity: 1 });
-    const found = await env.post("/api/order", { order: "3800 000 998" });
-    assert.equal(found.body.state, "found");
-    const prepaid = found.body.codes[0].code;
-    await env.json(`/api/codes/${prepaid}`);
-    await env.json(`/api/download/${prepaid}`);
-    const form = new FormData();
-    form.append("consent", "1");
-    form.append("code", prepaid);
-    form.append("image", new Blob([PHOTO], { type: "image/png" }), "photo.png");
-    await env.json("/api/upload", { method: "POST", body: form });
-    await env.background.idle();
-    const picked = await env.design(prepaid, SETTINGS);
-    assert.equal(picked.status, "done");
-    await env.call(`/c/${prepaid}/result/${picked.attempt}`);
-    assert.equal((await env.post(`/api/codes/${prepaid}/select`, { attempt: picked.attempt })).body.paid, true);
-    assert.equal((await env.call(`/api/download/${prepaid}/zip?agree=1`)).status, 200);
 
     // The archived AI images carry no metadata either.
     for (const n of [colour.attempt, bw.attempt, shaded.attempt]) {

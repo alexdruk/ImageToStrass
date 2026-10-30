@@ -7,6 +7,7 @@ import { normalizeCode } from "../src/db/codes.js";
 import Database from "better-sqlite3";
 import { openDatabase } from "../src/db/index.js";
 import { createQueries } from "../src/db/queries.js";
+import { MIGRATIONS, SCHEMA } from "../src/db/schema.js";
 
 function fresh() {
   const db = openDatabase(":memory:");
@@ -211,6 +212,86 @@ test("migration 1 de-duplicates an IS-01 etsy_orders table and adds the unique k
       /UNIQUE/
     );
     db.close();
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// PN-08 (buy first) was rolled back. Its migration 5, word for word (ea08d2a src/db/schema.js), as
+// the live database ran it on 30 Oct 2026.
+const PN08_MIGRATION_5 =
+`CREATE TABLE codes_new (
+     code                TEXT PRIMARY KEY,
+     created_at          TEXT NOT NULL,
+     ip_hash             TEXT,
+     consent_at          TEXT,
+     attempts_used       INTEGER NOT NULL DEFAULT 0,
+     selected_attempt    INTEGER,
+     status              TEXT NOT NULL DEFAULT 'open'
+                         CHECK (status IN ('open', 'prepaid', 'paid', 'refunded', 'expired')),
+     paid_at             TEXT,
+     receipt_id          INTEGER,
+     transaction_id      INTEGER,
+     downloads           INTEGER NOT NULL DEFAULT 0,
+     delivery_expires_at TEXT,
+     last_seen_at        TEXT,
+     files_deleted_at    TEXT,
+     undeliverable_at    TEXT,
+     redeemed_at         TEXT
+   );
+   INSERT INTO codes_new (code, created_at, ip_hash, consent_at, attempts_used, selected_attempt, status,
+     paid_at, receipt_id, transaction_id, downloads, delivery_expires_at, last_seen_at, files_deleted_at,
+     undeliverable_at)
+   SELECT code, created_at, ip_hash, consent_at, attempts_used, selected_attempt, status,
+     paid_at, receipt_id, transaction_id, downloads, delivery_expires_at, last_seen_at, files_deleted_at,
+     undeliverable_at FROM codes;
+   DROP TABLE codes;
+   ALTER TABLE codes_new RENAME TO codes;
+   CREATE INDEX codes_ip_created ON codes(ip_hash, created_at);
+   CREATE INDEX codes_receipt ON codes(receipt_id);
+   ALTER TABLE etsy_orders ADD COLUMN quantity INTEGER;`;
+
+test("a database that ran PN-08's migration 5 opens, keeps every row, and stays in step for migration 6", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "is-db-"));
+  const file = path.join(dir, "is.sqlite");
+  try {
+    // PN-07's schema and migrations 1-4, then PN-08's 5 (run with foreign keys off, as PN-08 did).
+    const pn07 = new Database(file);
+    pn07.exec(SCHEMA);
+    for (const sql of MIGRATIONS.slice(0, 4)) pn07.exec(sql);
+    pn07.pragma("foreign_keys = OFF");
+    pn07.exec(PN08_MIGRATION_5);
+    pn07.pragma("user_version = 5");
+    pn07.prepare("INSERT INTO codes (code, created_at, status) VALUES ('PN-AAAA-AAAA', '2026-10-26T17:00:00.000Z', 'open')").run();
+    pn07.prepare(`INSERT INTO codes (code, created_at, status, paid_at, receipt_id, transaction_id, redeemed_at)
+      VALUES ('PN-BBBB-BBBB', '2026-10-30T16:31:12.262Z', 'prepaid', '2026-10-30T16:15:22.000Z', 4215498171, 5271944060, '2026-10-30T16:31:12.262Z')`).run();
+    pn07.prepare(`INSERT INTO etsy_orders (receipt_id, transaction_id, listing_id, personalization, matched_code, paid_at, status, seen_at, quantity)
+      VALUES (4215498171, 5271944060, 4605055466, '', 'PN-BBBB-BBBB', '2026-10-30T16:15:22.000Z', 'paid', '2026-10-30T16:31:12.263Z', 1)`).run();
+    pn07.close();
+
+    const db = openDatabase(file);
+    const q = createQueries(db);
+    // Nothing to run: both kinds of database are at the same version, so a migration 6 runs on both.
+    assert.equal(MIGRATIONS.length, 5);
+    assert.equal(db.pragma("user_version", { simple: true }), MIGRATIONS.length);
+    assert.equal(openDatabase(":memory:").pragma("user_version", { simple: true }), MIGRATIONS.length);
+    assert.deepEqual(db.pragma("foreign_key_check"), []);
+    // Every row kept; the prepaid code is read as it is (no PN-07 code writes 'prepaid').
+    assert.deepEqual(db.prepare("SELECT code, status FROM codes ORDER BY code").all(),
+      [{ code: "PN-AAAA-AAAA", status: "open" }, { code: "PN-BBBB-BBBB", status: "prepaid" }]);
+    assert.equal(q.getCode("PN-BBBB-BBBB").receipt_id, 4215498171);
+    assert.equal(db.prepare("SELECT matched_code FROM etsy_orders").pluck().get(), "PN-BBBB-BBBB");
+    // The extra columns are harmless: PN-07's writes leave them NULL.
+    const made = q.createCode({ ipHash: "h", consentAt: "2026-10-30T18:00:00.000Z" });
+    assert.equal(q.getCode(made.code).status, "open");
+    q.updateCode("PN-AAAA-AAAA", { status: "paid", paid_at: "2026-10-30T18:00:00.000Z", receipt_id: 1, transaction_id: 2 });
+    q.upsertEtsyOrder({ receipt_id: 1, transaction_id: 2, listing_id: 3, personalization: "PN-AAAA-AAAA", matched_code: "PN-AAAA-AAAA", paid_at: "2026-10-30T18:00:00.000Z", status: "paid", seen_at: "2026-10-30T18:00:00.000Z" });
+    assert.equal(db.prepare("SELECT quantity FROM etsy_orders WHERE transaction_id = 2").pluck().get(), null);
+    db.close();
+    // Opened again: still 5, nothing changed.
+    const again = openDatabase(file);
+    assert.equal(again.prepare("SELECT COUNT(*) FROM codes").pluck().get(), 3);
+    again.close();
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

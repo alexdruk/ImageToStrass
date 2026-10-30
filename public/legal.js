@@ -8,7 +8,7 @@
 // to {listing} is plain words when IS_ETSY_LISTING_URL is not set) and `words` is a name the
 // browser stores, shown as code.
 
-export const LAST_UPDATED = "2026-10-30";
+export const LAST_UPDATED = "2026-10-29";
 
 // field -> the .env key it comes from (src/server/config.js LEGAL_KEYS, plus the listing URL).
 export const LEGAL_FIELDS = {
@@ -41,8 +41,7 @@ export const PAGES = {
         "The designs made from it: the stone layouts, their previews and the files you download.",
         "Your PatternNifty code and its settings: Colour or Black & white, your adjustments, the dates and how many designs you made.",
         "Your IP address, to limit abuse and keep the service secure. The limit counters keep it in scrambled (hashed) form for 24 hours; our server logs may keep it for up to 30 days.",
-        "The Etsy order details we need to match your payment: the order and transaction numbers, and the code you typed in the Personalization field.",
-        "If you bought first: the Etsy order number you enter on our order page, to find your order and give you your codes."
+        "The Etsy order details we need to match your payment: the order and transaction numbers, and the code you typed in the Personalization field."
       ]],
       ["p", "PatternNifty has no accounts and never asks for your name, email or address. You pay on Etsy; we never see your payment details."],
 
@@ -70,7 +69,6 @@ export const PAGES = {
       ["ul", [
         "If you don't buy: your images, designs and files are deleted 30 days after the last time you used your code.",
         "If you buy: they are deleted 30 days after payment, the same day your download ends.",
-        "If you bought first: they are kept until you pick a design, then deleted the day your 30-day download ends.",
         "After that we keep only a short record of the code (its status, dates and number of designs) and the Etsy order numbers, without any images, for our accounts.",
         "Your IP address: 24 hours in the limit counters, up to 30 days in server logs.",
         "The AI image service: up to 30 days, only to check for abuse, never to train AI.",
@@ -108,12 +106,6 @@ export const PAGES = {
         "You make up to 3 designs with one code, for free.",
         "You pay on Etsy, only for the design you pick.",
         "After payment you can download your files for 30 days."
-      ]],
-      ["p", "Or buy first: check out on Etsy with the Personalization field empty, then enter your Etsy order number at patternnifty.com/order. You get one code for each design you bought."],
-      ["ul", [
-        "With each code you make up to 3 designs and pick one; your 30-day download starts when you pick.",
-        "If you don't pick a design within 30 days of payment, we deliver your latest one.",
-        "If you don't like any of your 3 designs, send us a message on Etsy and we will refund you."
       ]],
 
       ["h2", "What to expect"],
