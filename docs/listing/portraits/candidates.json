@@ -79,5 +79,44 @@
     "size": "2791 × 2726",
     "subject": "young man, light skin, beard, glasses, looking at the camera, blue jacket, trees and sky behind",
     "note": "Commons licence review still open (Images from Unsplash, review needed)"
+  },
+  {
+    "n": 8,
+    "id": "painting-ermine",
+    "photo": "../../../data/listing/candidates/portraits/8-ermine.jpg",
+    "title": "Lady with an Ermine (National Museum Kraków).jpg",
+    "commonsTitle": "Leonardo da Vinci (1452-1519) - Lady with an Ermine – Portrait of Cecilia Gallerani (ca. 1473–1536) - MNK XII-209 - National Museum Kraków.jpg",
+    "url": "https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_(1452-1519)_-_Lady_with_an_Ermine_%E2%80%93_Portrait_of_Cecilia_Gallerani_(ca._1473%E2%80%931536)_-_MNK_XII-209_-_National_Museum_Krak%C3%B3w.jpg",
+    "author": "Leonardo da Vinci (painting); photograph via National Museum in Kraków",
+    "licence": "Public domain",
+    "licenceTemplate": "PD-old-auto-expired",
+    "size": "2936 × 4000",
+    "subject": "painting, about 1489–91: young woman turned to the side, dark background, blue and red dress, holding an ermine"
+  },
+  {
+    "n": 9,
+    "id": "painting-ferronniere",
+    "photo": "../../../data/listing/candidates/portraits/9-ferronniere.jpg",
+    "title": "La Belle Ferronière - Google Arts.jpg",
+    "commonsTitle": "La Belle Ferronière - Google Arts.jpg",
+    "url": "https://commons.wikimedia.org/wiki/File:La_Belle_Ferroni%C3%A8re_-_Google_Arts.jpg",
+    "author": "Leonardo da Vinci (painting); photograph via Google Arts & Culture (Musée du Louvre)",
+    "licence": "Public domain",
+    "licenceTemplate": "PD-old",
+    "size": "2758 × 4000",
+    "subject": "painting, about 1490–97: woman looking past the viewer, dark background, red dress, ribbon across the forehead"
+  },
+  {
+    "n": 10,
+    "id": "painting-ginevra",
+    "photo": "../../../data/listing/candidates/portraits/10-ginevra.jpg",
+    "title": "Ginevra de' Benci - Google Art Project.jpg",
+    "commonsTitle": "Leonardo da Vinci - Ginevra de' Benci - Google Art Project.jpg",
+    "url": "https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_-_Ginevra_de%27_Benci_-_Google_Art_Project.jpg",
+    "author": "Leonardo da Vinci (painting); photograph via Google Art Project (National Gallery of Art, Washington)",
+    "licence": "Public domain",
+    "licenceTemplate": "PD-Art",
+    "size": "4000 × 4239 (Commons' 4000 px copy of the 10483 × 11110 original)",
+    "subject": "painting, about 1474–78: young woman, nearly frontal, pale skin, juniper bush and landscape behind"
   }
 ]

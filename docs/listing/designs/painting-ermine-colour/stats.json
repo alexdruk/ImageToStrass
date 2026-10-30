@@ -1,0 +1,49 @@
+{
+  "subject": "painting-ermine",
+  "design": "colour",
+  "stones": 4211,
+  "bySize": {
+    "ss6": 3641,
+    "ss4": 569,
+    "ss16": 1
+  },
+  "byColour": {
+    "jet": 906,
+    "silk": 873,
+    "light-siam": 474,
+    "smoked-topaz": 368,
+    "rose-gold": 299,
+    "capri-blue": 211,
+    "copper": 181,
+    "indian-siam": 152,
+    "colorado-topaz": 147,
+    "sapphire": 140,
+    "light-smoked-topaz": 133,
+    "golden-shadow": 123,
+    "light-topaz": 59,
+    "light-peach": 41,
+    "crystal-clear": 26,
+    "light-colorado": 26,
+    "siam": 16,
+    "scarlet": 14,
+    "metallic-sunshine": 9,
+    "hematite": 7,
+    "gold": 3,
+    "khaki": 2,
+    "graphite": 1
+  },
+  "widthMm": 147.5,
+  "heightMm": 218.3,
+  "widthIn": 5.81,
+  "heightIn": 8.59,
+  "coverage": 0.617,
+  "mode": "colour",
+  "adjustments": {},
+  "photo": {
+    "title": "Leonardo da Vinci (1452-1519) - Lady with an Ermine – Portrait of Cecilia Gallerani (ca. 1473–1536) - MNK XII-209 - National Museum Kraków",
+    "url": "https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_(1452-1519)_-_Lady_with_an_Ermine_%E2%80%93_Portrait_of_Cecilia_Gallerani_(ca._1473%E2%80%931536)_-_MNK_XII-209_-_National_Museum_Krak%C3%B3w.jpg",
+    "author": "Leonardo da Vinci",
+    "licence": "Public domain",
+    "via": "National Museum in Kraków"
+  }
+}

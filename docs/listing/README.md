@@ -44,3 +44,16 @@ tuning), each on its first try. [portraits/overview.png](portraits/overview.png)
 | 2 | [portrait-curls](designs/portrait-curls-colour/) | Colour | 4764 | 174.6 × 174.7 mm (6.88 × 6.88 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Confident_Eye_Contact_(Unsplash).jpg), Tanja Heffner | CC0 | not decided: the skin came out much lighter than in the photo |
 | 3 | [portrait-elder](designs/portrait-elder-colour/) | Colour | 3936 | 143.1 × 177.4 mm (5.63 × 6.99 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Karen_Elder_(Unsplash).jpg), Capturing the human heart. | CC0 | not decided |
 | 6 | [portrait-glasses](designs/portrait-glasses-colour/) | Colour | 3089 | 163.1 × 164.2 mm (6.42 × 6.46 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Man_vanguard_glasses_outdoors_(Unsplash).jpg), Seth Doyle | CC0 | not decided: one eye is missing |
+
+### Leonardo da Vinci paintings (PN-04d follow-up)
+
+Three public-domain Leonardo portraits of women from Wikimedia Commons (candidates 8–10 in
+[portraits/candidates.json](portraits/candidates.json)), made the same way. Ginevra de' Benci is
+Commons' 4000 px copy of the 10483 × 11110 file, which is over the upload limit. Each was made on
+its first try. The Mona Lisa was left out on purpose.
+
+| # | Subject | Mode | Stones | Natural size | Photo source | Licence | Use in listing |
+| ---: | --- | --- | ---: | --- | --- | --- | --- |
+| 8 | [painting-ermine](designs/painting-ermine-colour/) | Colour | 4211 | 147.5 × 218.3 mm (5.81 × 8.59 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_(1452-1519)_-_Lady_with_an_Ermine_%E2%80%93_Portrait_of_Cecilia_Gallerani_(ca._1473%E2%80%931536)_-_MNK_XII-209_-_National_Museum_Krak%C3%B3w.jpg), National Museum in Kraków | Public domain | not decided |
+| 9 | [painting-ferronniere](designs/painting-ferronniere-colour/) | Colour | 3950 | 143.7 × 217.3 mm (5.66 × 8.56 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:La_Belle_Ferroni%C3%A8re_-_Google_Arts.jpg), Google Arts & Culture | Public domain | not decided: the brown dress came out red and gold |
+| 10 | [painting-ginevra](designs/painting-ginevra-colour/) | Colour | 3660 | 134.7 × 178 mm (5.3 × 7.01 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_-_Ginevra_de%27_Benci_-_Google_Art_Project.jpg), Google Art Project | Public domain | not decided: white blotches on the face |
