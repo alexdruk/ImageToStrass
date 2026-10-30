@@ -619,11 +619,28 @@ download; step indicator), one main panel per step, no page reloads, works on ph
 widths. White background, deep blue accents (RS UI principles). IS-05 uses the frontend-design
 skill for the visual direction.
 
+Step indicator: 1 Upload, 2 Prepare, 3 Design (the Working screen), 4 Result, 5 Your code. For a code
+made from an Etsy order (PN-08 follow-up; the session's `fromOrder`), which is paid already: 1 Upload,
+2 Prepare, 3 Design (Working and Result), 4 Download (the download page of that code). A screen opened
+afresh shows no indicator until the code's session has said which of the two it is in, so the wrong
+steps never flash.
+
+While the buyer works on a prepaid code (PN-08 follow-up) no screen and no "how it works" text
+mentions ordering or checking out on Etsy, the Personalization field, or pasting or entering a code
+there; the header still shows the code. The home screen of a new visitor (no saved code) is
+unchanged. Test: `tools/test-webapp-prepaid-browser.mjs` (desktop and 390 px, headless Chrome; a
+watcher in the page checks the visible text at every change of the page).
+
 Screens (one URL each, history API):
 
 1. **Upload** `/` — drop zone + file button, accepted formats and 50 MB note, consent checkbox
    (privacy policy link), Turnstile; under the upload area (PN-08) the line "Already bought on Etsy?
-   Enter your order number" linking to `/order`. On success → 2.
+   Enter your order number" linking to `/order`. On success → 2. Next to it the four "how it works"
+   steps (Upload and prepare, See your design, Get your code, Download). With a saved prepaid code
+   (PN-08 follow-up): the note "Your order is paid. Upload your photo to make your design with code
+   PN-XXXX-XXXX.", no order-number line, and three steps instead: **Upload and prepare**, **See your
+   design**, **Pick and download** ("Choose the design you like with “Use this design and download”:
+   SVG, production sheet (PDF), AI, EPS, DXF and PNG, at the design's natural size.").
 2. **Prepare** `/c/<code>/prepare` — large preview; background removal toggle (on); crop and
    rotate tools; brightness / contrast / saturation sliders and Auto enhance; Colour / Black &
    white; with Black & white, the two styles (6.4) as two choices, each with a small example
@@ -667,6 +684,11 @@ Screens (one URL each, history API):
    No tick box, no Download button; the ZIP answers 403.
    Prepaid with no pick yet (PN-08): "Pick your design first" with a link to the code's screens
    (`/c/<code>`, its latest result); the ZIP answers 403 `pick`.
+   A code made from an Etsy order (PN-08 follow-up; `GET /api/download/<code>` then also says
+   `fromOrder: true`): the line under the title is "Enter your PatternNifty code to download your
+   files." instead of "Enter the code you put in the Etsy Personalization field.", there is no
+   "Bought on Etsy without a code?" line, and the step indicator shows 4 Download. With a code in the
+   link, both lines wait until the code is checked.
 7. **Order** `/order` (PN-08) — one field "Etsy order number" (digits; spaces allowed), Turnstile,
    button **Continue**, the help line "You find your order number in your Etsy purchases and in
    Etsy's order email." `POST /api/order` `{ order, cf-turnstile-response }` answers:
@@ -689,7 +711,8 @@ Screens (one URL each, history API):
 
 Expectations line (IS-07b), on Prepare and Result: "Your design is an artistic rhinestone version of
 your photo; faces are stylised, not photographic. You can try up to 3 designs and only buy if you like
-one."
+one." For a code made from an Etsy order (PN-08 follow-up) it ends "... up to 3 designs and pick the
+one you like."
 
 Every screen, the page title and the static pages name PatternNifty, never IS; once the buyer has a
 code, the header shows it (`PN-XXXX-XXXX`) on every screen, at 390 px too.
@@ -1029,7 +1052,7 @@ server, the Etsy poller and the tunnel (runbook).
   through Cloudflare from the Mac, cloudflared's connections from its local metrics); business
   figures read from the database opened read-only and the poller's state file (queue and running
   stage, designs done / failed / declined, automatic re-runs, codes created and paid, downloads,
-  today and 7 days; orders without a code; Etsy token age, last poll and its error, whether listing
+  today and 7 days; orders without a code (below); Etsy token age, last poll and its error, whether listing
   ids are configured; the designs counted today against `IS_DAILY_DESIGN_CAP`, as section 13 counts
   them); the machine (uptime, power,
   battery, `pmset -g` sleep settings, macOS and node versions); storage (free disk, sizes of
@@ -1043,6 +1066,16 @@ server, the Etsy poller and the tunnel (runbook).
   alert at the top, "Paid, but the design was deleted: refund on Etsy", with the Etsy receipt number
   and the code, and a **Done** button (a POST with the page's token). Done is kept in the panel's own
   file `data/control-alerts-done.json` (the event ids), so the panel still only reads the database.
+- Orders without a code (PN-08 follow-up; `etsy_orders` rows with no matched code), in two kinds.
+  Personalization with text but no code IS knows (a typo or a wrong code): **Orders with an unknown
+  code**, red when not 0, one line each with the Etsy receipt number, the payment date and the text
+  the buyer entered (escaped, cut at 200 characters), refunded ones marked; Alex matches it on
+  `/admin`. Personalization empty (bought first, not redeemed on `/order` yet, normal): **Waiting for
+  the buyer to redeem**, a neutral count and list of the receipt numbers with their payment dates
+  (one line per receipt; refunded ones left out). One paid 7 days ago or more (`paid_at` + 7 days
+  ≤ now) leaves that list for a yellow note at the top, "Paid 7+ days ago, not redeemed yet: message
+  the buyer on Etsy", with the receipt number and the payment date; no button, it goes once the buyer
+  redeems the order or it is refunded (runbook).
 - Paid, no design yet (PN-08, D6): for each prepaid code paid 30 days ago or more with no done design,
   a yellow note at the top, "Paid, no design yet", with the Etsy receipt number (the buyer's order
   number) and the code; it goes once the buyer makes a design (the next nightly run delivers it) or

@@ -233,6 +233,8 @@ export function webappRoutes({ q, config, background, delivery, poller = null, l
     const state = downloadState(row);
     if (state.state === "unpaid") poller?.requestPoll();
     if (state.state === "ready") state.consented = consented(row);
+    // Made from an Etsy order (PN-08 follow-up): the page leaves out its Etsy lines.
+    if (row?.redeemed_at) state.fromOrder = true;
     res.set("Cache-Control", "no-store").json(state);
   });
 

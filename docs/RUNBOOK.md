@@ -88,8 +88,9 @@ It only reads (the database read-only, the poller's state, the logs, `launchctl 
 for each key.
 
 Notes at the top: a red "Paid, but the design was deleted: refund on Etsy" (see
-[Paid, but the design was deleted](#paid-but-the-design-was-deleted)) and a yellow "Paid, no design
-yet" (see [Paid, no design yet](#paid-no-design-yet)).
+[Paid, but the design was deleted](#paid-but-the-design-was-deleted)), a yellow "Paid, no design
+yet" (see [Paid, no design yet](#paid-no-design-yet)) and a yellow "Paid 7+ days ago, not redeemed
+yet: message the buyer on Etsy" (see [Not redeemed yet](#not-redeemed-yet)).
 
 **Agents.** For each agent: state, PID, uptime, last exit code, CPU and memory (with child
 processes, so strass shows caffeinate plus Python), and buttons:
@@ -130,8 +131,13 @@ button's page says "the page had expired", the panel was restarted: reload it an
 **Business** (read-only). Queue and the running design's stage; today and the last 7 days: designs
 done, failed, declined, automatic re-runs, codes created, codes paid, downloads.
 
-- *Orders without a code* above 0: a buyer paid without a usable code; open `/admin` (the link) and
-  match it by hand.
+- Orders without a code come in two lists (see [Orders without a code](#orders-without-a-code)):
+  - *Orders with an unknown code* (red when not 0): the buyer wrote something in Personalization, but
+    not a code PatternNifty knows (a typo or a wrong code). Each line shows the receipt number, the
+    payment date and what the buyer wrote. Open `/admin` (the link) and match it by hand.
+  - *Waiting for the buyer to redeem* (neutral): bought first with Personalization empty, order
+    number not entered on `patternnifty.com/order` yet. Normal; nothing to do. After 7 days an order
+    moves to the yellow note at the top.
 - *Etsy token*: amber from 80 days, red at 90: reconnect Etsy (below). *Last poll* failed or *Last
   poll error*: Etsy or the internet; it retries every 3 minutes, and `/admin` has Poll now.
 - *Listing ids empty*: `IS_ETSY_LISTING_IDS` is not set in `.env`, so no order is stored or paid;
@@ -337,9 +343,38 @@ prepaid code makes up to 3 designs like any code (they don't count towards the d
 buyer picks one with "Use this design and download" and the 30-day download starts then. Entering the
 same order number again shows the same codes: that is also how a buyer gets a lost code back.
 
-Until the buyer enters the order number, the order is an order without a code (`/admin` and the
-control panel's "Orders without a code"); that is normal for this path. Don't match it to a code by
-hand unless the buyer asks.
+Until the buyer enters the order number, the order is an order without a code: on `/admin`, and on
+the control panel under "Waiting for the buyer to redeem". That is normal for this path. Don't match
+it to a code by hand unless the buyer asks.
+
+While the buyer works on a prepaid code, the site shows the steps 1 Upload, 2 Prepare, 3 Design,
+4 Download and never asks them to enter a code on Etsy.
+
+### Orders without a code
+
+An Etsy order of the PatternNifty listing that no code is matched to. The control panel splits them:
+
+| List | What it means | What to do |
+| --- | --- | --- |
+| Orders with an unknown code (red) | The buyer typed something in Personalization, but it is no code PatternNifty knows: a typo (PN-7K3Q-9XPZ for PN-7K3Q-9XPA), a code from another shop, or a note | Compare the text with the codes on `/admin`; if one is clearly meant, **Match to code** there (it becomes paid and its ZIP is built). If not, send the buyer an Etsy message asking for their code, or tell them to go to patternnifty.com/order with their order number to get a new code |
+| Waiting for the buyer to redeem (neutral) | Bought first, Personalization empty, the order number not entered on /order yet | Nothing. It leaves the list once the buyer enters the order number |
+| Paid 7+ days ago, not redeemed yet (yellow note at the top) | The same, but paid 7 days ago or more | See [Not redeemed yet](#not-redeemed-yet) |
+
+Refunded orders with Personalization empty are left out (there is nothing to redeem).
+
+### Not redeemed yet
+
+A yellow note "Paid 7+ days ago, not redeemed yet: message the buyer on Etsy" with the Etsy receipt
+number (= the buyer's order number) and the payment date: the buyer checked out with Personalization
+empty and has not entered the order number on PatternNifty yet. What to do:
+
+1. In Etsy (Shop Manager → Orders), open the order with that receipt number and send the buyer a
+   message, for example: "Thank you for your order! To make your rhinestone design, go to
+   patternnifty.com/order and enter your order number (it is in your Etsy purchases and in the order
+   email). You can then upload your photo, try up to 3 designs and download the files."
+2. Nothing else: the note goes away once the buyer enters the order number, or if the order is
+   refunded (the next poll sees the refund).
+3. If the buyer asks for a refund instead, refund the order in full on Etsy.
 
 ### Paid, no design yet
 

@@ -49,8 +49,11 @@ const BW_STYLES = [
   { id: "halftone", name: "Shaded", note: "Black and clear stones mixed to show light and shade.", example: "/examples/bw-shaded.png" }
 ];
 const bwStyleName = (id) => (BW_STYLES.find((st) => st.id === id) || BW_STYLES[0]).name;
-// What the buyer can expect (spec 10), under the photo on Prepare and next to Try again on Result.
+// What the buyer can expect (spec 10), under the photo on Prepare and next to Try again on Result
+// (the terms quote it word for word). A code made from an Etsy order is already paid (PN-08
+// follow-up): nothing about buying.
 const expectation = () => `Your design is an artistic rhinestone version of your photo; faces are stylised, not photographic. You can try up to ${config.designsPerCode} designs and only buy if you like one.`;
+const expectationFromOrder = () => `Your design is an artistic rhinestone version of your photo; faces are stylised, not photographic. You can try up to ${config.designsPerCode} designs and pick the one you like.`;
 
 let config = { turnstileSiteKey: null, listingUrl: null, legal: {}, designsPerCode: 3, colours: {}, sizes: {} };
 let cleanup = [];
@@ -122,10 +125,30 @@ async function copyText(text) {
 
 chip.addEventListener("click", () => copyText(chip.dataset.code));
 
-function setSteps(step) {
-  const order = ["upload", "prepare", "design", "result", "code"];
-  stepsEl.hidden = !step;
-  const at = order.indexOf(step);
+// The step indicator (spec 10). A code made from an Etsy order is paid already (PN-08 follow-up), so
+// its flow has no Etsy step: 1 Upload, 2 Prepare, 3 Design (the result too), 4 Download.
+const FLOWS = {
+  open: [["upload", "Upload"], ["prepare", "Prepare"], ["design", "Design"], ["result", "Result"], ["code", "Your code"]],
+  prepaid: [["upload", "Upload"], ["prepare", "Prepare"], ["design", "Design"], ["download", "Download"]]
+};
+const PREPAID_STEP = { result: "design", code: "download" };
+// Whether each code loaded was made from an Etsy order (its session's fromOrder).
+const fromOrderCodes = new Map();
+const codeKey = (code) => String(code ?? "").trim().toUpperCase();
+const flowOf = (code) => (fromOrderCodes.has(codeKey(code)) ? (fromOrderCodes.get(codeKey(code)) ? "prepaid" : "open") : null);
+let shownFlow = "open";
+
+// flow: "open", "prepaid", or null while the code's session is not loaded yet (no indicator, so the
+// wrong steps never show).
+function setSteps(step, flow = "open") {
+  stepsEl.hidden = !step || !flow;
+  if (!step || !flow) return;
+  if (flow !== shownFlow) {
+    stepsEl.innerHTML = FLOWS[flow].map(([id, label], i) => `<li data-step="${id}"><span class="dot">${i + 1}</span><span class="label">${label}</span></li>`).join("");
+    shownFlow = flow;
+  }
+  const order = FLOWS[flow].map(([id]) => id);
+  const at = order.indexOf(flow === "prepaid" ? PREPAID_STEP[step] ?? step : step);
   for (const li of stepsEl.children) {
     const i = order.indexOf(li.dataset.step);
     li.classList.toggle("done", i < at);
@@ -248,6 +271,8 @@ async function loadSession(code) {
     return null;
   }
   saveCode(body.code);
+  fromOrderCodes.set(codeKey(body.code), Boolean(body.fromOrder));
+  fromOrderCodes.set(codeKey(code), Boolean(body.fromOrder));
   // A code made from an Etsy order (PN-08) whose order was refunded.
   if (body.fromOrder && body.status === "refunded") {
     setSteps(null);
@@ -268,14 +293,17 @@ const isPrepaid = (s) => s.status === "prepaid";
 // ---------- 1 Upload ----------
 
 async function uploadScreen() {
-  setSteps("upload");
   const previous = savedCode();
+  setSteps("upload", previous ? null : "open");
   let session = null;
   if (previous) {
     const { ok, body } = await api(`/api/codes/${encodeURIComponent(previous)}`);
     session = ok ? body : null;
   }
   showChip(session?.code);
+  // Working on a prepaid code (PN-08 follow-up): no Etsy step, nothing about ordering or codes.
+  const prepaid = Boolean(session && isPrepaid(session));
+  setSteps("upload", prepaid ? "prepaid" : "open");
   const useCode = session && canDesign(session) && session.designsLeft > 0 ? session.code : null;
   const resume = session && (session.designs.length || session.upload);
   // A prepaid code with nothing yet (PN-08): the buyer came from the order page to upload.
@@ -311,14 +339,18 @@ async function uploadScreen() {
         </label>
         <div class="turnstile-box" id="check"></div>
         <div class="notice error" id="error" role="alert"></div>
-        <p class="sub order-link">Already bought on Etsy? <a href="/order" data-link>Enter your order number</a></p>
+        ${raw(prepaid ? "" : html`<p class="sub order-link">Already bought on Etsy? <a href="/order" data-link>Enter your order number</a></p>`)}
       </div>
-      <ol class="how">
+      ${raw(prepaid ? html`<ol class="how" id="how-prepaid">
+        <li><span class="n">1</span><p><b>Upload and prepare</b>Remove the background, crop, rotate and adjust the colours.</p></li>
+        <li><span class="n">2</span><p><b>See your design</b>PatternNifty shows your image and the finished stone design side by side. Not happy? Try again — up to ${config.designsPerCode} designs.</p></li>
+        <li><span class="n">3</span><p><b>Pick and download</b>Choose the design you like with “Use this design and download”: SVG, production sheet (PDF), AI, EPS, DXF and PNG, at the design's natural size.</p></li>
+      </ol>` : html`<ol class="how">
         <li><span class="n">1</span><p><b>Upload and prepare</b>Remove the background, crop, rotate and adjust the colours.</p></li>
         <li><span class="n">2</span><p><b>See your design</b>PatternNifty shows your image and the finished stone design side by side. Not happy? Try again — up to 3 designs.</p></li>
         <li><span class="n">3</span><p><b>Get your code</b>Enter your code on Etsy and check out. Nothing is charged before that.</p></li>
         <li><span class="n">4</span><p><b>Download</b>SVG, production sheet (PDF), AI, EPS, DXF and PNG, at the design's natural size.</p></li>
-      </ol>
+      </ol>`)}
     </div>`);
 
   const drop = panel.querySelector("#drop");
@@ -415,9 +447,10 @@ function rgbaOf(img) {
 }
 
 async function prepareScreen(code) {
-  setSteps("prepare");
+  setSteps("prepare", flowOf(code));
   const session = await loadSession(code);
   if (!session) return;
+  setSteps("prepare", flowOf(session.code));
   if (!session.upload) return navigate("/", { replace: true });
   if (session.active) return navigate(`/c/${session.code}/working`, { replace: true });
 
@@ -456,7 +489,7 @@ async function prepareScreen(code) {
           <button class="btn small ghost" type="button" id="reset">Reset all</button>
           <a class="btn small ghost" href="/" data-link>Use another image</a>
         </div>
-        <p class="sub expect">${expectation()}</p>
+        <p class="sub expect">${session.fromOrder ? expectationFromOrder() : expectation()}</p>
       </div>
       <div class="controls">
         <div class="card">
@@ -742,9 +775,10 @@ async function prepareScreen(code) {
 // ---------- 3 Working ----------
 
 async function workingScreen(code) {
-  setSteps("design");
+  setSteps("design", flowOf(code));
   const session = await loadSession(code);
   if (!session) return;
+  setSteps("design", flowOf(session.code));
   let n = session.active;
   try { n ??= Number(sessionStorage.getItem(`is.working.${session.code}`)) || null; } catch { /* none */ }
   if (!n) return navigate(`/c/${session.code}`, { replace: true });
@@ -816,9 +850,10 @@ function nameOfSize(id) { return config.sizes[id] || id.toUpperCase(); }
 function colourOf(id) { return config.colours[id] || { name: id, fill: "#cccccc" }; }
 
 async function resultScreen(code, nText) {
-  setSteps("result");
+  setSteps("result", flowOf(code));
   const session = await loadSession(code);
   if (!session) return;
+  setSteps("result", flowOf(session.code));
   const { ok, body: view } = await api(`/api/attempts/${session.code}/${nText}`);
   if (!ok || view.status !== "done") return navigate(`/c/${session.code}`, { replace: true });
   if (String(view.attempt) !== nText) return navigate(`/c/${session.code}/result/${view.attempt}`, { replace: true });
@@ -867,7 +902,7 @@ async function resultScreen(code, nText) {
           <p class="sub center mt-s">${canTry
             ? `${session.designsLeft} of ${config.designsPerCode} designs left.`
             : `You've used all ${config.designsPerCode} designs.`}</p>
-          <p class="sub center mt-s expect">${expectation()}</p>
+          <p class="sub center mt-s expect">${session.fromOrder ? expectationFromOrder() : expectation()}</p>
         </div>
         <div class="card">
           <div class="control-title">Stone sizes</div>
@@ -1007,9 +1042,10 @@ async function resultScreen(code, nText) {
 // ---------- 5 Your code ----------
 
 async function doneScreen(code) {
-  setSteps("code");
+  setSteps("code", flowOf(code));
   const session = await loadSession(code);
   if (!session) return;
+  setSteps("code", flowOf(session.code));
   // Made from an Etsy order (PN-08): nothing to enter on Etsy.
   if (session.fromOrder) return navigate(isPrepaid(session) ? `/c/${session.code}` : `/download?code=${session.code}`, { replace: true });
   const chosen = session.selected ?? session.designs[session.designs.length - 1]?.attempt;
@@ -1044,25 +1080,41 @@ async function doneScreen(code) {
 // Asked once per code, before its first download (PN-07, the terms' "Downloads and refunds").
 const WITHDRAWAL_TEXT = "I agree that my download starts now and that I lose any right to withdraw from the purchase.";
 
+// A code made from an Etsy order was never entered on Etsy (PN-08 follow-up).
+const DOWNLOAD_LEDE = "Enter the code you put in the Etsy Personalization field.";
+const DOWNLOAD_LEDE_FROM_ORDER = "Enter your PatternNifty code to download your files.";
+
 async function downloadScreen(params) {
-  setSteps(null);
   const initial = params?.get("code") || savedCode() || "";
+  // Until a code given in the link is checked, it is not known whether it came from an order: the
+  // Etsy lines wait, so a buyer who bought first never sees them.
+  const pending = Boolean(params?.get("code")) && flowOf(initial) === null;
+  const fromOrder = flowOf(initial) === "prepaid";
+  setSteps(fromOrder ? "download" : null, "prepaid");
   const panel = render(html`
     <div class="narrow">
       <div class="card">
         <h1>Download your files</h1>
-        <p class="lede">Enter the code you put in the Etsy Personalization field.</p>
+        <p class="lede" id="download-lede" ${raw(pending ? "hidden" : "")}>${fromOrder ? DOWNLOAD_LEDE_FROM_ORDER : DOWNLOAD_LEDE}</p>
         <form class="code-form" id="form" novalidate>
           <label class="visually-hidden" for="code">Your code</label>
           <input id="code" name="code" placeholder="PN-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${initial}">
           <button class="btn primary" type="submit">Check</button>
         </form>
         <div class="state" id="state" aria-live="polite"></div>
-        <p class="sub mt">Bought on Etsy without a code? <a href="/order" data-link>Enter your order number</a></p>
+        <p class="sub mt" id="order-link" ${raw(pending || fromOrder ? "hidden" : "")}>Bought on Etsy without a code? <a href="/order" data-link>Enter your order number</a></p>
       </div>
     </div>`);
 
   const input = panel.querySelector("#code");
+  const lede = panel.querySelector("#download-lede");
+  const orderLink = panel.querySelector("#order-link");
+  const showFlow = (madeFromOrder) => {
+    lede.textContent = madeFromOrder ? DOWNLOAD_LEDE_FROM_ORDER : DOWNLOAD_LEDE;
+    lede.hidden = false;
+    orderLink.hidden = madeFromOrder;
+    setSteps(madeFromOrder ? "download" : null, "prepaid");
+  };
   const out = panel.querySelector("#state");
   let timer = null;
   onLeave(() => clearTimeout(timer));
@@ -1077,9 +1129,12 @@ async function downloadScreen(params) {
     if (!quiet) out.innerHTML = `<div class="loading"><span class="spinner"></span>Checking…</div>`;
     const { ok, body } = await api(`/api/download/${encodeURIComponent(clean)}`);
     if (!ok) {
+      showFlow(flowOf(clean) === "prepaid");
       out.innerHTML = html`<div class="notice error">${errorText(body.error)}</div>`;
       return;
     }
+    if (body.state !== "unknown") fromOrderCodes.set(codeKey(clean), Boolean(body.fromOrder));
+    showFlow(Boolean(body.fromOrder));
     const states = {
       unknown: html`<div class="notice error"><b>We couldn't find this code.</b> Please check it — it looks like PN-7K3Q-9XPA.</div>`,
       unpaid: html`<div class="notice warn"><b>Not paid yet.</b> Payments usually appear within 10 minutes of checkout. This page checks again automatically.</div>`,

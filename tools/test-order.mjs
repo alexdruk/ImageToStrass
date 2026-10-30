@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { business } from "../src/control/probes.js";
-import { prepaidNotes } from "../src/control/page.js";
+import { notRedeemedNotes, prepaidNotes } from "../src/control/page.js";
 import { runNightly } from "../src/ops/nightly.js";
 import { LOOKUPS_PER_IP_PER_HOUR, parseOrderNumber } from "../src/server/orders.js";
 import { DELIVERY_DAYS } from "../src/server/delivery.js";
@@ -96,8 +96,21 @@ test("redeem: one unit makes one prepaid code; again returns the same code (a lo
   const srv = await setup();
   try {
     const r = receipt([[1, ""]]);
-    await srv.store([r]);
-    assert.equal(srv.q.listUnmatchedOrders().length, 1);
+    const typo = receipt([[1, "PN-7K3Q-9XPZ please"]]);
+    await srv.store([r, typo]);
+    assert.equal(srv.q.listUnmatchedOrders().length, 2);
+    // The control panel (PN-08 follow-up): the empty one waits to be redeemed, the typo is red.
+    const panelFile = path.join(srv.root, "panel-before.sqlite");
+    await srv.db.backup(panelFile);
+    let panel = await business({ config: { dbFile: panelFile, pollerFile: "", shopFile: "" }, loadTokens: async () => null });
+    assert.deepEqual(panel.waiting.map((o) => o.receiptId), [r.receipt_id]);
+    assert.deepEqual(panel.unknownCode.map((o) => [o.receiptId, o.personalization]), [[typo.receipt_id, "PN-7K3Q-9XPZ please"]]);
+    assert.deepEqual(panel.notRedeemed, []);
+    // A week later, still not redeemed: a yellow note.
+    panel = await business({ config: { dbFile: panelFile, pollerFile: "", shopFile: "" }, loadTokens: async () => null, now: new Date(Date.now() + 7 * DAY_MS) });
+    assert.deepEqual(panel.notRedeemed.map((o) => o.receiptId), [r.receipt_id]);
+    assert.deepEqual(panel.waiting, []);
+    assert.match(notRedeemedNotes(panel.notRedeemed), new RegExp(`Paid 7\\+ days ago, not redeemed yet: message the buyer on Etsy[\\s\\S]*?Receipt <b>${r.receipt_id}</b>`));
 
     const first = await srv.redeem(r.receipt_id);
     assert.equal(first.status, 200);
@@ -114,7 +127,12 @@ test("redeem: one unit makes one prepaid code; again returns the same code (a lo
     assert.ok(row.redeemed_at);
     assert.equal(row.ip_hash, null);
     // The order is matched: no "without a code" row is left, the code's row is there.
-    assert.equal(srv.q.listUnmatchedOrders().length, 0);
+    assert.deepEqual(srv.q.listUnmatchedOrders().map((o) => o.receipt_id), [typo.receipt_id]);
+    const panelAfter = path.join(srv.root, "panel-after.sqlite");
+    await srv.db.backup(panelAfter);
+    panel = await business({ config: { dbFile: panelAfter, pollerFile: "", shopFile: "" }, loadTokens: async () => null, now: new Date(Date.now() + 7 * DAY_MS) });
+    assert.deepEqual([panel.waiting, panel.notRedeemed], [[], []]);
+    assert.equal(panel.unknownCode.length, 1);
     assert.equal(srv.q.getEtsyOrder(r.transactions[0].transaction_id, code).receipt_id, r.receipt_id);
     assert.deepEqual(srv.q.listEvents(code).map((e) => e.kind), ["order-redeemed"]);
     assert.ok(existsSync(path.join(srv.config.archiveDir, code, "code.json")));
@@ -125,14 +143,14 @@ test("redeem: one unit makes one prepaid code; again returns the same code (a lo
 
     // A later poll keeps the match and makes no unmatched row again.
     await srv.poller.runOnce();
-    assert.equal(srv.q.listUnmatchedOrders().length, 0);
+    assert.deepEqual(srv.q.listUnmatchedOrders().map((o) => o.receipt_id), [typo.receipt_id]);
     assert.equal(srv.q.getCode(code).status, "prepaid");
 
     // The session says where it came from; the download page asks for a pick.
     const session = await srv.get(`/api/codes/${code}`);
     assert.equal(session.body.status, "prepaid");
     assert.equal(session.body.fromOrder, true);
-    assert.deepEqual((await srv.get(`/api/download/${code}`)).body, { state: "pick" });
+    assert.deepEqual((await srv.get(`/api/download/${code}`)).body, { state: "pick", fromOrder: true });
     assert.equal((await srv.get(`/api/download/${code}/zip?agree=1`)).status, 403);
   } finally {
     await srv.stop();
@@ -200,7 +218,7 @@ test("redeem: a refunded or cancelled order gives no code; a refund later locks 
     await srv.store([refunded, { ...later, status: "Fully Refunded", updated_timestamp: later.updated_timestamp + 5 }]);
     for (const code of codes) {
       assert.equal(srv.q.getCode(code).status, "refunded");
-      assert.deepEqual((await srv.get(`/api/download/${code}`)).body, { state: "refunded" });
+      assert.deepEqual((await srv.get(`/api/download/${code}`)).body, { state: "refunded", fromOrder: true });
       assert.equal((await srv.get(`/api/codes/${code}`)).body.status, "refunded");
       assert.equal((await srv.upload(code)).status, 409);
     }

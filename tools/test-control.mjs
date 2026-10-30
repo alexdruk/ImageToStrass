@@ -10,7 +10,7 @@ import { after, before, test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { loadControlConfig } from "../src/control/app.js";
 import { openDatabase } from "../src/db/index.js";
-import { exitMeaning, parseLaunchctlList, parsePmsetBatt, parsePmsetCustom, parsePs, processTree } from "../src/control/probes.js";
+import { exitMeaning, parseLaunchctlList, parsePmsetBatt, parsePmsetCustom, parsePs, processTree, splitUnmatched } from "../src/control/probes.js";
 
 // The control panel (PN-05): the real src/control/index.js in a temporary folder with its own
 // .env, database, log folder and HOME, and a stub launchctl first on PATH. No real agent is
@@ -121,6 +121,15 @@ before(async () => {
   attempt.run("PN-AAAA-BBBB", 2, "done", null, JSON.stringify({ rerunOf: 1 }), now);
   attempt.run("PN-CCCC-DDDD", 1, "running", "layout", "{}", now);
   db.prepare("INSERT INTO etsy_orders (receipt_id, transaction_id, personalization, seen_at) VALUES (1, 2, 'no code', ?)").run(now);
+  // Orders without a code (PN-08 follow-up): a typo with markup in it; bought first, Personalization
+  // empty: 2 days ago (two transactions of one receipt), 8 days ago, and refunded (left out).
+  const order = db.prepare("INSERT INTO etsy_orders (receipt_id, transaction_id, personalization, paid_at, status, seen_at) VALUES (?, ?, ?, ?, ?, ?)");
+  const daysAgo = (d) => new Date(Date.now() - d * 86400000).toISOString();
+  order.run(3800000100, 4900000100, "PN-7K3Q-9XPZ <b>thanks</b>", daysAgo(1), "paid", now);
+  order.run(3800000200, 4900000201, "", daysAgo(2), "paid", now);
+  order.run(3800000200, 4900000202, null, daysAgo(2), "paid", now);
+  order.run(3800000300, 4900000300, "  ", daysAgo(8), "paid", now);
+  order.run(3800000400, 4900000400, "", daysAgo(9), "refunded", now);
   db.prepare("INSERT INTO events (at, code, kind) VALUES (?, 'PN-AAAA-BBBB', 'paid'), (?, 'PN-AAAA-BBBB', 'download')").run(now, now);
   db.close();
 
@@ -281,7 +290,20 @@ test("control: agents, health, business and logs as the page shows them", async 
   assert.match(main, /Automatic re-runs<\/td><td class="num">1</);
   assert.match(main, /Codes paid<\/td><td class="num">1</);
   assert.match(main, /Downloads<\/td><td class="num">1</);
-  assert.match(main, /Orders without a code: <span class="bad">● 1/);
+  // Orders without a code (PN-08 follow-up): unknown codes red with the buyer's text (escaped);
+  // bought first and not redeemed: a neutral list, a yellow note at the top from 7 days.
+  assert.match(main, /Orders with an unknown code: <span class="bad">● 2/);
+  assert.ok(main.includes('the buyer wrote: <q class="buyer-text">PN-7K3Q-9XPZ &lt;b&gt;thanks&lt;/b&gt;</q>'));
+  assert.ok(main.includes('<q class="buyer-text">no code</q>'));
+  assert.doesNotMatch(main, /<b>thanks<\/b>/);
+  assert.match(main, /Waiting for the buyer to redeem: <b>1<\/b>/);
+  const waiting = /<ul class="orders" id="waiting-redeem">([\s\S]*?)<\/ul>/.exec(main)[1];
+  assert.match(waiting, /Receipt <b>3800000200<\/b>/);
+  assert.doesNotMatch(waiting, /3800000300|3800000400/);
+  assert.match(main, /<div class="note waiting alert"><span class="warn">● Paid 7\+ days ago, not redeemed yet: message the buyer on Etsy<\/span>\s*Receipt <b>3800000300<\/b>/);
+  assert.ok(main.indexOf("Paid 7+ days ago") < main.indexOf("com.is.server"));
+  assert.doesNotMatch(main, /3800000400/);
+  assert.doesNotMatch(main, /Orders without a code/);
   assert.match(main, /href="http:\/\/127\.0\.0\.1:\d+\/admin"/);
   // The cap as the server counts it (spec 13): the running design; not the failed one, which never
   // reached the provider, nor the automatic re-run.
@@ -354,4 +376,33 @@ test("control: paid after the design was deleted: a red alert until Done (PN-07 
   // Kept in the panel's own file; the database is still only read.
   assert.deepEqual(JSON.parse(readFileSync(path.join(root, "data", "control-alerts-done.json"), "utf8")), [id]);
   assert.equal(crypto.createHash("sha256").update(readFileSync(path.join(root, "data", "is.sqlite"))).digest("hex"), before);
+});
+
+test("control probes: orders without a code, split, and the 7-day switch (PN-08 follow-up)", () => {
+  const now = new Date("2026-10-30T12:00:00.000Z");
+  const at = (ms) => new Date(now.getTime() - ms).toISOString();
+  const WEEK = 7 * 86400000;
+  const row = (receiptId, personalization, paidAt, status = "paid") => ({ receiptId, transactionId: receiptId + 1, personalization, paidAt, status });
+  const split = splitUnmatched([
+    row(1, "PN-ABCD-EFGH", at(WEEK * 3)),
+    row(2, " typo PN-1234 ", at(1000), "refunded"),
+    row(3, "", at(WEEK - 1)),
+    row(4, null, at(WEEK)),
+    row(5, "\n", at(WEEK + 1)),
+    row(6, "", at(WEEK * 2), "refunded"),
+    row(7, "", null)
+  ], now);
+  // Text but no known code: red, whatever its age or status, with the text trimmed.
+  assert.deepEqual(split.unknownCode.map((o) => [o.receiptId, o.personalization]), [[1, "PN-ABCD-EFGH"], [2, "typo PN-1234"]]);
+  // Empty: under 7 days waiting; from exactly 7 days a yellow note; refunded ones in neither.
+  assert.deepEqual(split.waiting.map((o) => o.receiptId), [3, 7]);
+  assert.deepEqual(split.notRedeemed.map((o) => o.receiptId), [4, 5]);
+  // One receipt, two empty transactions: listed once, with its earliest payment.
+  const one = splitUnmatched([row(8, "", at(WEEK + 5)), { ...row(8, "", at(1000)), transactionId: 99 }], now);
+  assert.deepEqual(one.notRedeemed, [{ receiptId: 8, paidAt: at(WEEK + 5) }]);
+  assert.deepEqual(one.waiting, []);
+  // Day 6 waiting, day 7 yellow: the same order seen a day later.
+  const order = [row(9, "", "2026-10-23T12:00:00.000Z")];
+  assert.equal(splitUnmatched(order, new Date("2026-10-30T11:59:59.999Z")).waiting.length, 1);
+  assert.equal(splitUnmatched(order, new Date("2026-10-30T12:00:00.000Z")).notRedeemed.length, 1);
 });
