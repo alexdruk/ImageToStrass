@@ -83,7 +83,7 @@ const STYLE = `
   .muted { color: #5b6478; }
   .ok { color: #11743b; font-weight: 600; } .bad { color: #b42318; font-weight: 600; } .warn { color: #a15c00; font-weight: 600; }
   .note { background: #eaf0ff; border-radius: 8px; padding: 8px 12px; margin-top: 12px; }
-  .note.bad { background: #fdecea; }
+  .note.bad { background: #fdecea; } .note.waiting { background: #fff4e0; }
   form.inline { display: inline; margin-left: 8px; }
   .btn { display: inline-block; background: #12348f; color: #fff; border: 0; border-radius: 8px; padding: 5px 12px;
     font: inherit; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; }
@@ -286,6 +286,13 @@ function logsSection(logs) {
 </section>`;
 }
 
+// Buy first (PN-08): prepaid codes paid 30 days ago with no design yet; each goes once the buyer
+// makes one (the nightly job delivers it) or the order is refunded.
+export function prepaidNotes(list = []) {
+  return list.map((p) => `<div class="note waiting alert">${warn("Paid, no design yet")}
+    Receipt <b>${esc(p.receiptId ?? "unknown")}</b> · code <code>${esc(p.code)}</code> <span class="small muted">paid ${esc(when(p.paidAt))} · runbook: Paid, no design yet</span></div>`).join("");
+}
+
 export function mainPage(data, { csrf, lastAction, websiteUrl }) {
   const message = lastAction
     ? `<p class="note${lastAction.ok ? "" : " bad"}">${esc(when(lastAction.at))}: ${esc(lastAction.text)}</p>`
@@ -295,7 +302,7 @@ export function mainPage(data, { csrf, lastAction, websiteUrl }) {
   const alerts = (data.alerts || []).map((a) => `<div class="note bad alert">${bad("Paid, but the design was deleted: refund on Etsy")}
     Receipt <b>${esc(a.receiptId ?? "unknown")}</b> · code <code>${esc(a.code)}</code> <span class="small muted">${esc(when(a.at))}</span>
     <form method="post" action="/alerts/${esc(a.id)}/done" class="inline"><input type="hidden" name="csrf" value="${csrf}"><button class="btn" type="submit">Done</button></form></div>`).join("");
-  return layout("IS control", `${alerts}${message}${legal}
+  return layout("IS control", `${alerts}${prepaidNotes(data.business?.prepaidNoDesign)}${message}${legal}
 ${agentsSection(data, csrf)}
 ${healthSection(data)}
 ${businessSection(data.business, websiteUrl)}

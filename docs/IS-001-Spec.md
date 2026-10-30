@@ -39,7 +39,8 @@ designs (10). Revised 29 Oct 2026 (PN-07): data kept 30 days, then deleted by th
 details from `.env` (10, 14, 18); withdrawal consent at the first download (10); waiting-time notes
 (10); poller fallback to every variation (11.3); listing texts (11.1). Revised 29 Oct 2026 (PN-07
 follow-up): paid after the design was deleted (4.1, 10, 11.3, 15.1); the AI image service's data
-terms on the privacy page (14).
+terms on the privacy page (14). Revised 30 Oct 2026 (PN-08): buy first, design after: an Etsy order
+redeemed on `/order` gives prepaid codes (1, 2, 4.1, 5, 10, 11, 13, 15, 15.1, D6, D7).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -69,6 +70,16 @@ nothing a buyer can see, download or read names IS (PN-01). There the buyer:
 
 A buyer who is not happy after 3 designs simply does not buy. Nothing is charged before checkout.
 
+Buy first, design after (PN-08). Etsy's Personalization field is optional, so a buyer who lands on
+Etsy first can check out with it empty, then:
+
+1. opens `patternnifty.com/order` and enters the Etsy order number (the receipt id, 11.3);
+2. gets one **prepaid** code per unit bought that has no code of its own (5);
+3. makes up to 3 designs with it as above (steps 1–6), picks one with "Use this design and download"
+   and downloads the ZIP straight away (no code to enter on Etsy).
+
+A buyer of this path who likes none of their 3 designs messages the shop on Etsy for a refund.
+
 The buyer must believe PatternNifty does all the work. No third-party name, prompt, model or intermediate
 image ever reaches the browser (section 12). The Etsy listing still carries Etsy's required AI
 disclosure in generic words (section 11.1).
@@ -82,8 +93,8 @@ disclosure in generic words (section 11.1).
 | D3 | Black & white means **Jet + Crystal only**. |
 | D4 | The buyer sees only two views: **Original** and **Tinted** (section 8). No mask, AI image, overlay or 3D view. |
 | D5 | At most 3 designs per code. A design that fails for technical reasons, or is declined by the safety check, does not count. |
-| D6 | The buyer picks the delivered design ("Use this design"). If a paid code has no pick, the latest design is delivered. |
-| D7 | Keeping data (PN-07, replaces "kept indefinitely"): a code's folder in `data/archive/` (uploads, prepared images, AI images, layouts, every attempt file, `code.json`) is deleted by the nightly job **30 days after the code's last activity** when it was never paid (open or expired without payment, `IS_KEEP_UNPAID_DAYS`), and **30 days after payment** when it was paid or refunded (`IS_KEEP_PAID_DAYS`), the same day as its delivery ZIP (never before its download ends, which an admin unlock can move). The code row (status, dates, counts) and its Etsy order rows stay, with no images and no image paths. Logs are kept 30 days, hashed IPs 24 h (13). `data/listing/` and `data/private-portraits/` are never touched. |
+| D6 | The buyer picks the delivered design ("Use this design"). If a paid code has no pick, the latest design is delivered. A prepaid code (PN-08) is delivered when the buyer picks ("Use this design and download"); with no pick within 30 days of the Etsy payment, the nightly job delivers its latest design and the 30-day download starts then; with no design at all it stays prepaid and the control panel shows "Paid, no design yet" (15.1). |
+| D7 | Keeping data (PN-07, replaces "kept indefinitely"): a code's folder in `data/archive/` (uploads, prepared images, AI images, layouts, every attempt file, `code.json`) is deleted by the nightly job **30 days after the code's last activity** when it was never paid (open or expired without payment, `IS_KEEP_UNPAID_DAYS`), and **30 days after payment** when it was paid or refunded (`IS_KEEP_PAID_DAYS`), the same day as its delivery ZIP (never before its download ends, which an admin unlock can move). The code row (status, dates, counts) and its Etsy order rows stay, with no images and no image paths. Logs are kept 30 days, hashed IPs 24 h (13). `data/listing/` and `data/private-portraits/` are never touched. A prepaid code (PN-08) is never deleted while it is prepaid; once picked, its files go when its download ends (the pick + 30 days), as a paid code's. |
 | D8 | One Etsy listing, one price. |
 | D9 | Production sheet as the RS exporter, multi-page tiling for large designs. With no unit choice the ZIP carries **both** an A4 sheet (mm) and a Letter sheet (inches) (IS-03b decision). |
 | D10 | CDR is dropped. AI is a PDF-compatible file; EPS is written by IS directly from the stones (no Ghostscript). |
@@ -143,8 +154,9 @@ codes(
   created_at, ip_hash, consent_at,
   attempts_used INTEGER DEFAULT 0,
   selected_attempt INTEGER NULL,
-  status TEXT,                    -- open | paid | refunded | expired
+  status TEXT,                    -- open | prepaid | paid | refunded | expired
   paid_at NULL, receipt_id NULL, transaction_id NULL,
+  redeemed_at NULL,               -- made from an Etsy order on /order (PN-08)
   downloads INTEGER DEFAULT 0, delivery_expires_at NULL,
   last_seen_at NULL,              -- last time the code's session was opened (PN-07)
   files_deleted_at NULL,          -- when the nightly job deleted its archive folder (D7)
@@ -160,9 +172,10 @@ attempts(
   ip_hash NULL                    -- hashed IP of the Create design request (13); NULL for re-runs
 )
 etsy_orders(receipt_id, transaction_id, listing_id, personalization, matched_code NULL,
-            paid_at, status, seen_at,
+            paid_at, status, seen_at, quantity NULL,   -- units of the transaction (PN-08)
             UNIQUE(transaction_id, matched_code))
-events(at, code NULL, kind, detail)   -- audit log, local only; kind "withdrawal-consent" (10)
+events(at, code NULL, kind, detail)   -- audit log, local only; kinds include "withdrawal-consent"
+                                      -- (10), "order-redeemed" and "prepaid-picked" (PN-08)
 ```
 
 Attempts:
@@ -183,7 +196,9 @@ Etsy orders:
   existing `etsy_orders` rows on that key (keeping the newest) and adds the index; migration 2
   (PN-06) adds `attempts.ip_hash` and indexes for the limits of section 13; migration 3 (PN-07) adds
   `codes.last_seen_at` and `codes.files_deleted_at` (D7); migration 4 (PN-07 follow-up) adds
-  `codes.undeliverable_at` (11.3).
+  `codes.undeliverable_at` (11.3); migration 5 (PN-08) rebuilds `codes` so its status may be
+  `prepaid`, adds `codes.redeemed_at`, `etsy_orders.quantity` and an index on `codes.receipt_id`
+  (migrations run with foreign keys off, then `PRAGMA foreign_key_check`).
 - A code's last activity (D7) is the latest of its `created_at`, its `last_seen_at` (set each time
   `GET /api/codes/<code>` opens its session), its events and its designs' created and finished times.
 - `ip_hash` (codes and attempts) is cleared 24 h after the row was made (13).
@@ -232,6 +247,17 @@ folder is never overwritten.
   then normalisation.
 - Codes made before PN-01 (`IS-XXXX-XXXX`) stay in the database as they are (no migration); the
   poller no longer matches them and the download page no longer accepts them.
+- Prepaid codes (PN-08): made on `/order` from an Etsy order, one per unit bought (the quantities of
+  the receipt's transactions of the listings in `IS_ETSY_LISTING_IDS`) that has no matched code, each
+  bound to its receipt and transaction (`receipt_id`, `transaction_id`, an `etsy_orders` row with it
+  as `matched_code`), status `prepaid`, `paid_at` the Etsy payment time, `redeemed_at` set, no
+  `ip_hash` (they don't count towards the new codes per IP, 13), event `order-redeemed`. Units whose
+  personalization holds a known code keep that code. Redeeming the same order again makes no new
+  code and lists the same ones (also how a lost code is found again).
+- A prepaid code works as an open one (up to 3 designs, same pipeline and screens), with the
+  differences of sections 10 and 13. Picking a design (`POST /api/codes/<code>/select`) makes it
+  `paid`: `selected_attempt`, `paid_at` unchanged, `delivery_expires_at` = the pick + 30 days, ZIP
+  built, event `prepaid-picked`. A refund of its receipt makes it `refunded` (11.3).
 
 ## 6. Upload and preparation
 
@@ -596,7 +622,8 @@ skill for the visual direction.
 Screens (one URL each, history API):
 
 1. **Upload** `/` — drop zone + file button, accepted formats and 50 MB note, consent checkbox
-   (privacy policy link), Turnstile. On success → 2.
+   (privacy policy link), Turnstile; under the upload area (PN-08) the line "Already bought on Etsy?
+   Enter your order number" linking to `/order`. On success → 2.
 2. **Prepare** `/c/<code>/prepare` — large preview; background removal toggle (on); crop and
    rotate tools; brightness / contrast / saturation sliders and Auto enhance; Colour / Black &
    white; with Black & white, the two styles (6.4) as two choices, each with a small example
@@ -618,13 +645,15 @@ Screens (one URL each, history API):
    (IS-06: the compare slider is gone). Zoom on both views, which scroll together; the Original view
    switches between the prepared image and the upload. The natural size W × H in mm and in, stone
    count, sizes and colours used; buttons
-   **Use this design** and **Try again** (disabled at 3), the expectations line next to them. The
+   **Use this design** (for a prepaid code, PN-08: **Use this design and download**, which makes the
+   code paid and opens the download page) and **Try again** (disabled at 3), the expectations line next to them. The
    subtitle names the mode, for Black & white with its style ("Black & white, Bold"). Earlier
    designs of this code are shown as thumbnails to switch between.
 5. **Your code** `/c/<code>/done` — big code with Copy, three numbered steps back to Etsy
    (enter the code in Personalization, check out, come back to the download page), link to the
    listing (`IS_ETSY_LISTING_URL`). Under the steps (PN-07 follow-up): "Order within 30 days. After 30
-   days without a visit, your design is deleted."
+   days without a visit, your design is deleted." Skipped for codes made from an order (PN-08): they
+   go to their designs while prepaid, to the download page once picked.
 6. **Download** `/download` — code field (placeholder `PN-XXXX-XXXX`). States: unknown code; not paid yet ("Payments usually
    appear within 10 minutes of checkout. This page checks again automatically."); ready (Download
    button, expiry date); expired; refunded. Withdrawal consent (PN-07): before a code's first
@@ -636,7 +665,25 @@ Screens (one URL each, history API):
    Deleted (PN-07 follow-up; a code with `undeliverable_at`, unless refunded): "This design was
    deleted because it was more than 30 days old. Send us a message on Etsy and we will refund you."
    No tick box, no Download button; the ZIP answers 403.
-7. Legal pages (PN-07, section 14): privacy policy, terms of sale, contact and legal notice (`/privacy`,
+   Prepaid with no pick yet (PN-08): "Pick your design first" with a link to the code's screens
+   (`/c/<code>`, its latest result); the ZIP answers 403 `pick`.
+7. **Order** `/order` (PN-08) — one field "Etsy order number" (digits; spaces allowed), Turnstile,
+   button **Continue**, the help line "You find your order number in your Etsy purchases and in
+   Etsy's order email." `POST /api/order` `{ order, cf-turnstile-response }` answers:
+   - `found`: every code of the receipt (prepaid, paid, expired), each with its state and a button to
+     open it (a prepaid code: `/c/<code>`; the others: the download page);
+   - `refunded`: "This order was refunded." and no codes (the receipt is refunded or cancelled, 11.3);
+   - `waiting`: the receipt is not in `etsy_orders` yet, even after a poll the lookup asked for (as
+     the download page does, at most one a minute, waited for up to 15 s): "We can't find this order
+     yet. Payments usually appear within 10 minutes of checkout. This page checks again
+     automatically." The answer carries a ticket bound to that order number (random, kept in memory
+     for 1 hour); the page checks again every 30 s with `GET /api/order/<order>?ticket=<ticket>`,
+     which needs no Turnstile and counts for no limit (it can only ask for the same order) and asks
+     for a poll too. An unknown or old ticket answers `expired`, and the page shows the form again.
+   An order whose transactions are all of other listings is answered as not found; no code is ever
+   made for it. A prepaid or refunded code made from an order shows "This order was refunded." on
+   its screens once refunded.
+8. Legal pages (PN-07, section 14): privacy policy, terms of sale, contact and legal notice (`/privacy`,
    `/terms`, `/contact`, `/legal`), linked from the footer of every screen (Download · Privacy ·
    Terms · Contact · Legal notice), each with "Last updated" and its date.
 
@@ -653,12 +700,16 @@ No view shows a mask, AI image, overlay, 3D view, model name, prompt, stage timi
 
 ### 11.1 Listing (manual, texts in `docs/etsy-listing.md` written in IS-06)
 
-- Digital files (not Made to order), one price, Personalization **required**, field title exactly
-  "Personalization", 100 characters, instructions (PN-07): "Make your design first at
-  patternnifty.com, then paste its code here, e.g. PN-7K3Q-9XPA. Several designs: one code each."
-  Title, description and tags as in `docs/etsy-listing.md` (PN-07).
-- Digital file attached to the listing: `PatternNifty-how-to-download.pdf` (one page: "Go to
-  patternnifty.com/download and enter your code"; `tools/make-how-to-pdf.mjs <site URL>`).
+- Digital files (not Made to order), one price, Personalization on but **not required** (PN-08; before,
+  required, which kept a buyer who came to Etsy first from buying), field title exactly
+  "Personalization", 100 characters, instructions (PN-08, at most 120 characters): "Made a design at
+  patternnifty.com? Paste its code. No code yet? Leave empty and make your design after checkout."
+  Title, description (PN-08: the two ways, "Option 1, design first" and "Option 2, buy first") and tags
+  as in `docs/etsy-listing.md`.
+- Digital file attached to the listing: `PatternNifty-how-to-download.pdf` (one page, two parts
+  (PN-08): "Made your design before buying? Go to patternnifty.com/download and enter your code." and
+  "No design yet? Go to patternnifty.com/order and enter your Etsy order number.";
+  `tools/make-how-to-pdf.mjs <site URL>`).
 - Description: what the buyer gets, the steps, the site written as plain text, `patternnifty.com` (Etsy does not
   make it clickable), and the AI disclosure required by Etsy's Creativity Standards, in generic
   words: "Designs are created with the help of AI tools." A "What to expect" paragraph (IS-07b): the
@@ -698,10 +749,14 @@ No view shows a mask, AI image, overlay, 3D view, model name, prompt, stage timi
   10 min, paginated (100 per page). "Last run" is the start of the last good run, kept in
   `data/etsy-poller.json` with its time and counts (no buyer data), so a restart or a Mac that was
   off catches up. With no good run yet it reads the last 30 days.
+- The order number Etsy shows a buyer (in Purchases, on the receipt and in the order email) is the
+  receipt's `receipt_id` (PN-08: Etsy's `ShopReceipt` has no other order number; Shop Manager finds an
+  order by it), so `/order` (section 10) looks the buyer's number up as `etsy_orders.receipt_id`.
 - For each transaction whose `listing_id` is in `IS_ETSY_LISTING_IDS`: read the variation named
   Personalization (Etsy property 54), extract every code (section 5), store in `etsy_orders`. If that
   variation holds no code (or there is none), the codes in every variation of the transaction are
-  used (PN-07); the exact match always comes first. Other
+  used (PN-07); the exact match always comes first. The transaction's `quantity` is stored too
+  (PN-08, `etsy_orders.quantity`: the units a buyer who bought first may redeem). Other
   listings' transactions are not stored at all; with `IS_ETSY_LISTING_IDS` empty nothing is stored.
 - Code found and `open` → `paid`, `paid_at` (the transaction's Etsy paid time),
   `delivery_expires_at = paid_at + 30 days`, `receipt_id`, `transaction_id`, build ZIP (render
@@ -718,12 +773,15 @@ No view shows a mask, AI image, overlay, 3D view, model name, prompt, stage timi
 - Code not found, or no code → `etsy_orders.matched_code = NULL`, shown on the admin page. Once a
   transaction is matched (also by hand), its NULL row is removed and later polls keep the match.
 - Quantity > 1 with several codes → each code is matched.
+- A transaction with prepaid codes (PN-08, matched on `/order`) keeps them on every later poll, as a
+  match by hand does; a prepaid code is never made `paid` by the poller (only by its pick).
 - Refund or cancellation on a matched receipt (receipt status Canceled, Fully Refunded or Partially
-  Refunded, or any entry in its `refunds`) → `refunded`, download locked; `etsy_orders.status`
+  Refunded, or any entry in its `refunds`) → `refunded` (an open, prepaid or paid code), download locked; `etsy_orders.status`
   becomes `refunded`. This happens when the order turns refunded, not on every later poll, so a
   manual unlock after a refund stands. The delivery ZIP stays until the nightly job.
 - The download page also triggers a poll (at most once per minute globally) when an unpaid code is
-  entered.
+  entered; so does the order page (PN-08) when an order number is not stored yet, under the same
+  limit, and waits for that poll up to 15 s.
 - Poll errors are kept (short, one line) for the admin page and logged once per new error.
 
 ### 11.4 Admin
@@ -764,7 +822,9 @@ which then becomes paid (or refunded, if the order was).
   between lower case, upper case and digits at least 3 times (nonces, ETags, ids); the model name
   and the prompt text are matched everywhere. It also covers the four legal pages (PN-07): their
   screen URLs and `public/legal.js`, the pages rendered with and without the seller's details, and
-  `docs/legal/*.md`; the browser flow checks the rendered pages too.
+  `docs/legal/*.md`; the browser flow checks the rendered pages too. Since PN-08 it covers the
+  order page (`/order`, `POST /api/order` with a bad, an unknown and a stored order, the waiting
+  check with a good and a wrong ticket) and a prepaid code's design, pick and download.
 - The AI image is archived without metadata (4.2): provider outputs carry C2PA chunks that name
   the provider.
 - Brand (PN-01): test `tools/test-brand.mjs` (part of `npm test`) runs a fake design and a paid
@@ -801,7 +861,19 @@ reaches the provider. The buyer sees only the IS error codes and texts of sectio
 - At most **3 counted designs per code** (D5; `counts = 1`, the done designs) → `limit` (409), for
   Create design and for an upload to that code.
 - **New codes per IP**: 5 in any 24 h, a rolling window → `busy` (429). Checked when an upload
-  would make a new code; an upload to an existing code is not limited by it.
+  would make a new code; an upload to an existing code is not limited by it. Prepaid codes (PN-08)
+  are made without a hashed IP and never count.
+- **Prepaid codes** (PN-08): their designs are paid, so they skip the per-IP limit and the global cap
+  and never count towards them (`prepaid: true` in the attempt's settings, copied by a re-run; the
+  counted-design condition excludes it). The 3 designs per code and the queue limit apply as to any
+  code.
+- **Order lookups** (PN-08, `POST /api/order`): Turnstile on each (`verification`, 403), then an
+  order number of digits (`bad-order`, 400), then at most 10 lookups per hashed IP in any hour, a
+  rolling window kept in memory → `busy` (429). A lookup only reads `etsy_orders` and makes codes only
+  for a receipt of the listings in `IS_ETSY_LISTING_IDS`. The page's 30 s re-checks
+  (`GET /api/order/<order>?ticket=`) need neither Turnstile nor the limit: their ticket (random, 1 h,
+  in memory) is bound to the one order number its lookup passed both for, so they cannot be used to
+  try other numbers.
 - **Queue limit** 10 designs queued or running (section 7) → `busy` (503).
 - **Hashed IPs are kept 24 h** (PN-07): `codes.ip_hash` and `attempts.ip_hash` of rows made more than
   24 h ago are cleared every hour by the server and by the nightly job (`forgetOldIps` in
@@ -836,7 +908,7 @@ the image provider is never named (section 12). Screenshots at 390 px: `docs/leg
 - **Privacy**, in this order: who is responsible (name, address, email; the server is in France, so
   GDPR); what is collected (the uploaded and prepared image, the designs, the code and its settings,
   the IP address: 24 h in the limit counters, 30 days in logs; the Etsy order and transaction numbers
-  and the personalization code; no accounts, no name or email asked); why and on what legal basis
+  and the personalization code; the order number a buyer enters on `/order` (PN-08); no accounts, no name or email asked); why and on what legal basis
   (contract; legitimate interest for abuse protection and security); who else receives data (an AI
   image service in the United States, the image only, which may keep it and its output up to 30 days
   for abuse monitoring and does not train on it (its API data terms, checked in the PN-07 follow-up);
@@ -848,7 +920,10 @@ the image provider is never named (section 12). Screenshots at 390 px: `docs/leg
   patternnifty.com in PN-07); rights (access, deletion, correction, objection; EU and UK complaints to
   the data-protection authority; email with the code; answer within one month).
 - **Terms**: who sells (link to `/legal`); a digital template, no physical item or stones; up to 3
-  designs per code, pay on Etsy only for the one picked, download for 30 days; the expectations line
+  designs per code, pay on Etsy only for the one picked, download for 30 days; buy first (PN-08): an
+  empty Personalization field, the order number on `/order`, one code per design bought, the
+  download from the pick, the latest design delivered after 30 days without one, a refund by Etsy
+  message if none of the 3 designs pleases; the expectations line
   of section 10 word for word; the buyer's image (owned or licensed, nothing illegal, may be declined);
   licence (use the template and sell what is made with it; never resell or share the files); downloads
   and refunds (refund through Etsy before download; the download tick box starts delivery and, where
@@ -905,18 +980,21 @@ server, the Etsy poller and the tunnel (runbook).
   work (11.2, 13).
 - `GET /health` (server) checks the database, the strass service and the Etsy token age. The tunnel cannot
   be checked from inside; the runbook says how to check it from outside.
-- Nightly job (`src/ops/nightly.js`, also run by hand with `node src/ops/nightly.js`): paid codes whose
+- Nightly job (`src/ops/nightly.js`, also run by hand with `node src/ops/nightly.js`): first (PN-08),
+  each prepaid code paid 30 days ago or more with a done design and none queued or running gets its
+  latest design (D6: `paid`, the 30-day download from now, ZIP built, event `prepaid-picked` with
+  `how: auto`); then paid codes whose
   `delivery_expires_at` has passed become `expired` (code.json and event as at every change); delivery
   ZIPs of codes whose `delivery_expires_at` has passed are deleted, and their folder when empty;
   keeping data (D7, PN-07): the `data/archive/<code>/` folder of each code that is due (never paid:
   `IS_KEEP_UNPAID_DAYS` after its last activity; paid or refunded: `IS_KEEP_PAID_DAYS` after payment,
-  not before `delivery_expires_at`; none with a design queued or running) is deleted and the code's
+  not before `delivery_expires_at`; prepaid: never; none with a design queued or running) is deleted and the code's
   `files_deleted_at` set, the row and its Etsy orders kept; only folders named after a code of the
   database, never anything else in `data/archive/`, `data/listing/` or `data/private-portraits/`;
   hashed IPs older than 24 h are cleared (13); non-empty `*.log` in the log folder are copied to
   `<name>.log.YYYY-MM-DD` and emptied, rotated files kept 30 days; `data/is.sqlite` is copied with
   SQLite's online backup to `data/backup/is-YYYY-MM-DD.sqlite` (single file, not WAL), the last 30 kept;
-  one summary line (counts only, never a code: codes expired, ZIPs deleted, files deleted unpaid and
+  one summary line (counts only, never a code: prepaid delivered and waiting, codes expired, ZIPs deleted, files deleted unpaid and
   paid, IP hashes cleared, logs, backup) is appended to `nightly.log` in the log folder. A failed step does not stop the
   others; the job then exits non-zero.
 - `pmset` advice in the runbook (the commands; no script runs sudo): no sleep on the power adapter;
@@ -965,6 +1043,10 @@ server, the Etsy poller and the tunnel (runbook).
   alert at the top, "Paid, but the design was deleted: refund on Etsy", with the Etsy receipt number
   and the code, and a **Done** button (a POST with the page's token). Done is kept in the panel's own
   file `data/control-alerts-done.json` (the event ids), so the panel still only reads the database.
+- Paid, no design yet (PN-08, D6): for each prepaid code paid 30 days ago or more with no done design,
+  a yellow note at the top, "Paid, no design yet", with the Etsy receipt number (the buyer's order
+  number) and the code; it goes once the buyer makes a design (the next nightly run delivers it) or
+  the order is refunded. No button: what to do is in the runbook.
 - Buttons, each a POST carrying a token made at start-up: Start (`launchctl bootstrap gui/<uid>
   <plist>`, or `kickstart` when the agent is loaded), Stop (`bootout`), Restart (`kickstart -k`),
   and Run now for the nightly job (`kickstart`). Stop and Restart first show what they do (stopping
@@ -1046,6 +1128,13 @@ a real hidden test listing order unlocks a code.
 **IS-07 Hosting.** Section 15 and the runbook.
 *Done when:* after a reboot, all three agents are running and `/health` is green within 3 minutes;
 the nightly job deletes an expired fixture ZIP and leaves the archive alone.
+
+**PN-08 Buy first, design after.** Sections 1, 2 (D6, D7), 4.1, 5, 10, 11, 13, 15, 15.1.
+*Done when:* `tools/test-order.mjs` passes (redeem 1 and 2 units, again the same codes, a code in the
+personalization kept, refunds, the auto-poll and the waiting ticket, other listings, the lookup
+limits, prepaid designs outside the daily caps, pick → paid → ZIP → download, the 30-day delivery and
+the control panel note, files kept until after the pick, an end-to-end order with an empty
+Personalization); the leak test covers `/order`; the listing texts and the how-to PDF updated.
 
 **IS-08 Hardening and launch check.** Section 12 grep test, section 13 limits, privacy/terms
 pages, end-to-end real order and refund.

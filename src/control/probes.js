@@ -260,6 +260,11 @@ export async function business({ config, loadTokens, now = new Date() }) {
       today: period(today),
       week: period(week),
       unmatched: one("SELECT COUNT(*) FROM etsy_orders WHERE matched_code IS NULL"),
+      // Buy first (PN-08): prepaid codes 30 days after payment with no design to deliver (D6).
+      prepaidNoDesign: db.prepare(`SELECT code, receipt_id AS receiptId, paid_at AS paidAt FROM codes c
+        WHERE status = 'prepaid' AND paid_at <= ?
+          AND NOT EXISTS (SELECT 1 FROM attempts a WHERE a.code = c.code AND a.status = 'done')
+        ORDER BY paid_at`).all(new Date(now.getTime() - 30 * 86400000).toISOString()),
       // The daily cap as the server counts it (spec 13, limits.js): the Paris calendar day.
       capUsed: one(`SELECT COUNT(*) FROM attempts WHERE created_at >= ? AND ${COUNTED_DESIGN_SQL}`, parisDayStart(now).toISOString())
     });

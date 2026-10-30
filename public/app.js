@@ -33,6 +33,8 @@ const TEXTS = {
   "not-found": "We couldn't find this code. Please check it and try again.",
   "not-ready": "The background is still being removed. Please wait a moment and try again.",
   paid: "This code is already paid, so its design can no longer be changed.",
+  "bad-order": "Please enter your Etsy order number: digits only.",
+  refunded: "This order was refunded.",
   deleted: "The images and designs of this code were deleted 30 days after it was last used, as our privacy policy says. Please upload your image again.",
   network: "We couldn't reach PatternNifty. Please check your connection and try again."
 };
@@ -197,6 +199,7 @@ const ROUTES = [
   [/^\/c\/([^/]+)\/result\/(\d+)\/?$/, resultScreen],
   [/^\/c\/([^/]+)\/done\/?$/, doneScreen],
   [/^\/download\/?$/, downloadScreen],
+  [/^\/order\/?$/, orderScreen],
   [/^\/privacy\/?$/, () => staticPage("privacy")],
   [/^\/terms\/?$/, () => staticPage("terms")],
   [/^\/contact\/?$/, () => staticPage("contact")],
@@ -245,10 +248,22 @@ async function loadSession(code) {
     return null;
   }
   saveCode(body.code);
+  // A code made from an Etsy order (PN-08) whose order was refunded.
+  if (body.fromOrder && body.status === "refunded") {
+    setSteps(null);
+    render(html`
+      <div class="card narrow center" id="refunded">
+        <h1>Order refunded</h1>
+        <p class="lede">${TEXTS.refunded}</p>
+      </div>`);
+    return null;
+  }
   return body;
 }
 
-const isOpen = (s) => s.status === "open";
+// A code that can still make designs: open, or prepaid (made from an Etsy order, PN-08).
+const canDesign = (s) => s.status === "open" || s.status === "prepaid";
+const isPrepaid = (s) => s.status === "prepaid";
 
 // ---------- 1 Upload ----------
 
@@ -261,8 +276,10 @@ async function uploadScreen() {
     session = ok ? body : null;
   }
   showChip(session?.code);
-  const useCode = session && isOpen(session) && session.designsLeft > 0 ? session.code : null;
+  const useCode = session && canDesign(session) && session.designsLeft > 0 ? session.code : null;
   const resume = session && (session.designs.length || session.upload);
+  // A prepaid code with nothing yet (PN-08): the buyer came from the order page to upload.
+  const fresh = session && isPrepaid(session) && !resume;
 
   const panel = render(html`
     <h1>Turn any image into a rhinestone template</h1>
@@ -271,6 +288,9 @@ async function uploadScreen() {
       <div class="card flat resume">
         <div><b>Welcome back.</b> Your code is <code>${session.code}</code>.</div>
         <a class="btn small" href="/c/${session.code}" data-link>Continue</a>
+      </div>` : fresh ? html`
+      <div class="card flat resume" id="prepaid-note">
+        <div><b>Your order is paid.</b> Upload your photo to make your design with code <code>${session.code}</code>.</div>
       </div>` : "")}
     <div class="upload-grid">
       <div>
@@ -291,6 +311,7 @@ async function uploadScreen() {
         </label>
         <div class="turnstile-box" id="check"></div>
         <div class="notice error" id="error" role="alert"></div>
+        <p class="sub order-link">Already bought on Etsy? <a href="/order" data-link>Enter your order number</a></p>
       </div>
       <ol class="how">
         <li><span class="n">1</span><p><b>Upload and prepare</b>Remove the background, crop, rotate and adjust the colours.</p></li>
@@ -334,7 +355,8 @@ async function uploadScreen() {
       return api("/api/upload", { method: "POST", body: form });
     };
     let answer = await upload(useCode);
-    if (!answer.ok && answer.body.error === "limit" && useCode) {
+    // A prepaid code is never swapped for a new, unpaid one.
+    if (!answer.ok && answer.body.error === "limit" && useCode && !isPrepaid(session)) {
       check.reset();
       answer = await upload(null);
     }
@@ -362,8 +384,10 @@ async function resumeScreen(code) {
   const session = await loadSession(code);
   if (!session) return;
   const latest = session.designs[session.designs.length - 1];
-  if (session.active) navigate(`/c/${session.code}/working`, { replace: true });
-  else if (session.selected || !isOpen(session)) navigate(`/c/${session.code}/done`, { replace: true });
+  // Made from an Etsy order and picked (PN-08): its files are on the download page.
+  if (session.fromOrder && !isPrepaid(session)) navigate(`/download?code=${session.code}`, { replace: true });
+  else if (session.active) navigate(`/c/${session.code}/working`, { replace: true });
+  else if (session.selected || !canDesign(session)) navigate(`/c/${session.code}/done`, { replace: true });
   else if (latest) navigate(`/c/${session.code}/result/${latest.attempt}`, { replace: true });
   else if (session.upload) navigate(`/c/${session.code}/prepare`, { replace: true });
   else navigate("/", { replace: true });
@@ -409,7 +433,7 @@ async function prepareScreen(code) {
   };
   const left = session.designsLeft;
   const total = config.designsPerCode;
-  const canCreate = isOpen(session) && left > 0;
+  const canCreate = canDesign(session) && left > 0;
 
   const panel = render(html`
     <div class="viewer-bar">
@@ -685,7 +709,7 @@ async function prepareScreen(code) {
   function updateCreate() {
     const waitingForBackground = state.removeBackground && state.background !== "ready" && state.background !== "failed";
     create.disabled = !canCreate || state.cropping || waitingForBackground;
-    if (!canCreate) error.textContent = isOpen(session) ? TEXTS.limit : TEXTS.paid;
+    if (!canCreate) error.textContent = canDesign(session) ? TEXTS.limit : TEXTS.paid;
   }
 
   create.addEventListener("click", async () => {
@@ -802,7 +826,7 @@ async function resultScreen(code, nText) {
   const n = view.attempt;
   const r = view.result;
   const index = session.designs.findIndex((d) => d.attempt === n) + 1;
-  const canTry = isOpen(session) && session.designsLeft > 0;
+  const canTry = canDesign(session) && session.designsLeft > 0;
   const tinted = `/api/attempts/${session.code}/${n}/tinted.png`;
   const original = (source) => `/api/attempts/${session.code}/${n}/original.png?source=${source}`;
   const fmt = (v, p) => Number(v).toFixed(p);
@@ -837,7 +861,7 @@ async function resultScreen(code, nText) {
           <dl class="kv mt"><dt>Stones</dt><dd>${r.stones.toLocaleString("en-US")}</dd></dl>
           <div class="notice error mt" id="error" role="alert"></div>
           <div class="actions column mt-l">
-            <button class="btn primary block" type="button" id="use">Use this design</button>
+            <button class="btn primary block" type="button" id="use">${isPrepaid(session) ? "Use this design and download" : "Use this design"}</button>
             <a class="btn block" id="again" href="/c/${session.code}/prepare" data-link ${raw(canTry ? "" : 'aria-disabled="true" tabindex="-1"')}>Try again</a>
           </div>
           <p class="sub center mt-s">${canTry
@@ -966,7 +990,7 @@ async function resultScreen(code, nText) {
   drawViewer();
 
   const use = panel.querySelector("#use");
-  if (!isOpen(session)) use.disabled = true;
+  if (!canDesign(session)) use.disabled = true;
   use.addEventListener("click", async () => {
     use.disabled = true;
     const { ok: chosen, body } = await postJson(`/api/codes/${session.code}/select`, { attempt: n });
@@ -975,7 +999,8 @@ async function resultScreen(code, nText) {
       use.disabled = false;
       return;
     }
-    navigate(`/c/${session.code}/done`);
+    // A prepaid code is paid now (PN-08): straight to its download.
+    navigate(body.paid ? `/download?code=${session.code}` : `/c/${session.code}/done`);
   });
 }
 
@@ -985,6 +1010,8 @@ async function doneScreen(code) {
   setSteps("code");
   const session = await loadSession(code);
   if (!session) return;
+  // Made from an Etsy order (PN-08): nothing to enter on Etsy.
+  if (session.fromOrder) return navigate(isPrepaid(session) ? `/c/${session.code}` : `/download?code=${session.code}`, { replace: true });
   const chosen = session.selected ?? session.designs[session.designs.length - 1]?.attempt;
   const downloadUrl = `${location.host}/download`;
 
@@ -1031,6 +1058,7 @@ async function downloadScreen(params) {
           <button class="btn primary" type="submit">Check</button>
         </form>
         <div class="state" id="state" aria-live="polite"></div>
+        <p class="sub mt">Bought on Etsy without a code? <a href="/order" data-link>Enter your order number</a></p>
       </div>
     </div>`);
 
@@ -1066,6 +1094,8 @@ async function downloadScreen(params) {
         <p class="sub">Available until ${body.expiresAt ? date(body.expiresAt) : ""}. See the <a href="/terms" data-link>terms</a>.</p>`,
       expired: html`<div class="notice"><b>This download has expired.</b> Files are kept for 30 days after payment. Please <a href="/contact" data-link>contact us</a> if you need them again.</div>`,
       refunded: html`<div class="notice"><b>This order was refunded</b>, so its files are no longer available.</div>`,
+      // Made from an Etsy order, no design picked yet (PN-08).
+      pick: html`<div class="notice warn" id="pick"><b>Pick your design first.</b> <a href="/c/${encodeURIComponent(clean)}" data-link>Go to your designs</a> and choose one with “Use this design and download”.</div>`,
       // Paid after the nightly job deleted the design (D7); Alex refunds it on Etsy.
       deleted: html`<div class="notice" id="deleted">This design was deleted because it was more than 30 days old. Send us a message on Etsy and we will refund you.</div>`
     };
@@ -1091,6 +1121,98 @@ async function downloadScreen(params) {
     check(code);
   });
   if (params?.get("code")) check(initial);
+}
+
+// ---------- Order: buy first, design after (PN-08) ----------
+
+const ORDER_POLL_MS = 30000;
+
+async function orderScreen() {
+  setSteps(null);
+  const panel = render(html`
+    <div class="narrow">
+      <div class="card">
+        <h1>Bought on Etsy? Make your design</h1>
+        <p class="lede">Enter your Etsy order number to get your PatternNifty code. Then upload your photo, try up to ${config.designsPerCode} designs, pick one and download your files.</p>
+        <form class="code-form" id="form" novalidate>
+          <label class="visually-hidden" for="order">Etsy order number</label>
+          <input id="order" name="order" placeholder="Etsy order number" inputmode="numeric" autocomplete="off" spellcheck="false">
+          <button class="btn primary" type="submit" id="go">Continue</button>
+        </form>
+        <p class="sub">You find your order number in your Etsy purchases and in Etsy's order email.</p>
+        <div class="turnstile-box" id="check"></div>
+        <div class="state" id="state" aria-live="polite"></div>
+      </div>
+    </div>`);
+
+  const form = panel.querySelector("#form");
+  const input = panel.querySelector("#order");
+  const go = panel.querySelector("#go");
+  const out = panel.querySelector("#state");
+  const check = securityCheck(panel.querySelector("#check"));
+  let timer = null;
+  onLeave(() => clearTimeout(timer));
+
+  const STATES = {
+    prepaid: (c) => [c.designs ? `Paid · ${c.designs} of ${config.designsPerCode} designs made, none picked yet` : "Paid · no design yet", "Make your design", `/c/${c.code}`],
+    ready: (c) => ["Paid · ready to download", "Download", `/download?code=${c.code}`],
+    pick: (c) => ["Paid · no design picked yet", "Make your design", `/c/${c.code}`],
+    expired: (c) => ["Download expired", "Open", `/download?code=${c.code}`],
+    refunded: (c) => ["Refunded", "Open", `/download?code=${c.code}`],
+    deleted: (c) => ["Design deleted", "Open", `/download?code=${c.code}`],
+    unpaid: (c) => ["Waiting for the payment", "Open", `/download?code=${c.code}`]
+  };
+
+  function show(body, order) {
+    clearTimeout(timer);
+    if (body.state === "found") {
+      const one = body.codes.length === 1;
+      out.innerHTML = html`
+        <div class="notice ok"><b>Order found.</b> ${one ? "Your code is below. Keep it: it brings you back to your design." : "Each design you bought has its own code. Keep them: they bring you back to your designs."}</div>
+        <ul class="order-codes">${raw(body.codes.map((c) => {
+          const [label, action, href] = (STATES[c.state] || STATES.unpaid)(c);
+          return html`<li><div><code>${c.code}</code><span class="sub">${label}</span></div><a class="btn${c.state === "prepaid" || c.state === "ready" ? " primary" : ""} small" href="${href}" data-link>${action}</a></li>`;
+        }).join(""))}</ul>`;
+      if (one && body.codes[0].state === "prepaid") saveCode(body.codes[0].code);
+      return;
+    }
+    if (body.state === "refunded") {
+      out.innerHTML = html`<div class="notice" id="refunded">${TEXTS.refunded}</div>`;
+      return;
+    }
+    if (body.state === "waiting") {
+      out.innerHTML = html`<div class="notice warn" id="waiting">We can't find this order yet. Payments usually appear within 10 minutes of checkout. This page checks again automatically.</div>`;
+      timer = setTimeout(async () => {
+        const { ok, body: again } = await api(`/api/order/${encodeURIComponent(order)}?ticket=${encodeURIComponent(body.ticket)}`);
+        if (!ok) return show(body, order);
+        if (again.state === "expired") {
+          out.innerHTML = html`<div class="notice warn">We still can't find this order. Please check the number and try again.</div>`;
+          return;
+        }
+        show(again, order);
+      }, ORDER_POLL_MS);
+      return;
+    }
+    out.innerHTML = html`<div class="notice error">${errorText(body.error)}</div>`;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    clearTimeout(timer);
+    const order = input.value.replace(/\s+/g, "");
+    if (!/^\d+$/.test(order)) {
+      out.innerHTML = html`<div class="notice error">${TEXTS["bad-order"]}</div>`;
+      input.focus();
+      return;
+    }
+    go.disabled = true;
+    out.innerHTML = `<div class="loading"><span class="spinner"></span>Looking up your order…</div>`;
+    const { body } = await postJson("/api/order", { order, "cf-turnstile-response": await check.token() });
+    go.disabled = false;
+    // A token passes the check once.
+    check.reset();
+    show(body, order);
+  });
 }
 
 // ---------- 7 Static pages (public/legal.js, PN-07) ----------

@@ -20,7 +20,7 @@ export { DELIVERY_DAYS };
 const PREVIEW_CACHE_SIZE = 24;
 
 // Every screen URL of the app; each answers with the one page (public/index.html).
-export const SCREEN_PATHS = /^\/(?:c\/[^/]+(?:\/prepare|\/working|\/done|\/result\/\d+)?|download|privacy|terms|contact|legal)?\/?$/;
+export const SCREEN_PATHS = /^\/(?:c\/[^/]+(?:\/prepare|\/working|\/done|\/result\/\d+)?|download|order|privacy|terms|contact|legal)?\/?$/;
 
 const INDEX_CSP = [
   "default-src 'self'",
@@ -48,6 +48,8 @@ export const WITHDRAWAL_CONSENT = "withdrawal-consent";
 export function downloadState(row, now = Date.now()) {
   if (!row) return { state: "unknown" };
   if (row.status === "refunded") return { state: "refunded" };
+  // Made from an Etsy order, no design picked yet (PN-08): the buyer picks one first.
+  if (row.status === "prepaid") return { state: "pick" };
   // Paid after its design was deleted (D7): nothing to deliver; the order is refunded on Etsy.
   if (row.undeliverable_at) return { state: "deleted" };
   const expiresAt = row.delivery_expires_at;
@@ -133,6 +135,8 @@ export function webappRoutes({ q, config, background, delivery, poller = null, l
     res.set("Cache-Control", "no-store").json({
       code: row.code,
       status: row.status,
+      // Made from an Etsy order on /order (PN-08): no "Your code" screen, the pick downloads.
+      fromOrder: Boolean(row.redeemed_at),
       designsLeft: Math.max(0, DESIGNS_PER_CODE - q.countedAttempts(row.code)),
       selected: row.selected_attempt ?? null,
       designs: attempts.filter((a) => a.status === "done").map((a) => ({ attempt: a.n, mode: a.result?.mode })),
@@ -191,13 +195,23 @@ export function webappRoutes({ q, config, background, delivery, poller = null, l
     }
   });
 
-  // "Use this design" (D6).
+  // "Use this design" (D6). For a prepaid code (PN-08) "Use this design and download": the code
+  // becomes paid and its ZIP is built (delivery.pickPrepaid); the answer says paid.
   router.post("/api/codes/:code/select", (req, res) => {
     const row = codeRow(req);
     const n = Number.isInteger(req.body?.attempt) ? req.body.attempt : null;
     const attempt = row && n ? q.getAttempt(row.code, n) : null;
     if (!attempt || attempt.status !== "done") {
       res.status(404).json({ error: "not-found" });
+      return;
+    }
+    if (row.status === "prepaid") {
+      const picked = delivery.pickPrepaid(row.code, n, { how: "buyer" });
+      if (!picked) {
+        res.status(409).json({ error: "failed" });
+        return;
+      }
+      res.json({ code: row.code, selected: n, paid: true });
       return;
     }
     if (row.status !== "open") {

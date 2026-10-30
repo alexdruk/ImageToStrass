@@ -87,6 +87,10 @@ It only reads (the database read-only, the poller's state, the logs, `launchctl 
 `pmset -g`); the only changes are the buttons. No `.env` value is ever shown, only "set" or "missing"
 for each key.
 
+Notes at the top: a red "Paid, but the design was deleted: refund on Etsy" (see
+[Paid, but the design was deleted](#paid-but-the-design-was-deleted)) and a yellow "Paid, no design
+yet" (see [Paid, no design yet](#paid-no-design-yet)).
+
 **Agents.** For each agent: state, PID, uptime, last exit code, CPU and memory (with child
 processes, so strass shows caffeinate plus Python), and buttons:
 
@@ -323,6 +327,32 @@ deleted and that they will be refunded. What to do:
 1. In Etsy (Shop Manager → Orders), open the order with that receipt number and refund it in full.
 2. Optionally send the buyer a message: they can make a new design with a new code.
 3. Click **Done** next to the alert. The next poll sees the refund and marks the code refunded.
+
+## Buy first, design after (PN-08)
+
+A buyer may check out on Etsy with the Personalization box empty and then enter the Etsy order
+number at `patternnifty.com/order`. PatternNifty looks the order up (it asks Etsy for a poll if the
+order is not in yet) and gives one **prepaid** code per unit bought that has no code of its own. A
+prepaid code makes up to 3 designs like any code (they don't count towards the daily limits); the
+buyer picks one with "Use this design and download" and the 30-day download starts then. Entering the
+same order number again shows the same codes: that is also how a buyer gets a lost code back.
+
+Until the buyer enters the order number, the order is an order without a code (`/admin` and the
+control panel's "Orders without a code"); that is normal for this path. Don't match it to a code by
+hand unless the buyer asks.
+
+### Paid, no design yet
+
+If a prepaid code has no pick 30 days after payment, the nightly job delivers its latest design and
+its download starts then (D6). If it has no design at all, the control panel shows a yellow note
+"Paid, no design yet" with the Etsy receipt number (= the buyer's order number) and the code. Nothing
+is deleted: the code keeps working, and its files are kept until 30 days after a pick. What to do:
+
+1. In Etsy (Shop Manager → Orders), find the order with that receipt number and send the buyer a
+   message: "Your design is waiting: go to patternnifty.com/order and enter your order number."
+2. If the buyer asks for a refund instead, refund the order in full on Etsy. The next poll marks the
+   code refunded and the note goes away.
+3. A design the buyer makes later is delivered by the next nightly run if they don't pick one.
 
 ## Privacy requests
 

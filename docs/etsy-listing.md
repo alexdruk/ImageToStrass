@@ -1,4 +1,4 @@
-# Etsy listing — texts and settings (IS-06, expectations IS-07b, PatternNifty PN-01, texts PN-07)
+# Etsy listing — texts and settings (IS-06, expectations IS-07b, PatternNifty PN-01, texts PN-07, buy first PN-08)
 
 The one Etsy listing of spec section 11.1 (decision D8: one listing, one price). Copy the texts below
 into Etsy as they are. The buyer sees the public name PatternNifty and the site patternnifty.com,
@@ -10,10 +10,10 @@ never IS (the internal project name).
 | --- | --- |
 | Type | Digital files |
 | When made | The newest year Etsy offers (not "Made to order": a Made to order listing has no file and each order must be completed by hand) |
-| Digital file | `docs/PatternNifty-how-to-download.pdf` (one page: go to `patternnifty.com/download` and enter your code) |
+| Digital file | `docs/PatternNifty-how-to-download.pdf` (one page, two parts: made your design first, go to `patternnifty.com/download` and enter your code; no design yet, go to `patternnifty.com/order` and enter your Etsy order number) |
 | Price | One price, no variations (still open: spec section 19) |
-| Quantity | Any; a buyer who orders several designs enters one code per design |
-| Personalization | **On, required**, no add-on price |
+| Quantity | Any; a buyer who orders several designs enters one code per design, or leaves the field empty and gets one code per unit on `patternnifty.com/order` (PN-08) |
+| Personalization | **On, required: No** (optional, PN-08: a buyer may check out first and make the design after), no add-on price |
 | Personalization field title | Exactly `Personalization` (the poller reads that field first, spec 11.3) |
 | Personalization instructions | See below |
 | Personalization character limit | 100 (room for two or three codes) |
@@ -39,23 +39,25 @@ Photo to Rhinestone Template, See Your Design Before You Buy, No Software to Ins
 ## Description
 
 ```
-See your rhinestone design before you buy. Pay only if you like it.
+See your rhinestone design before you buy, or buy first and make it after checkout.
 
-Upload your photo at patternnifty.com and get a finished rhinestone design in a few minutes, right in your browser. Nothing to install: it works on Mac, Windows, tablets and phones. No tracing and no editing: every stone and colour is placed for you.
-
-Not happy with the result? Try again, up to 3 designs. You buy only when you see one you like.
+Upload your photo at patternnifty.com and get a finished rhinestone design in a few minutes, right in your browser. Nothing to install: it works on Mac, Windows, tablets and phones. No tracing and no editing: every stone and colour is placed for you. Try up to 3 designs and keep the one you like.
 
 Digital template only: no stones, flock sheets or physical items are shipped.
 Designs are created with the help of AI tools.
 
 HOW IT WORKS
-1. Go to patternnifty.com and upload your photo (JPG, PNG, WebP and more, up to 50 MB).
-2. Remove the background, crop and adjust if you like. Choose Colour or Black & white (Bold or Shaded).
-3. Wait a few minutes while your design is made, usually 2 to 5. You can leave the page and come back with your code.
-4. See your finished design next to your photo, with its real size and stone count.
-5. Like it? You get a code, for example PN-7K3Q-9XPA.
-6. Come back here, paste the code in the Personalization box and check out.
-7. Go to patternnifty.com/download, enter your code and download your files.
+Option 1, design first (pay only if you like it):
+1. Go to patternnifty.com, upload your photo and wait a few minutes (usually 2 to 5).
+2. Like your design? Copy its code, for example PN-7K3Q-9XPA.
+3. Paste the code in the Personalization box here and check out.
+4. Go to patternnifty.com/download, enter your code and download your files.
+
+Option 2, buy first:
+1. Check out here and leave the Personalization box empty.
+2. Go to patternnifty.com/order and enter your Etsy order number.
+3. Upload your photo, try up to 3 designs, pick one and download your files.
+Not happy with any of your 3 designs? Send us a message and we will refund you.
 
 WHAT TO EXPECT
 Your design is an artistic rhinestone version of your photo, not a copy of it: faces are stylised rather than photographic. Colour designs use real rhinestone colours chosen from your photo. Black & white comes in two styles: Bold (strong, graphic) and Shaded (more detail).
@@ -71,10 +73,10 @@ SIZE AND STONES
 Each design has its own natural size, usually 13 to 30 cm (5 to 12 in) on the longest side. Stones are mostly SS6, with some SS4, SS10 and SS16; eye pupils may be SS20. You see the exact size before you buy.
 
 GOOD TO KNOW
-- Nothing is charged until you check out here on Etsy.
-- Several designs? Make each one with its own code and paste all codes in the Personalization box.
+- Design first? Nothing is charged until you check out here on Etsy.
+- Several designs? Make each one with its own code and paste all codes in the Personalization box, or buy several and get one code per design at patternnifty.com/order.
 - Your files are usually ready within 10 minutes of checkout and can be downloaded for 30 days.
-- Your photo and designs are deleted 30 days after your last visit, or 30 days after payment.
+- Your photo and designs are deleted 30 days after your last visit, or when your 30-day download ends.
 - You may sell items you make with your template. Please don't resell or share the files themselves.
 - Only upload photos you own or have the right to use.
 - This is a digital item, so there are no refunds once the files have been downloaded.
@@ -87,14 +89,19 @@ Questions? Send us a message on Etsy and include your PatternNifty code.
 The address is plain text: Etsy does not make it a link. The description names no price, has no buy
 button and asks for no contact details outside Etsy (Etsy's Off-Platform Transactions policy). The
 AI line is the generic disclosure of Etsy's Creativity Standards; no tool or provider is named
-(spec sections 1 and 12). "Deleted 30 days after your last visit, or 30 days after payment" is the
-rule of spec D7 (PN-07).
+(spec sections 1 and 12). "Deleted 30 days after your last visit, or when your 30-day download ends"
+is the rule of spec D7 (PN-07; PN-08: a buy-first design's download starts when it is picked). The two
+options of HOW IT WORKS are spec section 1 (PN-08); option 2's refund is by Etsy message, as every
+refund.
 
 ## Personalization instructions
 
 ```
-Make your design first at patternnifty.com, then paste its code here, e.g. PN-7K3Q-9XPA. Several designs: one code each.
+Made a design at patternnifty.com? Paste its code. No code yet? Leave empty and make your design after checkout.
 ```
+
+(112 characters; Etsy allows 120 for the instructions.) An empty field is the buy-first path (PN-08):
+the buyer enters the Etsy order number at `patternnifty.com/order` and gets one code per unit bought.
 
 PatternNifty reads every code in the field (spaces, dashes, lower case, O for 0 and I or L for 1 are
 all fine), so a buyer who orders two designs can enter both codes. If the field ever reaches the
