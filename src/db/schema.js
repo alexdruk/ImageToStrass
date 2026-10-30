@@ -72,38 +72,5 @@ export const MIGRATIONS = [
   `ALTER TABLE codes ADD COLUMN last_seen_at TEXT;
    ALTER TABLE codes ADD COLUMN files_deleted_at TEXT;`,
   // 4 (PN-07 follow-up): paid after its files were deleted, so it cannot be delivered (refund on Etsy).
-  `ALTER TABLE codes ADD COLUMN undeliverable_at TEXT;`,
-  // 5 (PN-08): buy first, design after. A code may be "prepaid" (made from an Etsy order on /order,
-  // redeemed_at set); SQLite cannot change a CHECK, so codes is rebuilt (foreign keys are off while
-  // migrations run, see index.js). etsy_orders.quantity: the units of the transaction.
-  `CREATE TABLE codes_new (
-     code                TEXT PRIMARY KEY,
-     created_at          TEXT NOT NULL,
-     ip_hash             TEXT,
-     consent_at          TEXT,
-     attempts_used       INTEGER NOT NULL DEFAULT 0,
-     selected_attempt    INTEGER,
-     status              TEXT NOT NULL DEFAULT 'open'
-                         CHECK (status IN ('open', 'prepaid', 'paid', 'refunded', 'expired')),
-     paid_at             TEXT,
-     receipt_id          INTEGER,
-     transaction_id      INTEGER,
-     downloads           INTEGER NOT NULL DEFAULT 0,
-     delivery_expires_at TEXT,
-     last_seen_at        TEXT,
-     files_deleted_at    TEXT,
-     undeliverable_at    TEXT,
-     redeemed_at         TEXT
-   );
-   INSERT INTO codes_new (code, created_at, ip_hash, consent_at, attempts_used, selected_attempt, status,
-     paid_at, receipt_id, transaction_id, downloads, delivery_expires_at, last_seen_at, files_deleted_at,
-     undeliverable_at)
-   SELECT code, created_at, ip_hash, consent_at, attempts_used, selected_attempt, status,
-     paid_at, receipt_id, transaction_id, downloads, delivery_expires_at, last_seen_at, files_deleted_at,
-     undeliverable_at FROM codes;
-   DROP TABLE codes;
-   ALTER TABLE codes_new RENAME TO codes;
-   CREATE INDEX codes_ip_created ON codes(ip_hash, created_at);
-   CREATE INDEX codes_receipt ON codes(receipt_id);
-   ALTER TABLE etsy_orders ADD COLUMN quantity INTEGER;`
+  `ALTER TABLE codes ADD COLUMN undeliverable_at TEXT;`
 ];

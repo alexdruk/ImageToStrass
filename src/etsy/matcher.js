@@ -31,8 +31,7 @@ export function isRefunded(receipt) {
 const isoOf = (seconds) => (Number.isFinite(seconds) && seconds > 0 ? new Date(seconds * 1000).toISOString() : null);
 
 // One order per transaction of a listing in listingIds:
-// { receipt_id, transaction_id, listing_id, personalization, codes, paid_at, status: paid | refunded,
-//   quantity } (quantity: the units bought, PN-08; 1 when Etsy gives none).
+// { receipt_id, transaction_id, listing_id, personalization, codes, paid_at, status: paid | refunded }.
 // Other listings of the shop are left out entirely. Codes are normalised (spec section 5).
 export function ordersFromReceipts(receipts, listingIds) {
   const wanted = new Set(listingIds.map(Number));
@@ -52,8 +51,7 @@ export function ordersFromReceipts(receipts, listingIds) {
         personalization,
         codes: extractCodes(personalization),
         paid_at: isoOf(transaction.paid_timestamp) ?? isoOf(receipt.created_timestamp ?? receipt.create_timestamp),
-        status,
-        quantity: Number.isInteger(transaction.quantity) && transaction.quantity > 0 ? transaction.quantity : 1
+        status
       });
     }
   }

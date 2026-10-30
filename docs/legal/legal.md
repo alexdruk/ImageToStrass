@@ -4,7 +4,7 @@
 
 Who runs PatternNifty and where it is hosted.
 
-Last updated: 30 October 2026
+Last updated: 29 October 2026
 
 ## Seller
 

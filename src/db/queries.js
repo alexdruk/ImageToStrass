@@ -6,7 +6,7 @@ import { generateCode } from "./codes.js";
 const CODE_FIELDS = [
   "consent_at", "attempts_used", "selected_attempt", "status", "paid_at",
   "receipt_id", "transaction_id", "downloads", "delivery_expires_at", "last_seen_at", "files_deleted_at",
-  "undeliverable_at", "redeemed_at"
+  "undeliverable_at"
 ];
 
 const ATTEMPT_FIELDS = [
@@ -15,10 +15,8 @@ const ATTEMPT_FIELDS = [
 
 // A design that uses up the per-IP limit and the daily cap (spec 13): made by a buyer (not an
 // automatic re-run, 7.4) and waiting, running or past the "preparing" stage, i.e. it reached the
-// provider or is about to. The designs of a prepaid code (PN-08) are paid, so they never count; the
-// flag is in their settings (re-runs copy it). The control panel counts with the same condition.
+// provider or is about to. The control panel counts with the same condition.
 export const COUNTED_DESIGN_SQL = `json_extract(settings_json, '$.rerunOf') IS NULL
-  AND json_extract(settings_json, '$.prepaid') IS NULL
   AND (status IN ('queued', 'running') OR (stage IS NOT NULL AND stage <> 'preparing'))`;
 
 function now() {
@@ -78,17 +76,16 @@ export function createQueries(db) {
     // Re-polls update the row of the same (transaction_id, matched_code); see MIGRATIONS[0].
     upsertEtsyOrder: db.prepare(`
       INSERT INTO etsy_orders
-        (receipt_id, transaction_id, listing_id, personalization, matched_code, paid_at, status, seen_at, quantity)
+        (receipt_id, transaction_id, listing_id, personalization, matched_code, paid_at, status, seen_at)
       VALUES
-        (@receipt_id, @transaction_id, @listing_id, @personalization, @matched_code, @paid_at, @status, @seen_at, @quantity)
+        (@receipt_id, @transaction_id, @listing_id, @personalization, @matched_code, @paid_at, @status, @seen_at)
       ON CONFLICT (transaction_id, IFNULL(matched_code, '')) DO UPDATE SET
         receipt_id = excluded.receipt_id,
         listing_id = excluded.listing_id,
         personalization = excluded.personalization,
         paid_at = excluded.paid_at,
         status = excluded.status,
-        seen_at = excluded.seen_at,
-        quantity = IFNULL(excluded.quantity, etsy_orders.quantity)`),
+        seen_at = excluded.seen_at`),
     getEtsyOrder: db.prepare(`
       SELECT rowid AS id, * FROM etsy_orders
       WHERE transaction_id = ? AND IFNULL(matched_code, '') = IFNULL(?, '')`),
@@ -101,12 +98,6 @@ export function createQueries(db) {
     ),
     deleteUnmatchedOrder: db.prepare("DELETE FROM etsy_orders WHERE transaction_id = ? AND matched_code IS NULL"),
     setOrderCode: db.prepare("UPDATE etsy_orders SET matched_code = ? WHERE rowid = ? AND matched_code IS NULL"),
-    // PN-08: the rows of one Etsy receipt (the order number a buyer enters on /order).
-    listReceiptOrders: db.prepare("SELECT rowid AS id, * FROM etsy_orders WHERE receipt_id = ? ORDER BY transaction_id, rowid"),
-    // Prepaid codes paid at or before an ISO time (the nightly job delivers them after 30 days, D6).
-    listPrepaidCodesPaidBefore: db.prepare(
-      "SELECT code FROM codes WHERE status = 'prepaid' AND paid_at IS NOT NULL AND paid_at <= ? ORDER BY paid_at"
-    ).pluck(),
     listRecentOrders: db.prepare("SELECT rowid AS id, * FROM etsy_orders ORDER BY seen_at DESC, rowid DESC LIMIT ?"),
     listAttemptsSince: db.prepare("SELECT * FROM attempts WHERE created_at >= ? ORDER BY created_at DESC, code, n"),
     listRecentFailures: db.prepare(
@@ -211,7 +202,6 @@ export function createQueries(db) {
         paid_at: null,
         status: null,
         seen_at: now(),
-        quantity: null,
         ...order
       };
 
@@ -227,10 +217,6 @@ export function createQueries(db) {
     deleteUnmatchedOrder: (transactionId) => statements.deleteUnmatchedOrder.run(transactionId).changes,
     // Admin "match to code": the unmatched row id gets the code. False when it was matched already.
     setOrderCode: (id, code) => statements.setOrderCode.run(code, id).changes === 1,
-    listReceiptOrders: (receiptId) => statements.listReceiptOrders.all(receiptId),
-    listPrepaidCodesPaidBefore: (iso) => statements.listPrepaidCodesPaidBefore.all(iso),
-    // fn runs in one database transaction (PN-08: an order redeemed by two requests at once).
-    inTransaction: (fn) => db.transaction(fn)(),
     listRecentOrders: (limit = 50) => statements.listRecentOrders.all(limit),
     // Admin page: designs created since an ISO time, newest first; the latest failures.
     listAttemptsSince: (iso) => statements.listAttemptsSince.all(iso).map(parseAttempt),

@@ -23,9 +23,7 @@ import { QUEUE_LIMIT, createQueue } from "./queue.js";
 // Attempts accounting (D5, section 4.1): an attempt counts (counts = 1) only when it is done. A
 // failed, declined or re-run attempt has counts = 0. A code makes a new design only while it is
 // open, has fewer than 3 counted designs and has no design queued or running, so it can never
-// pass 3. Every attempt, re-runs included, gets its own n and attempt-<n>/ folder. A prepaid code
-// (PN-08, made from an Etsy order) makes designs as an open one; its attempts carry prepaid: true in
-// their settings (copied by a re-run), so the daily limits never count them (spec 13).
+// pass 3. Every attempt, re-runs included, gets its own n and attempt-<n>/ folder.
 
 export const DESIGNS_PER_CODE = 3;
 export const STAGES = Object.freeze(["preparing", "designing", "placing", "files"]);
@@ -310,8 +308,7 @@ export function createPipeline({
     const prepared = await preparePng(readFileSync(sourcePng), settings.adjustments);
 
     // From here on everything is synchronous, so two requests cannot both pass the checks.
-    if ((row.status !== "open" && row.status !== "prepaid") || q.countedAttempts(code) >= DESIGNS_PER_CODE) throw new DesignRefused(409, "limit");
-    if (row.status === "prepaid") settings = { ...settings, prepaid: true };
+    if (row.status !== "open" || q.countedAttempts(code) >= DESIGNS_PER_CODE) throw new DesignRefused(409, "limit");
     if (q.listAttempts(code).some((a) => ACTIVE.has(a.status))) throw new DesignRefused(409, "busy");
     if (queue.length() >= queueLimit) throw new DesignRefused(503, "busy");
 

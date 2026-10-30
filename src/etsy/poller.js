@@ -80,8 +80,7 @@ export function createPoller({
       personalization: order.personalization,
       paid_at: order.paid_at ?? new Date(now()).toISOString(),
       status: order.status,
-      seen_at: seenAt,
-      quantity: order.quantity ?? null
+      seen_at: seenAt
     };
     const done = { rows: 0, unmatched: 0, paid: 0, refunded: 0, builds: [] };
 
@@ -171,8 +170,7 @@ export function createPoller({
       return running ?? Promise.resolve();
     },
 
-    // From the download and order pages: a poll now, unless one was asked for in the last minute.
-    // Returns true when one was started (runOnce() then gives that run).
+    // From the download page: a poll now, unless one was asked for in the last minute.
     requestPoll() {
       if (now() - lastRequest < REQUEST_INTERVAL_MS) return false;
       lastRequest = now();
