@@ -198,7 +198,7 @@ export function uploadRoutes({ q, config, background, verifyTurnstile, hashIp, l
       // files are deleted (D7).
       let row = fields.code ? q.getCode(normalizeCode(fields.code) ?? "") : null;
 
-      if (row && (row.status !== "open" || row.files_deleted_at || q.countedAttempts(row.code) >= DESIGNS_PER_CODE)) {
+      if (row && ((row.status !== "open" && row.status !== "prepaid") || row.files_deleted_at || q.countedAttempts(row.code) >= DESIGNS_PER_CODE)) {
         res.status(409).json({ error: "limit" });
         return;
       }

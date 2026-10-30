@@ -4,7 +4,7 @@
 
 How PatternNifty handles your photo, your designs and your order. In short: your photo is used only to make your design, we never ask for your name or email, and your photo and designs are deleted after 30 days.
 
-Last updated: 29 October 2026
+Last updated: 30 October 2026
 
 ## Who is responsible
 
@@ -19,6 +19,7 @@ Our server is in France, so we follow the EU General Data Protection Regulation 
 - Your PatternNifty code and its settings: Colour or Black & white, your adjustments, the dates and how many designs you made.
 - Your IP address, to limit abuse and keep the service secure. The limit counters keep it in scrambled (hashed) form for 24 hours; our server logs may keep it for up to 30 days.
 - The Etsy order details we need to match your payment: the order and transaction numbers, and the code you typed in the Personalization field.
+- If you bought first: the Etsy order number you enter on our order page, to find your order and give you your codes.
 
 PatternNifty has no accounts and never asks for your name, email or address. You pay on Etsy; we never see your payment details.
 
@@ -44,6 +45,7 @@ Everything else, background removal included, runs on our own server. Transfers 
 
 - If you don't buy: your images, designs and files are deleted 30 days after the last time you used your code.
 - If you buy: they are deleted 30 days after payment, the same day your download ends.
+- If you bought first: they are kept until you pick a design, then deleted the day your 30-day download ends.
 - After that we keep only a short record of the code (its status, dates and number of designs) and the Etsy order numbers, without any images, for our accounts.
 - Your IP address: 24 hours in the limit counters, up to 30 days in server logs.
 - The AI image service: up to 30 days, only to check for abuse, never to train AI.

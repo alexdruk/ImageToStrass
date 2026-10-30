@@ -235,6 +235,34 @@ export function paidAfterDeleteAlerts(config) {
   }
 }
 
+// Orders without a code (etsy_orders rows with matched_code NULL), split in two (PN-08 follow-up):
+// - unknownCode: the buyer wrote something in Personalization but no code IS knows (a typo or a wrong
+//   code): a red alert, with the text, for every one;
+// - empty Personalization: bought first and not redeemed on /order yet, which is normal. Grouped by
+//   receipt (the buyer's order number), refunded ones left out (nothing to redeem). waiting: paid
+//   less than 7 days ago, a neutral list; notRedeemed: 7 days or more, a yellow alert.
+export const NOT_REDEEMED_DAYS = 7;
+
+export function splitUnmatched(rows, now = new Date()) {
+  const unknownCode = [];
+  const receipts = new Map();
+  for (const row of rows) {
+    const text = String(row.personalization ?? "").trim();
+    if (text) {
+      unknownCode.push({ ...row, personalization: text });
+      continue;
+    }
+    if (row.status === "refunded") continue;
+    const seen = receipts.get(row.receiptId);
+    if (!seen || (row.paidAt && (!seen.paidAt || row.paidAt < seen.paidAt))) receipts.set(row.receiptId, { receiptId: row.receiptId, paidAt: row.paidAt });
+  }
+  const limit = now.getTime() - NOT_REDEEMED_DAYS * 86400000;
+  const waiting = [];
+  const notRedeemed = [];
+  for (const r of receipts.values()) (r.paidAt && Date.parse(r.paidAt) <= limit ? notRedeemed : waiting).push(r);
+  return { unknownCode, waiting, notRedeemed };
+}
+
 export async function business({ config, loadTokens, now = new Date() }) {
   const out = { db: false };
   let db;
@@ -259,7 +287,15 @@ export async function business({ config, loadTokens, now = new Date() }) {
       running: db.prepare("SELECT code, n, stage FROM attempts WHERE status = 'running' ORDER BY created_at").all(),
       today: period(today),
       week: period(week),
-      unmatched: one("SELECT COUNT(*) FROM etsy_orders WHERE matched_code IS NULL"),
+      // Orders without a code, split by what they mean (PN-08 follow-up): see splitUnmatched.
+      ...splitUnmatched(db.prepare(`SELECT receipt_id AS receiptId, transaction_id AS transactionId,
+        personalization, paid_at AS paidAt, status FROM etsy_orders WHERE matched_code IS NULL
+        ORDER BY paid_at, receipt_id, transaction_id`).all(), now),
+      // Buy first (PN-08): prepaid codes 30 days after payment with no design to deliver (D6).
+      prepaidNoDesign: db.prepare(`SELECT code, receipt_id AS receiptId, paid_at AS paidAt FROM codes c
+        WHERE status = 'prepaid' AND paid_at <= ?
+          AND NOT EXISTS (SELECT 1 FROM attempts a WHERE a.code = c.code AND a.status = 'done')
+        ORDER BY paid_at`).all(new Date(now.getTime() - 30 * 86400000).toISOString()),
       // The daily cap as the server counts it (spec 13, limits.js): the Paris calendar day.
       capUsed: one(`SELECT COUNT(*) FROM attempts WHERE created_at >= ? AND ${COUNTED_DESIGN_SQL}`, parisDayStart(now).toISOString())
     });

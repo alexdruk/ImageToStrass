@@ -1,12 +1,15 @@
 // The nightly job (spec section 15), run by launchd (com.is.nightly) at 03:30, or by hand:
 //   node src/ops/nightly.js
+// 0. prepaid codes (PN-08) with no pick 30 days after their Etsy payment get their latest design
+//    (D6): paid, the 30-day download starts now, ZIP built; with no design they wait (control panel);
 // 1. paid codes whose 30 days are over become expired;
 // 2. delivery ZIPs (data/delivery/<code>/) of codes whose delivery_expires_at has passed are deleted,
 //    and the folder with them when it is empty;
 // 3. keeping data (D7): a code's archive folder (data/archive/<code>/: its uploads, attempt files and
 //    code.json) is deleted IS_KEEP_UNPAID_DAYS (30) after its last activity when it was never paid,
 //    and IS_KEEP_PAID_DAYS (30) after payment when it was paid or refunded, the same day as its
-//    delivery ZIP; the code row and its Etsy orders stay, files_deleted_at set. Hashed IPs older than
+//    delivery ZIP (never while prepaid: a prepaid code's files go when the download that starts at its
+//    pick ends); the code row and its Etsy orders stay, files_deleted_at set. Hashed IPs older than
 //    24 h are cleared (spec 13);
 // 4. *.log in the log folder (IS_LOG_DIR, ~/Library/Logs/PatternNifty) are rotated (copied to <name>.log.YYYY-MM-DD, then emptied; 30 days kept);
 // 5. data/is.sqlite is copied with SQLite's online backup to data/backup/is-YYYY-MM-DD.sqlite (30 kept);
@@ -36,6 +39,29 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const pad = (n) => String(n).padStart(2, "0");
 // The Mac's local date, YYYY-MM-DD.
 export const localDate = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+// D6 for prepaid codes (PN-08): the latest done design of each prepaid code paid PREPAID_PICK_DAYS
+// ago or more, unless a design is still queued or running. Returns { delivered, waiting }.
+export const PREPAID_PICK_DAYS = 30;
+async function deliverPrepaid({ q, delivery, now }) {
+  const out = { delivered: 0, waiting: 0 };
+  const builds = [];
+  for (const code of q.listPrepaidCodesPaidBefore(new Date(now.getTime() - PREPAID_PICK_DAYS * DAY_MS).toISOString())) {
+    const attempts = q.listAttempts(code);
+    const done = attempts.filter((a) => a.status === "done");
+    if (!done.length || attempts.some((a) => a.status === "queued" || a.status === "running")) {
+      out.waiting += 1;
+      continue;
+    }
+    const picked = delivery.pickPrepaid(code, done[done.length - 1].n, { how: "auto", now });
+    if (picked) {
+      out.delivered += 1;
+      builds.push(picked.build);
+    }
+  }
+  await Promise.all(builds);
+  return out;
+}
 
 function expireCodes({ q, delivery, now }) {
   let expired = 0;
@@ -68,6 +94,8 @@ function deleteExpiredZips({ q, deliveryDir, now }) {
 // When a code's files are due (D7): IS_KEEP_PAID_DAYS after payment (and never before its download
 // ends, which an admin unlock can move), else IS_KEEP_UNPAID_DAYS after its last activity.
 export function filesDueAt(row, { keepUnpaidDays, keepPaidDays }) {
+  // Prepaid (PN-08): paid, but its download has not started; kept until 30 days after the pick.
+  if (row.status === "prepaid") return Infinity;
   if (row.paid_at) {
     const afterPayment = Date.parse(row.paid_at) + keepPaidDays * DAY_MS;
     return Math.max(afterPayment, row.delivery_expires_at ? Date.parse(row.delivery_expires_at) : 0);
@@ -151,6 +179,7 @@ export async function runNightly({ db, config, now = new Date(), log = console }
     }
   };
 
+  const prepaid = await step("prepaid", () => deliverPrepaid({ q, delivery, now }), { delivered: 0, waiting: 0 });
   const expired = await step("expire", () => expireCodes({ q, delivery, now }), 0);
   const zips = await step("zips", () => deleteExpiredZips({ q, deliveryDir: config.deliveryDir, now }), 0);
   const files = await step("files", () => deleteOldFiles({ q, config, now }), { unpaid: 0, paid: 0 });
@@ -158,14 +187,14 @@ export async function runNightly({ db, config, now = new Date(), log = console }
   const logs = await step("logs", () => rotateLogs({ logsDir: config.logsDir, now }), { rotated: 0, deleted: 0 });
   const backup = await step("backup", () => backupDatabase({ db, backupDir: config.backupDir, now }), null);
 
-  const line = `${now.toISOString()} nightly: codes expired ${expired}, zips deleted ${zips}, ` +
+  const line = `${now.toISOString()} nightly: prepaid delivered ${prepaid.delivered} (waiting ${prepaid.waiting}), codes expired ${expired}, zips deleted ${zips}, ` +
     `files deleted ${files.unpaid + files.paid} (unpaid ${files.unpaid}, paid ${files.paid}), ip hashes cleared ${ips}, ` +
     `logs rotated ${logs.rotated} (old deleted ${logs.deleted}), ` +
     `backup ${backup ? `${backup.name} (old deleted ${backup.deleted})` : "failed"}, ` +
     `errors ${errors.length ? errors.join(" ") : 0}`;
   appendFileSync(path.join(config.logsDir, "nightly.log"), `${line}\n`);
 
-  return { ok: errors.length === 0, expired, zips, files, ips, logs, backup, errors, line };
+  return { ok: errors.length === 0, prepaid, expired, zips, files, ips, logs, backup, errors, line };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {

@@ -159,7 +159,7 @@ test("logs: rotated and emptied, 30 days kept, one summary line", async () => {
 
     const summary = readFileSync(log("nightly.log"), "utf8").trim().split("\n");
     assert.equal(summary.length, 1);
-    assert.match(summary[0], /nightly: codes expired 0, zips deleted 0, files deleted 0 \(unpaid 0, paid 0\), ip hashes cleared 0, logs rotated 1 .* errors 0$/);
+    assert.match(summary[0], /nightly: prepaid delivered 0 \(waiting 0\), codes expired 0, zips deleted 0, files deleted 0 \(unpaid 0, paid 0\), ip hashes cleared 0, logs rotated 1 .* errors 0$/);
 
     // A missing log folder is made at start.
     rmSync(config.logsDir, { recursive: true });

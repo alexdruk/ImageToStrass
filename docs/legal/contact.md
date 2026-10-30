@@ -4,7 +4,7 @@
 
 How to reach PatternNifty.
 
-Last updated: 29 October 2026
+Last updated: 30 October 2026
 
 ## Questions about an order or a design
 

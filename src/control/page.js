@@ -83,7 +83,7 @@ const STYLE = `
   .muted { color: #5b6478; }
   .ok { color: #11743b; font-weight: 600; } .bad { color: #b42318; font-weight: 600; } .warn { color: #a15c00; font-weight: 600; }
   .note { background: #eaf0ff; border-radius: 8px; padding: 8px 12px; margin-top: 12px; }
-  .note.bad { background: #fdecea; }
+  .note.bad { background: #fdecea; } .note.waiting { background: #fff4e0; }
   form.inline { display: inline; margin-left: 8px; }
   .btn { display: inline-block; background: #12348f; color: #fff; border: 0; border-radius: 8px; padding: 5px 12px;
     font: inherit; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; }
@@ -95,6 +95,8 @@ const STYLE = `
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 0 16px; }
   code { font: 13px ui-monospace, monospace; }
   .small { font-size: 13px; }
+  ul.orders { margin: 4px 0 10px; padding-left: 20px; font-size: 14px; } ul.orders li { margin: 2px 0; }
+  q.buyer-text { font-family: ui-monospace, Menlo, monospace; font-size: 13px; overflow-wrap: anywhere; }
   pre.log { font: 12px/1.5 ui-monospace, monospace; background: #f6f8fc; border-radius: 8px; padding: 10px 12px;
     white-space: pre-wrap; word-break: break-word; margin: 0; }
   pre.log .hl { background: #fdecea; color: #8c1d13; display: block; }
@@ -217,12 +219,30 @@ function businessSection(b, websiteUrl) {
     ${row("Codes created", "codes")}${row("Codes paid", "paid")}${row("Downloads", "downloads")}
   </tbody></table>
   </div><div>
-  <p>Orders without a code: ${b.unmatched ? bad(String(b.unmatched)) : ok("0")} · <a href="${esc(websiteUrl)}/admin">open /admin</a></p>
+  ${unmatchedBlock(b, websiteUrl)}
   <p>Daily design cap: ${capShare >= 1 ? bad(`${b.capUsed} of ${b.cap}`) : capShare >= 0.8 ? warn(`${b.capUsed} of ${b.cap}`) : `<b>${esc(b.capUsed)}</b> of ${esc(b.cap)}`} used today
     <span class="small muted">(designs counted since midnight in Paris; at the cap new designs answer busy)</span></p>
   ${etsyBlock(b)}
   </div></div>
 </section>`;
+}
+
+// Orders without a code (PN-08 follow-up, probes.splitUnmatched): a red line per order whose
+// Personalization names no known code, with the buyer's text; a neutral list of the orders bought
+// first and not redeemed yet (the ones 7 days old and more are yellow notes at the top instead).
+const day = (value) => (value ? new Date(value).toLocaleDateString("en-GB", { dateStyle: "medium" }) : "–");
+const clip = (text, max = 200) => (text.length > max ? `${text.slice(0, max)}…` : text);
+
+function unmatchedBlock(b, websiteUrl) {
+  const unknown = b.unknownCode || [];
+  const waiting = b.waiting || [];
+  const unknownRows = unknown.map((o) => `<li>Receipt <b>${esc(o.receiptId)}</b> · paid ${esc(day(o.paidAt))}${o.status === "refunded" ? ` ${muted("(refunded)")}` : ""}
+    · the buyer wrote: <q class="buyer-text">${esc(clip(o.personalization))}</q></li>`).join("");
+  const waitingRows = waiting.map((o) => `<li>Receipt <b>${esc(o.receiptId)}</b> · paid ${esc(day(o.paidAt))}</li>`).join("");
+  return `<p>Orders with an unknown code: ${unknown.length ? bad(String(unknown.length)) : ok("0")} · <a href="${esc(websiteUrl)}/admin">open /admin</a></p>
+  ${unknown.length ? `<ul class="orders" id="unknown-code">${unknownRows}</ul>` : ""}
+  <p>Waiting for the buyer to redeem: <b>${esc(waiting.length)}</b> <span class="small muted">(bought first, Personalization empty; normal for up to 7 days)</span></p>
+  ${waiting.length ? `<ul class="orders" id="waiting-redeem">${waitingRows}</ul>` : ""}`;
 }
 
 function etsyBlock(b) {
@@ -286,6 +306,20 @@ function logsSection(logs) {
 </section>`;
 }
 
+// Buy first (PN-08): prepaid codes paid 30 days ago with no design yet; each goes once the buyer
+// makes one (the nightly job delivers it) or the order is refunded.
+export function prepaidNotes(list = []) {
+  return list.map((p) => `<div class="note waiting alert">${warn("Paid, no design yet")}
+    Receipt <b>${esc(p.receiptId ?? "unknown")}</b> · code <code>${esc(p.code)}</code> <span class="small muted">paid ${esc(when(p.paidAt))} · runbook: Paid, no design yet</span></div>`).join("");
+}
+
+// Bought first (PN-08 follow-up): paid 7 days ago or more and the order number not entered on /order
+// yet; each goes once the buyer redeems it or the order is refunded.
+export function notRedeemedNotes(list = []) {
+  return list.map((o) => `<div class="note waiting alert">${warn("Paid 7+ days ago, not redeemed yet: message the buyer on Etsy")}
+    Receipt <b>${esc(o.receiptId)}</b> <span class="small muted">paid ${esc(when(o.paidAt))} · runbook: Not redeemed yet</span></div>`).join("");
+}
+
 export function mainPage(data, { csrf, lastAction, websiteUrl }) {
   const message = lastAction
     ? `<p class="note${lastAction.ok ? "" : " bad"}">${esc(when(lastAction.at))}: ${esc(lastAction.text)}</p>`
@@ -295,7 +329,7 @@ export function mainPage(data, { csrf, lastAction, websiteUrl }) {
   const alerts = (data.alerts || []).map((a) => `<div class="note bad alert">${bad("Paid, but the design was deleted: refund on Etsy")}
     Receipt <b>${esc(a.receiptId ?? "unknown")}</b> · code <code>${esc(a.code)}</code> <span class="small muted">${esc(when(a.at))}</span>
     <form method="post" action="/alerts/${esc(a.id)}/done" class="inline"><input type="hidden" name="csrf" value="${csrf}"><button class="btn" type="submit">Done</button></form></div>`).join("");
-  return layout("IS control", `${alerts}${message}${legal}
+  return layout("IS control", `${alerts}${prepaidNotes(data.business?.prepaidNoDesign)}${notRedeemedNotes(data.business?.notRedeemed)}${message}${legal}
 ${agentsSection(data, csrf)}
 ${healthSection(data)}
 ${businessSection(data.business, websiteUrl)}

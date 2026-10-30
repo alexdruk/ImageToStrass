@@ -9,6 +9,7 @@ import { buildDeliveryZipOffThread } from "../render/offthread.js";
 
 export const DELIVERY_DAYS = 30;
 export const PAID_AFTER_DELETE = "paid-after-delete";
+export const PREPAID_PICKED = "prepaid-picked";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const deliveryExpiry = (paidAt) => new Date(Date.parse(paidAt) + DELIVERY_DAYS * DAY_MS).toISOString();
@@ -99,12 +100,26 @@ export function createDelivery({ q, config, log = console, buildZipFile = buildD
       return true;
     },
 
-    // A refund or cancellation locks the download. Returns the row when it changed, else null.
+    // A refund or cancellation locks the download (a prepaid code's designs too, PN-08). Returns the
+    // row when it changed, else null.
     markRefunded(code, { receiptId = null, transactionId = null, how }) {
       const row = q.getCode(code);
-      if (!row || (row.status !== "open" && row.status !== "paid")) return null;
+      if (!row || !["open", "prepaid", "paid"].includes(row.status)) return null;
       q.updateCode(code, { status: "refunded" });
       return changed(code, "refunded", { how, receiptId, transactionId });
+    },
+
+    // A prepaid code (PN-08) gets its delivered design: the buyer's pick ("Use this design and
+    // download", how "buyer"), or after 30 days without one its latest design (D6, how "auto",
+    // nightly). It becomes paid; paid_at stays the Etsy payment time and the 30-day download starts
+    // now. Returns { row, build } when it changed, else null (not prepaid, or no such done design).
+    pickPrepaid(code, n, { how, now = new Date() }) {
+      const row = q.getCode(code);
+      const attempt = row && n ? q.getAttempt(code, n) : null;
+      if (!row || row.status !== "prepaid" || attempt?.status !== "done") return null;
+      q.updateCode(code, { status: "paid", selected_attempt: n, delivery_expires_at: deliveryExpiry(now.toISOString()) });
+      const updated = changed(code, PREPAID_PICKED, { n, how, receiptId: row.receipt_id, transactionId: row.transaction_id });
+      return { row: updated, build: buildZipNow(updated) };
     },
 
     // Nightly job: a paid code whose delivery_expires_at has passed becomes expired. Returns the row
