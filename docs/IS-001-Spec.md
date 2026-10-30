@@ -183,7 +183,10 @@ Etsy orders:
   existing `etsy_orders` rows on that key (keeping the newest) and adds the index; migration 2
   (PN-06) adds `attempts.ip_hash` and indexes for the limits of section 13; migration 3 (PN-07) adds
   `codes.last_seen_at` and `codes.files_deleted_at` (D7); migration 4 (PN-07 follow-up) adds
-  `codes.undeliverable_at` (11.3).
+  `codes.undeliverable_at` (11.3). Migration 5 is empty: the number was used by PN-08 (buy first),
+  which was rolled back; a database that ran PN-08's migration 5 keeps what it added, unused ('prepaid'
+  allowed in `codes.status`, `codes.redeemed_at`, `etsy_orders.quantity`, index `codes_receipt`), and
+  every database is at 5, so the next migration (6) runs on all of them.
 - A code's last activity (D7) is the latest of its `created_at`, its `last_seen_at` (set each time
   `GET /api/codes/<code>` opens its session), its events and its designs' created and finished times.
 - `ip_hash` (codes and attempts) is cleared 24 h after the row was made (13).

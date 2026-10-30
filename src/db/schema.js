@@ -72,5 +72,10 @@ export const MIGRATIONS = [
   `ALTER TABLE codes ADD COLUMN last_seen_at TEXT;
    ALTER TABLE codes ADD COLUMN files_deleted_at TEXT;`,
   // 4 (PN-07 follow-up): paid after its files were deleted, so it cannot be delivered (refund on Etsy).
-  `ALTER TABLE codes ADD COLUMN undeliverable_at TEXT;`
+  `ALTER TABLE codes ADD COLUMN undeliverable_at TEXT;`,
+  // 5: used by PN-08 (buy first), which was rolled back. A database that ran PN-08's migration 5
+  // keeps what it added, unused and harmless: 'prepaid' allowed in codes.status (never written
+  // now), codes.redeemed_at, etsy_orders.quantity and the index codes_receipt; no row is changed.
+  // Every other database gets nothing here, so both are at 5 and the next migration (6) runs on both.
+  `SELECT 1;`
 ];
