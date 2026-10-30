@@ -52,7 +52,8 @@ Three public-domain Leonardo portraits of women from Wikimedia Commons (candidat
 Commons' 4000 px copy of the 10483 × 11110 file, which is over the upload limit. The Mona Lisa was
 left out on purpose. Each was made on its first try; Lady with an Ermine and La Belle Ferronnière
 were then made once more, as a buyer's Try again with the same settings. The second Ermine is kept
-(on the first, white stones scattered over the ermine looked like holes). The first Ferronnière is
+(on the first, white stones scattered over the ermine looked like holes). A third Ermine with the buyer's brightness at −15
+came out worse (the ermine pure white and grey) and was not kept. The first Ferronnière is
 kept: the second was red again, because the pipeline turns her dark brownish-red dress bright red
 every time.
 
