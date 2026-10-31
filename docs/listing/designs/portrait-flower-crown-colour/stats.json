@@ -1,0 +1,52 @@
+{
+  "subject": "portrait-flower-crown",
+  "design": "colour",
+  "stones": 3033,
+  "bySize": {
+    "ss6": 2784,
+    "ss4": 247,
+    "ss16": 2
+  },
+  "byColour": {
+    "copper": 516,
+    "colorado-topaz": 406,
+    "jet": 355,
+    "golden-shadow": 329,
+    "silk": 237,
+    "siam": 231,
+    "smoked-topaz": 170,
+    "emerald": 160,
+    "padparadscha": 125,
+    "citrus-green": 121,
+    "hyacinth": 119,
+    "crystal-clear": 102,
+    "khaki": 59,
+    "grey": 24,
+    "light-colorado": 22,
+    "rose-gold": 22,
+    "indian-siam": 10,
+    "light-siam": 7,
+    "rose-peach": 6,
+    "fern-green": 4,
+    "rose": 4,
+    "scarlet": 2,
+    "light-peach": 1,
+    "light-topaz": 1
+  },
+  "widthMm": 157.3,
+  "heightMm": 160.5,
+  "widthIn": 6.19,
+  "heightIn": 6.32,
+  "coverage": 0.665,
+  "mode": "colour",
+  "adjustments": {},
+  "photo": {
+    "title": "Mother Nature, Summer (Unsplash)",
+    "url": "https://commons.wikimedia.org/wiki/File:Mother_Nature,_Summer_(Unsplash).jpg",
+    "author": "Autumn Goodman (unsplash.com/@auttgood)",
+    "licence": "CC0",
+    "via": "https://unsplash.com/photos/vTL_qy03D1I",
+    "viaDate": "2017-04-19"
+  },
+  "run": "PN-10 after run 1 (skin-flower-after-1), colour prompt version 4"
+}
