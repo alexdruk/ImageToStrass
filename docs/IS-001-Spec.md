@@ -40,7 +40,8 @@ details from `.env` (10, 14, 18); withdrawal consent at the first download (10);
 (10); poller fallback to every variation (11.3); listing texts (11.1). Revised 29 Oct 2026 (PN-07
 follow-up): paid after the design was deleted (4.1, 10, 11.3, 15.1); the AI image service's data
 terms on the privacy page (14). Revised 31 Oct 2026 (PN-04d): the tinted view fills the enclosed
-specks between stones (8, step 4b).
+specks between stones (8, step 4b). Revised 31 Oct 2026 (PN-10): the colour prompt keeps each
+person's skin tone (7.2, prompt version 4).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -303,7 +304,7 @@ few minutes".
 ### 7.2 Prompt
 
 - Based on RS `server/redraw/prompt.mjs` prompt v6 (stones style only; the flat style is not
-  copied). Version constant `IS_PROMPT_VERSION = 3`.
+  copied). Version constant `IS_PROMPT_VERSION = 4` (3 before PN-10).
 - There is no size line: the design has its natural size (7.5).
 - Section 6's first rule `Square image at the highest resolution available.` becomes
   `Use the whole image at the highest resolution available, in the same shape (width to height) as
@@ -311,7 +312,12 @@ few minutes".
 - Rule 1's sentence `Make the stones large: about 60 stones across the full width of the image.` is
   removed (IS-03b decision, from `docs/IS-03b-results.md`: with non-square images it does not set the
   stone size). Every other stone rule of v6 is kept.
-- Colour mode: palette line and ramps as v6.
+- Colour mode: palette line and ramps as v6, with one change (PN-10, `docs/skin-prompt.md`): the
+  skin ramp says it covers every skin tone, from the lightest to the deepest, and that deep skin uses
+  its dark end, and a rule after the Topaz rule tells the AI to keep each person's skin tone,
+  lightness and undertone as the photo shows them and never to lighten or whiten skin. Before, the AI
+  painted faces 10 to 23 L\* lighter than the photo (`docs/skin-check.md`). The Black & white texts do
+  not change; Shaded shares the version number.
 - Black & white mode: section 4 and the final check sentence are replaced by Appendix A.
 - Black & white style (exp-bw-stencil; the buyer's choice since IS-07b, 6.4): the attempt's
   `bwStyle` picks the black & white variant: `stencil` (Bold, the default) replaces section 4 and

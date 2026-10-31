@@ -23,7 +23,8 @@ skin_nearest_inner), the plain catalogue snap of that colour (colour.snap_colour
 palette) and its nearest SKIN colour (faces.skin_nearest's choice), and the photo's colour under
 the stone with its plain snap and nearest SKIN colour (what the stones would be if the AI had kept
 the photo's colour), and restPhoto / restAi: the median Lab of everything outside the face mesh's
-hull (hair, clothes, objects) in the photo and the AI image. --sheet draws OUT.json as one row per
+hull (hair, clothes, objects) in the photo and the AI image, and hullPhoto / hullAi: the median Lab
+of the whole face (the hull itself). --sheet draws OUT.json as one row per
 design: the skin's median colour in the photo, in the AI image and in the stones' fills, each with
 its L* a* b*, then the stones in proportion, and the stones the photo's own colour snaps to.
 CHECK_DIR: an image per design with the area drawn on the photo and the AI image.
@@ -164,6 +165,11 @@ def run(job, det, check_dir):
     out["restPhoto"] = stats(photo_lab[(photo[..., 3] >= SUBJECT_ALPHA) & ~hull_mask(photo.shape[:2], lm)])
     if lm_ai is not None:
         out["restAi"] = stats(ai_lab[(ai[..., 3] >= SUBJECT_ALPHA) & ~hull_mask(ai.shape[:2], lm_ai)])
+    # PN-10: the whole face (the face mesh's hull, eyes, brows and lips included), a second view next
+    # to the cheek and chin area, which holds the face's lightest skin.
+    out["hullPhoto"] = stats(photo_lab[(photo[..., 3] >= SUBJECT_ALPHA) & hull_mask(photo.shape[:2], lm)])
+    if lm_ai is not None:
+        out["hullAi"] = stats(ai_lab[(ai[..., 3] >= SUBJECT_ALPHA) & hull_mask(ai.shape[:2], lm_ai)])
 
     off, mpp = rep["offsetMm"], rep["mmPerPx"]
     picked = []

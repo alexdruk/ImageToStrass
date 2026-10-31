@@ -10,7 +10,9 @@
 import { STONE_COLORS } from '../stones/StoneColors.js';
 
 // IS: version of the IS prompt (v6 of RS plus the IS additions). A wording change bumps it.
-export const IS_PROMPT_VERSION = 3;
+// 4 (PN-10): the colour prompt keeps each person's skin tone (SKIN_RAMP_LINE, SKIN_TONE_RULE); the
+// Black & white Shaded text is unchanged but shares this number.
+export const IS_PROMPT_VERSION = 4;
 // IS (exp-bw-stencil): the Black & white stencil variant has its own version (5: the eye rule).
 export const IS_STENCIL_PROMPT_VERSION = 5;
 // IS (exp-bw-stencil, IS-07b): the Black & white styles the buyer picks from (the attempt's
@@ -44,7 +46,10 @@ const V6_HEAD = [
   ''
 ].join('\n');
 
-// IS: section 4 of v6 (colour mode), unchanged.
+// IS: section 4 of v6 (colour mode). PN-10: the skin ramp says it covers every skin tone, and
+// SKIN_TONE_RULE follows the Topaz rule; the rest is unchanged.
+export const SKIN_RAMP_LINE = '  skin (every skin tone, from the lightest to the deepest; deep skin uses the dark end of this ramp): Silk, Light Peach, Rose Gold, Light Colorado Topaz, Golden Shadow, Copper, Colorado Topaz, Smoked Topaz, with Rose Peach and Vintage Rose for cheeks and Crystal only for the brightest highlights;';
+export const SKIN_TONE_RULE = "- Keep each person's skin tone, lightness and undertone as the photo shows them. Never lighten or whiten skin: each face stays as light or as dark as it is in the photo.";
 const V6_COLOURS_INTRO = [
   '4. COLOURS',
   'Use only the colours below, with exactly these hex values, as flat fills:'
@@ -54,11 +59,12 @@ const V6_COLOURS_RULES = [
   '- Every stone gets exactly one of these colours. Do not invent, mix, tint or shade colours.',
   '- Pick the closest of these colours for each area, and keep neighbouring areas clearly distinguishable so the design reads well from a distance.',
   '- Use these ramps, from light to dark, and stay inside the ramp of each kind of area:',
-  '  skin: Silk, Light Peach, Rose Gold, Light Colorado Topaz, Golden Shadow, Copper, Colorado Topaz, Smoked Topaz, with Rose Peach and Vintage Rose for cheeks and Crystal only for the brightest highlights;',
+  SKIN_RAMP_LINE,
   '  tan or brown fur, wood, earth: Silk, Light Peach, Golden Shadow, Light Colorado Topaz, Light Smoked Topaz, Copper, Colorado Topaz, Smoked Topaz;',
   '  white, grey and black hair, fur, metal, stone: Crystal, Silver, Greige, Grey, Black Diamond, Graphite, Jet Hematite, Hematite, Jet;',
   '  greens: Chrysolite, Citrus Green, Peridot, Emerald, Fern Green, Erinite, Olivine, Khaki; blues: Light Sapphire, Aquamarine, Sapphire, Capri Blue; reds and pinks: Rose, Rose Peach, Vintage Rose, Padparadscha, Light Siam, Scarlet, Siam, Indian Siam, Fuchsia; yellows and oranges: Citrine, Light Topaz, Metallic Sunshine, Gold, Topaz, Hyacinth.',
   '- Never use Topaz or Hyacinth on skin.',
+  SKIN_TONE_RULE,
   '- Inside one area use at most three neighbouring shades of its ramp, in clear patches; never alternate shades stone by stone.',
   '- When a colour of the image lies between two listed colours, choose one of them for the whole patch; do not paint an in-between shade.'
 ].join('\n');
