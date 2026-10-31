@@ -1,4 +1,4 @@
-// PN-04b, PN-04c: the Etsy listing photos, made from the PN-04a listing designs with no provider call:
+// PN-04b, PN-04c, PN-04d: the Etsy listing photos, made from the PN-04a listing designs with no provider call:
 //   node tools/make-listing-photos.mjs
 // Reads only the designs marked "use in listing: yes" in docs/listing/README.md, from their full-size
 // files in data/listing/designs/<id>/ (prepared.png, tinted.png, stats.json; git-ignored), and for
@@ -11,6 +11,10 @@
 // Everything important stays inside the centre THUMB_W x PHOTO_H (Etsy's thumbnail is about 5:4),
 // at least MARGIN px inside it. Photo 07 is rendered from the butterfly's StoneLayout (its PN-04a
 // run's stones.json) with the tinted renderer at CLOSE.pxPerMm; nothing in the design changes.
+// Every design's tinted picture is drawn again from its StoneLayout with today's renderer
+// (renderFull, as the pipeline draws it), so the photos show what a buyer sees now; the script stops
+// if a pixel the design's own tinted.png had drawn opaque comes out different (PN-04d: only the enclosed
+// specks of spec 8 step 4b may change).
 // Text is Inter (SIL OFL, tools/fonts/); colours are the web app's (public/styles.css).
 import { GlobalFonts, createCanvas, loadImage } from "@napi-rs/canvas";
 import { createHash } from "node:crypto";
@@ -20,7 +24,7 @@ import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import sharp from "sharp";
 import { BRAND } from "../src/brand.js";
 import { designFiles, zipEntryNames } from "../src/export/zip.js";
-import { MARGIN_STONES, renderTinted, tintCanvasMm } from "../src/render/tinted.js";
+import { MARGIN_STONES, renderFull, renderTinted, tintCanvasMm } from "../src/render/tinted.js";
 import { StoneLayout } from "../src/stones/StoneLayout.js";
 import { getStoneSize } from "../src/stones/StoneSizes.js";
 
@@ -38,7 +42,8 @@ const FOOTER = "Digital template · no stones included";
 // person-colour and mastiff-colour are "no" and never read.
 const ALLOWED = new Set([
   "butterfly-colour", "car-colour", "dahlia-colour", "hedgehog-colour", "mastiff-bw-stencil",
-  "mastiff-bw-halftone", "person-bw-stencil", "person-bw-halftone", "stag-beetle-colour"
+  "mastiff-bw-halftone", "person-bw-stencil", "person-bw-halftone", "stag-beetle-colour",
+  "painting-ferronniere-colour"
 ]);
 
 const C = {
@@ -59,11 +64,35 @@ const TOP = 330, BOTTOM = 1840, FOOTER_Y = 1930;
 
 // ---- designs ----
 
+// tinted: the PNG drawn again by redraw() (a Buffer); tintedFile: the design's own tinted.png.
+const TINTED = new Map();
 function design(id) {
   if (!ALLOWED.has(id)) throw new Error(`${id} is not marked "use in listing: yes"`);
+  if (!TINTED.has(id)) throw new Error(`${id} was not drawn again`);
   const dir = path.join(FULL, id);
   const stats = JSON.parse(readFileSync(path.join(dir, "stats.json"), "utf8"));
-  return { id, dir, stats, tinted: path.join(dir, "tinted.png"), prepared: path.join(dir, "prepared.png") };
+  return { id, dir, stats, tinted: TINTED.get(id), tintedFile: path.join(dir, "tinted.png"), prepared: path.join(dir, "prepared.png") };
+}
+
+// Every allowed design's tinted picture from its StoneLayout, at the size and with the gap rule the
+// pipeline uses (black & white: BW_GAP's default "crystal"), checked against its tinted.png.
+async function redraw() {
+  for (const id of ALLOWED) {
+    const tintedFile = path.join(FULL, id, "tinted.png");
+    const stats = JSON.parse(readFileSync(path.join(FULL, id, "stats.json"), "utf8"));
+    const { png } = renderFull(stonesOf({ id, tintedFile }), { bwGap: stats.mode === "bw" ? "crystal" : null });
+    const [was, now] = await Promise.all([tintedFile, png].map((f) => sharp(f).ensureAlpha().raw().toBuffer({ resolveWithObject: true })));
+    if (was.info.width !== now.info.width || was.info.height !== now.info.height) throw new Error(`${id}: drawn again at another size`);
+    let changed = 0, filled = 0;
+    for (let i = 0; i < was.data.length; i += 4) {
+      // A transparent pixel, or a stone's anti-aliased rim over one: the speck may be filled.
+      if (was.data[i + 3] < 255) { filled += was.data[i + 3] === 0 && now.data[i + 3] > 0; continue; }
+      if (was.data[i] !== now.data[i] || was.data[i + 1] !== now.data[i + 1] || was.data[i + 2] !== now.data[i + 2] || was.data[i + 3] !== now.data[i + 3]) changed++;
+    }
+    if (changed) throw new Error(`${id}: ${changed} drawn pixels differ from its tinted.png`);
+    TINTED.set(id, png);
+    console.log(`${id}: drawn again, ${filled} speck pixels filled`);
+  }
 }
 
 // The tinted render's scale (px per mm) and the stones' box in its pixels: renderTinted puts the
@@ -398,7 +427,7 @@ async function howItWorks() {
 // The final StoneLayout of a listing design: its PN-04a run's stones.json, found by the design's
 // tinted.png (the run archived the same file).
 function stonesOf(d) {
-  const want = createHash("sha256").update(readFileSync(d.tinted)).digest("hex");
+  const want = createHash("sha256").update(readFileSync(d.tintedFile)).digest("hex");
   for (const run of readdirSync(RUNS).sort()) {
     const archive = path.join(RUNS, run, "archive");
     if (!existsSync(archive)) continue;
@@ -418,7 +447,7 @@ function stonesOf(d) {
 // Page 1 of the A4 production sheet, made by the delivery ZIP's own exporter, rendered heightPx high.
 async function sheetPage(d, heightPx) {
   const layout = stonesOf(d);
-  const files = await designFiles(layout, { code: EXAMPLE_CODE, tintedPng: readFileSync(d.tinted) });
+  const files = await designFiles(layout, { code: EXAMPLE_CODE, tintedPng: d.tinted });
   const pdf = files.find((f) => f.name === "production-sheet-A4.pdf").data;
   const doc = await getDocument({ data: new Uint8Array(pdf), verbosity: 0, isEvalSupported: false }).promise;
   const page = await doc.getPage(1);
@@ -606,7 +635,7 @@ async function overview(files) {
 }
 
 const PHOTOS = [
-  ["00-main-dahlia.jpg", () => hero("dahlia-colour")],
+  ["00-main-ferronniere.jpg", () => hero("painting-ferronniere-colour")],
   ["01-before-after-dahlia.jpg", () => mainPhoto("dahlia-colour")],
   ["02-bold-vs-shaded.jpg", () => twoStyles("mastiff", "Black & white in two styles")],
   ["03-range.jpg", range],
@@ -618,6 +647,7 @@ const PHOTOS = [
 ];
 
 mkdirSync(OUT, { recursive: true });
+await redraw();
 const only = process.argv.find((a) => a.startsWith("--only="))?.split("=")[1].split(",");
 const written = [];
 for (const [name, make] of PHOTOS) {

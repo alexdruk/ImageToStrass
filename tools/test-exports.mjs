@@ -14,7 +14,7 @@ import { buildDeliveryZip, deliveryZipPath, designFiles, writeZip, zipEntryNames
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import {
-  BLACK_FABRIC, BW_GAPS, FILL_MARGIN_MM, GAP_RULE, INNER_SHARE, WHITE_FABRIC, gapRgb, lightnessOfHex, renderFull, renderPreview, renderTinted, tintCanvasMm
+  BLACK_FABRIC, BW_GAPS, ENCLOSED_GAP_MAX_MM2, FILL_MARGIN_MM, GAP_RULE, INNER_SHARE, WHITE_FABRIC, gapRgb, lightnessOfHex, renderFull, renderPreview, renderTinted, tintCanvasMm
 } from "../src/render/tinted.js";
 import { srgbToLab } from "./colour-diff.mjs";
 import { Stone } from "../src/stones/Stone.js";
@@ -92,6 +92,32 @@ test("tinted render: 0.5 mm beyond a stone's edge gets the gap colour of its fil
   // Nearest by edge, not by centre: 2.9 mm right of A is 0.9 mm from A's edge and 0.7 mm from B's,
   // so it belongs to B, and 0.7 mm from B's edge it is background.
   assert.equal(px(12.9, 10).rgba[3], 0);
+});
+
+test("tinted render: an enclosed speck between stones is filled, a true hole and the outside are not (step 4b)", async () => {
+  // Six SS6 Siam stones around an empty centre (pitch 2.1 mm): the centre is 0.5 mm beyond the
+  // margin, enclosed, about 0.8 mm2. A ring of SS6 Emerald stones 6 mm from (40, 10) encloses a
+  // true hole of about 60 mm2, more than ENCLOSED_GAP_MAX_MM2.
+  assert.equal(ENCLOSED_GAP_MAX_MM2, 2 * Math.PI);
+  const stones = [];
+  for (let k = 0; k < 6; k++) stones.push(stone(10 + 2.1 * Math.cos(k * Math.PI / 3), 10 + 2.1 * Math.sin(k * Math.PI / 3), 2, "siam", stones.length));
+  const n = Math.round(2 * Math.PI * 6 / 2.1);
+  for (let k = 0; k < n; k++) stones.push(stone(40 + 6 * Math.cos(2 * Math.PI * k / n), 10 + 6 * Math.sin(2 * Math.PI * k / n), 2, "emerald", stones.length));
+  const sl = new StoneLayout({ layerId: "design", sourceMode: "is", stones });
+  const box = tintCanvasMm(sl);
+  const at = async (opts) => {
+    const render = renderTinted(sl, { longSidePx: Math.round(Math.max(box.widthMm, box.heightMm) * 40), background: "transparent", ...opts });
+    const { data, info } = await sharp(render.png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    return (xMm, yMm) => {
+      const i = (Math.floor((yMm - box.minYmm) * render.scale) * info.width + Math.floor((xMm - box.minXmm) * render.scale)) * 4;
+      return [...data.subarray(i, i + 4)];
+    };
+  };
+  const px = await at({});
+  assert.deepEqual(px(10, 10), [...rgbOf("siam"), 255], "the speck takes its nearest stone's gap colour");
+  assert.equal(px(40, 10)[3], 0, "the true hole stays transparent");
+  assert.equal(px(10, 5)[3], 0, "outside stays transparent");
+  assert.deepEqual((await at({ bwGap: "white" }))(10, 10), [...WHITE_FABRIC, 255], "black & white fabric: the fabric");
 });
 
 test("tinted render: gaps at least 4 L* darker than the fill, 8 above L* 85 (IS-05b gap rule)", () => {

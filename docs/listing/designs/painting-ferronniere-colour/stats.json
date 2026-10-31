@@ -1,0 +1,51 @@
+{
+  "subject": "painting-ferronniere",
+  "design": "colour",
+  "stones": 3950,
+  "bySize": {
+    "ss6": 3315,
+    "ss4": 633,
+    "ss20": 2
+  },
+  "byColour": {
+    "smoked-topaz": 693,
+    "silk": 688,
+    "jet": 514,
+    "light-siam": 435,
+    "light-colorado": 293,
+    "siam": 281,
+    "light-topaz": 215,
+    "colorado-topaz": 212,
+    "scarlet": 143,
+    "copper": 130,
+    "silver": 75,
+    "indian-siam": 60,
+    "grey": 48,
+    "rose-gold": 38,
+    "light-smoked-topaz": 35,
+    "greige": 24,
+    "graphite": 23,
+    "golden-shadow": 19,
+    "jet-hematite": 7,
+    "fuchsia": 6,
+    "crystal-clear": 4,
+    "metallic-sunshine": 3,
+    "black-diamond": 2,
+    "khaki": 1,
+    "light-peach": 1
+  },
+  "widthMm": 143.7,
+  "heightMm": 217.3,
+  "widthIn": 5.66,
+  "heightIn": 8.56,
+  "coverage": 0.605,
+  "mode": "colour",
+  "adjustments": {},
+  "photo": {
+    "title": "La Belle Ferronière - Google Arts",
+    "url": "https://commons.wikimedia.org/wiki/File:La_Belle_Ferroni%C3%A8re_-_Google_Arts.jpg",
+    "author": "Leonardo da Vinci",
+    "licence": "Public domain",
+    "via": "Google Arts & Culture (Musée du Louvre)"
+  }
+}
