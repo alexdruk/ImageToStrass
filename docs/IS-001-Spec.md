@@ -41,7 +41,8 @@ details from `.env` (10, 14, 18); withdrawal consent at the first download (10);
 follow-up): paid after the design was deleted (4.1, 10, 11.3, 15.1); the AI image service's data
 terms on the privacy page (14). Revised 31 Oct 2026 (PN-04d): the tinted view fills the enclosed
 specks between stones (8, step 4b). Revised 31 Oct 2026 (PN-10): the colour prompt keeps each
-person's skin tone (7.2, prompt version 4).
+person's skin tone (7.2, prompt version 4). Revised 31 Oct 2026 (PN-04h): a lone white
+stone in skin takes its neighbours' skin colour (7.4, `lone_white_skin`).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -370,6 +371,15 @@ Shadow skin (IS's strass copy, IS-05d, `docs/IS-05d-results.md`): with the rule 
 `DEFAULT`, `warm_shadow_de` 3), a skin stone whose nearest skin colour is Smoked Topaz takes Colorado
 Topaz when Colorado Topaz is at most 3 ΔE2000 further from its sampled colour. Only those near ties
 change; stones, sizes, faces and pupils do not. RS 38cd831 has no such rule.
+
+Lone white stones in skin (IS's strass copy, PN-04h): with the rule `lone_white_skin` (on in `DEFAULT`,
+after `calm_skin`), an SS4 or SS6 Crystal Clear, Crystal or Silver stone with at least four
+neighbours, all of them skin colours (`distinct.SKIN`), outside 1.5 eye-zone radii, takes the colour
+most of its neighbours have (on a tie the lighter). The AI paints a small pale highlight on skin
+(L\* about 95, just outside the warm hue range of the snapping rules), which snaps to Crystal Clear
+and reads as a hole in the design. Catch-lights by the pupils, teeth and white areas (white among
+white) keep their colour; stones, sizes and every other colour do not change. RS 38cd831 has no such
+rule.
 
 Faces (IS's strass copy, IS-07a, `docs/is-07a-landmarks.md`): the service finds a face (a person,
 as opposed to an animal or no face) and the eye boxes its pupils are looked for in with MediaPipe

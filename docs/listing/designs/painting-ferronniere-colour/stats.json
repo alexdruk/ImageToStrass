@@ -9,7 +9,7 @@
   },
   "byColour": {
     "smoked-topaz": 693,
-    "silk": 688,
+    "silk": 690,
     "jet": 514,
     "light-siam": 435,
     "light-colorado": 293,
@@ -28,9 +28,9 @@
     "golden-shadow": 19,
     "jet-hematite": 7,
     "fuchsia": 6,
-    "crystal-clear": 4,
     "metallic-sunshine": 3,
     "black-diamond": 2,
+    "crystal-clear": 2,
     "khaki": 1,
     "light-peach": 1
   },
@@ -47,5 +47,6 @@
     "author": "Leonardo da Vinci",
     "licence": "Public domain",
     "via": "Google Arts & Culture (Musée du Louvre)"
-  }
+  },
+  "run": "PN-04h: the PN-04d design drawn again from its own AI image (no provider call) with the strass rule lone_white_skin: 2 Crystal Clear stones on the chest became Silk"
 }

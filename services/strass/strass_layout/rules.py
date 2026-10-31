@@ -41,6 +41,11 @@ local sampled colour, on SS4/SS6 skin stones whose colour lies between the two
 (faces.mixed_shadow). The AI's shadow skin (about L* 33, chroma 43) lies between the two
 (docs/IS-05c-results.md section 2.2 in the IS repository).
 
+IS (PN-04h, not in RS): lone_white_skin gives an SS4/SS6 Crystal Clear, Crystal or Silver stone whose
+neighbours (at least four) are all skin colours, outside 1.5 eye-zone radii, its neighbours' most
+common colour (faces.lone_white_skin): the AI paints a pale highlight on skin that snaps to white and
+reads as a hole. DEFAULT has it on; PROTOTYPE and the BUILD_* rules have it off.
+
 IS (exp-holes, experiment, off everywhere including DEFAULT): fill_exact makes the fills after the
 eye stage keep GAP (0.1 mm) from every stone, checked exactly, instead of GAP + 0.05 mm on the
 raster; fill_cover_mask makes them measure the 0.7 cover on the strict subject mask they fill
@@ -74,6 +79,7 @@ class Rules:
     warm_shadow: bool = False
     warm_shadow_de: float = 1.5
     mixed_shadow: bool = False
+    lone_white_skin: bool = False
     fill_exact: bool = False
     fill_cover_mask: bool = False
 
@@ -93,4 +99,5 @@ DEFAULT = Rules(pupil_core_only=True, keep_chains=True, extra_colours=True, mean
                 soft_outlines=False, calm_skin=True, skin_nearest=True, plausible_eyes=True,
                 sample_delivered=True,  # IS (IS-05b): soft_outlines off, sample_delivered on
                 skin_nearest_inner=True,  # IS (IS-05c): human_iris off, skin_nearest_inner on
-                warm_shadow=True, warm_shadow_de=3.0)  # IS (IS-05d)
+                warm_shadow=True, warm_shadow_de=3.0,  # IS (IS-05d)
+                lone_white_skin=True)  # IS (PN-04h)
