@@ -21,7 +21,7 @@ Each folder in `designs/` holds `prepared.png` and `tinted.png` at 1200 px on th
 | [mastiff](designs/mastiff-bw-halftone/) | Black & white Shaded | 4141 | 179.1 × 144 mm (7.05 × 5.67 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
 | [parrot](designs/parrot-colour/) | Colour | 2375 | 111.1 × 114.5 mm (4.37 × 4.51 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | no: the photo cuts the head |
 | [person](designs/person-colour/) | Colour | 4685 | 167.4 × 204.2 mm (6.59 × 8.04 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | no: the photo is black and white, so the skin colour is made up and wrong |
-| [person](designs/person-bw-stencil/) | Black & white Bold | 5048 | 171.1 × 207.9 mm (6.74 × 8.18 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
+| [person](designs/person-bw-stencil/) | Black & white Bold | 5048 | 171.1 × 207.9 mm (6.74 × 8.18 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | no |
 | [person](designs/person-bw-halftone/) | Black & white Shaded | 7154 | 200.9 × 249.5 mm (7.91 × 9.82 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
 | [stag-beetle](designs/stag-beetle-colour/) | Colour | 1514 | 204.4 × 92.3 mm (8.05 × 3.63 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
 
@@ -41,7 +41,7 @@ tuning), each on its first try. [portraits/overview.png](portraits/overview.png)
 | # | Subject | Mode | Stones | Natural size | Photo source | Licence | Use in listing |
 | ---: | --- | --- | ---: | --- | --- | --- | --- |
 | 1 | [portrait-freckles](designs/portrait-freckles-colour/) | Colour | 3176 | 137.1 × 200.8 mm (5.4 × 7.9 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Smile_with_Freckles_(Unsplash).jpg), Gabriel Silvério | CC0 | not decided |
-| 2 | [portrait-curls](designs/portrait-curls-colour/) | Colour | 4764 | 174.6 × 174.7 mm (6.88 × 6.88 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Confident_Eye_Contact_(Unsplash).jpg), Tanja Heffner | CC0 | not decided: the skin came out much lighter than in the photo |
+| 2 | [portrait-curls](designs/portrait-curls-colour/) | Colour | 4764 | 174.6 × 174.7 mm (6.88 × 6.88 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Confident_Eye_Contact_(Unsplash).jpg), Tanja Heffner | CC0 | yes (photo 08); the skin came out much lighter than in the photo |
 | 3 | [portrait-elder](designs/portrait-elder-colour/) | Colour | 3936 | 143.1 × 177.4 mm (5.63 × 6.99 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Karen_Elder_(Unsplash).jpg), Capturing the human heart. | CC0 | not decided |
 | 6 | [portrait-glasses](designs/portrait-glasses-colour/) | Colour | 3089 | 163.1 × 164.2 mm (6.42 × 6.46 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Man_vanguard_glasses_outdoors_(Unsplash).jpg), Seth Doyle | CC0 | not decided: one eye is missing |
 

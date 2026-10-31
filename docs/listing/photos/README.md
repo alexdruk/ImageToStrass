@@ -25,6 +25,6 @@ Text is set in Inter (SIL Open Font License, `tools/fonts/`).
 | 6 | [05-whats-included.jpg](05-whats-included.jpg) | The first page of a printable production sheet for a black and white mastiff template, next to the list of files included: SVG, PDF production sheet in A4 and Letter, AI, EPS, DXF, PNG and a preview. |
 | 7 | [06-size.jpg](06-size.jpg) | A colour rhinestone template of a stag beetle with dimension lines: 20.4 cm (8.05 in) wide and 9.2 cm (3.63 in) high, 1514 stones, mostly SS6. Each design has its own natural size, usually 13 to 30 cm. |
 | 8 | [07-close-up.jpg](07-close-up.jpg) | A close-up of the butterfly template's wing: single rhinestones in clear yellow areas edged by black lines, with blue, white and green spots. Title: Every stone placed for you. |
-| 9 | [08-person.jpg](08-person.jpg) | A small black and white portrait photo of a smiling man, then two rhinestone templates of it labelled Bold and Shaded. Title: Portraits too. |
+| 9 | [08-portrait.jpg](08-portrait.jpg) | A small colour photo of a young woman with dark curly hair, earrings and a dark red top, an arrow, and the same portrait drawn larger as a colour rhinestone template, every stone shown. Title: Colour portraits from your photo. |
 
 Every photo except the close-up says "Digital template · no stones included" at the bottom.
