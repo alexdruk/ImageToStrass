@@ -1,4 +1,4 @@
-// PN-04b, PN-04c, PN-04d: the Etsy listing photos, made from the PN-04a listing designs with no provider call:
+// PN-04b, PN-04c, PN-04d, PN-04g: the Etsy listing photos, made from the PN-04a listing designs with no provider call:
 //   node tools/make-listing-photos.mjs
 // Reads only the designs marked "use in listing: yes" in docs/listing/README.md, from their full-size
 // files in data/listing/designs/<id>/ (prepared.png, tinted.png, stats.json; git-ignored), and for
@@ -39,11 +39,11 @@ const OVERVIEW_W = 2000;
 const EXAMPLE_CODE = "PN-7K3Q-9XPA";
 const FOOTER = "Digital template · no stones included";
 // Designs this script may use (docs/listing/README.md, "use in listing: yes"); parrot-colour,
-// person-colour and mastiff-colour are "no" and never read.
+// person-colour, person-bw-stencil and mastiff-colour are "no" and never read.
 const ALLOWED = new Set([
   "butterfly-colour", "car-colour", "dahlia-colour", "hedgehog-colour", "mastiff-bw-stencil",
-  "mastiff-bw-halftone", "person-bw-stencil", "person-bw-halftone", "stag-beetle-colour",
-  "painting-ferronniere-colour"
+  "mastiff-bw-halftone", "person-bw-halftone", "stag-beetle-colour",
+  "painting-ferronniere-colour", "portrait-flower-crown-colour"
 ]);
 
 const C = {
@@ -269,15 +269,15 @@ async function hero(id) {
   return canvas;
 }
 
-// Photo, arrow, design in one row: the design PHOTO_RATIO times the photo's height, both as large as
-// the safe width and the content band allow.
+// Photo, arrow, design in one row: the photo 1 / ratio of the design's height (PHOTO_RATIO by
+// default), both as large as the safe width and the content band allow.
 const PHOTO_RATIO = 1.5, ARROW_W = 180;
-async function mainPhoto(id) {
+async function mainPhoto(id, { title = "Your photo → rhinestone template", ratio = PHOTO_RATIO } = {}) {
   const d = design(id);
-  const { canvas, ctx } = frame({ title: "Your photo → rhinestone template" });
+  const { canvas, ctx } = frame({ title });
   const ap = await aspect(d.prepared), ad = await aspect(d.tinted);
-  const h = Math.min(BOTTOM - TOP, (SAFE_W - ARROW_W) / (ad + ap / PHOTO_RATIO));
-  const left = await fitted(d.prepared, Infinity, h / PHOTO_RATIO);
+  const h = Math.min(BOTTOM - TOP, (SAFE_W - ARROW_W) / (ad + ap / ratio));
+  const left = await fitted(d.prepared, Infinity, h / ratio);
   const right = await fitted(d.tinted, Infinity, h);
   const x0 = CX - (left.w + ARROW_W + right.w) / 2, midY = (TOP + BOTTOM) / 2;
   draw(ctx, left, x0, midY - left.h / 2);
@@ -643,7 +643,7 @@ const PHOTOS = [
   ["05-whats-included.jpg", whatsIncluded],
   ["06-size.jpg", size],
   ["07-close-up.jpg", closeUp],
-  ["08-person.jpg", () => twoStyles("person", "Portraits too")]
+  ["08-portrait.jpg", () => mainPhoto("portrait-flower-crown-colour", { title: "Colour portraits from your photo", ratio: 1 / 0.6 })]
 ];
 
 mkdirSync(OUT, { recursive: true });

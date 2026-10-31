@@ -21,7 +21,7 @@ Each folder in `designs/` holds `prepared.png` and `tinted.png` at 1200 px on th
 | [mastiff](designs/mastiff-bw-halftone/) | Black & white Shaded | 4141 | 179.1 × 144 mm (7.05 × 5.67 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
 | [parrot](designs/parrot-colour/) | Colour | 2375 | 111.1 × 114.5 mm (4.37 × 4.51 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | no: the photo cuts the head |
 | [person](designs/person-colour/) | Colour | 4685 | 167.4 × 204.2 mm (6.59 × 8.04 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | no: the photo is black and white, so the skin colour is made up and wrong |
-| [person](designs/person-bw-stencil/) | Black & white Bold | 5048 | 171.1 × 207.9 mm (6.74 × 8.18 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
+| [person](designs/person-bw-stencil/) | Black & white Bold | 5048 | 171.1 × 207.9 mm (6.74 × 8.18 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | no |
 | [person](designs/person-bw-halftone/) | Black & white Shaded | 7154 | 200.9 × 249.5 mm (7.91 × 9.82 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
 | [stag-beetle](designs/stag-beetle-colour/) | Colour | 1514 | 204.4 × 92.3 mm (8.05 × 3.63 in) | PickPik, source page not kept | [pickpik Open License](https://www.pickpik.com/license) | yes |
 
@@ -62,3 +62,15 @@ every time.
 | 8 | [painting-ermine](designs/painting-ermine-colour/) | Colour | 3771 | 137 × 204 mm (5.39 × 8.03 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_(1452-1519)_-_Lady_with_an_Ermine_%E2%80%93_Portrait_of_Cecilia_Gallerani_(ca._1473%E2%80%931536)_-_MNK_XII-209_-_National_Museum_Krak%C3%B3w.jpg), National Museum in Kraków | Public domain | not decided |
 | 9 | [painting-ferronniere](designs/painting-ferronniere-colour/) | Colour | 3950 | 143.7 × 217.3 mm (5.66 × 8.56 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:La_Belle_Ferroni%C3%A8re_-_Google_Arts.jpg), Google Arts & Culture | Public domain | yes, the main photo (the dark brownish-red dress comes out bright red with gold) |
 | 10 | [painting-ginevra](designs/painting-ginevra-colour/) | Colour | 3660 | 134.7 × 178 mm (5.3 × 7.01 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_-_Ginevra_de%27_Benci_-_Google_Art_Project.jpg), Google Art Project | Public domain | not decided: white blotches on the face |
+
+### Colour portrait for photo 08 (PN-04g)
+
+From the PN-10 skin test ([../skin-prompt.md](../skin-prompt.md)): the portrait-flower-crown design of
+"after run 1", made with the colour prompt version 4 (keeps the skin's depth), the real pipeline,
+background removal on, no adjustments, no tuning. Its face is within 0.2 L\* of the photo. Copied
+unchanged from `data/listing/skin-prompt/designs/skin-flower-after-1-colour/` (its `stats.json` says
+which run).
+
+| # | Subject | Mode | Stones | Natural size | Photo source | Licence | Use in listing |
+| ---: | --- | --- | ---: | --- | --- | --- | --- |
+| 12 | [portrait-flower-crown](designs/portrait-flower-crown-colour/) | Colour | 3033 | 157.3 × 160.5 mm (6.19 × 6.32 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Mother_Nature,_Summer_(Unsplash).jpg), Autumn Goodman | CC0 | yes (photo 08) |
