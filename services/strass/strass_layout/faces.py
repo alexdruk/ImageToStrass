@@ -11,6 +11,9 @@ that shade is a close neighbour on the skin ramp.
 IS (IS-05d, experiment): Rules.warm_shadow lets skin_nearest prefer Colorado Topaz to a near-tie
 Smoked Topaz; Rules.mixed_shadow (mixed_shadow, after calm_skin) alternates the two along the rows
 where the sampled colour lies between them.
+
+IS (PN-04h): Rules.lone_white_skin (lone_white_skin, after calm_skin) gives a lone white stone in
+skin, which reads as a hole, its skin neighbours' colour.
 """
 import numpy as np
 from scipy.spatial import cKDTree
@@ -98,6 +101,31 @@ def skin_nearest(D, C, lab, pal, warm_de=None):
         if new != c:
             out[i] = new
             n += 1
+    return out, n
+
+
+# IS (PN-04h): the near-white stones lone_white_skin recolours.
+WHITE = {"crystal-clear", "crystal", "silver"}
+
+
+def lone_white_skin(P, D, C, pal, eyes, nb=None):
+    """IS (PN-04h): an SS4 or SS6 WHITE stone with at least four neighbours, all of them in skin
+    colours, outside 1.5 eye-zone radii (so a pupil's catch-light stays), takes the colour most of
+    its neighbours have (on a tie the lighter one). The AI paints such a stone as a highlight on
+    skin; in stones it reads as a hole. Returns (colours, count)."""
+    nb = nb if nb is not None else _neighbours(P, D)
+    out = list(C)
+    n = 0
+    for i, c in enumerate(C):
+        if c not in WHITE or D[i] not in (1.5, 2.0) or len(nb[i]) < 4 or _near_eye(P[i], eyes, 1.5):
+            continue
+        cs = [C[j] for j in nb[i]]
+        if not all(x in SKIN for x in cs):
+            continue
+        vals, cnt = np.unique(cs, return_counts=True)
+        best = [str(v) for v, k in zip(vals, cnt) if k == cnt.max()]
+        out[i] = max(best, key=lambda k: pal.lab[pal.ids.index(k)][0])
+        n += 1
     return out, n
 
 
@@ -192,4 +220,7 @@ def finish_faces(P, D, C, pal, face, eyes, rules, lab=None):
     if rules.mixed_shadow:
         nb = nb if nb is not None else _neighbours(P, D)
         C, _ = mixed_shadow(P, D, C, lab, pal, eyes, nb)
+    if rules.lone_white_skin:
+        nb = nb if nb is not None else _neighbours(P, D)
+        C, _ = lone_white_skin(P, D, C, pal, eyes, nb)
     return C

@@ -331,3 +331,17 @@ commercial use, so the IS service replaces it with MediaPipe Face Landmarker (Ap
   package with `dlib=True` (the prototype uses dlib) and skips without it.
 - `scripts/is07a_landmarks.py` (IS diagnosis only): lays out AI images with both and records what
   differs (docs/is-07a-landmarks.md).
+
+### PN-04h (31 Oct 2026): lone white stones in skin
+
+The AI paints small pale highlights on skin (L* about 95, just outside the snapping rules' warm hue
+range); they snap to Crystal Clear and read as holes in the design.
+
+- `strass_layout/rules.py`: new rule `lone_white_skin` (default `False`, so `PROTOTYPE` and the
+  `BUILD_*` rules keep RS's behaviour); `DEFAULT` has it on. Docstring note.
+- `strass_layout/faces.py`: `WHITE` and `lone_white_skin(P, D, C, pal, eyes, nb=None)`: an SS4 or SS6
+  Crystal Clear, Crystal or Silver stone with at least four neighbours, all in `distinct.SKIN`,
+  outside 1.5 eye-zone radii, takes its neighbours' most common colour (on a tie the lighter).
+  `finish_faces` runs it last, after `calm_skin` (and `mixed_shadow`). Docstring note.
+- `tests/test_pn04h.py` (new): the rule on a stone grid and on a layout (only white stones become
+  skin colours; positions and sizes unchanged).

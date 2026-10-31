@@ -21,6 +21,9 @@
 // --copies: the <out>/ copies made again from data/listing/designs/.
 // --full=<dir>: the full-size files there instead of data/listing/designs/ (test runs that must not
 // replace a listing design, PN-10).
+// --replay=<attempt folder>: no provider call; the design is drawn again from that attempt's stored
+// AI image (ai.png), through the same upload, layout service (STRASS_SERVICE_URL) and pipeline, so a
+// changed layout rule can be applied to an existing design (PN-04h). One subject, one mode.
 import "dotenv/config";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -48,6 +51,7 @@ const MODES = {
 };
 const MODE_NAMES = { "colour": "Colour", "bw-stencil": "Black & white Bold", "bw-halftone": "Black & white Shaded" };
 const TRIES = 2;
+const REPLAY = arg("replay") && path.resolve(arg("replay"));
 let extras = arg("extra") === undefined ? Infinity : Number(arg("extra"));
 
 // The web app on its own data folder and in-memory database. Only the limits' numbers are raised:
@@ -71,7 +75,7 @@ async function startApp(root) {
   const db = openDatabase(config.dbFile);
   const q = createQueries(db);
   const background = createBackgroundRemover({ config, log: console });
-  const pipeline = createPipeline({ q, config, log: console });
+  const pipeline = createPipeline({ q, config, log: console, provider: REPLAY ? replayProvider(REPLAY) : null });
   const app = createApp({ db, config, deps: { verifyTurnstile: async () => true, background, pipeline, request: noEtsy } });
   const server = app.listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
@@ -83,6 +87,17 @@ async function startApp(root) {
       server.closeAllConnections();
       await new Promise((resolve) => server.close(resolve));
       db.close();
+    }
+  };
+}
+
+// The stored AI image of an attempt as the provider's answer (--replay).
+function replayProvider(dir) {
+  const png = readFileSync(path.join(dir, "ai.png"));
+  return {
+    async redraw() {
+      const { width, height } = await sharp(png).metadata();
+      return { png, width, height };
     }
   };
 }
@@ -220,6 +235,7 @@ if (process.argv.includes("--overview")) {
   if (!file) throw new Error("usage: node tools/make-listing-designs.mjs <subjects.json> [--out=<dir>] [--full=<dir>] [--only=<id>,...] [--extra=<n>] | --overview | --copies");
   const only = arg("only")?.split(",");
   const subjects = JSON.parse(readFileSync(file, "utf8")).filter((s) => !only || only.includes(s.id));
+  if (REPLAY && (subjects.length !== 1 || subjects[0].modes.length !== 1)) throw new Error("--replay draws one subject in one mode");
   const report = [];
   for (const subject of subjects) {
     for (const m of subject.modes) if (!MODES[m]) throw new Error(`${subject.id}: unknown mode ${m}`);
