@@ -4,7 +4,7 @@ Made by `node tools/make-listing-photos.mjs` from the listing designs marked "us
 [../README.md](../README.md) (their full-size files in `data/listing/designs/`). Running it again
 gives the same files. Each photo is 2700 × 2025 px (4:3), sRGB JPG, under 1 MB; everything that
 matters is at least 80 px inside the centre 2531 × 2025 px, the part Etsy's thumbnail (about 5:4)
-shows. The main photo (00) is the dahlia design alone, at least 85 % of the photo's height, with
+shows. The main photo (00) is the La Belle Ferronnière design (Leonardo da Vinci, public domain; PN-04d) alone, at least 85 % of the photo's height, with
 only the small brand row in the top-left corner and the footer line. The close-up (07) is rendered
 sharp at 26.5 px per mm from the butterfly design's stones, with the app's own tinted renderer.
 [overview.png](overview.png) shows them all on one sheet.
@@ -17,7 +17,7 @@ Text is set in Inter (SIL Open Font License, `tools/fonts/`).
 
 | # | File | Alt text |
 | ---: | --- | --- |
-| 1 | [00-main-dahlia.jpg](00-main-dahlia.jpg) | A large colour rhinestone template of a red dahlia with a bud and green leaves on white, every stone shown. Digital template, no stones included. |
+| 1 | [00-main-ferronniere.jpg](00-main-ferronniere.jpg) | A large colour rhinestone template of Leonardo da Vinci's La Belle Ferronnière on white: a woman with dark hair, a jewel on her forehead and a red and gold dress, every stone shown. Digital template, no stones included. |
 | 2 | [01-before-after-dahlia.jpg](01-before-after-dahlia.jpg) | A photo of a red dahlia with a bud and green leaves, an arrow, and the same flower drawn larger as a colour rhinestone template, every stone shown. Title: Your photo to rhinestone template. |
 | 3 | [02-bold-vs-shaded.jpg](02-bold-vs-shaded.jpg) | A small photo of a mastiff's head, then two black and white rhinestone templates of it: Bold, with solid black and clear areas, and Shaded, with black and clear stones mixed. Title: Black & white in two styles. |
 | 4 | [03-range.jpg](03-range.jpg) | Six rhinestone templates: a sports car, a stag beetle, a hedgehog, a black and white Shaded portrait of a smiling man, a butterfly and a red dahlia. Title: Pets, flowers, cars, anything. |

@@ -1,4 +1,4 @@
-// PN-04b, PN-04c: the Etsy listing photos, made from the PN-04a listing designs with no provider call:
+// PN-04b, PN-04c, PN-04d: the Etsy listing photos, made from the PN-04a listing designs with no provider call:
 //   node tools/make-listing-photos.mjs
 // Reads only the designs marked "use in listing: yes" in docs/listing/README.md, from their full-size
 // files in data/listing/designs/<id>/ (prepared.png, tinted.png, stats.json; git-ignored), and for
@@ -38,7 +38,8 @@ const FOOTER = "Digital template · no stones included";
 // person-colour and mastiff-colour are "no" and never read.
 const ALLOWED = new Set([
   "butterfly-colour", "car-colour", "dahlia-colour", "hedgehog-colour", "mastiff-bw-stencil",
-  "mastiff-bw-halftone", "person-bw-stencil", "person-bw-halftone", "stag-beetle-colour"
+  "mastiff-bw-halftone", "person-bw-stencil", "person-bw-halftone", "stag-beetle-colour",
+  "painting-ferronniere-colour"
 ]);
 
 const C = {
@@ -606,7 +607,7 @@ async function overview(files) {
 }
 
 const PHOTOS = [
-  ["00-main-dahlia.jpg", () => hero("dahlia-colour")],
+  ["00-main-ferronniere.jpg", () => hero("painting-ferronniere-colour")],
   ["01-before-after-dahlia.jpg", () => mainPhoto("dahlia-colour")],
   ["02-bold-vs-shaded.jpg", () => twoStyles("mastiff", "Black & white in two styles")],
   ["03-range.jpg", range],
