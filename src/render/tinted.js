@@ -22,6 +22,10 @@ import { BW_GAPS } from "./bw-gaps.js";
 //      stones); "white" and
 //      "black" the fabric (WHITE_FABRIC, BLACK_FABRIC). A large Jet stone's outer rim band (step 5)
 //      takes the fabric colour too.
+//   4b. Then every area still open that is enclosed by the design (4-connected, not touching the
+//      canvas border) and at most ENCLOSED_GAP_MAX_MM2 is filled as in steps 2-4 by its pixels'
+//      nearest stone, however far: the specks between stones where no stone fits but the margin
+//      does not reach. Larger enclosed areas (true holes) and the outside keep the background.
 //   5. The stones are drawn on top with the RS faceted crystal renderer (drawStone: a stone above
 //      SS6 with a rim lighter than its fill, i.e. a large Jet stone, gets an SS6 stone's rim width),
 //   6. then each stone's lightness is brought to its catalogue fill's L* in two zones (the pixels
@@ -45,6 +49,10 @@ export const MARGIN_STONES = 2;
 // r 2.35 mm) claimed a 1.4 mm ring of its own dark gap colour and sat in a wide black octagon.
 export const SS6_RADIUS_MM = getStoneSize("ss6").diameterMm / 2;
 export const FILL_MARGIN_MM = 0.6 * SS6_RADIUS_MM;
+// Step 4b (PN-04d): an area left open by step 4 that is enclosed by the design (not connected to the
+// canvas border) and at most this large is a speck between stones, not a hole, and is filled too.
+// The same limit as the pipeline's subject (src/pipeline/holes.js ENCLOSED_MAX_MM2): two SS6 stones.
+export const ENCLOSED_GAP_MAX_MM2 = 2 * Math.PI;
 // Step 6 (IS-05b): the whole stone's mean L* within `whole` of the fill's, the inner zone's within
 // `inner` (aims; the spec allows 3 and 5, the rest is left for 8-bit rounding). inner: null keeps
 // only the whole-stone step (the renderer of the first IS-05b follow-up; tools only).
@@ -215,17 +223,84 @@ export function tintPixels(stones, {
   };
   const fabric = bwGap === "white" ? [...WHITE_FABRIC, 255] : bwGap === "black" ? [...BLACK_FABRIC, 255] : null;
   const lighter = (a, b) => (lightnessOfHex(fillOf(a)) >= lightnessOfHex(fillOf(b)) ? a : b);
+  const open = new Uint8Array(owner.length);
   for (let p = 0; p < owner.length; p++) {
     const s = owner[p] >= 0 ? stones[owner[p]] : null;
     // best is the distance to the stone's edge, in px; filled up to the margin.
     const filled = s && (fillReach ? best[p] <= (fillReach - 1) * (s.sizeMm / 2) * scale : best[p] <= margin);
-    if (!filled) data.set(background, p * 4);
-    else if (fabric) data.set(fabric, p * 4);
+    if (!filled) {
+      data.set(background, p * 4);
+      open[p] = 1;
+    } else if (fabric) data.set(fabric, p * 4);
     else if (bwGap === "crystal" && owner2[p] >= 0 && best2[p] <= margin && stones[owner2[p]].color !== s.color) {
       data.set(tintOf(lighter(s.color, stones[owner2[p]].color)), p * 4);
     } else data.set(tintOf(s.color), p * 4);
   }
+  // Step 4b: enclosed specks take the gap colour of their nearest stone (of the lighter of the two
+  // nearest with bwGap "crystal" when they differ; the fabric with "white" and "black").
+  const gaps = enclosedGaps(open, widthPx, heightPx, ENCLOSED_GAP_MAX_MM2 * scale * scale);
+  const nearestTwo = gaps.length ? stoneFinder(stones) : null;
+  for (const p of gaps) {
+    const x = (p % widthPx + 0.5) / scale + minXmm, y = (Math.floor(p / widthPx) + 0.5) / scale + minYmm;
+    const [a, b] = nearestTwo(x, y);
+    if (!a) continue;
+    if (fabric) data.set(fabric, p * 4);
+    else if (bwGap === "crystal" && b && b.color !== a.color) data.set(tintOf(lighter(a.color, b.color)), p * 4);
+    else data.set(tintOf(a.color), p * 4);
+  }
   return data;
+}
+
+// The pixels of every 4-connected area of open pixels that does not touch the canvas border and
+// has at most maxPx pixels (step 4b).
+export function enclosedGaps(open, widthPx, heightPx, maxPx) {
+  const seen = new Uint8Array(open.length);
+  const queue = new Int32Array(open.length);
+  const out = [];
+  for (let start = 0; start < open.length; start++) {
+    if (!open[start] || seen[start]) continue;
+    let head = 0, tail = 0, border = false;
+    queue[tail++] = start;
+    seen[start] = 1;
+    while (head < tail) {
+      const p = queue[head++], x = p % widthPx, y = (p - x) / widthPx;
+      if (x === 0 || y === 0 || x === widthPx - 1 || y === heightPx - 1) border = true;
+      for (const q of [x > 0 ? p - 1 : -1, x < widthPx - 1 ? p + 1 : -1, y > 0 ? p - widthPx : -1, y < heightPx - 1 ? p + widthPx : -1]) {
+        if (q >= 0 && open[q] && !seen[q]) {
+          seen[q] = 1;
+          queue[tail++] = q;
+        }
+      }
+    }
+    if (!border && tail <= maxPx) for (let k = 0; k < tail; k++) out.push(queue[k]);
+  }
+  return out;
+}
+
+// (xMm, yMm) -> the two stones whose edges are nearest to it, [nearest, second] (undefined when
+// absent), among the stones whose centre lies in the FINDER_CELL_MM cell of the point or the eight
+// around it. An enclosed gap is at most a few mm across, so its nearest stone is always among them.
+const FINDER_CELL_MM = 5;
+function stoneFinder(stones) {
+  const cells = new Map();
+  const key = (i, j) => `${i},${j}`;
+  for (const s of stones) {
+    const k = key(Math.floor(s.xMm / FINDER_CELL_MM), Math.floor(s.yMm / FINDER_CELL_MM));
+    if (!cells.has(k)) cells.set(k, []);
+    cells.get(k).push(s);
+  }
+  return (xMm, yMm) => {
+    const ci = Math.floor(xMm / FINDER_CELL_MM), cj = Math.floor(yMm / FINDER_CELL_MM);
+    let a, b, da = Infinity, db = Infinity;
+    for (let i = ci - 1; i <= ci + 1; i++) for (let j = cj - 1; j <= cj + 1; j++) {
+      for (const s of cells.get(key(i, j)) || []) {
+        const d = Math.hypot(s.xMm - xMm, s.yMm - yMm) - s.sizeMm / 2;
+        if (d < da) [b, db, a, da] = [a, da, s, d];
+        else if (d < db) [b, db] = [s, d];
+      }
+    }
+    return [a, b];
+  };
 }
 
 // Step 6 on RGBA pixels (in place): each stone's pixels (those whose centre lies inside its disc,

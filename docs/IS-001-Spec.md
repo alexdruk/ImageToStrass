@@ -39,7 +39,8 @@ designs (10). Revised 29 Oct 2026 (PN-07): data kept 30 days, then deleted by th
 details from `.env` (10, 14, 18); withdrawal consent at the first download (10); waiting-time notes
 (10); poller fallback to every variation (11.3); listing texts (11.1). Revised 29 Oct 2026 (PN-07
 follow-up): paid after the design was deleted (4.1, 10, 11.3, 15.1); the AI image service's data
-terms on the privacy page (14).
+terms on the privacy page (14). Revised 31 Oct 2026 (PN-04d): the tinted view fills the enclosed
+specks between stones (8, step 4b).
 
 Repository: `alexdruk/imagetostrass` (local: `/Users/alex/Documents/ImageToStrass`).
 Source of reused code: `alexdruk/Rhinestone-Studio` (RS), pinned at commit `38cd831` (17 Oct 2026).
@@ -496,6 +497,14 @@ Definition (from the RS 30 Sep decision, sharpened here):
    designs keep steps 2–3. The
    AI draws mid-tones in B&W as Jet and Crystal stones side by side; with `nearest` each Jet stone
    among Crystal sits in a black octagon of its own gap colour and reads larger than it is.
+   **4b.** Then every area still showing the background that is **enclosed** by the design (not
+   connected to the canvas edge, 4-connected) and at most **2π mm²** (two SS6 stones, the pipeline's
+   own limit for the subject, `ENCLOSED_MAX_MM2`) is filled as in steps 2–4 by each pixel's nearest
+   stone, however far (with `BW_GAP` `crystal` the lighter of the two nearest when they differ;
+   the fabric with `white` and `black`). These are the specks between stones where no stone fits
+   (the hole fill places one wherever an SS4 does) but the 0.6 mm margin does not reach; they showed
+   as white dots in the preview (PN-04d). Larger enclosed areas (true holes) and the outside keep
+   the background. No stone is added, moved or changed.
 5. The stones are drawn on top with the RS faceted crystal renderer
    (`CrystalStoneRenderer.drawCrystalStone`, deterministic per-stone appearance; the RS file is
    unchanged). The RS renderer strokes each stone's edge 0.09 radii wide in its catalogue stroke
