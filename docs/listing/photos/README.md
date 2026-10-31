@@ -5,7 +5,7 @@ Made by `node tools/make-listing-photos.mjs` from the listing designs marked "us
 gives the same files. Each photo is 2700 × 2025 px (4:3), sRGB JPG, under 1 MB; everything that
 matters is at least 80 px inside the centre 2531 × 2025 px, the part Etsy's thumbnail (about 5:4)
 shows. The main photo (00) is the La Belle Ferronnière design (Leonardo da Vinci, public domain; PN-04d) alone, at least 85 % of the photo's height, with
-only the small brand row in the top-left corner and the footer line. The close-up (07) is rendered
+only the small brand row in the top-left corner and the footer line. Photo 09 (PN-04i) is laid out the same way with the Lady with an Ermine design, plus a two-line caption in the top-right corner: "after Leonardo da Vinci" and the painting's title and date. The close-up (07) is rendered
 sharp at 26.5 px per mm from the butterfly design's stones, with the app's own tinted renderer.
 [overview.png](overview.png) shows them all on one sheet.
 
@@ -13,7 +13,7 @@ Text is set in Inter (SIL Open Font License, `tools/fonts/`).
 
 ## Order on Etsy
 
-00 is the main photo, then 01 to 08.
+00 is the main photo, then 01 to 09.
 
 | # | File | Alt text |
 | ---: | --- | --- |
@@ -26,5 +26,6 @@ Text is set in Inter (SIL Open Font License, `tools/fonts/`).
 | 7 | [06-size.jpg](06-size.jpg) | A colour rhinestone template of a stag beetle with dimension lines: 20.4 cm (8.05 in) wide and 9.2 cm (3.63 in) high, 1514 stones, mostly SS6. Each design has its own natural size, usually 13 to 30 cm. |
 | 8 | [07-close-up.jpg](07-close-up.jpg) | A close-up of the butterfly template's wing: single rhinestones in clear yellow areas edged by black lines, with blue, white and green spots. Title: Every stone placed for you. |
 | 9 | [08-portrait.jpg](08-portrait.jpg) | A small colour photo of a smiling young woman with a crown of red, orange and white flowers, an arrow, and the same portrait drawn larger as a colour rhinestone template, every stone shown. Title: Colour portraits from your photo. |
+| 10 | [09-ermine.jpg](09-ermine.jpg) | A colour rhinestone template of Leonardo da Vinci's Lady with an Ermine on white: a woman in a red and blue dress holding a cream ermine, every stone shown. Caption: after Leonardo da Vinci. Digital template, no stones included. |
 
 Every photo except the close-up says "Digital template · no stones included" at the bottom.

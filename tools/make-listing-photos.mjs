@@ -1,4 +1,4 @@
-// PN-04b, PN-04c, PN-04d, PN-04g: the Etsy listing photos, made from the PN-04a listing designs with no provider call:
+// PN-04b, PN-04c, PN-04d, PN-04g, PN-04i: the Etsy listing photos, made from the PN-04a listing designs with no provider call:
 //   node tools/make-listing-photos.mjs
 // Reads only the designs marked "use in listing: yes" in docs/listing/README.md, from their full-size
 // files in data/listing/designs/<id>/ (prepared.png, tinted.png, stats.json; git-ignored), and for
@@ -43,7 +43,7 @@ const FOOTER = "Digital template · no stones included";
 const ALLOWED = new Set([
   "butterfly-colour", "car-colour", "dahlia-colour", "hedgehog-colour", "mastiff-bw-stencil",
   "mastiff-bw-halftone", "person-bw-halftone", "stag-beetle-colour",
-  "painting-ferronniere-colour", "portrait-flower-crown-colour"
+  "painting-ferronniere-colour", "portrait-flower-crown-colour", "painting-ermine-colour"
 ]);
 
 const C = {
@@ -244,23 +244,31 @@ const draw = (ctx, p, x, y) => ctx.drawImage(p.img, Math.round(x), Math.round(y)
 
 // The design alone, as large as fits between the top safe margin and the footer (at least
 // HERO_SHARE of the photo's height), centred in that band; the brand row sits in the top-left corner
-// and no stone may come within HERO_CLEAR px of it or of the footer.
-const HERO_SHARE = 0.85, HERO_CLEAR = 30;
-async function hero(id) {
+// and no stone may come within HERO_CLEAR px of it or of the footer. caption (PN-04i): lines set in
+// the safe area's top-right corner, kept clear of the stones the same way.
+const HERO_SHARE = 0.85, HERO_CLEAR = 30, CAPTION_PX = 46, CAPTION_LH = 62;
+async function hero(id, { caption = [] } = {}) {
   const d = design(id);
   const { canvas, ctx, brandBox, footerBox } = frame({ brandLeft: true });
   const top = MARGIN, bottom = footerBox.y - 2 * HERO_CLEAR;
   const p = await fitted(d.tinted, SAFE_W, bottom - top);
-  if (p.h < HERO_SHARE * PHOTO_H) throw new Error(`00: the design is ${p.h} px high, less than ${HERO_SHARE * 100} % of the photo`);
+  if (p.h < HERO_SHARE * PHOTO_H) throw new Error(`${id}: the design is ${p.h} px high, less than ${HERO_SHARE * 100} % of the photo`);
   const x = Math.round(CX - p.w / 2), y = Math.round(top + (bottom - top - p.h) / 2);
   // Draw the design alone first, to check that the brand row and the footer stay on white.
   const alone = createCanvas(PHOTO_W, PHOTO_H).getContext("2d");
   alone.fillStyle = "#ffffff";
   alone.fillRect(0, 0, PHOTO_W, PHOTO_H);
   draw(alone, p, x, y);
-  for (const b of [brandBox, footerBox]) {
+  const boxes = [brandBox, footerBox];
+  for (const [i, line] of caption.entries()) {
+    const yb = BRAND_Y + i * CAPTION_LH + CAPTION_PX / 3;
+    text(ctx, line, SAFE.x1, yb, { px: CAPTION_PX, weight: i ? 400 : 600, color: i ? C.muted : C.ink, align: "right" });
+    const m = ctx.measureText(line);
+    boxes.push({ x: SAFE.x1 - m.width, y: yb - m.actualBoundingBoxAscent, w: m.width, h: m.actualBoundingBoxAscent + m.actualBoundingBoxDescent });
+  }
+  for (const b of boxes) {
     const { data } = alone.getImageData(Math.floor(b.x - HERO_CLEAR), Math.floor(b.y - HERO_CLEAR), Math.ceil(b.w + 2 * HERO_CLEAR), Math.ceil(b.h + 2 * HERO_CLEAR));
-    if (data.some((v, i) => i % 4 !== 3 && v < 245)) throw new Error("00: the design touches the brand row or the footer");
+    if (data.some((v, i) => i % 4 !== 3 && v < 245)) throw new Error(`${id}: the design touches the brand row, the caption or the footer`);
   }
   // The picture is on white: multiply keeps the brand row under its white margin.
   ctx.globalCompositeOperation = "multiply";
@@ -643,7 +651,8 @@ const PHOTOS = [
   ["05-whats-included.jpg", whatsIncluded],
   ["06-size.jpg", size],
   ["07-close-up.jpg", closeUp],
-  ["08-portrait.jpg", () => mainPhoto("portrait-flower-crown-colour", { title: "Colour portraits from your photo", ratio: 1 / 0.6 })]
+  ["08-portrait.jpg", () => mainPhoto("portrait-flower-crown-colour", { title: "Colour portraits from your photo", ratio: 1 / 0.6 })],
+  ["09-ermine.jpg", () => hero("painting-ermine-colour", { caption: ["after Leonardo da Vinci", "Lady with an Ermine, c. 1489–1491"] })]
 ];
 
 mkdirSync(OUT, { recursive: true });

@@ -59,9 +59,23 @@ every time.
 
 | # | Subject | Mode | Stones | Natural size | Photo source | Licence | Use in listing |
 | ---: | --- | --- | ---: | --- | --- | --- | --- |
-| 8 | [painting-ermine](designs/painting-ermine-colour/) | Colour | 3771 | 137 × 204 mm (5.39 × 8.03 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_(1452-1519)_-_Lady_with_an_Ermine_%E2%80%93_Portrait_of_Cecilia_Gallerani_(ca._1473%E2%80%931536)_-_MNK_XII-209_-_National_Museum_Krak%C3%B3w.jpg), National Museum in Kraków | Public domain | not decided |
+| 8 | [painting-ermine](designs/painting-ermine-colour/) | Colour | 4158 | 142 × 217.6 mm (5.59 × 8.57 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_(1452-1519)_-_Lady_with_an_Ermine_%E2%80%93_Portrait_of_Cecilia_Gallerani_(ca._1473%E2%80%931536)_-_MNK_XII-209_-_National_Museum_Krak%C3%B3w.jpg), National Museum in Kraków | Public domain | yes (photo 09); see PN-04i below |
 | 9 | [painting-ferronniere](designs/painting-ferronniere-colour/) | Colour | 3950 | 143.7 × 217.3 mm (5.66 × 8.56 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:La_Belle_Ferroni%C3%A8re_-_Google_Arts.jpg), Google Arts & Culture | Public domain | yes, the main photo (the dark brownish-red dress comes out bright red with gold) |
 | 10 | [painting-ginevra](designs/painting-ginevra-colour/) | Colour | 3660 | 134.7 × 178 mm (5.3 × 7.01 in) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_-_Ginevra_de%27_Benci_-_Google_Art_Project.jpg), Google Art Project | Public domain | not decided: white blotches on the face |
+
+### Lady with an Ermine with a cream ermine (PN-04i)
+
+In every Ermine design the ermine came out white: the AI paints its fur a very pale cream (L\* about
+94) and the catalogue's nearest stone is Crystal Clear. To show it cream, only the ermine was warmed
+in the photo: `services/strass/scripts/ermine_cream.py` makes
+`data/listing/candidates/portraits/edited/8-ermine-cream.png` from `8-ermine.jpg` (a hand-drawn
+polygon less every pixel that is not fur; inside it a\* +1.5 and b\* +5; every pixel outside the
+ermine unchanged), and [subjects.json](subjects.json) now uses that file. The design was then made
+with the real pipeline as above (background removal on, no adjustments, no tuning, with PN-04h's
+rule). Try 1 (a\* +4, b\* +11) came out golden and was not kept; try 2 is the listing design. The
+ermine is golden cream rather than white, and the whole picture is a new AI image, so it differs
+from the earlier design elsewhere too. The earlier design is kept in
+`data/listing/replay/before-pn04i/` (not in git).
 
 ### Colour portrait for photo 08 (PN-04g)
 

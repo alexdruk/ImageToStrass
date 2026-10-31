@@ -5,7 +5,7 @@ import sharp from "sharp";
 import { findOldBrand } from "./brand-words.mjs";
 import { findLeaks } from "./leak-words.mjs";
 
-// PN-04b, PN-04c: the committed Etsy listing photos (tools/make-listing-photos.mjs; the designs they are made
+// PN-04b, PN-04c, PN-04i: the committed Etsy listing photos (tools/make-listing-photos.mjs; the designs they are made
 // from are git-ignored, so only the committed files are checked here).
 
 const DIR = new URL("../docs/listing/photos/", import.meta.url);
@@ -13,7 +13,7 @@ const README = readFileSync(new URL("README.md", DIR), "utf8");
 const PHOTOS = readdirSync(DIR).filter((f) => f.endsWith(".jpg")).sort();
 
 test("listing photos: 2700 x 2025 sRGB JPGs under 1 MB, no metadata but the colour profile", async () => {
-  assert.deepEqual(PHOTOS.map((f) => f.slice(0, 2)), ["00", "01", "02", "03", "04", "05", "06", "07", "08"]);
+  assert.deepEqual(PHOTOS.map((f) => f.slice(0, 2)), ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09"]);
   for (const f of PHOTOS) {
     const file = new URL(f, DIR);
     assert.ok(statSync(file).size < 1024 * 1024, `${f} is ${statSync(file).size} bytes`);
