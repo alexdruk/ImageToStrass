@@ -1,5 +1,5 @@
 // PN-04a: real example designs for the Etsy listing, run by hand (real provider and strass calls):
-//   node tools/make-listing-designs.mjs <subjects.json> [--out=<dir>] [--only=<id>,...] [--extra=<n>]
+//   node tools/make-listing-designs.mjs <subjects.json> [--out=<dir>] [--full=<dir>] [--only=<id>,...] [--extra=<n>]
 //   node tools/make-listing-designs.mjs --overview [--out=<dir>]
 //   node tools/make-listing-designs.mjs --copies [--out=<dir>]
 // <subjects.json>: [{ id, photo, modes: ["colour", "bw-stencil", "bw-halftone"], adjustments?,
@@ -19,6 +19,8 @@
 // --overview: <out>/overview.png (at most OVERVIEW_W wide), every design in data/listing/designs/, its
 // prepared photo next to its tinted render, labelled with subject, mode and natural size.
 // --copies: the <out>/ copies made again from data/listing/designs/.
+// --full=<dir>: the full-size files there instead of data/listing/designs/ (test runs that must not
+// replace a listing design, PN-10).
 import "dotenv/config";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -35,7 +37,7 @@ import { etsyTestConfig, noEtsy } from "./etsy-mock.mjs";
 const ROOT = new URL("../", import.meta.url).pathname;
 const arg = (name) => process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=")[1];
 const OUT = path.resolve(arg("out") || path.join(ROOT, "docs/listing/designs"));
-const FULL = path.join(ROOT, "data/listing/designs");
+const FULL = path.resolve(arg("full") || path.join(ROOT, "data/listing/designs"));
 const RUNS = path.join(ROOT, "data/listing/runs");
 const SMALL_PX = 1200;
 const OVERVIEW_W = 2000;
@@ -215,7 +217,7 @@ if (process.argv.includes("--overview")) {
   await copies();
 } else {
   const file = process.argv.slice(2).find((a) => !a.startsWith("--"));
-  if (!file) throw new Error("usage: node tools/make-listing-designs.mjs <subjects.json> [--out=<dir>] [--only=<id>,...] [--extra=<n>] | --overview | --copies");
+  if (!file) throw new Error("usage: node tools/make-listing-designs.mjs <subjects.json> [--out=<dir>] [--full=<dir>] [--only=<id>,...] [--extra=<n>] | --overview | --copies");
   const only = arg("only")?.split(",");
   const subjects = JSON.parse(readFileSync(file, "utf8")).filter((s) => !only || only.includes(s.id));
   const report = [];

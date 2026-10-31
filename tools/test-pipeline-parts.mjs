@@ -6,7 +6,7 @@ import sharp from "sharp";
 import { cleanedLayout } from "../src/pipeline/cleanup.js";
 import { MODEL_INPUT_SIDE, acceptLayout, modelInput, normalizeDesignSettings, subjectBox } from "../src/pipeline/design.js";
 import { callLayoutService } from "../src/pipeline/layout.js";
-import { BW_STYLES, IS_PROMPT_VERSION, IS_STENCIL_PROMPT_VERSION, buildPrompt, promptVersion } from "../src/pipeline/prompt.js";
+import { BW_STYLES, IS_PROMPT_VERSION, IS_STENCIL_PROMPT_VERSION, SKIN_RAMP_LINE, SKIN_TONE_RULE, buildPrompt, promptVersion } from "../src/pipeline/prompt.js";
 import { IMAGE_EDITS_URL, createProvider } from "../src/pipeline/provider.js";
 import { createQueue } from "../src/pipeline/queue.js";
 import { TIERS, applyTier, chooseTier, naturalLayout, snapDown } from "../src/pipeline/tiers.js";
@@ -20,11 +20,12 @@ const sha = (text) => crypto.createHash("sha256").update(text).digest("hex");
 const RS_SQUARE_LINE = "- Square image at the highest resolution available.";
 const RS_MAIN_SIZE_LINE = "- Use one main stone size for the whole design. Make the stones large: about 60 stones across the full width of the image.";
 const MAIN_SIZE_LINE = "- Use one main stone size for the whole design.";
+const RS_SKIN_RAMP_LINE = "  skin: Silk, Light Peach, Rose Gold, Light Colorado Topaz, Golden Shadow, Copper, Colorado Topaz, Smoked Topaz, with Rose Peach and Vintage Rose for cheeks and Crystal only for the brightest highlights;";
 const WHOLE_IMAGE_LINE = "- Use the whole image at the highest resolution available, in the same shape (width to height) as the uploaded image.";
 const quiet = { warn() {}, error() {}, log() {} };
 
-test("colour prompt is RS prompt v6 with the whole-image line and without the 60-stones sentence", () => {
-  assert.equal(IS_PROMPT_VERSION, 3);
+test("colour prompt is RS prompt v6 with the whole-image line, without the 60-stones sentence, with the skin tone rule", () => {
+  assert.equal(IS_PROMPT_VERSION, 4);
   const lines = buildPrompt({ mode: "colour" }).split("\n");
   const i = lines.indexOf(WHOLE_IMAGE_LINE);
   assert.equal(i, lines.indexOf("6. COMPOSITION") + 1, "first rule of section 6");
@@ -32,8 +33,14 @@ test("colour prompt is RS prompt v6 with the whole-image line and without the 60
   assert.ok(!lines.some((l) => /stones across|Make the stones large/.test(l)), "no 60-stones sentence");
   const m = lines.indexOf(MAIN_SIZE_LINE);
   assert.equal(m, lines.indexOf("1. STONES") + 3, "the other rules of section 1 are kept");
+  // PN-10: the skin ramp covers every skin tone, and the skin tone rule follows the Topaz rule.
+  const k = lines.indexOf(SKIN_RAMP_LINE), t = lines.indexOf(SKIN_TONE_RULE);
+  assert.ok(k > 0 && t === lines.indexOf("- Never use Topaz or Hyacinth on skin.") + 1, "skin ramp and skin tone rule in section 4");
+  assert.ok(/every skin tone/.test(SKIN_RAMP_LINE) && /Never lighten or whiten skin/.test(SKIN_TONE_RULE));
   lines[i] = RS_SQUARE_LINE;
   lines[m] = RS_MAIN_SIZE_LINE;
+  lines[k] = RS_SKIN_RAMP_LINE;
+  lines.splice(t, 1);
   assert.equal(sha(lines.join("\n")), RS_V6_SHA256);
 });
 
